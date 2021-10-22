@@ -2,18 +2,37 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}WIAG{% endblock %}</title>
         {# Run `composer require symfony/webpack-encore-bundle`
            and uncomment the following Encore helpers to start using Symfony UX #}
         {% block stylesheets %}
-            {#{{ encore_entry_link_tags('app') }}#}
+            {{ encore_entry_link_tags('app') }}
         {% endblock %}
 
         {% block javascripts %}
-            {#{{ encore_entry_script_tags('app') }}#}
+            {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body class="d-flex flex-column h-100">
+        {% block body %}
+	    {# highlight the current menu item #}
+	    {% if menuItem is not defined %}
+		{% set menuItem='home' %}
+	    {% endif %}
+	    <div class="container-fluid">
+		<div class="row mt-2">
+		    <div class="col-12 ms-2">
+			<a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
+			<a class="wiag-title text-reset text-decoration-none"
+			   href="{{ path('wiag_welcome') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> <span class="wiag-version ms-1">Version: Beta</span>
+			<p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
+		    </div>
+		</div>
+	    </div>
+
+
+
+
+	{% endblock %}
     </body>
 </html>

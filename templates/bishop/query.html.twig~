@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {{ form_start(form) }}
+	{{ form_label(form.name) }}
+	{{ form_errors(form.name) }}
+	{{ form_widget(form.name) }}
+
+	{{ form_label(form.diocese) }}
+	{{ form_errors(form.diocese) }}
+	{{ form_widget(form.diocese) }}
+
+	<button type="submit">Suche</button>
+
+    {{ form_end(form }}
+
+{% endblock %}
