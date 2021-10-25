@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}WIAG{% endblock %}</title>
         {# Run `composer require symfony/webpack-encore-bundle`
-           and uncomment the following Encore helpers to start using Symfony UX #}
+        and uncomment the following Encore helpers to start using Symfony UX #}
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -14,25 +14,40 @@
         {% endblock %}
     </head>
     <body class="d-flex flex-column h-100">
-        {% block body %}
-	    {# highlight the current menu item #}
-	    {% if menuItem is not defined %}
-		{% set menuItem='home' %}
-	    {% endif %}
+	{# highlight the current menu item #}
+	{% if menuItem is not defined %}
+	    {% set menuItem='home' %}
+	{% endif %}
+	<main class="flex-shrink-0">
+	<div class="container-fluid">
+	    <div class="row mt-3 mx-2">
+		<div class="col-12">
+		    <a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
+		    <a class="home-title text-reset text-decoration-none"
+		       href="{{ path('home') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> <span class="version ms-1">Version: Beta</span>
+		    <p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
+		</div>
+	    </div>
+	</div>
+	{% block body %}{% endblock %}
+	</main>
+	<footer class="mt-auto pt-3 pb-2">
 	    <div class="container-fluid">
-		<div class="row mt-2">
-		    <div class="col-12 ms-2">
-			<a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
-			<a class="wiag-title text-reset text-decoration-none"
-			   href="{{ path('wiag_welcome') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> <span class="wiag-version ms-1">Version: Beta</span>
-			<p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
+		<div class="row justify-content-sm-center">
+		    <div class="col-sm-10 text-left">
+			<a href="https://adw-goe.de" class="mr-3" target="_blank" rel="noopener"><img src="{{ asset('images/ADWGoe-logo-fit.png') }}" height="60"></a>
+			<a href="http://www.inschriften.net" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/DI-logo-fit.png') }}" height="60"></a>
+			<a href="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/GS-logo.png') }}" height="52"></a>
+		    </div>
+		</div>
+		<div class="row justify-content-sm-center mt-2">
+		    <div class="col-sm-10 text-left">
+			<a href="https://adw-goe.de/impressum" class="wiag-impress" target="_blank" rel="noopener">Impressum</a>
+			<a href="#" class="wiag-impress ms-2">Kontakt</a>
 		    </div>
 		</div>
 	    </div>
+	</footer>
 
-
-
-
-	{% endblock %}
     </body>
 </html>

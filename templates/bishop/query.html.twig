@@ -9,22 +9,15 @@
 
 {% block body %}
     {{ form_start(form) }}
-	<div>
-	    {{ form_label(form.name) }}
-	    {{ form_errors(form.name) }}
-	    {{ form_widget(form.name) }}
-
-	    {{ form_label(form.diocese) }}
-	    {{ form_errors(form.diocese) }}
-	    {{ form_widget(form.diocese) }}
-
-	    <button type="submit">Suche</button>
-	</div>
-	{% if data %}
-	    <div>
-		Name: {{ data["name"] }}, Bistum: {{ data["diocese"] }}
+	<div class="container-fluid">
+	    {{ include("bishop/_form_elements.html.twig") }}
+	    <div class="row mt-2 mx-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		</div>
 	    </div>
-	{% endif %}
+
+	</div>
 
     {{ form_end(form) }}
 

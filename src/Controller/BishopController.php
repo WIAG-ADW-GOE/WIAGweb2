@@ -3,6 +3,8 @@ namespace App\Controller;
 
 use App\Entity\Person;
 use App\Repository\PersonRepository;
+use App\Form\BishopFormType;
+use App\Form\Model\BishopFormModel;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,36 +27,60 @@ class BishopController extends AbstractController {
     public function query(Request $request,
                           PersonRepository $repository) {
 
-        $form = $this->createFormBuilder()
-                     ->add('name', TextType::class, [
-                         'label' => 'Name',
-                     ])
-                     ->add('diocese', TextType::class, [
-                         'label' => 'Bistum',
-                     ])
-                     ->getForm();
-        $data = null;
+        // we need to pass an instance of BishopFormModel, because facets depend on it's data
+        $bishopModel = new BishopFormModel;
+
+        $form = $this->createForm(BishopFormType::class, $bishopModel);
+        $offset = 0;
+
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $data = $form->getData();
-            # dd($data);
+            $bishopModel = $form->getData();
+
+            $count = $repository->countByModel($bishopModel);
+            dump($count);
+            # $resultset = $repository->findByModel($bishopModel, self::PAGE_SIZE, $offset);
 
             return $this->renderForm('bishop/query.html.twig', [
                 'form' => $form,
-                'data' => $data,
             ]);
 
         }
 
         return $this->renderForm('bishop/query.html.twig', [
                 'form' => $form,
-                'data' => $data,
         ]);
 
 
     }
 
+    /**
+     * AJAX
+     *
+     * @Route("/bischof_name", name="bishop_name")     *
+     */
+    public function bishopName() {
+        return ["name"];
+    }
+
+    /**
+     * AJAX
+     *
+     * @Route("/bischof_diocese", name="bishop_diocese")     *
+     */
+    public function bishopDiocese() {
+        return ["diocese"];
+    }
+
+    /**
+     * AJAX
+     *
+     * @Route("/bischof_office", name="bishop_office")     *
+     */
+    public function bishopOffice() {
+        return ["office"];
+    }
 
 }

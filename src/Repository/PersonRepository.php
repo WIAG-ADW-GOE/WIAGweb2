@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Person;
+use App\Form\Model\BishopFormModel;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,4 +49,47 @@ class PersonRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function bishopCountByModel(BishopFormModel $model) {
+        $result = array(1 => 0);
+        if($model->isEmpty()) return $result;
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('COUNT(DISTINCT p.id)');
+
+        $this->bishopQueryConditions($qb, $model);
+
+        $query = $qb->getQuery();
+
+        $result = $query->getOneOrNullResult();
+        return $result;
+    }
+
+
+    private function bishopQueryConditions($qb, BishopFormModel $model) {
+
+        # identifier
+        $someid = $model->someid;
+        # TODO extract numerical part of idPublic
+        if($someid && $someid != "") {
+            $qb->from('App\Entity\Item', 'item')
+               ->andWhere('item.id = p.id')
+               ->andWhere(':someid = item.idPublic')
+               ->setParameter('someid', $someid);
+        }
+
+        # name
+
+
+        return $qb;
+    }
+
+    private function bishopAndOfficeByModel(BishopFormModel $model, $limit = 0, $offset = 0) {
+
+
+    }
+
+
+
+
 }

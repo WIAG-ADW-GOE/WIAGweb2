@@ -1,0 +1,41 @@
+
+@import '@fontsource/nunito-sans';
+
+@import '_variables.scss';
+@import '~bootstrap';
+
+.home-title {
+    font-size: x-large;
+    font-weight: bold;
+    color: black;
+}
+
+.version {
+    color: #777;
+}
+
+.wiag-impress {
+    font-size: small;
+    color: #222;
+}
+
+.wiag-id {
+    font-size: normal;
+}
+
+.comment {
+    color: #484;
+}
+
+.dio {
+    text-transform: uppercase;
+    color: #068;
+}
+
+.gs {
+    color: #a33;
+}
+
+footer {
+    background-color: #efefee;
+}
