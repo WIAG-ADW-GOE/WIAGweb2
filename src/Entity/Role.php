@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RoleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * @ORM\Entity(repositoryClass=RoleRepository::class)
  */
@@ -35,6 +36,10 @@ class Role
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getPersonRoles() {
+        return $this->personRoles;
     }
 
     public function getComment(): ?string

@@ -28,9 +28,19 @@ class PersonRole
     private $personId;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Person", inversedBy="roles")
+     */
+    private $person;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $roleId;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Role")
+     */
+    private $role;
 
     /**
      * @ORM\Column(type="string", length=63, nullable=true)
@@ -41,6 +51,11 @@ class PersonRole
      * @ORM\Column(type="integer", nullable=true)
      */
     private $dioceseId;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Diocese")
+     */
+    private $diocese;
 
     /**
      * @ORM\Column(type="string", length=63, nullable=true)
@@ -111,6 +126,10 @@ class PersonRole
         return $this;
     }
 
+    public function getPerson() {
+        return $this->person;
+    }
+
     public function getRoleId(): ?int
     {
         return $this->roleId;
@@ -121,6 +140,10 @@ class PersonRole
         $this->roleId = $roleId;
 
         return $this;
+    }
+
+    public function getRole() {
+        return $this->role;
     }
 
     public function getRoleName(): ?string
@@ -145,6 +168,10 @@ class PersonRole
         $this->dioceseId = $dioceseId;
 
         return $this;
+    }
+
+    public function getDiocese() {
+        return $this->diocese;
     }
 
     public function getDioceseName(): ?string

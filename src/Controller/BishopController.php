@@ -5,6 +5,7 @@ use App\Entity\Person;
 use App\Repository\PersonRepository;
 use App\Form\BishopFormType;
 use App\Form\Model\BishopFormModel;
+use App\Entity\Role;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,29 +29,33 @@ class BishopController extends AbstractController {
                           PersonRepository $repository) {
 
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
-        $bishopModel = new BishopFormModel;
+        $model = new BishopFormModel;
 
-        $form = $this->createForm(BishopFormType::class, $bishopModel);
+        $form = $this->createForm(BishopFormType::class, $model);
         $offset = 0;
 
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $bishopModel = $form->getData();
+            $model = $form->getData();
 
-            $count = $repository->countByModel($bishopModel);
-            dump($count);
-            # $resultset = $repository->findByModel($bishopModel, self::PAGE_SIZE, $offset);
+            $count = $repository->bishopCountByModel($model);
+
+            $result = $repository->bishopWithOfficeByModel($model, self::PAGE_SIZE, $offset);
 
             return $this->renderForm('bishop/query.html.twig', [
                 'form' => $form,
+                'data' => $result,
+                'offset' => $offset,
+                'pageSize' => self::PAGE_SIZE,
             ]);
 
         }
 
         return $this->renderForm('bishop/query.html.twig', [
                 'form' => $form,
+                'data' => null,
         ]);
 
 
@@ -59,7 +64,7 @@ class BishopController extends AbstractController {
     /**
      * AJAX
      *
-     * @Route("/bischof_name", name="bishop_name")     *
+     * @Route("/bischof_name", name="bishop_name")
      */
     public function bishopName() {
         return ["name"];
@@ -68,7 +73,7 @@ class BishopController extends AbstractController {
     /**
      * AJAX
      *
-     * @Route("/bischof_diocese", name="bishop_diocese")     *
+     * @Route("/bischof_diocese", name="bishop_diocese")
      */
     public function bishopDiocese() {
         return ["diocese"];
@@ -77,10 +82,25 @@ class BishopController extends AbstractController {
     /**
      * AJAX
      *
-     * @Route("/bischof_office", name="bishop_office")     *
+     * @Route("/bischof_office", name="bishop_office")
      */
     public function bishopOffice() {
         return ["office"];
     }
+
+    /**
+     * Test
+     * @Route("/bischof_aemter/{name}", name="bishop_person_roles")
+     */
+    public function bishopPersonRoles($name) {
+        $repository = $this->getDoctrine()
+                           ->getRepository(Person::class);
+
+        $persons = $repository->findByRole($name);
+        dd($persons);
+
+        return new Response("bishopPersonRoles");
+    }
+
 
 }

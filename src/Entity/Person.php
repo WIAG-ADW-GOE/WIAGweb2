@@ -18,6 +18,29 @@ class Person
     private $id;
 
     /**
+     * @ORM\OneToOne(targetEntity="Item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
+     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person")
+     */
+    private $roles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="PersonDisplayOrder", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $displayOrder;
+
+    /**
+     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $nameLookup;
+
+    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $comment;
@@ -90,6 +113,10 @@ class Person
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getRoles() {
+        return $this->roles;
     }
 
     public function getComment(): ?string

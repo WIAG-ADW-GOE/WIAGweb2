@@ -18,6 +18,12 @@ class Item
     private $id;
 
     /**
+     * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $idExternal;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $itemTypeId;

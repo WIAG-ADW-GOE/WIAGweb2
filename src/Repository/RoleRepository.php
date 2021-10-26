@@ -47,4 +47,23 @@ class RoleRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * Test: find persons by role
+     */
+    public function findPersons($name) {
+        $qb = $this->createQueryBuilder('r')
+                   ->join('r.personRoles', 'pr')
+                   ->select('pr.personId')
+                   ->andWhere('r.name = :name')
+                   ->setParameter(':name', $name);
+
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        return $result;
+    }
+
+
 }

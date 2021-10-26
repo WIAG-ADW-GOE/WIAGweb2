@@ -16,7 +16,14 @@
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		</div>
 	    </div>
-
+	    {% if data %}
+	    <div class="row mt-2 mx-2">
+		<div class="col-9">
+		    {# table #}
+		    {{ include("bishop/_results.html.twig") }}
+		</div>
+	    </div>
+	    {% endif %}
 	</div>
 
     {{ form_end(form) }}
