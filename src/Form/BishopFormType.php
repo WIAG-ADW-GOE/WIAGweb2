@@ -1,8 +1,9 @@
 <?php
 namespace App\Form;
 
+use App\Entity\FacetChoice;
 use App\Form\Model\BishopFormModel;
-use App\Repository\PersonRepository; # 2021-10-22 needed?
+use App\Repository\PersonRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -25,10 +26,10 @@ use Symfony\Component\Routing\RouterInterface;
 
 class BishopFormType extends AbstractType
 {
-    private $personRepository;
+    private $repository;
 
-    public function __construct(PersonRepository $personRepository) {
-        $this->personRepository = $personRepository;
+    public function __construct(PersonRepository $repository) {
+        $this->repository = $repository;
     }
 
     public function configureOptions(OptionsResolver $resolver) {
@@ -39,7 +40,7 @@ class BishopFormType extends AbstractType
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $bishopModel = $options['data'] ?? null;
+        $model = $options['data'] ?? null;
 
         $builder
             ->add('name', TextType::class, [
@@ -78,7 +79,70 @@ class BishopFormType extends AbstractType
                     'placeholder' => 'GSN, GND, Wikidata, VIAF',
                     'size' => '25',
                 ],
+            ])
+            ->add('stateFctDioc', HiddenType::class, [
+                'mapped' => false,
             ]);
 
+        if($model && !$model->isEmpty()) {
+            $this->createFacetDiocese($builder, $bishopquery);
+            # $this->createFacetOffices($builder, $bishopquery);
+        }
+
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            array($this, 'createFacetDioceseByEvent'));
+
+
+        // $builder->addEventListener(
+        //     FormEvents::PRE_SUBMIT,
+        //     array($this, 'createFacetOfficesByEvent'));
+
+    }
+
+     public function createFacetDioceseByEvent(FormEvent $event) {
+         # $event->getForm() is still empty
+         $data = $event->getData();
+         if (!$data) return;
+         $model = BishopFormModel::newByArray($data);
+         if ($model->isEmpty()) return;
+
+         $this->createFacetDiocese($event->getForm(), $model);
+    }
+
+    public function createFacetDiocese($form, $modelIn) {
+        // do not filter by diocese themselves
+        $model = clone $modelIn;
+        $model->facetDiocese = null;
+
+        $dioceses = $this->repository->countDiocese($model);
+
+        $choices = array();
+
+        foreach($dioceses as $diocese) {
+            $choices[] = new FacetChoice($diocese['name'], $diocese['n']);
+        }
+
+        // add selected fields with frequency 0
+        // $facetDioceses = $model->getFacetDiocesesAsArray();
+        // if ($facetDioceses) {
+        //     $ids_choice = array_map(function($a) {return $a->getId();}, $choices);
+        //     foreach($facetDioceses as $fpl) {
+        //         if (!in_array($fpl, $ids_choice)) {
+        //             $choices[] = new DioceseCount($fpl, $fpl, 0);
+        //         }
+        //     }
+        //     uasort($choices, array('App\Entity\DioceseCount', 'isless'));
+        // }
+        if ($dioceses) {
+            $form->add('facetDiocese', ChoiceType::class, [
+                'label' => 'Filter Bistum',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+        }
     }
 }

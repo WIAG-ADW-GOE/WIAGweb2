@@ -16,6 +16,18 @@ class BishopFormModel {
     public $facetDiocese = null;
     public $facetOffice = null;
 
+    public static function newByArray($data) {
+        $model = new self();
+        $model->name = $data['name'] ?? null;
+        $model->diocese = $data['diocese'] ?? null;
+        $model->office = $data['office'] ?? null;
+        $model->year = $data['year'] ?? null;
+        $model->someid = $data['someid'] ?? null;
+        $model->facetDiocese = $data['facetDiocese'] ?? null;
+        $model->facetOffice = $data['Office'] ?? null;
+        return $model;
+    }
+
     public function isEmpty() {
         return (is_null($this->name)
                 && is_null($this->diocese)

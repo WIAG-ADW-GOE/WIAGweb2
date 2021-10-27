@@ -29,6 +29,79 @@
 		</div>
 	    </div>
 	</div>
+	<nav class="navbar navbar-expand-lg navbar-light bg-white">
+	    <div class="container-fluid mx-3">
+		<button class="navbar-toggler"
+			       type="button"
+			       data-bs-toggle="collapse"
+			       data-bs-target="#navbarSupportedContent"
+			       aria-controls="navbarSupportedContent"
+			       aria-expanded="false"
+			       aria-label="Toggle navigation">
+		    <span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			<li class="nav-item">
+			    {% if menuItem == 'home' %}
+				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Start</a>
+			    {% else %}
+				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Start</a>
+			    {% endif %}
+			</li>
+
+			<li class="nav-item dropdown">
+			    {% if menuItem == 'about' %}
+				<a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Über WIAG</a>
+			    {% else %}
+				<a class="nav-link dropdown-toggle fw-bold" href="#" id="about-wiag" data-bs-toggle="dropdown" aria-expanded="false">Über WIAG</a>
+			    {% endif %}
+			    <ul class="dropdown-menu" aria-labelledby="about-wiag">
+				<li><a class="dropdown-item" href="{{ path('home') }}">Ziele</a></li>
+				<li><a class="dropdown-item" href="{{ path('home') }}">Referenzwerke</a></li>
+				<li><a class="dropdown-item" href="{{ path('home') }}">API</a></li>
+				<li><a class="dropdown-item" href="{{ path('contact') }}">Kontakt</a></li>
+			    </ul>
+			</li>
+			<li class="nav-item dropdown">
+			    {% if menuItem == 'collections' %}
+				<a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Datensammlungen</a>
+			    {% else %}
+				<a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
+			    {% endif %}
+			    <ul class="dropdown-menu" aria-labelledby="collections">
+				<li><a class="dropdown-item" href="{{ path('bishop') }}">Bischöfe des Alten Reiches</a></li>
+				<li><a class="dropdown-item" href="{{ path('home') }}">Bistümer des Alten Reiches</a></li>
+				<li><a class="dropdown-item" href="{{ path('home') }}">Domherren des Alten Reiches</a></li>
+				{% if false and is_granted('ROLE_DATA_ADMIN') %}
+				    <li><a class="dropdown-item" href="{{ path('bulk_export_dispatch') }}">Datenexport</a></li>
+				{% endif %}
+			    </ul>
+			</li>
+			<li class="nav-item">
+			    {% if menuItem == 'service' %}
+				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Datenservice</a>
+			    {% else %}
+				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Datenservice</a>
+			    {% endif %}
+			</li>
+			{% if is_granted('ROLE_USER') %}
+			    <li class="nav-item">
+				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Logout</a>
+			    </li>
+			{% else %}
+			    <li class="nav-item">
+				{% if menuItem == 'login' %}
+				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Login</a>
+				{% else %}
+				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Login</a>
+				{% endif %}
+			    </li>
+			{% endif %}
+		    </ul>
+		</div>
+	    </div>
+	</nav>
 	{% block body %}{% endblock %}
 	</main>
 	<footer class="mt-auto pt-3 pb-2">

@@ -1,42 +1,39 @@
 
-{% if data|length == 0 %}
-    <p>Treffer: keine<p>
-{% else %}
-    <div class="table-responsive">
-	<table class="table">
-	    <thead class="thead-light">
+<div class="table-responsive">
+    <table class="table">
+	<thead class="thead-light">
+	    <tr>
+		<th scope="col">Name</th>
+		<th scope="col">Ämter</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    {% for person in data %}
 		<tr>
-		    <th scope="col">Name</th>
-		    <th scope="col">Ämter</th>
-		</tr>
-	    </thead>
-	    <tbody>
-		{% for person in data %}
-		    <tr>
-			<td><button type="submit" form="form" class="btn btn-link text-sm-start" name="singleoffset" value="{{ offset + loop.index0 }}">{{ person.givenname }} {{ person.prefixname }} {{ person.familyname }}</button>
-			    {% if not person.datebirth and not person.datedeath %}
-			    {% elseif person.datebirth and not person.datedeath %}
-				<p class="ms-3">* {{ person.datebirth }}</p>
-			    {% elseif not person.datebirth and person.datedeath %}
-				<p class="ms-3">&dagger; {{ person.datedeath }}</p>
-			    {% else %}
-				<p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+		    <td><button type="submit" form="form" class="btn btn-link text-sm-start" name="singleoffset" value="{{ offset + loop.index0 }}">{{ person.givenname }} {{ person.prefixname }} {{ person.familyname }}</button>
+			{% if not person.datebirth and not person.datedeath %}
+			{% elseif person.datebirth and not person.datedeath %}
+			    <p class="ms-3">* {{ person.datebirth }}</p>
+			{% elseif not person.datebirth and person.datedeath %}
+			    <p class="ms-3">&dagger; {{ person.datedeath }}</p>
+			{% else %}
+			    <p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+			{% endif %}
+		    </td>
+		    <td>{% for o in person.roles|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+			<small>{{ o.role.name }}
+			    {% if o.diocese %}({{ o.diocese.name }})
+			    {% elseif o.diocesename %}({{ o.diocesename }})
 			    {% endif %}
-			</td>
-			<td>{% for o in person.roles|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-			    <small>{{ o.role.name }}
-				{% if o.diocese %}({{ o.diocese.name }})
-				{% elseif o.diocesename %}({{ o.diocesename }})
-				{% endif %}
-				{# TODO monastery for Abt, Propst ... #}
-				{% if o.datebegin and not o.dateend %}{{ o.datebegin }}
-				{% elseif not o.datebegin and o.dateend %}{{ o.dateend }}
-				{% elseif o.datebegin and o.dateend %}{{ o.datebegin }}-{{ o.dateend }}{% endif %}
-			    </small><br/>{% endfor %}
-			</td>
-		    </tr>
-		{% endfor %}
-	    </tbody>
-	</table>
-    </div> {# table-responsive #}
-{% endif %}
+			    {# TODO monastery for Abt, Propst ... #}
+			    {% if o.datebegin and not o.dateend %}{{ o.datebegin }}
+			    {% elseif not o.datebegin and o.dateend %}{{ o.dateend }}
+			    {% elseif o.datebegin and o.dateend %}{{ o.datebegin }}-{{ o.dateend }}{% endif %}
+			</small><br/>{% endfor %}
+		    </td>
+		</tr>
+	    {% endfor %}
+	</tbody>
+    </table>
+</div> {# table-responsive #}
+<p>{% if count > pageSize %}<span>{{ fb_elements }}</span>{% endif %} </p>

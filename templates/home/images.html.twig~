@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% import 'basemacros.html.twig' as bmc%}
+
+{% block body %}
+    <div class="container-sm">
+	<div class="row justify-content-center">
+	    <div class="col-7 m-2 topic-title mb-3">Bildnachweise</div>
+	</div>
+	<div class="row justify-content-center">
+	    <div class="col-7 m-2">
+		<h3 id="kirchenlehrer_naumburg" >Bekehrung Pauli — Kirchenlehrer</h3>
+		<figure class="figure">
+		    <img src="{{ asset('images/Bischoefe-sc10.jpg') }}" class="figure-img img-fluid" alt="Retabel im Naumburger Dom: Bekehrung Pauli">
+		    <figcaption class="figure-caption">Predella mit den vier Kirchenlehrern vom Retabel auf dem Johannesaltar im Nordquerhaus — Bekehrung Pauli, Georg Lemberger um 1526. Dom St. Peter und Paul zu Naumburg (Ausschnitt). Foto: Bärbel Kröger.</figcaption>
+		</figure>
+	    </div>
+	</div>
+	<div class="row justify-content-center">
+	    <div class="col-7 m-2">
+		<h3 id="karte_bistuemer" >Karte der Bistümer</h3>
+		<figure class="figure">
+		    <img src="{{ asset('images/Bistuemer-sc10.jpg') }}" class="figure-img img-fluid" alt="Karte der Bistümer">
+		    <figcaption class="figure-caption">Karte der Bistümer mit Bischofssitzen (Ausschnitt).</figcaption>
+		</figure>
+	    </div>
+	</div>
+	<div class="row justify-content-center">
+	    <div class="col-7 m-2">
+		<h3 id="stadtansicht_konstanz" >Stadtansicht Konstanz mit Münster</h3>
+		<figure class="figure">
+		    <img src="{{ asset('images/Konstanz_Dacher-bc10.jpg') }}" class="figure-img img-fluid" alt="Stadtansicht von Konstanz mit Münster">
+		    <figcaption class="figure-caption">Stadtansicht Konstanz mit Münster, kolorierte Federzeichnung (Ausschnitt) — Aus: Konstanzer Chronik des Gebhard Dacher, Handschrift 15. Jahrhundert; St. Gallen, Stiftsbibliothek,
+			<a target="_blank" rel="noopener" href="http://dx.doi.org/10.5076/e-codices-csg-0646">Cod. Sang. 646, p. 8v</a>,
+			<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC 4.0</a></figcaption>
+		</figure>
+	    </div>
+	</div>
+    </div>
+{% endblock %}

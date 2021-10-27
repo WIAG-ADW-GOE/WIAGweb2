@@ -23,7 +23,7 @@ class BishopController extends AbstractController {
     /**
      * display query form for bishops; handle query
      *
-     * @Route("/bischof", name="bishop_query")
+     * @Route("/bischof", name="bishop")
      */
     public function query(Request $request,
                           PersonRepository $repository) {
@@ -38,13 +38,21 @@ class BishopController extends AbstractController {
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
+            $singleoffset = $request->request->get('singleoffset');
+            if(!is_null($singleoffset)) {
+                return $this->bishop($form, $singleoffset);
+            }
+
+
             $model = $form->getData();
+            $offset = $request->request->get('offset');
 
             $count = $repository->bishopCountByModel($model);
 
             $result = $repository->bishopWithOfficeByModel($model, self::PAGE_SIZE, $offset);
 
             return $this->renderForm('bishop/query.html.twig', [
+                'menuItem' => 'collections',
                 'form' => $form,
                 'data' => $result,
                 'offset' => $offset,
@@ -54,8 +62,9 @@ class BishopController extends AbstractController {
         }
 
         return $this->renderForm('bishop/query.html.twig', [
-                'form' => $form,
-                'data' => null,
+            'menuItem' => 'collections',
+            'form' => $form,
+            'data' => null,
         ]);
 
 

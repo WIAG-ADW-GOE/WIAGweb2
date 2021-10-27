@@ -16,8 +16,11 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  * @method Person[]    findAll()
  * @method Person[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class PersonRepository extends ServiceEntityRepository
-{
+class PersonRepository extends ServiceEntityRepository {
+
+    // allowed deviation in the query parameter for 'year'
+    const MARGIN_YEAR = 1;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Person::class);
@@ -112,6 +115,12 @@ class PersonRepository extends ServiceEntityRepository
             //    ->setParameter(':roleid', 5356);
         }
 
+        $year = $model->year;
+        if ($year && $year != "") {
+            $qb->andWhere('p.dateMin - :mgnyear < :year AND :year < p.dateMax + :mgnyear')
+                ->setParameter(':mgnyear', self::MARGIN_YEAR)
+                ->setParameter(':year', $year);
+        }
 
         return $qb;
     }
@@ -169,6 +178,27 @@ class PersonRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    /**
+     * countDiocese(BishopFormModel $model)
+     *
+     * return array of dioceses related to a person's role (used for facet)
+     */
+    public function countDiocese(BishopFormModel $model) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('DISTINCT pr.dioceseName AS name, COUNT(DISTINCT(p.id)) as n')
+                   ->join('p.roles', 'pr')
+                   ->andWhere("pr.dioceseName IS NOT NULL");
+
+        $this->bishopQueryConditions($qb, $model);
+
+        $qb->groupBy('pr.dioceseName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
 
     /**
      * Test
