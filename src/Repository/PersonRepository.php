@@ -93,9 +93,9 @@ class PersonRepository extends ServiceEntityRepository {
         # diocese
         $diocese = $model->diocese;
         if ($diocese && $diocese != "") {
+            // assume that diocese name is always stored directy in table person_roles
             $qb->join('p.roles', 'prdioc')
-               ->join('prdioc.diocese', 'dioc')
-               ->andWhere('prdioc.dioceseName LIKE :diocese OR dioc.name LIKE :diocese')
+               ->andWhere('prdioc.dioceseName LIKE :diocese')
                ->setParameter(':diocese', '%'.$diocese.'%');
         }
 
@@ -122,8 +122,31 @@ class PersonRepository extends ServiceEntityRepository {
                 ->setParameter(':year', $year);
         }
 
+        $this->bishopFacets($model, $qb);
+
         return $qb;
     }
+
+    /**
+     * add conditions set by facets
+     */
+    public function bishopFacets($model, $qb) {
+        if($model->facetDiocese) {
+            $facetDiocese = array_column($model->facetDiocese, 'name');
+            $qb->join('p.roles', 'prfctdioc')
+               ->andWhere("prfctdioc.dioceseName IN (:dioceses)")
+               ->setParameter(':dioceses', $facetDiocese);
+        }
+        if($model->facetOffice) {
+            $facetOffice = array_column($model->facetOffice, 'name');
+            $qb->join('p.roles', 'prfctrole')
+               ->andWhere("prfctrole.roleName IN (:roles)")
+               ->setParameter(':roles', $facetOffice);
+        }
+
+        return $qb;
+    }
+
 
     public function bishopSortParameter($qb, $model) {
 
@@ -198,6 +221,27 @@ class PersonRepository extends ServiceEntityRepository {
         $result = $query->getResult();
         return $result;
     }
+
+    /**
+     * countOffice(BishopFormModel $model)
+     *
+     * return array of offices related to a person's role (used for facet)
+     */
+    public function countOffice(BishopFormModel $model) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('DISTINCT pr.roleName AS name, COUNT(DISTINCT(p.id)) as n')
+                   ->join('p.roles', 'pr')
+                   ->andWhere("pr.roleName IS NOT NULL");
+
+        $this->bishopQueryConditions($qb, $model);
+
+        $qb->groupBy('pr.roleName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
 
 
     /**

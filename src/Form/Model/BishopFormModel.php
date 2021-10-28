@@ -1,6 +1,7 @@
 <?php
 namespace App\Form\Model;
 
+use App\Entity\FacetChoice;
 
 /**
  * Model for bishop form data
@@ -16,6 +17,19 @@ class BishopFormModel {
     public $facetDiocese = null;
     public $facetOffice = null;
 
+    static public function makeChoices($data, $key) {
+        $choices = [];
+        if (array_key_exists($key, $data)) {
+            $choices;
+            foreach($data[$key] as $item) {
+                $choices[] = new FacetChoice($item, 0);
+            }
+            return $choices;
+        } else {
+            return null;
+        }
+    }
+
     public static function newByArray($data) {
         $model = new self();
         $model->name = $data['name'] ?? null;
@@ -23,8 +37,8 @@ class BishopFormModel {
         $model->office = $data['office'] ?? null;
         $model->year = $data['year'] ?? null;
         $model->someid = $data['someid'] ?? null;
-        $model->facetDiocese = $data['facetDiocese'] ?? null;
-        $model->facetOffice = $data['Office'] ?? null;
+        $model->facetDiocese = self::makeChoices($data, 'facetDiocese');
+        $model->facetOffice = self::makeChoices($data, 'facetOffice');
         return $model;
     }
 

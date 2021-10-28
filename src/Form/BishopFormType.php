@@ -82,32 +82,32 @@ class BishopFormType extends AbstractType
             ])
             ->add('stateFctDioc', HiddenType::class, [
                 'mapped' => false,
+            ])
+            ->add('stateFctOfc', HiddenType::class, [
+                'mapped' => false,
             ]);
 
-        if($model && !$model->isEmpty()) {
-            $this->createFacetDiocese($builder, $bishopquery);
-            # $this->createFacetOffices($builder, $bishopquery);
-        }
 
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
             array($this, 'createFacetDioceseByEvent'));
 
 
-        // $builder->addEventListener(
-        //     FormEvents::PRE_SUBMIT,
-        //     array($this, 'createFacetOfficesByEvent'));
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            array($this, 'createFacetOfficeByEvent'));
 
     }
 
-     public function createFacetDioceseByEvent(FormEvent $event) {
-         # $event->getForm() is still empty
-         $data = $event->getData();
-         if (!$data) return;
-         $model = BishopFormModel::newByArray($data);
-         if ($model->isEmpty()) return;
+    public function createFacetDioceseByEvent(FormEvent $event) {
+        # $event->getForm() is still empty
+        $data = $event->getData();
+        dump($data);
+        if (!$data) return;
+        $model = BishopFormModel::newByArray($data);
+        if ($model->isEmpty()) return;
 
-         $this->createFacetDiocese($event->getForm(), $model);
+        $this->createFacetDiocese($event->getForm(), $model);
     }
 
     public function createFacetDiocese($form, $modelIn) {
@@ -115,7 +115,10 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetDiocese = null;
 
+        dump($modelIn);
+
         $dioceses = $this->repository->countDiocese($model);
+        dump($dioceses);
 
         $choices = array();
 
@@ -123,17 +126,11 @@ class BishopFormType extends AbstractType
             $choices[] = new FacetChoice($diocese['name'], $diocese['n']);
         }
 
-        // add selected fields with frequency 0
-        // $facetDioceses = $model->getFacetDiocesesAsArray();
-        // if ($facetDioceses) {
-        //     $ids_choice = array_map(function($a) {return $a->getId();}, $choices);
-        //     foreach($facetDioceses as $fpl) {
-        //         if (!in_array($fpl, $ids_choice)) {
-        //             $choices[] = new DioceseCount($fpl, $fpl, 0);
-        //         }
-        //     }
-        //     uasort($choices, array('App\Entity\DioceseCount', 'isless'));
-        // }
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetDiocese;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+
         if ($dioceses) {
             $form->add('facetDiocese', ChoiceType::class, [
                 'label' => 'Filter Bistum',
@@ -143,6 +140,50 @@ class BishopFormType extends AbstractType
                 'choice_label' => ChoiceList::label($this, 'label'),
                 'choice_value' => 'name',
             ]);
+
+            // it is not possible to set data for field stateFctDioc
         }
     }
+
+    public function createFacetOfficeByEvent(FormEvent $event) {
+        # $event->getForm() is still empty
+        $data = $event->getData();
+
+        if (!$data) return;
+        $model = BishopFormModel::newByArray($data);
+        if ($model->isEmpty()) return;
+
+        $this->createFacetOffice($event->getForm(), $model);
+    }
+
+    public function createFacetOffice($form, $modelIn) {
+        // do not filter by office themselves
+        $model = clone $modelIn;
+        $model->facetOffice = null;
+
+        $offices = $this->repository->countOffice($model);
+
+        $choices = array();
+
+        foreach($offices as $office) {
+            $choices[] = new FacetChoice($office['name'], $office['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetOffice;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+        if ($offices) {
+            $form->add('facetOffice', ChoiceType::class, [
+                'label' => 'Filter Amt',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
 }

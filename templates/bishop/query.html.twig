@@ -16,63 +16,6 @@
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		</div>
 	    </div>
-	    {% if data %}
-		<div class="row mt-2 mx-2">
-		    <div class="col-12">
-			{% set count = data|length %}
-			{% if count > pageSize %}
-			    {% set fb_elements %}
-			    <button type="submit"
-				    class="btn btn-secondary"
-				    {% if offset < pageSize %} disabled="disabled" {% endif %}
-				    name="offset"
-				    value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
-			    <button type="submit"
-				    class="btn btn-secondary"
-				    {% if offset + pageSize >= count%}disabled="disabled"{% endif %}
-				    name="offset"
-				    value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
-                     {% endset %}
-			{% endif %}
-			{% if count == 0 %}
-			    <p>Treffer: keine</p>
-			{% elseif count == 1 %}
-			    <p> Treffer: 1</p>
-			{% else %}
-			    <p> Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
-				{% if count > pageSize %}<span class="ms-3">{{ fb_elements }}</span>{% endif %} </p>
-			{% endif %}
-		    </div>
-		</div>
-		<div class="row mt-2 mx-2">
-		    <div class="col-9">
-			{# table #}
-			{{ include("bishop/_results.html.twig") }}
-		    </div>
-		    {% if count > 0 and (form.facetDiocese is defined or form.facetOffice is defined) %}
-			{# facets #}
-			    <div class="col-3">
-				{% if form.facetDiocese is defined %}
-				    {{ include('bishop/_facet.twig.html', {
-					facet: form.facetDiocese,
-					facetTitle: 'Filter Bistum',
-					facetState: form.stateFctDioc.vars.value,
-					facetShort: 'Dioc'
-				    }) }}
-				{% endif %}
-				{% if form.facetOffices is defined %}
-				    {{ include('query_bishop/_facet.twig.html', {
-					facet: form.facetOffices,
-					facetTitle: 'Filter Amt',
-					facetState: form.stateFctOfc.vars.value,
-					facetShort: 'Ofc'
-				    }) }}
-				{% endif %}
-			    </div>
-			</div>
-		    {% endif %}
-		</div>
-	    {% endif %} {# data #}
 	</div>
 
     {{ form_end(form) }}

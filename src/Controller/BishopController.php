@@ -45,13 +45,14 @@ class BishopController extends AbstractController {
 
 
             $model = $form->getData();
+            dump($model);
             $offset = $request->request->get('offset');
 
             $count = $repository->bishopCountByModel($model);
 
             $result = $repository->bishopWithOfficeByModel($model, self::PAGE_SIZE, $offset);
 
-            return $this->renderForm('bishop/query.html.twig', [
+            return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'data' => $result,
@@ -64,9 +65,7 @@ class BishopController extends AbstractController {
         return $this->renderForm('bishop/query.html.twig', [
             'menuItem' => 'collections',
             'form' => $form,
-            'data' => null,
         ]);
-
 
     }
 

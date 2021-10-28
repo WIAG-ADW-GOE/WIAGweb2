@@ -2,6 +2,8 @@ import { Controller } from 'stimulus';
 
 
 export default class extends Controller {
+    static targets = ['facets'];
+
     connect() {
 	// console.log('connect facet-state');
     }
@@ -15,8 +17,8 @@ export default class extends Controller {
     register(event) {
 	/** make use of
 	 * console.log(event.target.id); // restFctDioc
-	 * console.log(this.element.getAttribute('name')); // bishop_query_form
-	 * state element: bishop_query_form_stateFctDioc
+	 * console.log(this.element.getAttribute('name'));
+	 * state element: form_stateFctDioc
 	 */
 
 	const formName = this.element.getAttribute('name');
@@ -32,14 +34,22 @@ export default class extends Controller {
     }
 
     /**
-     * clear facets when a new search is prepared
+     * clear and collapse facets when a new search is prepared
      */
     clearFacet(event) {
-	var targets = this.element.getElementsByClassName('facet-check');
+	// clear and collapse
+	var targets = this.facetsTarget.getElementsByTagName('input');
+	// console.log('targets: ', targets.length);
 	const eventTargetType = event.target.getAttribute('type');
 	if (eventTargetType == 'text') {
+	    // console.log('clear!?');
 	    for (let target of targets) {
 		target.removeAttribute('checked');
+		// set collapse status used by toggle-arrow_controller
+		var targetId = target.getAttribute('id');
+		if (targetId.includes('stateFct')) {
+		    target.setAttribute('value', 0);
+		}
 	    }
 	}
     }

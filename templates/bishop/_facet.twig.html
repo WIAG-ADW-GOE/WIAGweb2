@@ -20,7 +20,7 @@
 				state: facetState
 			    }) }}
 			    data-action="toggle-arrow#toggle"
-			    data-value="down">{{ include('symbols/arrow-down.svg') }}</button>
+			    data-value="down"><img src="{{ asset('images/symbols/arrow-down.svg') }}"/></button>
 		</div>
 	    </div>
 	</div>
@@ -31,7 +31,7 @@
 	{% for fpl in facet%}
 	    {# <div class="form-group small"> #}
 	    <div class="form-group p-1 m-0">
-		{{ form_widget(fpl, { attr: { class: 'facet-check' }}) }}
+		{{ form_widget(fpl) }}
 	    </div>
 	    {% if isLong and loop.index == 7 %}
     </div>
