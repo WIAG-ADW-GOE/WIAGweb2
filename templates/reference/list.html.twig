@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% set menuItem='about' %}
+{% block body %}
+    <div class="container-fluid">
+	<h2 class="row my-3 mx-2 col-12">Referenzwerke</h2>
+	{% for reference in references %}
+	    <dl class="row mx-2">
+		<dt class="col-sm-4">{{ reference.titleShort }}</dt>
+		<dd class="col">
+		    {% include('reference/_detail.html.twig') %}
+		</dd>
+	    </dl>
+	{% endfor %}
+    </div>
+{% endblock %}

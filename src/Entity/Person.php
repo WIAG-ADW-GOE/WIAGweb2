@@ -4,12 +4,15 @@ namespace App\Entity;
 
 use App\Repository\PersonRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @ORM\Entity(repositoryClass=PersonRepository::class)
  */
 class Person
 {
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -39,6 +42,18 @@ class Person
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
     private $nameLookup;
+
+    /**
+     * @ORM\OneToMany(targetEntity="GivennameVariant", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $givennameVariants;
+
+    /**
+     * @ORM\OneToMany(targetEntity="FamilynameVariant", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $familynameVariants;
 
     /**
      * @ORM\Column(type="string", length=1023, nullable=true)
@@ -110,9 +125,31 @@ class Person
      */
     private $numDateDeath;
 
+    /**
+     * unmapped
+     */
+    private $canon;
+
+    /**
+     * unmapped
+     */
+    private $personGs;
+
+    public function __construct() {
+        $this->nameLookup = new ArrayCollection();
+        $this->displayOrder = new ArrayCollection();
+        $this->givennameVariants = new ArrayCollection();
+        $this->familynameVariants = new ArrayCollection();
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getItem() {
+        return $this->item;
     }
 
     public function getRoles() {
@@ -286,4 +323,58 @@ class Person
 
         return $this;
     }
+
+    public function getCanon() {
+        return $this->canon;
+    }
+
+    public function getPersonGs() {
+        return $this->personGs;
+    }
+
+    public function getDisplayname() {
+        $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
+        $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
+        return $this->givenname.$prefixpart.$familypart;
+    }
+
+    /**
+     * concatenate name variants and comments
+     */
+    public function commentLine() {
+        $gnVariants = array ();
+        foreach ($this->givennameVariants as $gn) {
+            $gnVariants[] = $gn->getName();
+        }
+        $fnVariants = array ();
+        foreach ($this->familynameVariants as $fn) {
+            $fnVariants[] = $fn->getName();
+        }
+        $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
+        $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
+
+        $eltCands = [
+            $strGnVariants,
+            $strFnVariants,
+            $this->noteName,
+            $this->notePerson,
+        ];
+
+        $lineElts = array();
+        foreach ($eltCands as $elt) {
+            if (!is_null($elt) && $elt != '') {
+                $lineElts[] = $elt;
+            }
+        }
+
+        $commentLine = null;
+        if (count($lineElts) > 0) {
+            $commentLine = implode('; ', $lineElts);
+        }
+
+        return $commentLine;
+    }
+
+
+
 }

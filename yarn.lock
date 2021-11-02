@@ -878,6 +878,16 @@
   resolved "https://registry.yarnpkg.com/@fontsource/nunito-sans/-/nunito-sans-4.5.1.tgz#ef625d7615112c96306c805323ef32b9ae9f7cb5"
   integrity sha512-sOqaGHmT9dQ8sQ95uLjZecmhtw7ivZNOb7Nd6khT1x0pKcgHQa93kzzg+UI3/0HjO80Dn+/87kgwaU2IIZDZuA==
 
+"@hotwired/stimulus-webpack-helpers@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@hotwired/stimulus-webpack-helpers/-/stimulus-webpack-helpers-1.0.1.tgz#4cd74487adeca576c9865ac2b9fe5cb20cef16dd"
+  integrity sha512-wa/zupVG0eWxRYJjC1IiPBdt3Lruv0RqGN+/DTMmUWUyMAEB27KXmVY6a8YpUVTM7QwVuaLNGW4EqDgrS2upXQ==
+
+"@hotwired/stimulus@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@hotwired/stimulus/-/stimulus-3.0.1.tgz#141f15645acaa3b133b7c247cad58ae252ffae85"
+  integrity sha512-oHsJhgY2cip+K2ED7vKUNd2P+BEswVhrCYcJ802DSsblJFv7mPFVk3cQKvm2vHgHeDVdnj7oOKrBbzp1u8D+KA==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -4248,6 +4258,11 @@ stackframe@^1.1.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha1-Fhx9rBd2Wf2YEfQ3cfqZOBR4Yow=
+
+stimulus-autocomplete@^3.0.0-rc.4:
+  version "3.0.0-rc.4"
+  resolved "https://registry.yarnpkg.com/stimulus-autocomplete/-/stimulus-autocomplete-3.0.0-rc.4.tgz#766db8c4a5563cc2ea55c34579c6aa1d9ff9f04f"
+  integrity sha512-+5PHXKXPNeqIjfmDYfQ3smsVml2v/jxINOt7ZQf2LFfyEJq+PXfYLAgTa5h/mpX4fFUMvR62v9F/uJlD6XmnDA==
 
 stimulus@^2.0.0:
   version "2.0.0"

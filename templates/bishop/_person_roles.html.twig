@@ -1,0 +1,40 @@
+{# {% macro sectionoffices(offices, url_gs_monasteries) %} #}
+<dt class="col-sm-3">Ämter</dt>
+<dd class="col-sm-9">
+    <ul class="list-unstyled">
+	{% for o in roles %}
+	    <li>
+		<ul class="list-inlined list-unstyled">
+		    <li class="list-inline-item"> {{ o.rolename }}</li>
+		    {% if o.diocesename and not o.institutionid %}
+			<li class="list-inline-item">{% if o.dioceseid %}<a href="{{ path('id', {'id': o.diocese.item.idpublic}) }}">{{ o.diocesename }}</a>{% else %}{{ o.diocesename }}{% endif %}</li>
+		    {% endif %}
+		    {% if o.institutionid %}
+			<li class="list-inline-item">
+			    <a href="{{ url_gs_monasteries }}{{ o.institution.idgsn }}" target="_blank" rel="noopener">{{ o.institutionname }}</a>
+			</li>
+		    {% endif %}
+		    <li class="list-inline-item">
+			{% if not o.datebegin and not o.dateend %}
+			{% elseif o.datebegin and not o.dateend %}
+			    {{ o.datebegin }}
+			{% elseif not o.datebegin and o.dateend %}
+			    bis {{ o.dateend }}
+			{% else %}
+			    {{ o.datebegin }}–{{ o.dateend }}
+			{% endif %}
+		    </li>
+		    {# table person_role_property #}
+		    {# ## TODO relevant für Domherren#}
+		    {% if false and o.archdeaconterritory %}
+			<li class="list-inline-item comment"> Archidiakonat {{ o.archdeaconterritory }} </li>
+		    {% endif %}
+		    {% if o.note %}
+			<li class="list-inline-item comment"> ({{ o.note }}) </li>
+		    {% endif %}
+
+		</ul>
+	    </li>
+	{% endfor %}
+    </ul>
+</dd>

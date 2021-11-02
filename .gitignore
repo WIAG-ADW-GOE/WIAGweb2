@@ -26,5 +26,10 @@ npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 
+###> emacs temporary files
+*~
+###< emacs temporary files
+
+
 #
-/public/images/available
+/public/images/available/

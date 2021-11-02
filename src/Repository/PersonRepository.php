@@ -20,6 +20,8 @@ class PersonRepository extends ServiceEntityRepository {
 
     // allowed deviation in the query parameter for 'year'
     const MARGIN_YEAR = 1;
+    // item type id
+    const ITEM_TYPE_ID = 4;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -72,6 +74,11 @@ class PersonRepository extends ServiceEntityRepository {
 
 
     private function bishopQueryConditions($qb, BishopFormModel $model) {
+
+        # bishop
+        $qb->join('p.item', 'itemtype')
+           ->andWhere('itemtype.itemTypeId = :itemTypeId')
+           ->setParameter(':itemTypeId', self::ITEM_TYPE_ID);
 
         # identifier
         $someid = $model->someid;
@@ -242,6 +249,73 @@ class PersonRepository extends ServiceEntityRepository {
         return $result;
     }
 
+    /**
+     * AJAX
+     */
+    public function suggestName($name, $hintSize) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
+                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
+                            "AS suggestion")
+                   ->join('p.nameLookup', 'n')
+                   ->join('p.item', 'item')
+                   ->andWhere('item.itemTypeId = :itemType')
+                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+        // dd($suggestions);
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestDiocese($name, $hintSize) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select("DISTINCT r.dioceseName AS suggestion")
+                   ->join('p.roles', 'r')
+                   ->join('p.item', 'item')
+                   ->andWhere('item.itemTypeId = :itemType')
+                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->andWhere('r.dioceseName like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+        // dd($suggestions);
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestOffice($name, $hintSize) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select("DISTINCT r.roleName AS suggestion")
+                   ->join('p.roles', 'r')
+                   ->join('p.item', 'item')
+                   ->andWhere('item.itemTypeId = :itemType')
+                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->andWhere('r.roleName like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+        // dd($suggestions);
+
+        return $suggestions;
+    }
 
 
     /**

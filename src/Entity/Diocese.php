@@ -18,6 +18,12 @@ class Diocese
     private $id;
 
     /**
+     * @ORM\OneToOne(targetEntity="Item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $comment;
@@ -85,6 +91,10 @@ class Diocese
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getItem() {
+        return $this->item;
     }
 
     public function getComment(): ?string
@@ -241,5 +251,9 @@ class Diocese
         $this->isDioceseGs = $isDioceseGs;
 
         return $this;
+    }
+
+    public function getDisplayname(): ?string {
+        return $this->dioceseStatus.' '.$this->name;
     }
 }

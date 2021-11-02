@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+{% set menuItem='collections' %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
+    {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+
+    {# person is passed as an object #}
+    {% if not person%}
+	<p class="em">Person nicht gefunden.</p>
+    {% else %}
+	{% if form is defined %}
+	    {{ form_start(form, {'attr': {'id':'form', 'action':path('bishop_query'), 'hidden': 'hidden'} }) }}
+		{{ include('bishop/_form_elements.html.twig') }}
+	    {{ form_end(form) }}
+	{% endif %}
+	<div class="container-fluid mt-3 mb-2">
+	    <div class="row mx-2 col-12">
+		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	    </div>
+	    <div class="row col-12 mx-2 mt-2 mb-0">
+		<div class="d-flex justify-content-between">
+		    <span class="fs-2">{{ person.displayname[:200] }}</span>
+		    <button type="button"
+			    class="btn"
+			    title={{ permalink }}
+			    {{ stimulus_controller('clipboard') }}
+			    data-action="clipboard#copyTitle">{{ person.item.idPublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
+		</div>
+	    </div>
+	    {% if person.commentLine %}
+		<div class="row mx-2">
+		    <div class="col-12 comment">
+			{{ person.commentLine }}
+		    </div>
+		</div>
+	    {% endif %}
+
+	    {% if not person.datebirth and not person.datedeath %}
+	    {% else %}
+		<div class="row mx-2 col-12 mt-2">
+		    {% if person.datebirth and not person.datedeath %}
+			<span class="wiag-large">* {{ person.datebirth }}</span>
+		    {% elseif not person.datebirth and person.datedeath %}
+			<span class="wiag-large">&dagger; {{ person.datedeath }}</span>
+		    {% else %}
+			<span class="wiag-large">* {{ person.datebirth }} <span class="pl-3">&dagger; {{ person.datedeath }}</span></span>
+		    {% endif %}
+		</div>
+	    {% endif %}
+
+	    <div class="row mx-2 mt-3 mb-2">
+		<div class="col-12">
+		    <div class="card">
+			<span class="card-header"><strong>Amtsangaben aus Referenzwerken</strong></span>
+			<dl class="card-body row">
+			    {{ include('bishop/_person_roles.html.twig', {
+				roles: person.roles
+			    }) }}
+			    {% if person.item.references %}
+				{% set references=person.item.references %}
+				<dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
+				<dd class="col-sm-9">
+				    <ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
+					{% for ref in references|sort((a, b) => (a.referencevolume.displayorder <=> b.referencevolume.displayorder)) %}
+					    {% set idinref = ref.idinreference %}
+					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
+					    <li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+					{% endfor %}
+				    </ul>
+				</dd>
+			    {% endif %}
+			</dl>
+		    </div>
+		</div>
+	    </div>
+	    {# set person.canon depending on data in item_property  #}
+	    {% if person.canon and person.canon.roles %}
+		<div class="row mx-2 mt-3 mb-2">
+		    <div class="col-12">
+			<div class="card">
+			    <span class="card-header"><strong>Amtsangaben aus der Datenbank Domherren des Alten Reiches </strong></span>
+			    <dl class="card-body row mb-0 pb-0">
+				{# offices and references #}
+				{{ include('bishop/_person_roles.html.twig', {
+				    roles: person.canon_roles
+				}) }}
+				{{ include('bishop/_person_references_cn.html.twig', {
+				    roles: person.canon_roles
+				}) }}
+			    </dl>
+			</div>
+		    </div>
+		</div>
+	    {% endif %}
+	    {# set person.persongs depending on data in item_property  #}
+	    {% if person.persongs and person.persongs.roles %}
+		<div class="row mx-2 mt-3 mb-2">
+		    <div class="col-12">
+			<div class="card">
+			    <span class="card-header"><a href="{{ urlgspersons }}index/gsn/{{ person.gsid }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ person.gsid }}</strong></a></span>
+			    <dl class="card-body row mb-0 pb-0">
+				{{ _self.sectionoffices(canon_gs.offices, urlgsmonasteries) }}
+				{% if canon_gs.references and canon_gs.references|length > 0 %}
+				    {{ _self.sectionreferences(canon_gs.references, true, url_gs_bios) }}
+				{% endif %}
+			    </dl>
+			</div>
+		    </div>
+		</div>
+	    {% endif %}
+	    {% if person.item.idsExternal %}
+		<div class="row mx-2 mt-3 mb-2">
+		    <div class="col-12">
+			{{ include('bishop/_person_ids_external.html.twig', {
+			    ids: person.item.idsExternal
+			}) }}
+		    </div>
+		</div>
+	    {% endif %}
+	    <div class="row mx-2">
+		<div class="col-12">
+		    Empfohlene Zitierweise:
+		    <button type="button"
+			    class="btn btn-sm"
+			    title="Kopiere die Zitierweise"
+			    {{ stimulus_controller('clipboard') }}
+			    data-action="clipboard#copyCitation"><img src="{{ asset('images/clipboard.svg') }}"></button><br/>
+		    <span id="citation">{{ citation }}</span>
+		</div>
+	    </div>
+	    <div class="row mx-2 col-12 mt-4 mb-2">
+		<div class="d-flex">
+		    {% if form is defined %}
+			<button type="submit" form="form" formaction="{{ path('bishop_list_detail') }}" class="btn btn-secondary btn-sm" name="offset" value="{{ offset - 1 }}" {% if offset == 0 %}disabled="disabled"{% endif %}>vorheriger Treffer</button>
+			<button type="submit" form="form" formaction="{{ path('bishop_list_detail') }}" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset + 1 }}" {% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
+			<button type="submit" form="form" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
+			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</a>
+
+			{# <a href="{{ path('launch_query') }}"><button class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</button></a> #}
+		    {% else %}
+			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Suche</a>
+		    {% endif %}
+		    {% if false %} {# <a> with type="button" #}
+		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
+		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
+		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
+		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
+		    {% endif %}
+		</div>
+	    </div>
+	</div>
+
+    {% endif %}
+{% endblock %}

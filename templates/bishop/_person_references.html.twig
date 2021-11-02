@@ -1,0 +1,29 @@
+{% macro makebiogramlink(p, last) %}
+    {% if p.isbio %}<strong>{{ p.page }} </strong><a class="btn btn-danger btn-sm" role="button" href="{{ url_gs_bios }}/{{ p.page }}" target="_blank" rel="noopener"><strong>Biogramm online lesen</strong></a>{% else %}{{ p.page }}{% endif %}{%if not last %},{% endif %}
+{% endmacro %}
+
+{% macro biogramlinks(pages, url_gs_bios) %}
+    {% for p in pages %}{{ _self.makebiogramlink(p, loop.last, url_gs_bios) }}{% endfor %}
+{% endmacro %}
+
+{# {% macro sectionreferences(references, isgs, url_gs_bios) %} #}
+<dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
+<dd class="col-sm-9">
+    {# <ul class="list-unstyled">  #}
+    <ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
+	{% for cnref in references %}
+	    {% set refid = cnref.idinreference %}
+	    {% set refuri %}{% if cnref.reference.onlineresource %}{{ cnref.reference.onlineresource }}{% else %}{{ path('canon_reference', {'id': cnref.reference.id }) }}{% endif %}{% endset %}
+	    {# % set refdisplaytitle %}{% if cnref.reference.fulltitle %}{{ cnref.reference.fulltitle }}{% else %}{{ cnref.reference.author }}, {{ cnref.reference.title }}{% endif %}{% endset % #}
+	    {% set refdisplaytitle=cnref.reference.title %}
+	    {% if cnref.isbio and cnref.status == 'online' %}
+		{# version with link <li><a href="{{ refuri }}">{{ refdisplaytitle }}</a>, S. {{ cnref.pagebio }}, <a class="btn btn-danger btn-sm" role="button" href="{{ url_gs_bios }}{{ cnref.reference.numbervol }}/{{ cnref.pagebio }}" target="_blank" rel="noopener">Biogramm online lesen</a></li> #}
+		<li>{{ refdisplaytitle }}, S. {% for p in pages %}{{ _self.makebiogramlink(p, loop.last) }}{% endfor %}</li>
+	    {% elseif isgs %}
+		<li>{{ refdisplaytitle }}, {% if refid %} S. {{ cnref.pagereference|raw }}, ID/Nr. {{ refid }}. {% else %} S. {{ cnref.pagereference|raw }}. {% endif %}<strong>Biogramm in Printpublikation vorhanden</strong></li>
+	    {% else %}
+		<li>{{ refdisplaytitle }}{% if cnref.pagereference %}, S. {{ cnref.pagereference }}{% if refid %}, ID/Nr. {{ refid }}{% endif %}{% else %}{% if refid %}, ID/Nr. {{ refid }}{% endif %}{% endif %}</li>
+	    {% endif %}
+	{% endfor %}
+    </ul>
+</dd>

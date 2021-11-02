@@ -2,7 +2,17 @@ twig:
     default_path: '%kernel.project_dir%/templates'
     form_themes: ['bootstrap_5_layout.html.twig']
     globals:
-        protocol: https
+        protocol: 'https'
+        url_geonames: 'https://www.geonames.org/'
+        url_gs_bios: 'http://personendatenbank.germania-sacra.de/books/findpage/'
+        url_gs_monastery: 'https://klosterdatenbank.adw-goe.de/gsn/'
+        url_gs_person: 'http://personendatenbank.germania-sacra.de/'
+        url_gnd: 'http://d-nb.info/gnd/'
+        url_wikidata: 'https://www.wikidata.org/wiki/'
+        url_viaf: 'https://viaf.org/viaf/'
+        bishop_title: 'Die Patriarchen, Erzbischöfe, Bischöfe, Weihbischöfe und weitere diözesane Leitungspersonen des Alten Reiches'
+        diocese_title: 'Die Erzbistümer und Bistümer des Alten Reiches'
+        canon_title: 'Domherren des Alten Reiches'
 
 when@test:
     twig:

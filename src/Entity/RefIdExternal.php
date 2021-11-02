@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\IdExternalRepository;
+use App\Repository\RefIdExternalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=IdExternalRepository::class)
+ * @ORM\Entity(repositoryClass=RefIdExternalRepository::class)
  */
-class IdExternal
+class RefIdExternal
 {
     /**
      * @ORM\Id
@@ -25,13 +25,13 @@ class IdExternal
     /**
      * @ORM\Column(type="integer")
      */
-    private $itemId;
+    private $referenceId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="idsExternal")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="ReferenceVolume", inversedBy="idsExternal")
+     * @ORM\JoinColumn(name="reference_id", referencedColumnName="id")
      */
-    private $item;
+    private $reference;
 
     /**
      * @ORM\Column(type="integer")
@@ -39,7 +39,7 @@ class IdExternal
     private $authorityId;
 
     /**
-     * @ORM\OneToOne(targetEntity="Authority")
+     * @ORM\ManyToOne(targetEntity="Authority", inversedBy="idsExternal")
      * @ORM\JoinColumn(name="authority_id", referencedColumnName="id")
      */
     private $authority;
@@ -71,14 +71,14 @@ class IdExternal
         return $this;
     }
 
-    public function getItemId(): ?int
+    public function getReferenceId(): ?int
     {
-        return $this->itemId;
+        return $this->referenceId;
     }
 
-    public function setItemId(int $itemId): self
+    public function setReferenceId(int $referenceId): self
     {
-        $this->itemId = $itemId;
+        $this->referenceId = $referenceId;
 
         return $this;
     }
@@ -93,10 +93,6 @@ class IdExternal
         $this->authorityId = $authorityId;
 
         return $this;
-    }
-
-    public function getAuthority() {
-        return $this->authority;
     }
 
     public function getValue(): ?string
@@ -122,4 +118,9 @@ class IdExternal
 
         return $this;
     }
+
+    public function getAuthority() {
+        return $this->authority;
+    }
+
 }

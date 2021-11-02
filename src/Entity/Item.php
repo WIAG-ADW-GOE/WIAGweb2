@@ -21,7 +21,13 @@ class Item
      * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
-    private $idExternal;
+    private $idsExternal;
+
+    /**
+     * @ORM\OneToMany(targetEntity="ItemReference", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $references;
 
     /**
      * @ORM\Column(type="integer")
@@ -64,7 +70,7 @@ class Item
     private $createdBy;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="datetime")
      */
     private $dateCreated;
 
@@ -74,7 +80,7 @@ class Item
     private $changedBy;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="datetime")
      */
     private $dateChanged;
 
@@ -106,6 +112,14 @@ class Item
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getIdsExternal() {
+        return $this->idsExternal;
+    }
+
+    public function getReferences() {
+        return $this->references;
     }
 
     public function getItemTypeId(): ?int

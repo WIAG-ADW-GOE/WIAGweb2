@@ -24,6 +24,7 @@
 {% block body %}
     {{ form_start(form, {
 	'attr': {
+	    'id': 'form',
 	    'data-controller': 'facet-state hide-on-input facet-submit',
 	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->hide-on-input#hideResults input->facet-submit#submit'
 	}
@@ -57,7 +58,6 @@
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    <p> facet state: {{ form.stateFctDioc.vars.value }} </p>
 			    {% if form.facetDiocese is defined %}
 				{{ include('bishop/_facet.twig.html', {
 				    facet: form.facetDiocese,

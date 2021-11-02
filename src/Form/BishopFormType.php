@@ -102,7 +102,6 @@ class BishopFormType extends AbstractType
     public function createFacetDioceseByEvent(FormEvent $event) {
         # $event->getForm() is still empty
         $data = $event->getData();
-        dump($data);
         if (!$data) return;
         $model = BishopFormModel::newByArray($data);
         if ($model->isEmpty()) return;
@@ -115,13 +114,10 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetDiocese = null;
 
-        dump($modelIn);
-
         $dioceses = $this->repository->countDiocese($model);
-        dump($dioceses);
+
 
         $choices = array();
-
         foreach($dioceses as $diocese) {
             $choices[] = new FacetChoice($diocese['name'], $diocese['n']);
         }
