@@ -199,12 +199,15 @@ class PersonRepository extends ServiceEntityRepository {
         $this->bishopQueryConditions($qb, $model);
         $this->bishopSortParameter($qb, $model);
 
-        $qb->setMaxResults($limit);
-        $qb->setFirstResult($offset);
-
         $query = $qb->getQuery();
 
-        $result = new Paginator($query, true);
+        if ($limit > 0) {
+            $query->setMaxResults($limit);
+            $query->setFirstResult($offset);
+            $result = new Paginator($query, true);
+        } else {
+            $result = $query->getResult();
+        }
 
         return $result;
     }

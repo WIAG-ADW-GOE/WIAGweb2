@@ -7,6 +7,8 @@ use App\Form\BishopFormType;
 use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
 
+use App\Service\PersonService;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -129,6 +131,40 @@ class BishopController extends AbstractController {
 
 
     }
+
+    /**
+     * return bishop data
+     *
+     * @Route("/bischof/data", name="bishop_query_data")
+     */
+    public function queryData(Request $request,
+                              PersonRepository $repository,
+                              PersonService $service) {
+
+        if ($request->isMethod('POST')) {
+            $model = new BishopFormModel();
+            $form = $this->createForm(BishopFormType::class, $model);
+            $form->handleRequest($request);
+            $model = $form->getData();
+            $format = $request->request->get('format');
+        } else {
+            $model = BishopFormModel::newByArray($request->query->all());
+            $format = $request->query->get('format') ?? 'json';
+        }
+
+        $result = $repository->bishopWithOfficeByModel($model);
+
+        $format = ucfirst(strtolower($format));
+        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+        }
+        $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+        $response = $service->$fncResponse($result);
+
+        return $response;
+
+    }
+
 
 
     /**

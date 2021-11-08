@@ -10,6 +10,9 @@
 {% block body %}
     {{ form_start(form) }}
 	<div class="container-fluid">
+	    <div class="row ms-2 col-12">
+		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	    </div>
 	    {{ include("bishop/_form_elements.html.twig") }}
 	    <div class="row mt-2 mx-2">
 		<div class="col-12">

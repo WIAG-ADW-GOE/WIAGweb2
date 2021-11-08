@@ -66,7 +66,7 @@
 				<dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
 				<dd class="col-sm-9">
 				    <ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
-					{% for ref in references|sort((a, b) => (a.referencevolume.displayorder <=> b.referencevolume.displayorder)) %}
+					{% for ref in references %}
 					    {% set idinref = ref.idinreference %}
 					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
 					    <li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
@@ -145,12 +145,11 @@
 		    {% else %}
 			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Suche</a>
 		    {% endif %}
-		    {% if false %} {# <a> with type="button" #}
-		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
-		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
-		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
-		    <a href="{{ path('wiag_id_data', {id: person.wiagidlong, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
-		    {% endif %}
+		    {% set idPublic=person.item.idPublic %}
+		    <a href="{{ path('id', {id: idPublic, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
+		    <a href="{{ path('id', {id: idPublic, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
+		    <a href="{{ path('id', {id: idPublic}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
+		    <a href="{{ path('id', {id: idPublic, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
 		</div>
 	    </div>
 	</div>

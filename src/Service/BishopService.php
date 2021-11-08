@@ -16,7 +16,7 @@ class BishopService {
     private $repository;
 
     public function __construct(PersonRepository $repository) {
-        $this->$repository = $repository;
+        $this->repository = $repository;
     }
 
 

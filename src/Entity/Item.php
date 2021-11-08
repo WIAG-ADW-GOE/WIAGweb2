@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
-class Item
-{
+class Item {
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -313,4 +313,26 @@ class Item
 
         return $this;
     }
+
+    private function getIdExternalObj($authorityId) {
+        $result = null;
+        foreach ($this->idsExternal as $id) {
+            if ($id->getAuthorityId() == $authorityId) {
+                $result = $id;
+                break;
+            }
+        }
+        return $result;
+    }
+
+    public function getIdExternalByAuthorityId($authorityId) {
+        $id = $this->getIdExternalObj($authorityId);
+        return $id ? $id->getValue() : null;
+    }
+
+    public function getUriExternalByAuthorityId($authorityId) {
+        $id = $this->getIdExternalObj($authorityId);
+        return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
+    }
+
 }

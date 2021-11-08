@@ -3,7 +3,7 @@
     <span class="card-header"><strong>Externe Identifier</strong></span>
     <div class="card-body">
 	<ul class="list-unstyled mb-0">
-	    {% for id in ids|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
+	    {% for id in ids %}
 		<li>
 		    <ul class="list-inlined list-unstyled">
 			<li class="list-inline-item">{{ id.authority.urlnameformatter }}</li>
@@ -11,8 +11,11 @@
 			    <a href="{{ id.authority.urlformatter }}{{ id.value }}" target="_blank" rel="noopener">{{ id.value }}</a></li>
 		    </ul>
 		</li>
-
 	    {% endfor %}
+	    {% if diocese.noteauthorityfile %}
+		<li><span class="comment">{{ diocese.noteauthorityfile }}</span></li>
+	    {% endif %}
+
 	</ul>
     </div>
 </div>

@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block body %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: diocese.wiagidlong}, schemeRelative = true) }}{% endset %}
+    {% set permalink %}{{ protocol }}:{{ url('id', {id: diocese.item.idPublic}, schemeRelative = true) }}{% endset %}
     {% set citation %}"{{ diocese.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: diocese.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
     <div class="container-fluid mt-3 mb-2">
@@ -14,7 +14,7 @@
 	    <p class="em">Bistum nicht gefunden.</p>
 	{% else %}
 	    {% if form is defined %}
-		{{ form_start(form, {'attr': {'id':'q_form', 'action': path('diocese_query'), 'hidden': 'hidden'}}) }}
+		{{ form_start(form, {'attr': {'id':'form', 'action': path('diocese_query'), 'hidden': 'hidden'}}) }}
 		{{ form_end(form) }}
 	    {% endif %}
 	    <div class="row col-12 mx-2">
@@ -22,33 +22,32 @@
 	    </div>
 	    <div class="row col-12 mx-2 mt-2 mb-0">
 		<div class="d-flex justify-content-between">
-		    <span class="fs-2">{{ displayname }}</span>
-			<button type="button"
-				class="btn"
-				title="{{ permalink }}"
-				{{ stimulus_controller('clipboard') }}
-				      data-action="clipboard#copyTitle">{{ diocese.item.idPublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
+		    <span class="fs-2">{{ diocese.displayname }}</span>
+		    <button type="button"
+				  class="btn"
+				  title="{{ permalink }}"
+				  {{ stimulus_controller('clipboard') }}
+			    data-action="clipboard#copyTitle">{{ diocese.item.idPublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
 		</div>
 	    </div>
-	    {% if diocese.altlabel|length > 0 %}
+	    {% if diocese.altlabels|length > 0 %}
 		<div class="row mx-2">
 		    <div class="col-12">
-		    {% for label in diocese.altlabel|sort((a, b) => a.sort <=> b.sort) %}
-			{{ label.altlabeldiocese|split(' ')|join('&nbsp;')|raw }}{% if label.lang %} ({{ label.lang }}){% endif %}{% if not loop.last %}; {% endif %}
-		    {% endfor %}
+			{{ diocese.altLabelLine }}
 		    </div>
 		</div>
 	    {% endif %}
-	    {% if diocese.notediocese %}
+	    {% if diocese.note %}
 		<div class="row mx-2 col-12 mt-1">
-		    <span class="comment">{{ diocese.notediocese }}</span>
+		    <span class="comment">{{ diocese.note }}</span>
 		</div>
 	    {% endif %}
 
 	    <dl class="row mx-2 mt-3">
-		{% if diocese.bishopricseatobj %}
+		{% if diocese.bishopricseat %}
+		    {% set b = diocese.bishopricseat %}
 		    <dt class="col-sm-3">Bischofssitz</dt>
-		    <dd class="col-sm-9"><a href={{ url_geonames ~ diocese.bishopricseatobj.geonamesid }} target="_blank" rel="noopener">{{ diocese.bishopricseatobj.placename }}</a></dd>
+		    <dd class="col-sm-9"><a href={{ url_geonames ~ b.geonamesid }} target="_blank" rel="noopener">{{ b.name }}</a></dd>
 		    {% if diocese.notebishopricseat %}<dt class ="col-sm-3"></dt>
 			<dd class="col-sm-9"><span class="comment">{{- diocese.notebishopricseat -}}</span></dd>{% endif %}
 		{% endif %}
@@ -65,29 +64,36 @@
 		    <dd class="col-sm-9">{{ diocese.ecclesiasticalprovince }}</dd>
 		{% endif %}
 
-
-		{% if diocese.externalurls %}
+		{% if diocese.item.idsExternal %}
 		    <dt class="col-sm-3">Externe Identifier</dt>
 		    <dd class="col-sm-9">
 			<ul class ="list-unstyled">
-			    {% for url in diocese.externalurls|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
+			    {% for id in diocese.item.idsExternal|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
 				<li>
 				    <ul class="list-inlined list-unstyled">
-					<li class="list-inline-item">{{ url.authority.urlnameformatter }}</li>
-					<li class="list-inline-item"><a href={{ url.authority.urlformatter ~ url.urlvalue }} target="_blank" rel="noopener">{{ url.prettyurlvalue }}</a></li>
+					<li class="list-inline-item">{{ id.authority.urlnameformatter }}</li>
+					<li class="list-inline-item"><a href={{ id.authority.urlformatter ~ id.value }} target="_blank" rel="noopener">{{ id.value }}</a></li>
 				    </ul>
 				</li>
 			    {% endfor %}
-			    {% if diocese.commentauthorityfile %}
-				<li><span class="comment">{{ diocese.commentauthorityfile }}</span></li>
+			    {% if diocese.noteauthorityfile %}
+				<li><span class="comment">{{ diocese.noteauthorityfile }}</span></li>
 			    {% endif %}
 			</ul>
 		    </dd>
 		{% endif %}
-
-		{% if diocese.reference %}
-		    <dt class="col-sm-3">Referenzwerk</dt>
-		    <dd class="col-sm-9"><a href="{{ path('reference', {'id': diocese.referenceid}) }}">{{ diocese.reference.shorttitle }}</a>, S. {{ diocese.gatzpages }}</dd>
+		{% if diocese.item.references %}
+		    {% set references=diocese.item.references %}
+		    <dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
+		    <dd class="col-sm-9">
+			<ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
+			    {% for ref in references %}
+				{% set idinref = ref.idinreference %}
+				{% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
+				<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+			    {% endfor %}
+			</ul>
+		    </dd>
 		{% endif %}
 	    </dl>
 
@@ -105,14 +111,32 @@
 	    <div class="row col-12 mx-2 mt-4 mb-2">
 		<div class="d-flex">
 		    {% if form is defined %}
-			<button type="submit" form="q_form" class="btn btn-secondary btn-sm" name="singleoffset" value="{{ offset - 1 }}" {% if offset == 0 %}disabled="disabled"{% endif %}>vorheriger Treffer</button>
-			<button type="submit" form="q_form" class="btn btn-secondary btn-sm ms-1" name="singleoffset" value="{{ offset + 1 }}" {% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
-			<button type="submit" form="q_form" class="btn btn-secondary btn-sm ms-1 me-3" name="offset" value="{{ offset }}">Ergebnisliste</button>
+			<button type="submit"
+				form="form"
+				formaction="{{ path('diocese_list_detail') }}"
+				class="btn btn-secondary btn-sm"
+				name="offset"
+				value="{{ offset - 1 }}"
+				{% if offset == 0 %}disabled="disabled"{% endif %}>vorheriger Treffer</button>
+			<button type="submit"
+				form="form"
+				formaction="{{ path('diocese_list_detail') }}"
+				class="btn btn-secondary btn-sm ms-1"
+				name="offset" value="{{ offset + 1 }}"
+				{% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
+			<button type="submit"
+				form="form"
+				class="btn btn-secondary btn-sm ms-1 me-3"
+				name="offset"
+				value="{{ offset }}">Ergebnisliste</button>
 		    {% endif %}
-		    <a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
-		    <a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
-		    <a href="{{ path('wiag_id_data', {id: diocese.wiagidlong}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
-		    <a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
+		    {# TODO data and linked data, <a><button></button></a> -> <a type="button"></a> #}
+		    {% if false %}
+			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
+			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
+			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
+			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
+		    {% endif %}
 		</div>
 	    </div>
 	{% endif %}

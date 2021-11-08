@@ -1,0 +1,121 @@
+{# query-diocese/listresult.html.twig #}
+{% extends 'base.html.twig' %}
+{% set menuItem='collections' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% set count = data|length %}
+{% set fb_elements %}
+<button type="submit"
+	class="btn btn-secondary"
+	form="form"
+	{% if offset < pageSize %} disabled="disabled" {% endif %}
+	name="offset"
+	value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
+<button type="submit"
+	class="btn btn-secondary"
+	form ="form"
+	{% if offset + pageSize >= count%}disabled="disabled"{% endif %}
+	name="offset"
+	value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
+{% endset %}
+
+{% block body %}
+    <div class="container-fluid mt-3">
+	<div class="row ms-2 col-12">
+	    <span class="topic-title">{{ diocese_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	</div>
+	{{ form_start(form, {'attr': {'id':'form', 'action':path('diocese_query')}}) }}
+	    <div class="row ms-2 col-12">
+		{{ form_label(form.name) }}
+		<div class="input-group mt-2">
+		    <div class="me-2"
+			 {{ stimulus_controller('autocomplete', {
+			     url: path('diocese_name'),
+			 }) }}>
+			{{ form_errors(form.name) }}
+			{{ form_widget(form.name, {
+			    attr: {
+				'data-autocomplete-target': "input",
+				'size': 31,
+			    },
+			}) }}
+			<ul class="list-group autocomplete-target"
+				   data-autocomplete-target="results"
+				   style="max-width: 20em;"></ul>
+		    </div>
+		    {{ form_row(form.searchHTML, {
+			row_attr: { class: "me-2" }
+		    }) }}
+		</div>
+	    </div>
+	{{ form_end(form) }}
+
+	<div class="row mx-2 mt-3 mb-1">
+	    <div class="col-12">
+		Treffer:
+		{% if count == 0 %}
+		    keine
+		{% elseif count == 1 %}
+		    1
+		{% else %}
+		    {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+		{% endif %}
+		{{ fb_elements }}
+		{% if count > 0 %}
+		    <button type="submit" form="form" formaction="{{ path('home') }}" name="format" value="JSON" class="btn btn-secondary btn-light btn-sm ms-2">JSON</button>
+		    <button type="submit" form="form" name="format" value="CSV" class="btn btn-secondary btn-light btn-sm ms-1">CSV</button>
+		    <button type="submit" form="form" name="format" value="RDF" class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button>
+		    <button type="submit" form="form" name="format" value="JSONLD" class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button>
+		{% endif %}
+	    </div>
+	</div>
+
+	{% if count > 0 %}
+	<div class="row mx-2 mb-3">
+	    <div class="col">
+		<div class="table-responsive">
+		    <table class="table">
+			<thead class="thead-light">
+			    <tr>
+				<th scope="col">Name</th>
+				<th scope="col"></th>
+			    </tr>
+			</thead>
+			<tbody>
+			    {% for diocese in data %}
+				<tr>
+				    <td><button
+					    type="submit"
+					    form="form"
+					    formaction="{{ path('diocese_list_detail') }}"
+					    class="btn btn-link"
+					    name="offset"
+					    value="{{ offset + loop.index0 }}">{{ diocese.diocesestatus }} {{ diocese.name }}</button></td>
+				    <td>
+					{% if not diocese.dateoffounding and not diocese.dateofdissolution %}
+					{% elseif diocese.dateoffounding and not diocese.dateofdissolution or diocese.dateofdissolution == "keine"%}
+					    <small>Gründung: {{ diocese.dateoffounding }} <br/> besteht bis heute</small>
+					{% elseif not diocese.dateoffounding and diocese.dateofdissolution %}
+					    <small>Aufhebung: {{ diocese.dateofdissolution }}</small>
+					{% else %}
+					    <small>Gründung: {{ diocese.dateoffounding }} <br/>Aufhebung: {{ diocese.dateofdissolution }}</small>
+					{% endif %}
+				    </td>
+				</tr>
+			    {% endfor %}
+			</tbody>
+		    </table>
+		</div> {# table-responsive #}
+		{{ fb_elements }}
+
+	    </div>
+	</div>
+	{% endif %}
+    </div>
+{% endblock %}

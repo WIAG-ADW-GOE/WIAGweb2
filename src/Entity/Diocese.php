@@ -24,6 +24,13 @@ class Diocese
     private $item;
 
     /**
+     * @ORM\OneToMany(targetEntity="SkosLabel", mappedBy="diocese")
+     * @ORM\JoinColumn(name="id", referencedColumnName="concept_id")
+     * @ORM\OrderBy({"displayOrder" = "ASC"})
+     */
+    private $altLabels;
+
+    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $comment;
@@ -56,6 +63,12 @@ class Diocese
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
+    private $bishopricSeatId;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Place")
+     * @ORM\JoinColumn(name="bishopric_seat_id", referencedColumnName="id")
+     */
     private $bishopricSeat;
 
     /**
@@ -76,7 +89,7 @@ class Diocese
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $commentAuthorityFile;
+    private $noteAuthorityFile;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -169,8 +182,7 @@ class Diocese
         return $this;
     }
 
-    public function getBishopricSeat(): ?int
-    {
+    public function getBishopricSeat() {
         return $this->bishopricSeat;
     }
 
@@ -217,14 +229,14 @@ class Diocese
         return $this;
     }
 
-    public function getCommentAuthorityFile(): ?string
+    public function getNoteAuthorityFile(): ?string
     {
-        return $this->commentAuthorityFile;
+        return $this->noteAuthorityFile;
     }
 
-    public function setCommentAuthorityFile(?string $commentAuthorityFile): self
+    public function setNoteAuthorityFile(?string $noteAuthorityFile): self
     {
-        $this->commentAuthorityFile = $commentAuthorityFile;
+        $this->noteAuthorityFile = $noteAuthorityFile;
 
         return $this;
     }
@@ -256,4 +268,20 @@ class Diocese
     public function getDisplayname(): ?string {
         return $this->dioceseStatus.' '.$this->name;
     }
+
+    public function getAltLabels() {
+        return $this->altLabels;
+    }
+
+    public function getAltLabelLine() {
+        $cLabel = array();
+        foreach ($this->altLabels as $label) {
+            $lang = $label->getLang();
+            $labelTxt = $label->getLabel();
+            $cLabel[] = $lang ? $labelTxt.' ('.$lang.' )' : $labelTxt;
+        }
+
+        return implode("; ", $cLabel);
+    }
+
 }

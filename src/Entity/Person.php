@@ -338,6 +338,15 @@ class Person
         return $this->givenname.$prefixpart.$familypart;
     }
 
+    public function getGivennameVariants() {
+        return $this->givennameVariants;
+    }
+
+    public function getFamilynameVariants() {
+        return $this->familynameVariants;
+    }
+
+
     /**
      * concatenate name variants and comments
      */
@@ -374,7 +383,5 @@ class Person
 
         return $commentLine;
     }
-
-
 
 }

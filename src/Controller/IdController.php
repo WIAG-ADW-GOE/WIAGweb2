@@ -84,13 +84,12 @@ class IdController extends AbstractController {
         switch($format) {
         case 'html':
             return $this->render('diocese/diocese.html.twig', [
-                'person' => $result,
+                'diocese' => $result,
             ]);
         }
 
-        # TODO
-        # throw error unknown format
-        return new Response("Unbekanntes Format: '".$format);
+        throw $this->createNotFoundException("Unbekanntes Format: '".$format);
+
     }
 
 
