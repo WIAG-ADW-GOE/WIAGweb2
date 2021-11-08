@@ -145,11 +145,11 @@
 		    {% else %}
 			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Suche</a>
 		    {% endif %}
-		    {% set idPublic=person.item.idPublic %}
-		    <a href="{{ path('id', {id: idPublic, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
-		    <a href="{{ path('id', {id: idPublic, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
-		    <a href="{{ path('id', {id: idPublic}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
-		    <a href="{{ path('id', {id: idPublic, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
+		    {% set btnaction=path('id', {id: person.item.idPublic}) %}
+		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
+		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
 		</div>
 	    </div>
 	</div>

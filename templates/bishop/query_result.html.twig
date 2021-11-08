@@ -38,9 +38,11 @@
 		<div class="col-12">
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		    {% if count > 0 %}
-			<button type="submit" form="form" formaction="{{ path('bishop_query_data') }}" name="format" value="Csv" class="btn btn-secondary btn-light btn-sm ms-2">CSV</button>
-			<button type="submit" form="form" formaction="{{ path('bishop_query_data') }}" name="format" value="Json" class="btn btn-secondary btn-light btn-sm ms-2">JSON</button>
-			<button type="submit" form="form" formaction="{{ path('bishop_query_data') }}" name="format" value="Jsonld" class="btn btn-secondary btn-light btn-sm ms-2">JSON-LD</button>
+			{% set btnaction=path('bishop_query_data') %}
+			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
+			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
 		    {% endif %}
 		</div>
 	    </div>

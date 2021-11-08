@@ -159,13 +159,9 @@ class BishopController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
         $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-        $response = $service->$fncResponse($result);
-
-        return $response;
+        return $service->$fncResponse($result);
 
     }
-
-
 
     /**
      * AJAX

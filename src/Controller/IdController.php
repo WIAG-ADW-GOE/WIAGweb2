@@ -6,8 +6,8 @@ use App\Entity\ItemType;
 use App\Entity\Person;
 use App\Entity\Diocese;
 
-use App\Service\BishopService;
-use App\Controller\BishopController;
+use App\Service\PersonService;
+use App\Service\DioceseService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,6 +18,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
 class IdController extends AbstractController {
+    private $personServcice;
+
+    public function __construct(PersonService $personService) {
+        $this->personService = $personService;
+    }
+
     /**
      * find item by ID; show details or deliver data as JSON, CSV or XML
      *
@@ -37,7 +43,6 @@ class IdController extends AbstractController {
 
         $itemResult = $itemRepository->findByIdPublic($id);
 
-
         if ($itemResult) {
             $item = $itemResult[0];
             $itemTypeId = $item->getItemTypeId();
@@ -47,11 +52,11 @@ class IdController extends AbstractController {
 
             $typeName = $itemTypeResult->getNameApp();
 
+            # e.g. bishop($itemId, $format)
             return $this->$typeName($itemId, $format);
 
         } else {
-            # TODO catch error
-            return new Response("Id ist nicht gültig");
+            throw $this->createNotFoundException('Id is nicht gültig: '.$itemId);
         }
 
 
@@ -63,16 +68,17 @@ class IdController extends AbstractController {
 
         $result = $repository->find($id);
 
-        switch($format) {
-        case 'html':
+        if ($format == 'html') {
             return $this->render('bishop/person.html.twig', [
                 'person' => $result,
             ]);
+        } else {
+            if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+            }
+            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+            return $this->personService->$fncResponse([$result]);
         }
-
-        # TODO
-        # throw error unknown format
-        return new Response("Unbekanntes Format: '".$format);
     }
 
     public function diocese($id, $format) {

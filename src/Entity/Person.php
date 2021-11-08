@@ -91,6 +91,11 @@ class Person
     private $religiousOrderId;
 
     /**
+     * @ORM\OneToOne(targetEntity="ReligiousOrder")
+     */
+    private $religiousOrder;
+
+    /**
      * @ORM\Column(type="string", length=31, nullable=true)
      */
     private $dateBirth;
@@ -239,6 +244,11 @@ class Person
 
         return $this;
     }
+
+    public function getReligiousOrder() {
+        return $this->religiousOrder;
+    }
+
 
     public function getDateBirth(): ?string
     {

@@ -17,21 +17,24 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersonService {
-    const GND_ID = 1;
-    const WIKIPEDIA_ID = 3;
+    const AUTH_ID = [
+        'GND' => 1,
+        'GS' => 200,
+        'VIAF' => 4,
+        'Wikidata' => 2,
+        'Wikipedia' => 3,
+    ];
 
     const URL_GS = "http://personendatenbank.germania-sacra.de/index/gsn/";
     const URL_GND = "http://d-nb.info/gnd/";
     const URL_WIKIDATA = "https://www.wikidata.org/wiki/";
     const URL_VIAF = "https://viaf.org/viaf/";
 
-    const NAMESP_GND = "https://d-nb.info/standards/elementset/gnd#";
-    const NAMESP_SCHEMA = "https://schema.org/";
-
     const CONTENT_TYPE = [
         'json' => 'application/json; charset=UTF-8',
         'jsonld' => 'application/ld+json; charset=UTF-8',
         'csv' => 'text/csv; charset=UTF-8',
+        'rdf' => 'application/rdf+xml;charset=UTF-8',
     ];
 
     const BISHOP_FILENAME_CSV = 'WIAGBishops.csv';
@@ -57,8 +60,8 @@ class PersonService {
         $this->router = $router;
     }
 
-    public function uriId($id) {
-        $uriId = $this->router->generate('id', ['id' => $id]);
+    public function uriWiagId($id) {
+        $uriId = $this->router->generate('id', ['id' => $id], $this->router::ABSOLUTE_URL);
         # Apache (GWDG server) does not forward https to Symfony
         $uriId = str_replace('http:', 'https:', $uriId);
         return $uriId;
@@ -67,6 +70,11 @@ class PersonService {
     public function createResponseJson($persons) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
+
+        # handle a single person
+        if (is_a($persons, Person::class)) {
+            $persons = array($persons);
+        }
 
         $data = null;
         if (count($persons) == 1) {
@@ -92,6 +100,11 @@ class PersonService {
         $csvEncoder = new CsvEncoder();
         $csvOptions = ['csv_delimiter' => "\t"];
 
+        # handle a single person
+        if (is_a($persons, Person::class)) {
+            $persons = array($persons);
+        }
+
         $personData = null;
         if (count($persons) == 1) {
             $personData = $this->personData($persons[0]);
@@ -112,13 +125,42 @@ class PersonService {
     }
 
     public function createResponseRdf($persons) {
-        $data = $personLinkedData->personsToRdf($persons, $baseurl);
-        $response->headers->set('Content-Type', 'application/rdf+xml;charset=UTF-8');
+        # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
+        $serializer = new Serializer([], array(new XMLEncoder()));
+
+        # handle a single person
+        if (is_a($persons, Person::class)) {
+            $persons = array($persons);
+        }
+
+
+        $personNodes = array();
+        if (count($persons) == 1) {
+            $personNodes = $this->personLinkedData($persons[0]);
+        } else {
+            foreach($persons as $person) {
+                array_push($personNodes, ...$this->personLinkedData($person));
+            }
+        }
+        $xmlroot = RDFService::xmlroot($personNodes);
+        $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
+        # dd($data);
+
+        $response = new Response();
+        $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
+
+        $response->setContent($data);
+        return $response;
     }
 
     public function createResponseJsonld($persons) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
+
+        # handle a single person
+        if (is_a($persons, Person::class)) {
+            $persons = array($persons);
+        }
 
         $personNodes = self::JSONLDCONTEXT;
         if (count($persons) == 1) {
@@ -152,23 +194,31 @@ class PersonService {
 
         $pj['givenName'] = $person->getGivenname();
 
-        return $pj;
-
-        # TODO
         $fv = $person->getPrefixName();
         if($fv) $pj['prefix'] = $fv;
 
-        $fv = $person->getFamilynameVariant();
-        if($fv) $pj['familyNameVariant'] = $fv;
+        $fv = $person->getFamilynameVariants();
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
 
-        $fv = $person->getGivennameVariant();
-        if($fv) $pj['givenNameVariant'] = $fv;
+        if($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
 
-        $fv = $person->getCommentName();
-        if($fv) $pj['commentName'] = $fv;
+        $fv = $person->getGivennameVariants();
 
-        $fv = $person->getCommentPerson();
-        if($fv) $pj['commentPerson'] = $fv;
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
+
+        if($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
+
+        $fv = $person->getNoteName();
+        if($fv) $pj['noteName'] = $fv;
+
+        $fv = $person->getNotePerson();
+        if($fv) $pj['notePerson'] = $fv;
 
         $fv = $person->getDateBirth();
         if($fv) $pj['dateOfBirth'] = $fv;
@@ -176,44 +226,43 @@ class PersonService {
         $fv = $person->getDateDeath();
         if($fv) $pj['dateOfDeath'] = $fv;
 
-        // $fv = $person->getReligiousOrder();
-        // if($fv) $pj['religiousOrder'] = $fv;
+        $fv = $person->getReligiousOrder();
+        if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
 
-        if($person->hasExternalIdentifier() || $person->hasOtherIdentifier()) {
-            $pj['identifier'] = array();
-            $nd = &$pj['identifier'];
-            $fv = $person->getGsid();
-            if($fv) $nd['gsId'] = $fv;
+        $item = $person->getItem();
+        $nd = array();
 
-            $fv = $person->getGndid();
-            if($fv) $nd['gndId'] = $fv;
-
-            $fv = $person->getViafid();
-            if($fv) $nd['viafId'] = $fv;
-
-            $fv = $person->getWikidataid();
-            if($fv) $nd['wikidataId'] = $fv;
-
-            $fv = $person->getWikipediaurl();
-            if($fv) $nd['wikipediaUrl'] = $fv;
-        }
-
-        $offices = $person->getOffices();
-        if($offices && count($offices) > 0) {
-            $pj['offices'] = array();
-            $ocJSON = &$pj['offices'];
-            foreach($offices as $oc) {
-                $ocJSON[] = $oc->toArray();
+        foreach (self::AUTH_ID as $key => $auth) {
+            if ($key == 'Wikipedia') {
+                $fv = $item->getUriExternalByAuthorityId($auth);
+            } else {
+                $fv = $item->getIdExternalByAuthorityId($auth);
             }
+            if ($fv) $nd[$key] = $fv;
         }
 
-        $fv = $person->getReference();
-        if($fv) {
-            $pj['reference'] = $fv->toArray();
-            $fiv = $person->getPagesGatz();
-            if($fiv)
-                $pj['reference']['pages'] = $fiv;
+        if ($nd) {
+            $pj['identifier'] = $nd;
         }
+
+        $roles = $person->getRoles();
+        $nd = array();
+        foreach ($roles as $role) {
+             $fv = $this->roleData($role);
+             if ($fv) $nd[] = $fv;
+        }
+        if ($nd) {
+            $pj['offices'] = $nd;
+        }
+
+
+        // $fv = $person->getReference();
+        // if($fv) {
+        //     $pj['reference'] = $fv->toArray();
+        //     $fiv = $person->getPagesGatz();
+        //     if($fiv)
+        //         $pj['reference']['pages'] = $fiv;
+        // }
 
         return $pj;
 
@@ -231,7 +280,7 @@ class PersonService {
 
         $pld = [
             'rdf:type' => [
-                '@rdf:resource' => self::NAMESP_GND.'DifferentiatedPerson'
+                '@rdf:resource' => RDFService::NAMESP_GND.'DifferentiatedPerson'
                 ]
         ];
 
@@ -315,7 +364,7 @@ class PersonService {
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::GND_ID);
+        $fv = $person->getItem()->getIdExternalByAuthorityId(self::AUTH_ID['GND']);
         if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
 
 
@@ -331,54 +380,52 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::WIKIPEDIA_ID);
+        $fv = $person->getItem()->getUriExternalByAuthorityId(self::AUTH_ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
 
         $descName = [
-            '@rdf:about' => $this->uriId($person->getItem()->getIdPublic()),
+            '@rdf:about' => $this->uriWiagId($person->getItem()->getIdPublic()),
             '#' => $pld,
         ];
 
+        // offices
+        $roles = $person->getRoles();
+        $descOffices = array();
+        if($roles) {
+            foreach($roles as $oc) {
+                $roleNodeID = uniqid('role');
+                $descOffices[] = [
+                    '@rdf:about' => $this->uriWiagId($personID),
+                    '#' => [
+                        $scafx.'hasOccupation' => [
+                            '@rdf:nodeID' => $roleNodeID
+                        ]
+                    ]
+                ];
+                $descOffices[] = $this->roleNode($oc, $roleNodeID);
+            }
+        }
 
-        // TODO 2021-11-03
-        // $offices = $person->getOffices();
-        // $descOffices = array();
-        // if($offices) {
-        //     foreach($offices as $oc) {
-        //         $roleNodeID = uniqid('role');
-        //         $descOffices[] = [
-        //             '@rdf:about' => $this->uriId().$personID,
-        //             '#' => [
-        //                 $scafx.'hasOccupation' => [
-        //                     '@rdf:nodeID' => $roleNodeID
-        //                 ]
-        //             ]
-        //         ];
-        //         $descOffices[] = $this->roleNode($oc, $roleNodeID, $idpath);
-        //     }
-        // }
+        return array_merge([$descName], $descOffices);
 
-        // return array_merge([$descName], $descOffices);
-
-        return array($descName);
 
         // references ?!
 
     }
 
-    public function roleNode($office, $roleNodeID, $idpath) {
+    public function roleNode($office, $roleNodeID) {
         $scafx = "schema:";
         $gfx = "gndo:";
 
         $ocld['rdf:type'] = [
-            '@rdf:resource' => self::NAMESP_SCHEMA.'Role'
+            '@rdf:resource' => RDFService::NAMESP_SCHEMA.'Role'
         ];
 
-        $ocld[$scafx.'roleName'] = RDFService::xmlStringData($office->getOfficeName());
+        $ocld[$scafx.'roleName'] = RDFService::xmlStringData($office->getRoleName());
 
-        $fv = $office->getDateStart();
+        $fv = $office->getDateBegin();
         if($fv) $ocld[$scafx.'startDate'] = RDFService::xmlStringData($fv);
 
         $fv = $office->getDateEnd();
@@ -386,22 +433,25 @@ class PersonService {
 
         $fv = $office->getDiocese();
         if($fv) {
-            $dioceseRepository = $this->entitymanager->getRepository(Diocese::class);
-            $dioceseID = $dioceseRepository->getDioceseID($fv);
+            $dioceseID = $fv->getItem()->getIdPublic();
             if($dioceseID)
                 $ocld[$gfx.'affiliation'] = [
-                    '@rdf:resource' => $idpath.$dioceseID
+                    '@rdf:resource' => $this->uriWiagId($dioceseID)
                 ];
-            $ocld[$scafx.'description'] = RDFService::xmlStringData($fv);
+            $ocld[$scafx.'description'] = RDFService::xmlStringData($fv->getName());
+        } else {
+            $fv = $office->getDioceseName();
+            if ($fv) $ocld[$scafx.'description'] = $fv;
         }
 
-        $id_monastery = $office->getIdMonastery();
-        if (!is_null($id_monastery) && $id_monastery != "") {
-            $fv = $office->getMonastery();
-            if ($fv) {
-                $ocld[$scafx.'description'] = RDFService::xmlStringData($fv->getMonasteryName());
-            }
-        }
+        # 2021-11-08 We have no data about monasteries in the tbl_bischofaemter_gatz?!
+        // $id_monastery = $office->getIdMonastery();
+        // if (!is_null($id_monastery) && $id_monastery != "") {
+        //     $fv = $office->getMonastery();
+        //     if ($fv) {
+        //         $ocld[$scafx.'description'] = RDFService::xmlStringData($fv->getMonasteryName());
+        //     }
+        // }
 
         $roleNode = [
             '@rdf:nodeID' => $roleNodeID,
@@ -515,7 +565,7 @@ class PersonService {
         // $fv = $person->getReligiousOrder();
         // if($fv) $pld['religiousOrder'] = $fv;
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::GND_ID);
+        $fv = $person->getItem()->getIdExternalByAuthorityId(self::AUTH_ID['GND']);
         if($fv) $pld[$gfx.'gndIdentifier'] = $fv;
 
 
@@ -529,22 +579,21 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExternalByAuthorityId(self::WIKIPEDIA_ID);
+        $fv = $person->getItem()->getUriExternalByAuthorityId(self::AUTH_ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
 
+
         /* offices */
-        # TODO 2021-11-03
-        // $offices = $person->getOffices();
-        // $nodesOffices = array();
-        // $pldOffices = array();
-        // if($offices && count($offices) > 0) {
-        //     foreach($offices as $oc) {
-        //         $nodesOffices[] = $this->jsonRoleNode($oc, $this->uriId($person->getItem()->getIdPublic()));
-        //     }
-        //     $pld[$scafx.'hasOccupation'] = $nodesOffices;
-        // }
+        $roles = $person->getRoles();
+        $nodesOffices = array();
+        if($roles) {
+            foreach ($roles as $oc) {
+                $nodesOffices[] = $this->jsonRoleNode($oc);
+            }
+            $pld[$scafx.'hasOccupation'] = $nodesOffices;
+        }
 
         return array_merge($personID, $pld);
 
@@ -552,16 +601,16 @@ class PersonService {
 
     }
 
-    public function jsonRoleNode($office, $idpath) {
+    public function jsonRoleNode($office) {
         $scafx = "schema:";
         $gndfx = "gndo:";
 
         // $ocld['@id'] = $roleNodeID;
-        $ocld['@type'] = self::NAMESP_SCHEMA.'Role';
+        $ocld['@type'] = RDFService::NAMESP_SCHEMA.'Role';
 
-        $ocld[$scafx.'roleName'] = $office->getOfficeName();
+        $ocld[$scafx.'roleName'] = $office->getRoleName();
 
-        $fv = $office->getDateStart();
+        $fv = $office->getDateBegin();
         if($fv) $ocld[$scafx.'startDate'] = $fv;
 
         $fv = $office->getDateEnd();
@@ -569,20 +618,48 @@ class PersonService {
 
         $diocese = $office->getDiocese();
         if($diocese) {
-            $ocld[$scafx.'description'] = $diocese;
-            $dioceseRepository = $this->entitymanager->getRepository(Diocese::class);
-            $dioceseID = $dioceseRepository->getDioceseID($diocese);
-            if($dioceseID) $ocld[$gndfx.'affiliation'] = $idpath.$dioceseID;
+            $ocld[$scafx.'description'] = $diocese->getDioceseStatus().' '.$diocese->getName();
+            $ocld[$gndfx.'affiliation'] = $this->uriWiagId($diocese->getItem()->getIdPublic());
+        } else {
+            $fv = $office->getDioceseName();
+            if ($fv) $ocld[$scafx.'description'] = $fv;
         }
 
-        $id_monastery = $office->getIdMonastery();
-        if (!is_null($id_monastery) && $id_monastery != "") {
-            $fv = $office->getMonastery();
-            if($fv) {
-                $ocld[$scafx.'description'] = $fv->getMonasteryName();
-            }
-        }
+        # TODO 2021-11-08
+        # at the moment the ACCESS source contains no data about monasteries
+        // $id_monastery = $office->getIdMonastery();
+        // if (!is_null($id_monastery) && $id_monastery != "") {
+        //     $fv = $office->getMonastery();
+        //     if($fv) {
+        //         $ocld[$scafx.'description'] = $fv->getMonasteryName();
+        //     }
+        // }
         return $ocld;
+    }
+
+    public function roleData($role) {
+        $pj = array();
+
+        $fv = $role->getRoleName();
+        if ($fv) $pj['title'] = $fv;
+
+        $fv = null;
+        $diocese = $role->getDiocese();
+        if ($diocese) {
+            $fv = $diocese->getDioceseStatus().' '.$diocese->getName();
+        } else {
+            $fv = $role->getDioceseName();
+        }
+        if ($fv) $pj['diocese'] = $fv;
+
+        $fv = $role->getDateBegin();
+        if ($fv) $pj['dateBegin'] = $fv;
+
+        $fv = $role->getDateEnd();
+        if ($fv) $pj['dateEnd'] = $fv;
+
+        return $pj;
+
     }
 
 
