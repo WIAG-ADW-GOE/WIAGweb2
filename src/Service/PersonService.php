@@ -180,10 +180,8 @@ class PersonService {
 
     }
 
-
     /**
      * personData
-     * TODO
      */
     public function personData($person) {
         $pj = array();
@@ -229,6 +227,7 @@ class PersonService {
         $fv = $person->getReligiousOrder();
         if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
 
+        // external identifiers
         $item = $person->getItem();
         $nd = array();
 
@@ -245,6 +244,7 @@ class PersonService {
             $pj['identifier'] = $nd;
         }
 
+        // roles (offices)
         $roles = $person->getRoles();
         $nd = array();
         foreach ($roles as $role) {
@@ -284,7 +284,7 @@ class PersonService {
                 ]
         ];
 
-        $personID = $person->getItem()->getIdPublic();
+        $personId = $person->getItem()->getIdPublic();
 
         $fn = $person->getFamilyname();
         $fndt = RDFService::xmlStringData($fn);
@@ -386,7 +386,7 @@ class PersonService {
         }
 
         $descName = [
-            '@rdf:about' => $this->uriWiagId($person->getItem()->getIdPublic()),
+            '@rdf:about' => $this->uriWiagId($personId),
             '#' => $pld,
         ];
 
@@ -395,16 +395,16 @@ class PersonService {
         $descOffices = array();
         if($roles) {
             foreach($roles as $oc) {
-                $roleNodeID = uniqid('role');
+                $roleNodeId = uniqid('role');
                 $descOffices[] = [
                     '@rdf:about' => $this->uriWiagId($personID),
                     '#' => [
                         $scafx.'hasOccupation' => [
-                            '@rdf:nodeID' => $roleNodeID
+                            '@rdf:nodeID' => $roleNodeId,
                         ]
                     ]
                 ];
-                $descOffices[] = $this->roleNode($oc, $roleNodeID);
+                $descOffices[] = $this->roleNode($oc, $roleNodeId);
             }
         }
 

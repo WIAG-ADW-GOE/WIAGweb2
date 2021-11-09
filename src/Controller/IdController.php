@@ -19,9 +19,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class IdController extends AbstractController {
     private $personServcice;
+    private $dioceseServcice;
 
-    public function __construct(PersonService $personService) {
+    public function __construct(PersonService $personService, DioceseService $dioceseService) {
         $this->personService = $personService;
+        $this->dioceseService = $dioceseService;
     }
 
     /**
@@ -87,14 +89,24 @@ class IdController extends AbstractController {
 
         $result = $repository->find($id);
 
+        if ($format == 'html') {
+            return $this->render('diocese/diocese.html.twig', [
+                'diocese' => $result,
+            ]);
+        } else {
+            if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+            }
+            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+            return $this->dioceseService->$fncResponse([$result]);
+        }
+
         switch($format) {
         case 'html':
             return $this->render('diocese/diocese.html.twig', [
                 'diocese' => $result,
             ]);
         }
-
-        throw $this->createNotFoundException("Unbekanntes Format: '".$format);
 
     }
 

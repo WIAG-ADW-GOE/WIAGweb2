@@ -125,18 +125,16 @@
 				name="offset" value="{{ offset + 1 }}"
 				{% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
 			<button type="submit"
-				form="form"
-				class="btn btn-secondary btn-sm ms-1 me-3"
-				name="offset"
-				value="{{ offset }}">Ergebnisliste</button>
+				      form="form"
+				      class="btn btn-secondary btn-sm ms-1 me-3"
+				      name="offset"
+				      value="{{ offset }}">Ergebnisliste</button>
 		    {% endif %}
-		    {# TODO data and linked data, <a><button></button></a> -> <a type="button"></a> #}
-		    {% if false %}
-			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json'}) }}"><button class="btn btn-secondary btn-light btn-sm">JSON</button></a>
-			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'csv'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">CSV</button></a>
-			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button></a>
-			<a href="{{ path('wiag_id_data', {id: diocese.wiagidlong, format: 'json-ld'}) }}"><button class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button></a>
-		    {% endif %}
+		    {% set btnaction=path('id', {id: diocese.item.idPublic}) %}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
 		</div>
 	    </div>
 	{% endif %}

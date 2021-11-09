@@ -40,9 +40,9 @@
 		    {% if count > 0 %}
 			{% set btnaction=path('bishop_query_data') %}
 			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
 			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
 			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
-			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
 		    {% endif %}
 		</div>
 	    </div>

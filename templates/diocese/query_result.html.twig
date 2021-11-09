@@ -68,10 +68,11 @@
 		{% endif %}
 		{{ fb_elements }}
 		{% if count > 0 %}
-		    <button type="submit" form="form" formaction="{{ path('home') }}" name="format" value="JSON" class="btn btn-secondary btn-light btn-sm ms-2">JSON</button>
-		    <button type="submit" form="form" name="format" value="CSV" class="btn btn-secondary btn-light btn-sm ms-1">CSV</button>
-		    <button type="submit" form="form" name="format" value="RDF" class="btn btn-secondary btn-light btn-sm ms-1">RDF-XML</button>
-		    <button type="submit" form="form" name="format" value="JSONLD" class="btn btn-secondary btn-light btn-sm ms-1">JSON-LD</button>
+		    {% set btnaction=path('diocese_query_data') %}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+		    {{ include('diocese/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
 		{% endif %}
 	    </div>
 	</div>

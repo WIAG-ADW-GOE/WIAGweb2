@@ -3,6 +3,8 @@ namespace App\Controller;
 
 use App\Entity\Diocese;
 use App\Form\DioceseFormType;
+use App\Repository\DioceseRepository;
+use App\Service\DioceseService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,13 +28,9 @@ class DioceseController extends AbstractController {
      *
      * @Route("/bistum", name="diocese_query")
      */
-    public function diocese(Request $request) {
+    public function diocese(Request $request, DioceseRepository $repository) {
 
         $form = $this->createForm(DioceseFormType::class);
-
-        $repository = $this->getDoctrine()
-                           ->getRepository(Diocese::class);
-
 
         $form->handlerequest($request);
 
@@ -44,9 +42,7 @@ class DioceseController extends AbstractController {
             $count = $repository->countByName($name);
 
             $offset = $request->request->get('offset') ?? 0;
-
             $offset = floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
-
 
             $result = $repository->dioceseWithBishopricSeatByName($name, self::PAGE_SIZE, $offset);
 
@@ -118,6 +114,36 @@ class DioceseController extends AbstractController {
 
     }
 
+    /**
+     * return diocese data
+     *
+     * @Route("/bistum/data", name="diocese_query_data")
+     */
+    public function queryData(Request $request,
+                              DioceseRepository $repository,
+                              DioceseService $service) {
+
+        if ($request->isMethod('POST')) {
+            $form = $this->createForm(DioceseFormType::class);
+            $form->handleRequest($request);
+            $data = $form->getData();
+            $format = $request->request->get('format');
+        } else {
+            $data = $request->query->all();
+            $format = $request->query->get('format') ?? 'json';
+        }
+
+        $name = $data['name'];
+        $result = $repository->dioceseWithBishopricSeatByName($name);
+
+        $format = ucfirst(strtolower($format));
+        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+        }
+        $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+        return $service->$fncResponse($result);
+
+    }
 
     /**
      * AJAX
