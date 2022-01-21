@@ -20,8 +20,13 @@ class PersonRepository extends ServiceEntityRepository {
 
     // allowed deviation in the query parameter for 'year'
     const MARGIN_YEAR = 1;
-    // item type id
-    const ITEM_TYPE_ID = 4;
+
+    // redundant to table item_type (simpler, faster than a query)
+    const ITEM_TYPE_ID = [
+        'Bischof' => 4,
+        'Domherr' => 5,
+        'Domherr GS' => 6,
+    ];
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -74,11 +79,10 @@ class PersonRepository extends ServiceEntityRepository {
 
 
     private function bishopQueryConditions($qb, BishopFormModel $model) {
-
         # bishop
         $qb->join('p.item', 'itemtype')
            ->andWhere('itemtype.itemTypeId = :itemTypeId')
-           ->setParameter(':itemTypeId', self::ITEM_TYPE_ID);
+           ->setParameter(':itemTypeId', self::ITEM_TYPE_ID['Bischof']);
 
         # identifier
         $someid = $model->someid;
@@ -114,6 +118,7 @@ class PersonRepository extends ServiceEntityRepository {
                ->join('prrole.role', 'role')
                ->andWhere('role.name LIKE :office')
                ->setParameter('office', '%'.$office.'%');
+            // TODO 2022-01-21 check also PersonRole.roleName
 
             // allowed but slower
             // $qb->andWhere('EXISTS (SELECT copr.roleId FROM App\Entity\PersonRole copr '.
@@ -209,6 +214,11 @@ class PersonRepository extends ServiceEntityRepository {
             $result = $query->getResult();
         }
 
+        $resultArray = array();
+        foreach($result as $p) {
+            $resultArray[] = $p;
+        }
+        dd($resultArray);
         return $result;
     }
 
@@ -255,7 +265,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * AJAX
      */
-    public function suggestName($name, $hintSize) {
+    public function suggestName($name, $hintSize, $itemTypeId) {
         $qb = $this->createQueryBuilder('p')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
@@ -263,7 +273,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->join('p.nameLookup', 'n')
                    ->join('p.item', 'item')
                    ->andWhere('item.itemTypeId = :itemType')
-                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->setParameter(':itemType', $itemTypeId)
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
                    ->setParameter(':name', '%'.$name.'%');
 

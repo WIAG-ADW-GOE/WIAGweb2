@@ -276,8 +276,6 @@ class PersonService {
         $foaffx = "foaf:";
         $scafx = "schema:";
 
-
-
         $pld = [
             'rdf:type' => [
                 '@rdf:resource' => RDFService::NAMESP_GND.'DifferentiatedPerson'

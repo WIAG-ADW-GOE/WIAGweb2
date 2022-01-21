@@ -32,25 +32,25 @@ class BishopFormModel {
 
     public static function newByArray($data) {
         $model = new self();
-        $model->name = $data['name'] ?? null;
-        $model->diocese = $data['diocese'] ?? null;
-        $model->office = $data['office'] ?? null;
-        $model->year = $data['year'] ?? null;
-        $model->someid = $data['someid'] ?? null;
+
+        $keys = ['name', 'diocese', 'office', 'year', 'someid'];
+        foreach($keys as $key) {
+            $model->$key = $data[$key];
+        }
+
         $model->facetDiocese = self::makeChoices($data, 'facetDiocese');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
         return $model;
     }
 
     public function isEmpty() {
-        return (is_null($this->name)
-                && is_null($this->diocese)
-                && is_null($this->office)
-                && is_null($this->year)
-                && is_null($this->someid)
-                && is_null($this->facetDiocese)
-                && is_null($this->facetOffice));
+        $value = true;
+        $keys = ['name', 'diocese', 'office', 'year', 'someid', 'facetDiocese', 'facetOffice'];
+        foreach($keys as $key) {
+            $value = $value && is_null($this->$key);
+        }
 
+        return $value;
     }
 
 }

@@ -18,8 +18,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
 class IdController extends AbstractController {
-    private $personServcice;
-    private $dioceseServcice;
+    private $personService;
+    private $dioceseService;
 
     public function __construct(PersonService $personService, DioceseService $dioceseService) {
         $this->personService = $personService;

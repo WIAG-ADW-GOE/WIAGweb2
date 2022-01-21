@@ -158,7 +158,7 @@ class BishopController extends AbstractController {
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
-        $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+        $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
         return $service->$fncResponse($result);
 
     }
@@ -173,7 +173,8 @@ class BishopController extends AbstractController {
         $suggestions = $this->getDoctrine()
                             ->getRepository(Person::class)
                             ->suggestName($request->query->get('q'),
-                                          self::HINT_SIZE);
+                                          self::HINT_SIZE,
+                                          PersonRepository::ITEM_TYPE_ID['Bischof']);
 
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
