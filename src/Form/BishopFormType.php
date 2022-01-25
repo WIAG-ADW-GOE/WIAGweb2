@@ -1,9 +1,10 @@
 <?php
 namespace App\Form;
 
+use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\BishopFormModel;
-use App\Repository\PersonRepository;
+use App\Repository\ItemRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -28,7 +29,7 @@ class BishopFormType extends AbstractType
 {
     private $repository;
 
-    public function __construct(PersonRepository $repository) {
+    public function __construct(ItemRepository $repository) {
         $this->repository = $repository;
     }
 
@@ -114,7 +115,8 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetDiocese = null;
 
-        $dioceses = $this->repository->countDiocese($model);
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $dioceses = $this->repository->countDiocese($model, $itemTypeId);
 
 
         $choices = array();
@@ -157,7 +159,8 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetOffice = null;
 
-        $offices = $this->repository->countOffice($model);
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $offices = $this->repository->countOffice($model, $itemTypeId);
 
         $choices = array();
 

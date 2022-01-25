@@ -10,6 +10,18 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ItemReference
 {
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Item", inversedBy="reference")
+     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
+     * set this manually join columns: item_type_id, reference_id
+     */
+    private $referenceVolume;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -27,16 +39,6 @@ class ItemReference
      */
     private $page;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $referenceVolumeId;
-
-    /**
-     * @ORM\OneToOne(targetEntity="ReferenceVolume")
-     * @ORM\JoinColumn(name="reference_volume_id", referencedColumnName="id")
-     */
-    private $referenceVolume;
 
     /**
      * @ORM\Column(type="string", length=63, nullable=true)
@@ -54,10 +56,14 @@ class ItemReference
     private $itemId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="references")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
+     * @ORM\Column(type="integer")
      */
-    private $item;
+    private $itemTypeId;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $referenceId;
 
     public function getId(): ?int
     {
@@ -88,20 +94,13 @@ class ItemReference
         return $this;
     }
 
-    public function getReferenceVolumeId(): ?int
-    {
-        return $this->referenceVolumeId;
-    }
-
-    public function setReferenceVolumeId(int $referenceVolumeId): self
-    {
-        $this->referenceVolumeId = $referenceVolumeId;
-
-        return $this;
-    }
-
     public function getReferenceVolume() {
         return $this->referenceVolume;
+    }
+
+
+    public function setReferenceVolume($referenceVolume) {
+        return $this->referenceVolume = $referenceVolume;
     }
 
     public function getIdInReference(): ?string
@@ -139,4 +138,16 @@ class ItemReference
 
         return $this;
     }
+
+    public function getItemTypeId(): ?int
+    {
+        return $this->itemTypeId;
+    }
+
+    public function getReferenceId(): ?int
+    {
+        return $this->referenceId;
+    }
+
+
 }

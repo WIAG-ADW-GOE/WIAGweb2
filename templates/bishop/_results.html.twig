@@ -8,7 +8,8 @@
 	    </tr>
 	</thead>
 	<tbody>
-	    {% for person in data %}
+	    {% for personId in ids %}
+		{% set person = repository.findWithOffice(personId) %}
 		<tr>
 		    <td><button
 			    type="submit"
@@ -27,7 +28,8 @@
 			{% endif %}
 		    </td>
 		    <td>{% for o in person.roles|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-			<small>{{ o.role.name }}
+
+			<small>{% if o.role %}{{ o.role.name }}{% else %}{{ o.rolename }}{% endif %}
 			    {% if o.diocese %}({{ o.diocese.name }})
 			    {% elseif o.diocesename %}({{ o.diocesename }})
 			    {% endif %}

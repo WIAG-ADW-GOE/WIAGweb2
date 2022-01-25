@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Person;
+use App\Entity\PersonRole;
+use App\Entity\ReferenceVolume;
 use App\Form\Model\BishopFormModel;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -27,6 +29,11 @@ class PersonRepository extends ServiceEntityRepository {
         'Domherr' => 5,
         'Domherr GS' => 6,
     ];
+
+    // conditions
+    const COND_DIOCESE = "AND (pr.diocese_name LIKE :param_diocese ".
+                       "OR CONCAT('erzbistum ', pr.diocese_name) LIKE :param_diocese ".
+                       "OR CONCAT('bistum ', pr.diocese_name) LIKE :param_diocese) ";
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -63,18 +70,65 @@ class PersonRepository extends ServiceEntityRepository {
     */
 
     public function bishopCountByModel(BishopFormModel $model) {
-        $result = array(1 => 0);
-        if($model->isEmpty()) return $result;
+        $result = array('n' => 0);
+        if ($model->isEmpty()) return $result;
 
-        $qb = $this->createQueryBuilder('p')
-                   ->select('COUNT(DISTINCT p.id)');
+        // main query parameters: diocese, office
+        $repository = $this->getEntityManager()->getRepository(PersonRole::class);
 
-        $this->bishopQueryConditions($qb, $model);
+        // diocese or office
+        $diocese = $model->diocese;
+        $office = $model->office;
+        $name = $model->name;
+        if ($diocese || $office) {
+            $qb = $repository->createQueryBuilder('pr')
+                             ->select('COUNT(DISTINCT pr.personId) as n')
+                             ->join('pr.item', 'i')
+                             ->andWhere('i.itemTypeId = '.self::ITEM_TYPE_ID['Bischof'])
+                             ->andWhere('i.isOnline = 1');
+            $qb = $this->addConditions($qb, $model);
+            $qb = $this->addFacetsPersonRole($qb, $model);
+        } elseif ($name) {
+            $qb = $this->createQueryBuilder('p')
+                       ->select('COUNT(DISTINCT p.id) as n')
+                       ->join('p.item', 'i')
+                       ->andWhere('i.itemTypeId = '.self::ITEM_TYPE_ID['Bischof'])
+                       ->andWhere('i.isOnline = 1');
+            $qb = $this->addConditions($qb, $model);
+            //
+        }
+
+
 
         $query = $qb->getQuery();
-
         $result = $query->getOneOrNullResult();
+
         return $result;
+    }
+
+    private function addConditions($qb, $model) {
+        $diocese = $model->diocese;
+        if ($diocese) {
+            $qb->andWhere("(pr.dioceseName LIKE :paramDiocese ".
+                          "OR CONCAT('erzbistum ', pr.dioceseName) LIKE :paramDiocese ".
+                          "OR CONCAT('bistum ', pr.dioceseName) LIKE :paramDiocese) ")
+               ->setParameter('paramDiocese', '%'.$diocese.'%');
+        }
+
+        $office = $model->office;
+        if ($office) {
+            $qb->andWhere("pr.roleName LIKE :value")
+               ->setParameter('value', '%'.$office.'%');
+        }
+
+        $name = $model->name;
+        if ($name) {
+            $qb->join('i.nameLookup', 'nlu')
+               ->andWhere("nlu.gnFn LIKE :qname OR nlu.gnPrefixFn LIKE :qname")
+               ->setParameter('qname', '%'.$name.'%');
+        }
+
+        return $qb;
     }
 
 
@@ -194,7 +248,7 @@ class PersonRepository extends ServiceEntityRepository {
         return $qb;
     }
 
-    public function bishopWithOfficeByModel(BishopFormModel $model, $limit = 0, $offset = 0) {
+    public function bishopWithOfficeByModel_a20220121(BishopFormModel $model, $limit = 0, $offset = 0) {
         $qb = $this->createQueryBuilder('p')
                    ->addSelect('pr')
                    ->addSelect('r')
@@ -214,12 +268,66 @@ class PersonRepository extends ServiceEntityRepository {
             $result = $query->getResult();
         }
 
-        $resultArray = array();
-        foreach($result as $p) {
-            $resultArray[] = $p;
+        $debug = false;
+        if ($debug) {
+            $resultArray = array();
+            foreach($result as $p) {
+                $resultArray[] = $p;
+            }
         }
-        dd($resultArray);
+
         return $result;
+    }
+
+    public function bishopByModel(BishopFormModel $model, $limit = 0, $offset = 0) {
+        $result = null;
+        if ($model->isEmpty()) return $result;
+
+        $em = $this->getEntityManager();
+
+        $diocese = $model->diocese;
+        $office = $model->office;
+        $name = $model->name;
+        if ($office || $diocese) {
+            $repository = $em->getRepository(PersonRole::class);
+
+            $qb = $repository->createQueryBuilder('pr')
+                             ->select('pr.personId, min(pr.numDateBegin) as sort')
+                             ->join('pr.item', 'i')
+                             ->join('pr.person', 'p')
+                             ->andWhere('i.itemTypeId = '.self::ITEM_TYPE_ID['Bischof'])
+                             ->andWhere('i.isOnline = 1')
+                             ->addGroupBy('pr.personId')
+                             ->addOrderBy('pr.dioceseName')
+                             ->addOrderBy('sort')
+                             ->addOrderBy('p.familyname')
+                             ->addOrderBy('p.givenname')
+                             ->addOrderBy('p.id');
+            $qb = $this->addConditions($qb, $model);
+            $qb = $this->addFacetsPersonRole($qb, $model);
+        } elseif ($name) {
+            $qb = $repository->createQueryBuilder('pr')
+                             ->select('pr.personId')
+                             ->join('pr.item', 'i')
+                             ->join('pr.person', 'p')
+                             ->andWhere('i.itemTypeId = '.self::ITEM_TYPE_ID['Bischof'])
+                             ->andWhere('i.isOnline = 1')
+                             ->addGroupBy('pr.personId')
+                             ->addOrderBy('p.familyname')
+                             ->addOrderBy('p.givenname')
+                             ->addOrderBy('p.id');
+            $qb = $this->addConditions($qb, $model);
+            $qb = $this->addFacetsPersonRole($qb, $model);
+        }
+
+        $qb->setMaxResults($limit)
+           ->setFirstResult($offset);
+        $query = $qb->getQuery();
+
+        $ids = array_map(function($a) { return $a["personId"]; },
+                         $query->getResult());
+        return $ids;
+
     }
 
     /**
@@ -227,13 +335,16 @@ class PersonRepository extends ServiceEntityRepository {
      *
      * return array of dioceses related to a person's role (used for facet)
      */
-    public function countDiocese(BishopFormModel $model) {
-        $qb = $this->createQueryBuilder('p')
-                   ->select('DISTINCT pr.dioceseName AS name, COUNT(DISTINCT(p.id)) as n')
-                   ->join('p.roles', 'pr')
-                   ->andWhere("pr.dioceseName IS NOT NULL");
+    public function countDiocese(BishopFormModel $model, $itemTypeId) {
+        $repository = $this->getEntityManager()->getRepository(PersonRole::class);
 
-        $this->bishopQueryConditions($qb, $model);
+        $qb = $repository->createQueryBuilder('pr')
+                         ->select('DISTINCT pr.dioceseName AS name, COUNT(DISTINCT(pr.personId)) as n')
+                         ->join('pr.item', 'i')
+                         ->andWhere("i.itemTypeId = ${itemTypeId}")
+                         ->andWhere("pr.dioceseName IS NOT NULL");
+
+        $this->addConditions($qb, $model);
 
         $qb->groupBy('pr.dioceseName');
 
@@ -247,13 +358,16 @@ class PersonRepository extends ServiceEntityRepository {
      *
      * return array of offices related to a person's role (used for facet)
      */
-    public function countOffice(BishopFormModel $model) {
-        $qb = $this->createQueryBuilder('p')
-                   ->select('DISTINCT pr.roleName AS name, COUNT(DISTINCT(p.id)) as n')
-                   ->join('p.roles', 'pr')
-                   ->andWhere("pr.roleName IS NOT NULL");
+    public function countOffice(BishopFormModel $model, $itemTypeId) {
+        $repository = $this->getEntityManager()->getRepository(PersonRole::class);
 
-        $this->bishopQueryConditions($qb, $model);
+        $qb = $repository->createQueryBuilder('pr')
+                         ->select('DISTINCT pr.roleName AS name, COUNT(DISTINCT(pr.personId)) as n')
+                         ->join('pr.item', 'i')
+                         ->andWhere("i.itemTypeId = ${itemTypeId}")
+                         ->andWhere("pr.roleName IS NOT NULL");
+
+        $this->addConditions($qb, $model);
 
         $qb->groupBy('pr.roleName');
 
@@ -295,7 +409,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->join('p.roles', 'r')
                    ->join('p.item', 'item')
                    ->andWhere('item.itemTypeId = :itemType')
-                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->setParameter(':itemType', self::ITEM_TYPE_ID['Bischof'])
                    ->andWhere('r.dioceseName like :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -317,7 +431,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->join('p.roles', 'r')
                    ->join('p.item', 'item')
                    ->andWhere('item.itemTypeId = :itemType')
-                   ->setParameter(':itemType', self::ITEM_TYPE_ID)
+                   ->setParameter(':itemType', self::ITEM_TYPE_ID['Bischof'])
                    ->andWhere('r.roleName like :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -345,5 +459,99 @@ class PersonRepository extends ServiceEntityRepository {
         return $result;
     }
 
+    /**
+     * add conditions set by facets
+     */
+    private function addFacetsPersonRole($qb, $model) {
 
+        $facetDiocese = $model->facetDiocese;
+        if ($facetDiocese) {
+            $values = array_column($facetDiocese, 'name');
+            $qb->join('\App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = pr.personId')
+               ->andWhere("prfctdioc.dioceseName IN (:values)")
+               ->setParameter('values', $values);
+        }
+
+        $facetOffice = $model->facetOffice;
+        if ($facetOffice) {
+            $values = array_column($facetOffice, 'name');
+            $qb->join('\App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = pr.personId')
+               ->andWhere("prfctofc.roleName IN (:values)")
+               ->setParameter('values', $values);
+        }
+
+        return $qb;
+    }
+
+
+    /**
+     * add conditions set by facets
+     */
+    private function addFacets($qb, $model) {
+        if (false && $model->facetLocations) {
+            $locations = array_column($querydata->facetLocations, 'id');
+            $qb->join('co.officelookup', 'ocfctl')
+               ->andWhere('ocfctl.locationName IN (:locations)')
+               ->setParameter('locations', $locations);
+        }
+        if (false && $model->facetMonasteries) {
+            $ids_monastery = array_column($querydata->facetMonasteries, 'id');
+            // $facetMonasteries = array_map(function($a) {return 'Domstift '.$a;}, $facetMonasteries);
+            $qb->join('co.officelookup', 'ocfctp')
+               ->join('ocfctp.monastery', 'mfctp')
+               ->andWhere('mfctp.wiagid IN (:places)')
+               ->setParameter('places', $ids_monastery);
+        }
+
+        // version where `pr` is part of the query already
+        $facetDiocese = $model->facetDiocese;
+        if ($facetDiocese) {
+            $values = array_column($facetDiocese, 'name');
+            $qb->join('\App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = pr.personId')
+               ->andWhere("prfctdioc.dioceseName IN (:values)")
+               ->setParameter('values', $values);
+        }
+
+        if ($model->facetOffice) {
+            $facetOffices = array_column($querydata->facetOffices, 'name');
+            $qb->join('co.officelookup', 'ocfctoc')
+               ->andWhere("ocfctoc.officeName IN (:offices)")
+               ->setParameter('offices', $facetOffices);
+        }
+
+        return $qb;
+    }
+
+    public function findWithOffice($id) {
+        $qb = $this->createQueryBuilder('p')
+                   ->join('p.roles', 'pr')
+                   ->addSelect('pr')
+                   ->andWhere('p.id = :id')
+                   ->setParameter('id', $id);
+        $query = $qb->getQuery();
+        return $query->getOneOrNullResult();
+    }
+
+    public function findWithAssociations($id) {
+        $qb = $this->createQueryBuilder('p')
+                   ->join('p.roles', 'pr')
+                   ->join('p.item', 'i')
+                   ->join('i.itemReference', 'r')
+                   ->addSelect('pr')
+                   ->addSelect('r')
+                   ->andWhere('p.id = :id')
+                   ->setParameter('id', $id);
+
+        $person = $this->findWithOffice($id);
+        if ($person) {
+            $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
+            foreach ($person->getItem()->getReference() as $reference) {
+                $itemTypeId = $reference->getItemTypeId();
+                $referenceId = $reference->getReferenceId();
+                $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+                $reference->setReferenceVolume($referenceVolume);
+            }
+        }
+        return $person;
+    }
 }

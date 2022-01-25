@@ -38,12 +38,6 @@ class Person
     private $displayOrder;
 
     /**
-     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
-    private $nameLookup;
-
-    /**
      * @ORM\OneToMany(targetEntity="GivennameVariant", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
@@ -130,18 +124,7 @@ class Person
      */
     private $numDateDeath;
 
-    /**
-     * unmapped
-     */
-    private $canon;
-
-    /**
-     * unmapped
-     */
-    private $personGs;
-
     public function __construct() {
-        $this->nameLookup = new ArrayCollection();
         $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();

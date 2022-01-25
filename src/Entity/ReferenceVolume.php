@@ -29,6 +29,16 @@ class ReferenceVolume
     private $comment;
 
     /**
+     * @ORM\Column(type="integer")
+     */
+    private $itemTypeId;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $referenceId;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $fullCitation;
@@ -102,6 +112,18 @@ class ReferenceVolume
     {
         return $this->comment;
     }
+
+    public function getItemTypeId(): int
+    {
+        return $this->itemTypeId;
+    }
+
+    public function getReferenceId(): int
+    {
+        return $this->referenceId;
+    }
+
+
 
     public function setComment(?string $comment): self
     {

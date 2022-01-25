@@ -33,6 +33,12 @@ class PersonRole
     private $person;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Item", inversedBy="personRole")
+     * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $roleId;
@@ -43,7 +49,7 @@ class PersonRole
     private $role;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="string", length=127, nullable=true)
      */
     private $roleName;
 
@@ -101,6 +107,12 @@ class PersonRole
     {
         return $this->id;
     }
+
+    public function getItem()
+    {
+        return $this->item;
+    }
+
 
     public function getComment(): ?string
     {

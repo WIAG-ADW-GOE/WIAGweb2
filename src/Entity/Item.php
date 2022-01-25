@@ -9,6 +9,12 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
 class Item {
+    // redundant to table item_type (simpler, faster than a query)
+    const ITEM_TYPE_ID = [
+        'Bischof' => 4,
+        'Domherr' => 5,
+        'Domherr GS' => 6,
+    ];
 
     /**
      * @ORM\Id
@@ -21,13 +27,31 @@ class Item {
      * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
-    private $idsExternal;
+    private $idExternal;
 
     /**
      * @ORM\OneToMany(targetEntity="ItemReference", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
-    private $references;
+    private $reference;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $person;
+
+    /**
+     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $personRole;
+
+    /**
+     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $nameLookup;
 
     /**
      * @ORM\Column(type="integer")
@@ -114,12 +138,12 @@ class Item {
         return $this->id;
     }
 
-    public function getIdsExternal() {
-        return $this->idsExternal;
+    public function getIdExternal() {
+        return $this->idExternal;
     }
 
-    public function getReferences() {
-        return $this->references;
+    public function getReference() {
+        return $this->reference;
     }
 
     public function getItemTypeId(): ?int

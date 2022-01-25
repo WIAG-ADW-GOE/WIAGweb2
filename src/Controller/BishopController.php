@@ -1,8 +1,10 @@
 <?php
 namespace App\Controller;
 
+use App\Entity\Item;
 use App\Entity\Person;
-use App\Repository\PersonRepository;
+use App\Repository\PersonRepository; # 2022-01-25 obsolete?
+use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
 use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
@@ -30,7 +32,7 @@ class BishopController extends AbstractController {
      * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
-                          PersonRepository $repository) {
+                          ItemRepository $repository) {
 
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
         $model = new BishopFormModel;
@@ -44,18 +46,27 @@ class BishopController extends AbstractController {
 
             $model = $form->getData();
 
-            $count = $repository->bishopCountByModel($model);
+            $countResult = $repository->countByModel($model, Item::ITEM_TYPE_ID['Bischof']);
+            $count = $countResult["n"];
 
             $offset = $request->request->get('offset');
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $result = $repository->bishopWithOfficeByModel($model, self::PAGE_SIZE, $offset);
+            $ids = $repository->idsByModel($model,
+                                           Item::ITEM_TYPE_ID['Bischof'],
+                                           self::PAGE_SIZE,
+                                           $offset);
+
+            // find persons in the template to keep order
+            $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
+                'repository' => $personRepository,
                 'form' => $form,
-                'data' => $result,
+                'count' => $count,
+                'ids' => $ids,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -74,7 +85,8 @@ class BishopController extends AbstractController {
      *
      * @Route("/bischof/listenelement", name="bishop_list_detail")
      */
-    public function bishopListDetail(Request $request) {
+    public function bishopListDetail(Request $request,
+                                     ItemRepository $repository) {
         $model = new BishopFormModel;
 
         $form = $this->createForm(BishopFormType::class, $model);
@@ -84,43 +96,26 @@ class BishopController extends AbstractController {
 
         $model = $form->getData();
 
-        $repository = $this->getDoctrine()
-                           ->getRepository(Person::class);
         $hassuccessor = false;
+        $idx = 0;
         if($offset == 0) {
-            $result = $repository->bishopWithOfficeByModel($model, 2, $offset);
-            $iterator = $result->getIterator();
-            if(count($iterator) == 2) $hassuccessor = true;
+            $ids = $repository->idsByModel($model,
+                                           Item::ITEM_TYPE_ID['Bischof'],
+                                           2,
+                                           $offset);
+            if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $result = $repository->bishopWithOfficeByModel($model, 3, $offset - 1);
-            $iterator = $result->getIterator();
-            if(count($iterator) == 3) $hassuccessor = true;
-            $iterator->next();
+            $ids = $repository->idsByModel($model,
+                                           Item::ITEM_TYPE_ID['Bischof'],
+                                           3,
+                                           $offset - 1);
+            if(count($ids) == 3) $hassuccessor = true;
+            $idx += 1;
         }
-        $person = $iterator->current();
 
-        // fetch data from domherren database or GS (Personendatenbank)
-        // TODO check item_property
-        // $cnonlineRepository = $this->getDoctrine()
-        //                            ->getRepository(CnOnline::class);
-        // $cnonline = $cnonlineRepository->findOneByIdEp($person->getWiagid());
-        // $canon = null;
-        // $canon_gs = null;
-        // if (!is_null($cnonline)) {
-        //     $cnonlineRepository->fillData($cnonline);
-        //     $canon = $cnonline->getCanonDh();
-        //     $canon_gs = $cnonline->getCanonGs();
-        // }
-
-        // $canon_merged = array();
-        // if (!is_null($canon)) {
-        //     $cycle = 1;
-        //     $canon_merged = $this->getDoctrine()
-        //                          ->getRepository(Canon::class)
-        //                          ->collectMerged($canon_merged, $canon, $cycle);
-        //     array_unshift($canon_merged, $canon);
-        // }
+        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+        $person = $personRepository->findWithAssociations($ids[$idx]);
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),

@@ -28,7 +28,7 @@ class IdExternal
     private $itemId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="idsExternal")
+     * @ORM\ManyToOne(targetEntity="Item", inversedBy="idExternal")
      * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
      */
     private $item;
@@ -103,6 +103,18 @@ class IdExternal
     {
         return $this->value;
     }
+
+    public function getPrettyValue(): ?string
+    {
+        if (!$this->value) {
+            return $value;
+        }
+        $prettyValue = urldecode($this->value);
+        $prettyValue = str_replace('_', ' ', $prettyValue);
+
+        return $prettyValue;
+    }
+
 
     public function setValue(string $value): self
     {

@@ -47,4 +47,15 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findByCombinedKey($itemTypeId, $referenceId) {
+        $qb = $this->createQueryBuilder('r')
+                   ->andWhere('r.itemTypeId = :itemTypeId')
+                   ->andWhere('r.referenceId = :referenceId')
+                   ->setParameter('itemTypeId', $itemTypeId)
+                   ->setParameter('referenceId', $referenceId);
+        $query = $qb->getQuery();
+
+        return $query->getOneOrNullResult();
+    }
 }
