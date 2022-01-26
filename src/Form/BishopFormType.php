@@ -115,8 +115,7 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetDiocese = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
-        $dioceses = $this->repository->countDiocese($model, $itemTypeId);
+        $dioceses = $this->repository->countBishopDiocese($model);
 
 
         $choices = array();
@@ -160,7 +159,7 @@ class BishopFormType extends AbstractType
         $model->facetOffice = null;
 
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
-        $offices = $this->repository->countOffice($model, $itemTypeId);
+        $offices = $this->repository->countBishopOffice($model);
 
         $choices = array();
 

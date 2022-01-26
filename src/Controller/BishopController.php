@@ -46,17 +46,16 @@ class BishopController extends AbstractController {
 
             $model = $form->getData();
 
-            $countResult = $repository->countByModel($model, Item::ITEM_TYPE_ID['Bischof']);
+            $countResult = $repository->countBishop($model);
             $count = $countResult["n"];
 
             $offset = $request->request->get('offset');
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $ids = $repository->idsByModel($model,
-                                           Item::ITEM_TYPE_ID['Bischof'],
-                                           self::PAGE_SIZE,
-                                           $offset);
+            $ids = $repository->bishopIds($model,
+                                          self::PAGE_SIZE,
+                                          $offset);
 
             // find persons in the template to keep order
             $personRepository = $this->getDoctrine()->getRepository(Person::class);
@@ -99,15 +98,13 @@ class BishopController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $repository->idsByModel($model,
-                                           Item::ITEM_TYPE_ID['Bischof'],
+            $ids = $repository->bishopIds($model,
                                            2,
                                            $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $repository->idsByModel($model,
-                                           Item::ITEM_TYPE_ID['Bischof'],
+            $ids = $repository->bishopIds($model,
                                            3,
                                            $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -147,6 +144,7 @@ class BishopController extends AbstractController {
             $format = $request->query->get('format') ?? 'json';
         }
 
+        # TODO 2022-01-26 call $repository->bishopIds
         $result = $repository->bishopWithOfficeByModel($model);
 
         $format = ucfirst(strtolower($format));
@@ -163,13 +161,10 @@ class BishopController extends AbstractController {
      *
      * @Route("/bischof_name", name="bishop_name")
      */
-    public function bishopName(Request $request) {
+    public function bishopName(Request $request,
+                               ItemRepository $repository) {
         $name = $request->query->get('q');
-        $suggestions = $this->getDoctrine()
-                            ->getRepository(Person::class)
-                            ->suggestName($request->query->get('q'),
-                                          self::HINT_SIZE,
-                                          PersonRepository::ITEM_TYPE_ID['Bischof']);
+        $suggestions = $repository->suggestBishopName($name, self::HINT_SIZE);
 
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
@@ -182,12 +177,10 @@ class BishopController extends AbstractController {
      *
      * @Route("/bischof_diocese", name="bishop_diocese")
      */
-    public function bishopDiocese(Request $request) {
+    public function bishopDiocese(Request $request,
+                                  ItemRepository $repository) {
         $name = $request->query->get('q');
-        $suggestions = $this->getDoctrine()
-                            ->getRepository(Person::class)
-                            ->suggestDiocese($request->query->get('q'),
-                                             self::HINT_SIZE);
+        $suggestions = $repository->suggestBishopDiocese($name, self::HINT_SIZE);
 
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
@@ -200,32 +193,15 @@ class BishopController extends AbstractController {
      *
      * @Route("/bischof_office", name="bishop_office")
      */
-    public function bishopOffice(Request $request) {
+    public function bishopOffice(Request $request,
+                                 ItemRepository $repository) {
         $name = $request->query->get('q');
-        $suggestions = $this->getDoctrine()
-                            ->getRepository(Person::class)
-                            ->suggestOffice($request->query->get('q'),
-                                            self::HINT_SIZE);
+        $suggestions = $repository->suggestBishopOffice($name, self::HINT_SIZE);
 
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
 
     }
-
-    /**
-     * Test
-     * @Route("/bischof_aemter/{name}", name="bishop_person_roles")
-     */
-    public function bishopPersonRoles($name) {
-        $repository = $this->getDoctrine()
-                           ->getRepository(Person::class);
-
-        $persons = $repository->findByRole($name);
-        dd($persons);
-
-        return new Response("bishopPersonRoles");
-    }
-
 
 }

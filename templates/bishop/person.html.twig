@@ -22,6 +22,7 @@
 	    <div class="row mx-2 col-12">
 		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	    </div>
+	    {# name and button to copy permalink to the clipboard #}
 	    <div class="row col-12 mx-2 mt-2 mb-0">
 		<div class="d-flex justify-content-between">
 		    <span class="fs-2">{{ person.displayname[:200] }}</span>
@@ -32,6 +33,7 @@
 			    data-action="clipboard#copyTitle">{{ person.item.idPublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
 		</div>
 	    </div>
+	    {# comments, dates #}
 	    {% if person.commentLine %}
 		<div class="row mx-2">
 		    <div class="col-12 comment">
@@ -52,7 +54,7 @@
 		    {% endif %}
 		</div>
 	    {% endif %}
-
+	    {# offices #}
 	    <div class="row mx-2 mt-3 mb-2">
 		<div class="col-12">
 		    <div class="card">
@@ -78,6 +80,7 @@
 		    </div>
 		</div>
 	    </div>
+	    {# external IDs #}
 	    {% if person.item.idExternal %}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
@@ -98,6 +101,7 @@
 		    <span id="citation">{{ citation }}</span>
 		</div>
 	    </div>
+	    {# button line #}
 	    <div class="row mx-2 col-12 mt-4 mb-2">
 		<div class="d-flex">
 		    {% if form is defined %}

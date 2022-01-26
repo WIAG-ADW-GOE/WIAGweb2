@@ -69,9 +69,11 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-    public function countByModel($model, $itemTypeId) {
+    public function countBishop($model) {
         $result = array('n' => 0);
         if ($model->isEmpty()) return $result;
+
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
 
         // diocese or office
@@ -102,8 +104,8 @@ class ItemRepository extends ServiceEntityRepository
                        ->andWhere('i.isOnline = 1');
         }
 
-        $qb = $this->addConditions($qb, $model);
-        $qb = $this->addFacets($qb, $model, $itemTypeId);
+        $qb = $this->addBishopConditions($qb, $model);
+        $qb = $this->addBishopFacets($qb, $model);
 
         $query = $qb->getQuery();
         $result = $query->getOneOrNullResult();
@@ -111,9 +113,11 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-    public function idsByModel($model, $itemTypeId, $limit = 0, $offset = 0) {
+    public function bishopIds($model, $limit = 0, $offset = 0) {
         $result = null;
         if ($model->isEmpty()) return $result;
+
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
         $diocese = $model->diocese;
         $office = $model->office;
@@ -158,8 +162,8 @@ class ItemRepository extends ServiceEntityRepository
         }
 
 
-        $qb = $this->addConditions($qb, $model);
-        $qb = $this->addFacets($qb, $model, $itemTypeId);
+        $qb = $this->addBishopConditions($qb, $model);
+        $qb = $this->addBishopFacets($qb, $model);
 
         $qb->setMaxResults($limit)
            ->setFirstResult($offset);
@@ -172,7 +176,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
 
-    private function addConditions($qb, $model) {
+    private function addBishopConditions($qb, $model) {
         $diocese = $model->diocese;
         $office = $model->office;
 
@@ -216,26 +220,27 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * add conditions set by facets
      */
-    private function addFacets($qb, $model, $itemTypeId) {
+    private function addBishopFacets($qb, $model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
         $facetDiocese = $model->facetDiocese;
         if ($facetDiocese) {
-            $values = array_column($facetDiocese, 'name');
+            $valFctDioc = array_column($facetDiocese, 'name');
             $qb->join('i.personRole', 'prfctdioc')
                ->andWhere("i.itemTypeId = ${itemTypeId}")
                ->andWhere('i.isOnline = 1')
-               ->andWhere("prfctdioc.dioceseName IN (:values)")
-               ->setParameter('values', $values);
+               ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
+               ->setParameter('valFctDioc', $valFctDioc);
         }
 
         $facetOffice = $model->facetOffice;
         if ($facetOffice) {
-            $values = array_column($facetOffice, 'name');
+            $valFctOfc = array_column($facetOffice, 'name');
             $qb->join('i.personRole', 'prfctofc')
                ->andWhere("i.itemTypeId = ${itemTypeId}")
                ->andWhere('i.isOnline = 1')
-               ->andWhere("prfctofc.roleName IN (:values)")
-               ->setParameter('values', $values);
+               ->andWhere("prfctofc.roleName IN (:valFctOfc)")
+               ->setParameter('valFctOfc', $valFctOfc);
         }
 
         return $qb;
@@ -246,17 +251,21 @@ class ItemRepository extends ServiceEntityRepository
      *
      * return array of dioceses related to a person's role (used for facet)
      */
-    public function countDiocese($model, $itemTypeId) {
+    public function countBishopDiocese($model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+
         $qb = $this->createQueryBuilder('i')
-                   ->select('DISTINCT pr.dioceseName AS name, COUNT(DISTINCT(pr.personId)) as n')
-                   ->join('i.personRole', 'pr')
-                   ->join('i.person', 'p')
+                   ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) as n')
+                   ->join('i.personRole', 'prcount')
+                   ->join('i.personRole', 'pr') # for form conditions
+                   ->join('i.person', 'p') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
-                   ->andWhere("pr.dioceseName IS NOT NULL");
+                   ->andWhere("prcount.dioceseName IS NOT NULL");
 
-        $this->addConditions($qb, $model);
+        $this->addBishopConditions($qb, $model);
+        $this->addBishopFacets($qb, $model);
 
-        $qb->groupBy('pr.dioceseName');
+        $qb->groupBy('prcount.dioceseName');
 
         $query = $qb->getQuery();
         $result = $query->getResult();
@@ -268,21 +277,88 @@ class ItemRepository extends ServiceEntityRepository
      *
      * return array of offices related to a person's role (used for facet)
      */
-    public function countOffice($model, $itemTypeId) {
+    public function countBishopOffice($model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+
         $qb = $this->createQueryBuilder('i')
-                   ->select('DISTINCT pr.roleName AS name, COUNT(DISTINCT(pr.personId)) as n')
-                   ->join('i.personRole', 'pr')
-                   ->join('i.person', 'p')
+                   ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
+                   ->join('i.personRole', 'prcount')
+                   ->join('i.personRole', 'pr') # for form conditions
+                   ->join('i.person', 'p') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
-                   ->andWhere("pr.roleName IS NOT NULL");
+                   ->andWhere("prcount.roleName IS NOT NULL");
 
-        $this->addConditions($qb, $model);
+        $this->addBishopConditions($qb, $model);
+        $this->addBishopFacets($qb, $model);
 
-        $qb->groupBy('pr.roleName');
+        $qb->groupBy('prcount.roleName');
 
         $query = $qb->getQuery();
         $result = $query->getResult();
         return $result;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestBishopName($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
+                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
+                            "AS suggestion")
+                   ->join('i.nameLookup', 'n')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestBishopDiocese($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT pr.dioceseName AS suggestion")
+                   ->join('i.personRole', 'pr')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->andWhere('pr.dioceseName like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestBishopOffice($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT pr.roleName AS suggestion")
+                   ->join('i.personRole', 'pr')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->andWhere('pr.roleName like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+        // dd($suggestions);
+
+        return $suggestions;
     }
 
 }

@@ -1,4 +1,4 @@
-{# {% macro sectionoffices(offices, url_gs_monasteries) %} #}
+{# offices, parameter: roles #}
 <dt class="col-sm-3">Ämter</dt>
 <dd class="col-sm-9">
     <ul class="list-unstyled">
@@ -24,15 +24,6 @@
 			    {{ o.datebegin }}–{{ o.dateend }}
 			{% endif %}
 		    </li>
-		    {# table person_role_property #}
-		    {# ## TODO relevant für Domherren#}
-		    {% if false and o.archdeaconterritory %}
-			<li class="list-inline-item comment"> Archidiakonat {{ o.archdeaconterritory }} </li>
-		    {% endif %}
-		    {% if o.note %}
-			<li class="list-inline-item comment"> ({{ o.note }}) </li>
-		    {% endif %}
-
 		</ul>
 	    </li>
 	{% endfor %}
