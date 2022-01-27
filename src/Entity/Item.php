@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Item {
     // redundant to table item_type (simpler, faster than a query)
     const ITEM_TYPE_ID = [
+        'Kloster' => 2,
+        'Domstift' => 3,
         'Bischof' => 4,
         'Domherr' => 5,
         'Domherr GS' => 6,
@@ -46,6 +48,12 @@ class Item {
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
     private $personRole;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Institution")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $institution;
 
     /**
      * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="item")

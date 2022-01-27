@@ -4,7 +4,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'name'}),
+		     url: path('canon_suggest', {field: 'name'}),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}
@@ -18,14 +18,14 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
-	    {# diocese #}
+	    {# domstift #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'diocese'}),
+		     url: path('canon_suggest', {field: 'domstift'}),
 		 }) }}>
-		{{ form_label(form.diocese) }}
-		{{ form_errors(form.diocese) }}
-		{{ form_widget(form.diocese, {
+		{{ form_label(form.domstift) }}
+		{{ form_errors(form.domstift) }}
+		{{ form_widget(form.domstift, {
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 15,
@@ -38,7 +38,7 @@
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'office'}),
+		     url: path('canon_suggest', {field: 'office'}),
 		 }) }}>
 		{{ form_label(form.office) }}
 		{{ form_errors(form.office) }}
@@ -46,6 +46,23 @@
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 18,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 14em;"></ul>
+	    </div>
+	    {# place #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('canon_suggest', {field: 'place'}),
+		 }) }}>
+		{{ form_label(form.place) }}
+		{{ form_errors(form.place) }}
+		{{ form_widget(form.place, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 12,
 		    },
 		}) }}
 		<ul class="list-group autocomplete-target"

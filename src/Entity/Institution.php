@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\InstitutionRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass=InstitutionRepository::class)
+ */
+class Institution
+{
+    /**
+     * @ORM\OneToOne(targetEntity="Item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
+     * @ORM\OneToMany(targetEntity="InstitutionPlace", mappedBy="institution")
+     * @ORM\JoinColumn(name="id", referencedColumnName="institution_id")
+     */
+    private $institutionPlace;
+
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $comment;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $idGsn;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $dateBegin;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $dateEnd;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $dateMin;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $dateMax;
+
+    /**
+     * @ORM\Column(type="string", length=1023, nullable=true)
+     */
+    private $note;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getIdGsn(): ?int
+    {
+        return $this->idGsn;
+    }
+
+    public function setIdGsn(?int $idGsn): self
+    {
+        $this->idGsn = $idGsn;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getDateBegin(): ?string
+    {
+        return $this->dateBegin;
+    }
+
+    public function setDateBegin(?string $dateBegin): self
+    {
+        $this->dateBegin = $dateBegin;
+
+        return $this;
+    }
+
+    public function getDateEnd(): ?string
+    {
+        return $this->dateEnd;
+    }
+
+    public function setDateEnd(?string $dateEnd): self
+    {
+        $this->dateEnd = $dateEnd;
+
+        return $this;
+    }
+
+    public function getDateMin(): ?int
+    {
+        return $this->dateMin;
+    }
+
+    public function setDateMin(?int $dateMin): self
+    {
+        $this->dateMin = $dateMin;
+
+        return $this;
+    }
+
+    public function getDateMax(): ?int
+    {
+        return $this->dateMax;
+    }
+
+    public function setDateMax(?int $dateMax): self
+    {
+        $this->dateMax = $dateMax;
+
+        return $this;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): self
+    {
+        $this->note = $note;
+
+        return $this;
+    }
+}

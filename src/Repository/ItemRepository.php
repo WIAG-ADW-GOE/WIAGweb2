@@ -25,29 +25,29 @@ class ItemRepository extends ServiceEntityRepository
     //  * @return Item[] Returns an array of Item objects
     //  */
     /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('i')
-            ->andWhere('i.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('i.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
+      public function findByExampleField($value)
+      {
+      return $this->createQueryBuilder('i')
+      ->andWhere('i.exampleField = :val')
+      ->setParameter('val', $value)
+      ->orderBy('i.id', 'ASC')
+      ->setMaxResults(10)
+      ->getQuery()
+      ->getResult()
+      ;
+      }
     */
 
     /*
-    public function findOneBySomeField($value): ?Item
-    {
-        return $this->createQueryBuilder('i')
-            ->andWhere('i.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
+      public function findOneBySomeField($value): ?Item
+      {
+      return $this->createQueryBuilder('i')
+      ->andWhere('i.exampleField = :val')
+      ->setParameter('val', $value)
+      ->getQuery()
+      ->getOneOrNullResult()
+      ;
+      }
     */
 
     /**
@@ -151,14 +151,14 @@ class ItemRepository extends ServiceEntityRepository
                        ->addOrderBy('p.id');
         } elseif ($name || $someid) {
             $qb = $this->createQueryBuilder('i')
-                             ->select('i.id')
-                             ->join('i.person', 'p')
-                             ->andWhere("i.itemTypeId = ${itemTypeId}")
-                             ->andWhere('i.isOnline = 1')
-                             ->addGroupBy('p.id')
-                             ->addOrderBy('p.familyname')
-                             ->addOrderBy('p.givenname')
-                             ->addOrderBy('p.id');
+                       ->select('i.id')
+                       ->join('i.person', 'p')
+                       ->andWhere("i.itemTypeId = ${itemTypeId}")
+                       ->andWhere('i.isOnline = 1')
+                       ->addGroupBy('p.id')
+                       ->addOrderBy('p.familyname')
+                       ->addOrderBy('p.givenname')
+                       ->addOrderBy('p.id');
         }
 
 

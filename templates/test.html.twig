@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% set menuItem='home' %}
+
+{% block body %}
+    <div class="container-fluid">
+	{% for el in data %}
+	    <p>{{ el }} </p>
+	{% endfor %}
+    </div>
+{% endblock %}

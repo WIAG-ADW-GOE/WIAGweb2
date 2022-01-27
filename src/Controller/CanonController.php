@@ -5,8 +5,9 @@ use App\Entity\Item;
 use App\Entity\Person;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
-use App\Form\BishopFormType;
-use App\Form\Model\BishopFormModel;
+use App\Repository\CanonLookupRepository;
+use App\Form\CanonFormType;
+use App\Form\Model\CanonFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
@@ -20,24 +21,24 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 
-class BishopController extends AbstractController {
+class CanonController extends AbstractController {
     /** number of items per page */
     const PAGE_SIZE = 20;
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
     /**
-     * display query form for bishops; handle query
+     * display query form for canons; handle query
      *
-     * @Route("/bischof", name="bishop_query")
+     * @Route("/domherr", name="canon_query")
      */
     public function query(Request $request,
                           ItemRepository $repository) {
 
-        // we need to pass an instance of BishopFormModel, because facets depend on it's data
-        $model = new BishopFormModel;
+        // we need to pass an instance of CanonFormModel, because facets depend on it's data
+        $model = new CanonFormModel;
 
-        $form = $this->createForm(BishopFormType::class, $model);
+        $form = $this->createForm(CanonFormType::class, $model);
         $offset = 0;
 
 
@@ -46,21 +47,21 @@ class BishopController extends AbstractController {
 
             $model = $form->getData();
 
-            $countResult = $repository->countBishop($model);
+            $countResult = $repository->countCanon($model);
             $count = $countResult["n"];
 
             $offset = $request->request->get('offset');
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $ids = $repository->bishopIds($model,
+            $ids = $repository->canonIds($model,
                                           self::PAGE_SIZE,
                                           $offset);
 
             // find persons in the template to keep order
             $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
-            return $this->renderForm('bishop/query_result.html.twig', [
+            return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'repository' => $personRepository,
                 'form' => $form,
@@ -72,7 +73,7 @@ class BishopController extends AbstractController {
 
         }
 
-        return $this->renderForm('bishop/query.html.twig', [
+        return $this->renderForm('canon/query.html.twig', [
             'menuItem' => 'collections',
             'form' => $form,
         ]);
@@ -80,15 +81,15 @@ class BishopController extends AbstractController {
     }
 
     /**
-     * display details for a bishop
+     * display details for a canon
      *
-     * @Route("/bischof/listenelement", name="bishop_list_detail")
+     * @Route("/domherr/listenelement", name="canon_list_detail")
      */
-    public function bishopListDetail(Request $request,
+    public function canonListDetail(Request $request,
                                      ItemRepository $repository) {
-        $model = new BishopFormModel;
+        $model = new CanonFormModel;
 
-        $form = $this->createForm(BishopFormType::class, $model);
+        $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
         $offset = $request->request->get('offset');
@@ -98,13 +99,13 @@ class BishopController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $repository->bishopIds($model,
+            $ids = $repository->canonIds($model,
                                            2,
                                            $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $repository->bishopIds($model,
+            $ids = $repository->canonIds($model,
                                            3,
                                            $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -114,7 +115,7 @@ class BishopController extends AbstractController {
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
         $person = $personRepository->findWithAssociations($ids[$idx]);
 
-        return $this->render('bishop/person.html.twig', [
+        return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
             'offset' => $offset,
@@ -125,27 +126,27 @@ class BishopController extends AbstractController {
     }
 
     /**
-     * return bishop data
+     * return canon data
      *
-     * @Route("/bischof/data", name="bishop_query_data")
+     * @Route("/domherr/data", name="canon_query_data")
      */
     public function queryData(Request $request,
                               PersonRepository $repository,
                               PersonService $service) {
 
         if ($request->isMethod('POST')) {
-            $model = new BishopFormModel();
-            $form = $this->createForm(BishopFormType::class, $model);
+            $model = new CanonFormModel();
+            $form = $this->createForm(CanonFormType::class, $model);
             $form->handleRequest($request);
             $model = $form->getData();
             $format = $request->request->get('format');
         } else {
-            $model = BishopFormModel::newByArray($request->query->all());
+            $model = CanonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
 
-        # TODO 2022-01-26 call $repository->bishopIds
-        $result = $repository->bishopWithOfficeByModel($model);
+        # TODO 2022-01-26 call $repository->canonIds
+        $result = $repository->canonWithOfficeByModel($model);
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
@@ -156,20 +157,19 @@ class BishopController extends AbstractController {
 
     }
 
-
     /**
      * AJAX
      *
-     * @Route("/bischof-suggest/{field}", name="bishop_suggest")
+     * @Route("/canon-suggest/{field}", name="canon_suggest")
      */
     public function autocomplete(Request $request,
-                                 ItemRepository $repository,
+                                 CanonLookupRepository $repository,
                                  String $field) {
         $name = $request->query->get('q');
-        $fnName = 'suggestBishop'.ucfirst($field);
+        $fnName = 'suggestCanon'.ucfirst($field);
         $suggestions = $repository->$fnName($name, self::HINT_SIZE);
 
-        return $this->render('bishop/_autocomplete.html.twig', [
+        return $this->render('canon/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
     }
