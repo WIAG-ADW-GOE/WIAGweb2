@@ -4,7 +4,7 @@ namespace App\Form;
 use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\CanonFormModel;
-use App\Repository\ItemRepository;
+use App\Repository\CanonLookupRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,7 +29,7 @@ class CanonFormType extends AbstractType
 {
     private $repository;
 
-    public function __construct(ItemRepository $repository) {
+    public function __construct(CanonLookupRepository $repository) {
         $this->repository = $repository;
     }
 
@@ -131,7 +131,7 @@ class CanonFormType extends AbstractType
 
 
         $choices = array();
-        foreach($domstifts as $domstift) {
+        foreach($domstifte as $domstift) {
             $choices[] = new FacetChoice($domstift['name'], $domstift['n']);
         }
 
@@ -140,7 +140,7 @@ class CanonFormType extends AbstractType
         FacetChoice::mergeByName($choices, $choicesIn);
 
 
-        if ($domstifts) {
+        if ($domstifte) {
             $form->add('facetDomstift', ChoiceType::class, [
                 'label' => 'Filter Domstift',
                 'expanded' => true,

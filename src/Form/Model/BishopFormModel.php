@@ -45,7 +45,7 @@ class BishopFormModel {
 
     public function isEmpty() {
         $value = true;
-        $keys = ['name', 'diocese', 'office', 'year', 'someid', 'facetDiocese', 'facetOffice'];
+        $keys = ['name', 'diocese', 'office', 'year', 'someid'];
         foreach($keys as $key) {
             $value = $value && is_null($this->$key);
         }

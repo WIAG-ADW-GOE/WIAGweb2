@@ -30,18 +30,18 @@
     }) }}
 	<div class="container-fluid">
 	    <div class="row ms-2 col-12">
-		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+		<span class="topic-title">{{ canon_title }}</span>
 	    </div>
-	    {{ include("bishop/_form_elements.html.twig") }}
+	    {{ include("canon/_form_elements.html.twig") }}
 	    <div class="row mt-2 mx-2">
 		<div class="col-12">
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		    {% if count > 0 %}
 			{% set btnaction=path('bishop_query_data') %}
-			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
-			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
-			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
-			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
+			{{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+			{{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
+			{{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+			{{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
 		    {% endif %}
 		</div>
 	    </div>
@@ -63,21 +63,21 @@
 		    <div class="row my-2 mx-2">
 			<div class="col-9">
 			    {# table #}
-			    {{ include("bishop/_results.html.twig") }}
+			    {{ include("canon/_results.html.twig") }}
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    {% if form.facetDiocese is defined %}
-				{{ include('bishop/_facet.html.twig', {
-				    facet: form.facetDiocese,
+			    {% if form.facetDomstift is defined %}
+				{{ include('canon/_facet.html.twig', {
+				    facet: form.facetDomstift,
 				    facetTitle: 'Filter Bistum',
-				    facetState: form.stateFctDioc.vars.value,
-				    facetShort: 'Dioc'
+				    facetState: form.stateFctDmt.vars.value,
+				    facetShort: 'Dmt'
 				}) }}
-				{{ form_row(form.stateFctDioc) }}
+				{{ form_row(form.stateFctDmt) }}
 			    {% endif %}
 				{% if form.facetOffice is defined %}
-				    {{ include('bishop/_facet.html.twig', {
+				    {{ include('canon/_facet.html.twig', {
 					facet: form.facetOffice,
 					facetTitle: 'Filter Amt',
 					facetState: form.stateFctOfc.vars.value,

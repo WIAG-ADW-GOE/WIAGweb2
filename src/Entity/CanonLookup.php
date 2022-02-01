@@ -10,6 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class CanonLookup
 {
+    /**
+     * @ORM\ManyToOne(targetEntity="Person", inversedBy="canonLookup")
+     * @ORM\JoinColumn(name="person_id_canon", referencedColumnName="id")
+     */
+    private $person;
 
     /**
      * @ORM\Id

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
+use App\Entity\InstitutionPlace;
 use App\Form\Model\BishopFormModel;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -56,17 +57,42 @@ class PersonRepository extends ServiceEntityRepository {
 
     public function findWithOffice($id) {
         $qb = $this->createQueryBuilder('p')
-                   ->join('p.roles', 'pr')
+                   ->join('p.role', 'pr')
                    ->addSelect('pr')
                    ->andWhere('p.id = :id')
                    ->setParameter('id', $id);
         $query = $qb->getQuery();
-        return $query->getOneOrNullResult();
+        $person = $query->getOneOrNullResult();
+
+        if ($person) {
+            $em = $this->getEntityManager();
+            # add institution place (depends on dates)
+            $repository = $em->getRepository(InstitutionPlace::class);
+            foreach ($person->getRole() as $role) {
+                $institutionId = $role->getInstitutionId();
+                if (is_null($institutionId)) {
+                    continue;
+                }
+                $dateBegin = $role->getDateBegin();
+                $dateEnd = $role->getDateEnd();
+                $dateQuery = $dateBegin;
+                if (!is_null($dateBegin) && !is_null($dateEnd)) {
+                    $dateQuery = intdiv($dateBegin + $dateEnd, 2);
+                } elseif (!is_null($dateEnd)) {
+                    $dateQuery = $dateEnd;
+                }
+
+                $placeName = $repository->findByDate($institutionId, $dateQuery);
+                $role->setPlaceName($placeName);
+            }
+        }
+
+        return $person;
     }
 
     public function findWithAssociations($id) {
         $qb = $this->createQueryBuilder('p')
-                   ->join('p.roles', 'pr')
+                   ->join('p.role', 'pr')
                    ->join('p.item', 'i')
                    ->join('i.itemReference', 'r')
                    ->addSelect('pr')
@@ -76,7 +102,9 @@ class PersonRepository extends ServiceEntityRepository {
 
         $person = $this->findWithOffice($id);
         if ($person) {
-            $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
+            $em = $this->getEntityManager();
+            # add reference volumes (combined key)
+            $repository = $em->getRepository(ReferenceVolume::class);
             foreach ($person->getItem()->getReference() as $reference) {
                 $itemTypeId = $reference->getItemTypeId();
                 $referenceId = $reference->getReferenceId();

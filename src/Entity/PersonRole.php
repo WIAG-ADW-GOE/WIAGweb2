@@ -29,7 +29,7 @@ class PersonRole
     private $personId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="roles")
+     * @ORM\ManyToOne(targetEntity="Person", inversedBy="role")
      */
     private $person;
 
@@ -103,6 +103,11 @@ class PersonRole
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $note;
+
+    /**
+     * no db mapping
+     */
+    private $placeName = null;
 
     public function getId(): ?int
     {
@@ -281,5 +286,16 @@ class PersonRole
         $this->note = $note;
 
         return $this;
+    }
+
+    public function setPlaceName(string $placeName): self
+    {
+        $this->placeName = $placeName;
+        return $this;
+    }
+
+    public function getPlaceName(): ?string
+    {
+        return $this->placeName;
     }
 }

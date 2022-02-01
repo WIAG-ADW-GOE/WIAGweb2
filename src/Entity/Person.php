@@ -28,8 +28,15 @@ class Person
 
     /**
      * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
-    private $roles;
+    private $role;
+
+    /**
+     * @ORM\OneToMany(targetEntity="CanonLookup", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id_canon")
+     */
+    private $canonLookup;
 
     /**
      * @ORM\OneToMany(targetEntity="PersonDisplayOrder", mappedBy="person")
@@ -140,8 +147,8 @@ class Person
         return $this->item;
     }
 
-    public function getRoles() {
-        return $this->roles;
+    public function getRole() {
+        return $this->role;
     }
 
     public function getComment(): ?string

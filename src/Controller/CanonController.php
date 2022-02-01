@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\Person;
+use App\Entity\Canon;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
@@ -33,7 +34,7 @@ class CanonController extends AbstractController {
      * @Route("/domherr", name="canon_query")
      */
     public function query(Request $request,
-                          ItemRepository $repository) {
+                          CanonLookupRepository $repository) {
 
         // we need to pass an instance of CanonFormModel, because facets depend on it's data
         $model = new CanonFormModel;
@@ -50,6 +51,7 @@ class CanonController extends AbstractController {
             $countResult = $repository->countCanon($model);
             $count = $countResult["n"];
 
+
             $offset = $request->request->get('offset');
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
@@ -57,6 +59,11 @@ class CanonController extends AbstractController {
             $ids = $repository->canonIds($model,
                                           self::PAGE_SIZE,
                                           $offset);
+
+            $c_cnGroup = array();
+            foreach($ids as $id) {
+                $c_cnGroup[] = $repository->findRelatedCanon($id);
+            }
 
             // find persons in the template to keep order
             $personRepository = $this->getDoctrine()->getRepository(Person::class);
@@ -66,7 +73,7 @@ class CanonController extends AbstractController {
                 'repository' => $personRepository,
                 'form' => $form,
                 'count' => $count,
-                'ids' => $ids,
+                'ccngroup' => $c_cnGroup,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -86,7 +93,7 @@ class CanonController extends AbstractController {
      * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
-                                     ItemRepository $repository) {
+                                    CanonLookupRepository $repository) {
         $model = new CanonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);

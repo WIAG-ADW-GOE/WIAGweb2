@@ -175,7 +175,6 @@ class ItemRepository extends ServiceEntityRepository
 
     }
 
-
     private function addBishopConditions($qb, $model) {
         $diocese = $model->diocese;
         $office = $model->office;
@@ -247,7 +246,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * countDiocese($model, $itemTypeId)
+     * countBishopDiocese($model)
      *
      * return array of dioceses related to a person's role (used for facet)
      */
@@ -273,7 +272,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * countOffice($model, $itemTypeId)
+     * countBishopOffice($model)
      *
      * return array of offices related to a person's role (used for facet)
      */

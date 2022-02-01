@@ -27,16 +27,16 @@
 			    <p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
 			{% endif %}
 		    </td>
-		    <td>{% for o in person.roles|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+		    <td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
 
-			<small>{% if o.role %}{{ o.role.name }}{% else %}{{ o.rolename }}{% endif %}
-			    {% if o.diocese %}({{ o.diocese.name }})
-			    {% elseif o.diocesename %}({{ o.diocesename }})
+			<small>{% if r.role %}{{ r.role.name }}{% else %}{{ r.rolename }}{% endif %}
+			    {% if r.diocese %}({{ r.diocese.name }})
+			    {% elseif r.diocesename %}({{ r.diocesename }})
 			    {% endif %}
-			    {# TODO monastery for Abt, Propst ... #}
-			    {% if o.datebegin and not o.dateend %}{{ o.datebegin }}
-			    {% elseif not o.datebegin and o.dateend %}{{ o.dateend }}
-			    {% elseif o.datebegin and o.dateend %}{{ o.datebegin }}-{{ o.dateend }}{% endif %}
+			    {% if r.placename %}({{ r.placename }}) {% endif %}
+			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
+			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
+			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
 			</small><br/>{% endfor %}
 		    </td>
 		</tr>

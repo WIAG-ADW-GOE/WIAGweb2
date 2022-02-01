@@ -47,4 +47,30 @@ class InstitutionPlaceRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findByDate($id, $date) {
+        if (is_null($date)) {
+            $qb = $this->createQueryBuilder('ip')
+                       ->addSelect('ip.placeName')
+                       ->andWhere('ip.institutionId = :id')
+                       ->setParameter('id', $id);
+        } else {
+            $qb = $this->createQueryBuilder('ip')
+                       ->addSelect('ip.placeName')
+                       ->andWhere('ip.institutionId =:id')
+                       ->andWhere('ip.numDateBegin < :date')
+                       ->andWhere(':date < ip.numDateEnd')
+                       ->setParameter('id', $id)
+                       ->setParameter('date', $date)
+                       ->addOrderBy('ip.numDateBegin', 'ASC');
+        }
+
+        $result = $qb->getQuery()
+                     ->getResult();
+
+        if ($result) {
+            return $result[0]['placeName'];
+        }
+
+    }
 }

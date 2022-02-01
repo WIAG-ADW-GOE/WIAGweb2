@@ -1,0 +1,53 @@
+
+<div class="table-responsive">
+    <table class="table">
+	<thead class="thead-light">
+	    <tr>
+		<th scope="col">Name</th>
+		<th scope="col">Ämter</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    {% for cngroup in ccngroup %}
+		{% set person = repository.findwithoffice(cngroup.primaryid) %}
+		{% macro single_btn(offset, content) %}
+		    <button
+			type="submit"
+			form="form"
+			formaction="{{ path('canon_list_detail')  }}"
+			class="btn btn-link p"
+			name="offset"
+			value="{{ offset }}">{{ content|raw }}</button>
+		{% endmacro %}
+		<tr>
+		    <td class="align-top">
+			{{ _self.single_btn(offset + loop.index0, person.givenname~" "~person.prefixname~" "~person.familyname) }}
+			    {% if not person.datebirth and not person.datedeath %}
+			    {% elseif person.datebirth and not person.datedeath %}
+				<p class="ms-3">* {{ person.datebirth }}</p>
+			    {% elseif not person.datebirth and person.datedeath %}
+				<p class="ms-3">&dagger; {{ person.datedeath }}</p>
+			    {% else %}
+				<p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+			    {% endif %}
+		    </td>
+		    <td class="align-top">{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+			<small>{% if r.role %}{{ r.role.name }}{% else %}{{ r.rolename }}{% endif %}
+			    {% if r.placename %}({{ r.placename }})
+			    {% elseif  r.diocese %}({{ r.diocese.name }})
+			    {% elseif r.diocesename %}({{ r.diocesename }})
+			    {% endif %}
+			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
+				{% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
+			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
+			</small><br/>{% endfor %}
+			{% if cngroup.countvalid > 1 %}
+			    {{ _self.single_btn(offset + loop.index0, "<small>&hellip;</small>") }}
+			{% endif %}
+		    </td>
+		</tr>
+	    {% endfor %}
+	</tbody>
+    </table>
+</div> {# table-responsive #}
+<p>{% if count > pageSize %}<span>{{ fb_elements }}</span>{% endif %} </p>

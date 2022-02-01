@@ -47,7 +47,7 @@ class CanonFormModel {
 
     public function isEmpty() {
         $value = true;
-        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid', 'facetDomstift', 'facetOffice', 'facetPlace'];
+        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid'];
         foreach($keys as $key) {
             $value = $value && is_null($this->$key);
         }

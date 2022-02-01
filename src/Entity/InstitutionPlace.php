@@ -44,24 +44,34 @@ class InstitutionPlace
     private $placeName;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="integer")
      */
     private $dateBeginTaq;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="integer")
      */
     private $dateBeginTpq;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="integer")
      */
     private $dateEndTaq;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="integer")
      */
     private $dateEndTpq;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $numDateBegin;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $numDateEnd;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -170,6 +180,30 @@ class InstitutionPlace
     public function setDateEndTpq(?string $dateEndTpq): self
     {
         $this->dateEndTpq = $dateEndTpq;
+
+        return $this;
+    }
+
+    public function getNumDateBegin(): ?int
+    {
+        return $this->numDateBegin;
+    }
+
+    public function setNumDateBegin(?int $numDateBegin): self
+    {
+        $this->numDateBegin = $numDateBegin;
+
+        return $this;
+    }
+
+    public function getNumDateEnd(): ?int
+    {
+        return $this->numDateEnd;
+    }
+
+    public function setNumDateEnd(?int $numDateEnd): self
+    {
+        $this->numDateEnd = $numDateEnd;
 
         return $this;
     }
