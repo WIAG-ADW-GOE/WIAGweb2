@@ -64,11 +64,11 @@
 		    <dd class="col-sm-9">{{ diocese.ecclesiasticalprovince }}</dd>
 		{% endif %}
 
-		{% if diocese.item.idsExternal %}
+		{% if diocese.item.idExternal %}
 		    <dt class="col-sm-3">Externe Identifier</dt>
 		    <dd class="col-sm-9">
 			<ul class ="list-unstyled">
-			    {% for id in diocese.item.idsExternal|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
+			    {% for id in diocese.item.idExternal|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
 				<li>
 				    <ul class="list-inlined list-unstyled">
 					<li class="list-inline-item">{{ id.authority.urlnameformatter }}</li>
@@ -82,8 +82,8 @@
 			</ul>
 		    </dd>
 		{% endif %}
-		{% if diocese.item.references %}
-		    {% set references=diocese.item.references %}
+		{% if diocese.item.reference %}
+		    {% set references=diocese.item.reference %}
 		    <dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
 		    <dd class="col-sm-9">
 			<ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">

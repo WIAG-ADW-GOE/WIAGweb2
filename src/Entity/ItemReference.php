@@ -149,5 +149,49 @@ class ItemReference
         return $this->referenceId;
     }
 
+    public function containsBio() {
+        $cpage = $this->splitPage();
+        $value = false;
+
+        foreach ($cpage as $p) {
+            if ($p['isbio']) {
+                return true;
+            }
+        }
+
+        return $value;
+    }
+
+
+    /**
+     * check if a reference contains a biogram
+     * return list of pages
+     */
+    public function splitPage() {
+        $s = $this->page;
+        if (is_null($s)) {
+            return array();
+        }
+
+        $cs = array();
+        preg_match_all("~<b>.*?</b>|[0-9f\.–-]+~", $s, $cs);
+        $cs = array_map('trim', $cs[0]);
+
+
+        $cpage = [];
+        $matches = [];
+        foreach ($cs as $es) {
+            $matches = [];
+            preg_match("~<b>(.*)</b>~", $es, $matches);
+            $isbio = count($matches) > 1;
+            $page = $isbio ? $matches[1] : $es;
+            $cpage[] = [
+                'page' => $page,
+                'isbio' => $isbio,
+            ];
+        }
+
+        return $cpage;
+    }
 
 }

@@ -60,20 +60,18 @@ class CanonController extends AbstractController {
                                           self::PAGE_SIZE,
                                           $offset);
 
-            $c_cnGroup = array();
-            foreach($ids as $id) {
-                $c_cnGroup[] = $repository->findRelatedCanon($id);
-            }
+            $cCnGroup = array();
 
-            // find persons in the template to keep order
-            $personRepository = $this->getDoctrine()->getRepository(Person::class);
+            # easy way to get all persons in the right order
+            foreach($ids as $id) {
+                $cCnGroup[] = $repository->findRelatedCanon($id);
+            }
 
             return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
-                'repository' => $personRepository,
                 'form' => $form,
                 'count' => $count,
-                'ccngroup' => $c_cnGroup,
+                'ccngroup' => $cCnGroup,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -119,12 +117,14 @@ class CanonController extends AbstractController {
             $idx += 1;
         }
 
+        $cnGroup = $repository->findRelatedCanonWithAssociations($ids[$idx]);
+
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->findWithAssociations($ids[$idx]);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
-            'person' => $person,
+            'repository' => $personRepository,
+            'cngroup' => $cnGroup,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);

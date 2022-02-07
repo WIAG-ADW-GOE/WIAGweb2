@@ -64,17 +64,22 @@ class PersonRepository extends ServiceEntityRepository {
         $query = $qb->getQuery();
         $person = $query->getOneOrNullResult();
 
+        $this->addInstitutionPlace($person);
+
+        return $person;
+    }
+
+    public function addInstitutionPlace($person) {
         if ($person) {
             $em = $this->getEntityManager();
-            # add institution place (depends on dates)
             $repository = $em->getRepository(InstitutionPlace::class);
             foreach ($person->getRole() as $role) {
                 $institutionId = $role->getInstitutionId();
                 if (is_null($institutionId)) {
                     continue;
                 }
-                $dateBegin = $role->getDateBegin();
-                $dateEnd = $role->getDateEnd();
+                $dateBegin = $role->getNumDateBegin();
+                $dateEnd = $role->getNumDateEnd();
                 $dateQuery = $dateBegin;
                 if (!is_null($dateBegin) && !is_null($dateEnd)) {
                     $dateQuery = intdiv($dateBegin + $dateEnd, 2);
@@ -102,15 +107,20 @@ class PersonRepository extends ServiceEntityRepository {
 
         $person = $this->findWithOffice($id);
         if ($person) {
-            $em = $this->getEntityManager();
-            # add reference volumes (combined key)
-            $repository = $em->getRepository(ReferenceVolume::class);
-            foreach ($person->getItem()->getReference() as $reference) {
-                $itemTypeId = $reference->getItemTypeId();
-                $referenceId = $reference->getReferenceId();
-                $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-                $reference->setReferenceVolume($referenceVolume);
-            }
+            $this->addReferenceVolumes($person);
+        }
+        return $person;
+    }
+
+    public function addReferenceVolumes($person) {
+        $em = $this->getEntityManager();
+        # add reference volumes (combined key)
+        $repository = $em->getRepository(ReferenceVolume::class);
+        foreach ($person->getItem()->getReference() as $reference) {
+            $itemTypeId = $reference->getItemTypeId();
+            $referenceId = $reference->getReferenceId();
+            $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+            $reference->setReferenceVolume($referenceVolume);
         }
         return $person;
     }

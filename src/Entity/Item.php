@@ -18,6 +18,12 @@ class Item {
         'Domherr GS' => 6,
     ];
 
+    // map authority name
+    const AUTHORITY_ID = [
+            "GS" => 200,
+            "WIAG" => 5,
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -80,11 +86,6 @@ class Item {
      * @ORM\Column(type="string", length=63, nullable=true)
      */
     private $idPublic;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $itemReferenceId;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -198,18 +199,6 @@ class Item {
     public function setIdPublic(?string $idPublic): self
     {
         $this->idPublic = $idPublic;
-
-        return $this;
-    }
-
-    public function getItemReferenceId(): ?int
-    {
-        return $this->itemReferenceId;
-    }
-
-    public function setItemReferenceId(?int $itemReferenceId): self
-    {
-        $this->itemReferenceId = $itemReferenceId;
 
         return $this;
     }
@@ -346,9 +335,16 @@ class Item {
         return $this;
     }
 
-    private function getIdExternalObj($authorityId) {
+    public function getIdExternalObj($authorityIdOrName) {
+        $authorityId = 5;
+        if (is_int($authorityIdOrName)) {
+            $authorityId = $authorityIdOrName;
+        } else {
+            $authorityId = self::AUTHORITY_ID[$authorityIdOrName];
+        }
+
         $result = null;
-        foreach ($this->idsExternal as $id) {
+        foreach ($this->idExternal as $id) {
             if ($id->getAuthorityId() == $authorityId) {
                 $result = $id;
                 break;
@@ -365,6 +361,11 @@ class Item {
     public function getUriExternalByAuthorityId($authorityId) {
         $id = $this->getIdExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
+    }
+
+    public function getSource() {
+        $typeId = $this->itemTypeId;
+        return $typeId ? array_flip(self::ITEM_TYPE_ID)[$typeId] : null;
     }
 
 }

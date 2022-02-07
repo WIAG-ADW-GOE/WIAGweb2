@@ -40,6 +40,11 @@ class PersonRole
     private $item;
 
     /**
+     * @ORM\OneToOne(targetEntity="Institution")
+     */
+    private $institution;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $roleId;
@@ -109,6 +114,11 @@ class PersonRole
      */
     private $placeName = null;
 
+    /**
+     * @ORM\Column(type="string", length=127, nullable=true)
+     */
+    private $institutionName;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -119,6 +129,10 @@ class PersonRole
         return $this->item;
     }
 
+    public function getInstitution()
+    {
+        return $this->institution;
+    }
 
     public function getComment(): ?string
     {
@@ -288,7 +302,7 @@ class PersonRole
         return $this;
     }
 
-    public function setPlaceName(string $placeName): self
+    public function setPlaceName(?string $placeName): self
     {
         $this->placeName = $placeName;
         return $this;
@@ -297,5 +311,17 @@ class PersonRole
     public function getPlaceName(): ?string
     {
         return $this->placeName;
+    }
+
+    public function getInstitutionName(): ?string
+    {
+        return $this->institutionName;
+    }
+
+    public function setInstitutionName(?string $institutionName): self
+    {
+        $this->institutionName = $institutionName;
+
+        return $this;
     }
 }

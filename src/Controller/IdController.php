@@ -27,7 +27,7 @@ class IdController extends AbstractController {
     }
 
     /**
-     * find item by ID; show details or deliver data as JSON, CSV or XML
+     * find item by public ID; show details or deliver data as JSON, CSV or XML
      *
      * decide which format should be delivered
      *
@@ -68,7 +68,7 @@ class IdController extends AbstractController {
         $repository = $this->getDoctrine()
                            ->getRepository(Person::class);
 
-        $result = $repository->find($id);
+        $result = $repository->findWithAssociations($id);
 
         if ($format == 'html') {
             return $this->render('bishop/person.html.twig', [
@@ -87,7 +87,7 @@ class IdController extends AbstractController {
         $repository = $this->getDoctrine()
                            ->getRepository(Diocese::class);
 
-        $result = $repository->find($id);
+        $result = $repository->dioceseWithBishopricSeatById($id);
 
         if ($format == 'html') {
             return $this->render('diocese/diocese.html.twig', [
@@ -100,6 +100,7 @@ class IdController extends AbstractController {
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
             return $this->dioceseService->$fncResponse([$result]);
         }
+
 
         switch($format) {
         case 'html':

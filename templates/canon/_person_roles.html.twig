@@ -10,8 +10,9 @@
 			<li class="list-inline-item">{% if o.dioceseid %}<a href="{{ path('id', {'id': o.diocese.item.idpublic}) }}">{{ o.diocesename }}</a>{% else %}{{ o.diocesename }}{% endif %}</li>
 		    {% endif %}
 		    {% if o.institutionid %}
+			{% set institutionname = o.institution.name ?: o.institutionname %}
 			<li class="list-inline-item">
-			    <a href="{{ url_gs_monasteries }}{{ o.institution.idgsn }}" target="_blank" rel="noopener">{{ o.institutionname }}</a>
+			    <a href="{{ url_gs_monastery }}{{ o.institution.idgsn }}" target="_blank" rel="noopener">{{ institutionname }}</a>
 			</li>
 		    {% endif %}
 		    <li class="list-inline-item">

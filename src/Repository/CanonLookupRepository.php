@@ -6,6 +6,7 @@ use App\Entity\CanonLookup;
 use App\Entity\Institution;
 use App\Entity\Item;
 use App\Entity\CanonGroup;
+use App\Entity\Person;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -202,14 +203,14 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
-     * find all items that are related to the same canon
+     * find all items that are related to the same canon with offices
      */
     function findRelatedCanon($id) {
-        $cnGroup = new CanonGroup();
-
         $qb = $this->createQueryBuilder('cr')
-                   ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = cr.personId')
-                   ->select('cr.personId AS id, i.itemTypeId')
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'p.id = cr.personId')
+                   ->join('p.item', 'i')
+                   ->join('p.role', 'pr')
+                   ->select('p, i, pr')
                    ->andWhere('cr.personIdCanon = :id')
                    ->setParameter('id', $id);
 
@@ -217,11 +218,32 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $result = $query->getResult();
 
-        $typeMap = [4 => 'Ep', 5 => 'Dh', 6 => 'Gs'];
-        foreach($result as $r) {
-            $elementName = 'id'.$typeMap[$r['itemTypeId']];
-            $cnGroup->$elementName = $r['id'];
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        $typeMap = [4 => 'ep', 5 => 'dh', 6 => 'gs'];
+        $cnGroup = new CanonGroup();
+        foreach($result as $p) {
+            $personRepository->addInstitutionPlace($p);
+            $elementName = $typeMap[$p->getItem()->getItemTypeId()];
+            $cnGroup->$elementName = $p;
         }
+        return $cnGroup;
+    }
+
+    /**
+     * find all items that are related to the same canon with offices and references
+     */
+    function findRelatedCanonWithAssociations($id) {
+        $cnGroup = $this->findRelatedCanon($id);
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        foreach (['ep', 'dh', 'gs'] as $cn) {
+            $person = $cnGroup->$cn;
+            if ($person) {
+                $personRepository->addReferenceVolumes($person);
+            }
+        }
+
         return $cnGroup;
     }
 

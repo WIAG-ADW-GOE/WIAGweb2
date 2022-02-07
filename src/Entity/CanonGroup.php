@@ -4,20 +4,29 @@ namespace App\Entity;
 
 class CanonGroup
 {
-    public $idEp = null;
-    public $idDh = null;
-    public $idGs = null;
+    public $ep = null;
+    public $dh = null;
+    public $gs = null;
 
     /**
-     * get primary id: bishop > canon > canon_gs
+     * get primary
+     * priority for public id as in canon_lookup: ep > dh > gs
      */
-    public function getPrimaryId() {
-        return $this->idEp ?? ($this->idDh ?? $this->idGs);
+    public function getPrimary() {
+        return $this->dh ?: ($this->ep ?: $this->gs);
+    }
+
+    public function getIdPublic() {
+        $owner = $this->ep ?: ($this->dh ?: $this->gs);
+        if (is_null($owner)) {
+            return null;
+        }
+        return $owner->getItem()->getIdPublic();
     }
 
     public function countValid() {
-        return ($this->idEp ? 1 : 0)
-            + ($this->idDh ? 1 : 0)
-            + ($this->idGs ? 1 : 0);
+        return ($this->ep ? 1 : 0)
+            + ($this->dh ? 1 : 0)
+            + ($this->gs ? 1 : 0);
     }
 }

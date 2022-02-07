@@ -57,15 +57,20 @@ class BishopController extends AbstractController {
                                           self::PAGE_SIZE,
                                           $offset);
 
-            // find persons in the template to keep order
+            # easy way to get all persons in the right order
             $personRepository = $this->getDoctrine()->getRepository(Person::class);
+            $cPerson = array();
+            foreach($ids as $id) {
+                $cPerson[] = $personRepository->findWithOffice($id);
+            }
+
+
 
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
-                'repository' => $personRepository,
                 'form' => $form,
                 'count' => $count,
-                'ids' => $ids,
+                'cperson' => $cPerson,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);

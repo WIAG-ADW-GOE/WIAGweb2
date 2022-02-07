@@ -1,0 +1,7 @@
+{{ volume.fullcitation }}
+{% for p in pages %}
+    {% if p.isbio %}<strong>{{ p.page }} </strong><a class="btn btn-danger btn-sm" role="button" href="{{ url_gs_bios~volume.gsvolumenr~'/'~p.page }}" target="_blank" rel="noopener"><strong>Biogramm online lesen</strong></a>
+    {% else %}
+	{{ p.page }}
+    {% endif %}{%if not loop.last %},{% endif %}
+{% endfor %}

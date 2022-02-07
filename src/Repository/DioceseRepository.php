@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Diocese;
+use App\Entity\ReferenceVolume;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -71,8 +72,10 @@ class DioceseRepository extends ServiceEntityRepository
 
     public function dioceseWithBishopricSeatByName($name, $limit = null, $offset = 0) {
         $qb = $this->createQueryBuilder('d')
-                   ->addSelect('bishopricSeat')
+                   ->join('d.item', 'i')
                    ->leftJoin('d.bishopricSeat', 'bishopricSeat')
+                   ->addSelect('i')
+                   ->addSelect('bishopricSeat')
                    ->join('d.altLabels', 'altLabels');
 
         if(!is_null($name) && $name != "") {
@@ -91,9 +94,52 @@ class DioceseRepository extends ServiceEntityRepository
         $result = new Paginator($query, true);
         // $result = $query->getResult();
 
-        return $result;
+        $cDiocese = array();
+        foreach ($result as $diocese) {
+            $cDiocese[] = $this->addReferenceVolumes($diocese);
+        }
+
+        return $cDiocese;
 
     }
+
+    public function dioceseWithBishopricSeatById($id) {
+        $qb = $this->createQueryBuilder('d')
+                   ->join('d.item', 'i')
+                   ->leftJoin('d.bishopricSeat', 'bishopricSeat')
+                   ->addSelect('i')
+                   ->addSelect('bishopricSeat')
+                   ->join('d.altLabels', 'altLabels')
+                   ->andWhere('d.id = :id')
+                   ->setParameter('id', $id);
+
+        $query = $qb->getQuery();
+
+        $diocese = $query->getOneOrNullResult();
+        // $result = $query->getResult();
+
+        if ($diocese) {
+            $this->addReferenceVolumes($diocese);
+        }
+
+        return $diocese;
+
+    }
+
+
+    public function addReferenceVolumes($diocese) {
+        $em = $this->getEntityManager();
+        # add reference volumes (combined key)
+        $repository = $em->getRepository(ReferenceVolume::class);
+        foreach ($diocese->getItem()->getReference() as $reference) {
+            $itemTypeId = $reference->getItemTypeId();
+            $referenceId = $reference->getReferenceId();
+            $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+            $reference->setReferenceVolume($referenceVolume);
+        }
+        return $diocese;
+    }
+
 
     /**
      * AJAX

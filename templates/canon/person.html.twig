@@ -6,13 +6,37 @@
 {% endblock %}
 
 {% block body %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
-    {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
-
-    {# person is passed as an object #}
-    {% if not person%}
-	<p class="em">Person nicht gefunden.</p>
+    {% if not cngroup%}
+	<p class="em">Domherr nicht gefunden.</p>
     {% else %}
+	{% set person = cngroup.getprimary %}
+	{% set idpublic = cngroup.idpublic %}
+	{% set permalink %}{{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }}{% endset %}
+	{% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+	{% set btnpanel %}
+	<div class="row mx-2 col-12 mt-4 mb-2">
+	    <div class="d-flex">
+		{% if form is defined %}
+		    {{ include('canon/_button_step.html.twig',
+			{value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
+		    {{ include('canon/_button_step.html.twig',
+			{value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
+		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm ms-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm ms-1 me-3">Neue Suche</a>
+		{% else %}
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm ms-1 me-3">Suche</a>
+		{% endif %}
+		{% set btnaction=path('id', {id: person.item.idPublic}) %}
+		{{ include('canon/_button_data.html.twig',
+		    {action: btnaction, format: 'Csv', text: 'CSV' }) }}
+		{{ include('canon/_button_data.html.twig',
+		    {action: btnaction, format: 'Rdf', text: 'RDF-XML' }) }}
+		{{ include('canon/_button_data.html.twig',
+		    {action: btnaction, format: 'Json', text: 'JSON' }) }}
+		{{ include('canon/_button_data.html.twig', {action: btnaction, format: 'Jsonld', text: 'JSON-LD' }) }}
+	    </div>
+	</div>
+	{% endset %}
 	{% if form is defined %}
 	    {{ form_start(form, {'attr': {'id':'form', 'action':path('canon_query'), 'hidden': 'hidden'} }) }}
 		{{ include('canon/_form_elements.html.twig') }}
@@ -20,8 +44,9 @@
 	{% endif %}
 	<div class="container-fluid mt-3 mb-2">
 	    <div class="row mx-2 col-12">
-		<span class="topic-title">{{ canon_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+		<span class="topic-title">{{ canon_title }}</span>
 	    </div>
+	    {{ btnpanel }}
 	    {# name and button to copy permalink to the clipboard #}
 	    <div class="row col-12 mx-2 mt-2 mb-0">
 		<div class="d-flex justify-content-between">
@@ -54,37 +79,43 @@
 		    {% endif %}
 		</div>
 	    {% endif %}
-	    {# offices #}
-	    <div class="row mx-2 mt-3 mb-2">
-		<div class="col-12">
-		    <div class="card">
-			<span class="card-header"><strong>Amtsangaben aus Referenzwerken</strong></span>
-			<dl class="card-body row">
-			    {{ include('canon/_person_roles.html.twig', {
-				roles: person.role
-			    }) }}
-			    {% if person.item.reference %}
-				{% set references=person.item.reference %}
-				<dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
-				<dd class="col-sm-9">
-				    <ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
-					{% for ref in references %}
-					    {% set idinref = ref.idinreference %}
-					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
-					    <li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
-					{% endfor %}
-				    </ul>
-				</dd>
-			    {% endif %}
-			</dl>
-		    </div>
-		</div>
-	    </div>
+	    {# offices and references#}
+	    {% set wiagid = null %}
+	    {% if cngroup.dh %}
+		{{ include('canon/_person_role_group.html.twig', {
+		    person: cngroup.dh,
+		    title: 'Amtsangaben aus Referenzwerken',
+		}) }}
+	    {% endif %}
+	    {% if cngroup.gs %}
+		{% set gsnid = cngroup.gs.item.getidexternalobj('GS') %}
+		{% set title %}
+		<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>
+		{% endset %}
+		{{ include('canon/_person_role_group.html.twig', {
+		    person: cngroup.gs,
+		    title: title
+		}) }}
+	    {% endif %}
+	    {% if cngroup.ep %}
+		{% set title %}
+		<a href="{{ path('id', {id: cngroup.ep.item.idpublic}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ cngroup.ep.item.idpublic }}</strong></a>
+		{% endset %}
+		{{ include('canon/_person_role_group.html.twig', {
+		    person: cngroup.ep,
+		    title: title
+		}) }}
+	    {% endif %}
 	    {# external IDs #}
-	    {% if person.item.idExternal %}
+	    {% set epid = null %}
+	    {% if cngroup.gs and cngroup.ep and not cngroup.dh%}
+		{% set epid = cngroup.ep.item.idpublic %}
+	    {% endif %}
+	    {% if (person.item.idExternal and person.item.idExternal|length > 0) or epid %}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
 			{{ include('canon/_person_id_external.html.twig', {
+			    epid: epid,
 			    ids: person.item.idExternal
 			}) }}
 		    </div>
@@ -102,26 +133,7 @@
 		</div>
 	    </div>
 	    {# button line #}
-	    <div class="row mx-2 col-12 mt-4 mb-2">
-		<div class="d-flex">
-		    {% if form is defined %}
-			<button type="submit" form="form" formaction="{{ path('canon_list_detail') }}" class="btn btn-secondary btn-sm" name="offset" value="{{ offset - 1 }}" {% if offset == 0 %}disabled="disabled"{% endif %}>vorheriger Treffer</button>
-			<button type="submit" form="form" formaction="{{ path('canon_list_detail') }}" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset + 1 }}" {% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
-			<button type="submit" form="form" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
-			<a href="{{ path('canon_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</a>
-
-			{# <a href="{{ path('launch_query') }}"><button class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</button></a> #}
-		    {% else %}
-			<a href="{{ path('canon_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Suche</a>
-		    {% endif %}
-		    {% set btnaction=path('id', {id: person.item.idPublic}) %}
-		    {{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
-		    {{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
-		    {{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
-		    {{ include('canon/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
-		</div>
-	    </div>
+	    {{ btnpanel }}
 	</div>
-
     {% endif %}
 {% endblock %}

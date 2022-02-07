@@ -107,7 +107,7 @@ class IdExternal
     public function getPrettyValue(): ?string
     {
         if (!$this->value) {
-            return $value;
+            return null;
         }
         $prettyValue = urldecode($this->value);
         $prettyValue = str_replace('_', ' ', $prettyValue);

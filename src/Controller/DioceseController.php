@@ -89,17 +89,16 @@ class DioceseController extends AbstractController {
         $offset = $request->request->get('offset');
 
         $hassuccessor = false;
+        $idx = 0;
         if($offset == 0) {
             $result = $repository->dioceseWithBishopricSeatByName($name, 2, $offset);
-            $iterator = $result->getIterator();
-            if(count($iterator) == 2) $hassuccessor = true;
+            if(count($result) == 2) $hassuccessor = true;
         } else {
             $result = $repository->dioceseWithBishopricSeatByName($name, 3, $offset - 1);
-            $iterator = $result->getIterator();
-            if(count($iterator) == 3) $hassuccessor = true;
-            $iterator->next();
+            if(count($result) == 3) $hassuccessor = true;
+            $idx += 1;
         }
-        $diocese = $iterator->current();
+        $diocese = $result[$idx];
 
         if (!$diocese) {
             throw $this->createNotFoundException("Bistum wurde nicht gefunden.");
