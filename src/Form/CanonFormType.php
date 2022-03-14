@@ -4,7 +4,7 @@ namespace App\Form;
 use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\CanonFormModel;
-use App\Repository\CanonLookupRepository;
+use App\Repository\ItemRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,13 +29,14 @@ class CanonFormType extends AbstractType
 {
     private $repository;
 
-    public function __construct(CanonLookupRepository $repository) {
+    public function __construct(ItemRepository $repository) {
         $this->repository = $repository;
     }
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => CanonFormModel::class,
+            'forceFacets' => false,
         ]);
 
     }
@@ -65,7 +66,7 @@ class CanonFormType extends AbstractType
                     'placeholder' => 'Amtsbezeichnung',
                 ],
             ])
-            ->add('place', NumberType::class, [
+            ->add('place', TextType::class, [
                 'label' => 'Ort',
                 'required' => false,
                 'attr' => [
@@ -100,35 +101,32 @@ class CanonFormType extends AbstractType
             //     'mapped' => false,
             // ]);
 
+        // TODO 2022-02-25
+        // Facetten
+        // if ($options['forceFacets']) {
+        //     $this->createFacets($builder, $model);
+        //     // $this->createFacetOffice($builder, $model);
+        //     // $this->createFacetPlace($builder, $model);
+        // }
 
-        $builder->addEventListener(
-            FormEvents::PRE_SUBMIT,
-            array($this, 'createFacetDomstiftByEvent'));
 
-
-        $builder->addEventListener(
-            FormEvents::PRE_SUBMIT,
-            array($this, 'createFacetOfficeByEvent'));
+        // $builder->addEventListener(
+        //     FormEvents::PRE_SUBMIT,
+        //     function($event) {
+        //         $data = $event->getData();
+        //         $model = CanonFormModel::newByArray($data);
+        //         $this->createFacets($event->getForm(), $model);
+        //         // $this->createFacetOffice($event->getForm(), $model);
+        //     });
 
     }
 
-    public function createFacetDomstiftByEvent(FormEvent $event) {
-        # $event->getForm() is still empty
-        $data = $event->getData();
-        if (!$data) return;
-        $model = CanonFormModel::newByArray($data);
-        if ($model->isEmpty()) return;
-
-        $this->createFacetDomstift($event->getForm(), $model);
-    }
-
-    public function createFacetDomstift($form, $modelIn) {
+    public function createFacets($form, $modelIn) {
         // do not filter by domstift themselves
         $model = clone $modelIn;
         $model->facetDomstift = null;
 
         $domstifte = $this->repository->countCanonDomstift($model);
-
 
         $choices = array();
         foreach($domstifte as $domstift) {
@@ -151,17 +149,6 @@ class CanonFormType extends AbstractType
             ]);
 
         }
-    }
-
-    public function createFacetOfficeByEvent(FormEvent $event) {
-        # $event->getForm() is still empty
-        $data = $event->getData();
-
-        if (!$data) return;
-        $model = CanonFormModel::newByArray($data);
-        if ($model->isEmpty()) return;
-
-        $this->createFacetOffice($event->getForm(), $model);
     }
 
     public function createFacetOffice($form, $modelIn) {

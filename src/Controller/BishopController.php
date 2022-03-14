@@ -34,37 +34,44 @@ class BishopController extends AbstractController {
     public function query(Request $request,
                           ItemRepository $repository) {
 
+        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
         $model = new BishopFormModel;
 
-        $form = $this->createForm(BishopFormType::class, $model);
+        $flagInit = count($request->request->all()) == 0;
+
+        $form = $this->createForm(BishopFormType::class, $model, [
+            'forceFacets' => $flagInit,
+        ]);
+
         $offset = 0;
 
-
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+        $model = $form->getData();
 
-            $model = $form->getData();
+        if ($form->isSubmitted() && !$form->isValid()) {
+            return $this->renderForm('bishop/query.html.twig', [
+                    'menuItem' => 'collections',
+                    'form' => $form,
+            ]);
+        } else {
+            $offset = $request->request->get('offset') ?? 0;
+            // set offset to page begin
+            $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
             $countResult = $repository->countBishop($model);
             $count = $countResult["n"];
-
-            $offset = $request->request->get('offset');
-            // set offset to page begin
-            $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
             $ids = $repository->bishopIds($model,
                                           self::PAGE_SIZE,
                                           $offset);
 
             # easy way to get all persons in the right order
-            $personRepository = $this->getDoctrine()->getRepository(Person::class);
             $cPerson = array();
             foreach($ids as $id) {
                 $cPerson[] = $personRepository->findWithOffice($id);
             }
-
-
 
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
@@ -74,14 +81,7 @@ class BishopController extends AbstractController {
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
-
         }
-
-        return $this->renderForm('bishop/query.html.twig', [
-            'menuItem' => 'collections',
-            'form' => $form,
-        ]);
-
     }
 
     /**

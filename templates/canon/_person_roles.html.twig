@@ -26,10 +26,9 @@
 			{% endif %}
 		    </li>
 		    {# table person_role_property #}
-		    {# ## TODO relevant für Domherren#}
-		    {% if false and o.archdeaconterritory %}
-			<li class="list-inline-item comment"> Archidiakonat {{ o.archdeaconterritory }} </li>
-		    {% endif %}
+		    {% for property in o.roleproperty %}
+			<li class="list-inline-item comment"> {{ property.name }} {{ property.value }} </li>
+		    {% endfor %}
 		    {% if o.note %}
 			<li class="list-inline-item comment"> ({{ o.note }}) </li>
 		    {% endif %}

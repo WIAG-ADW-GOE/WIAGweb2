@@ -32,6 +32,13 @@ class Item {
     private $id;
 
     /**
+     * @ORM\OneToMany(targetEntity="ItemProperty", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $itemProperty;
+
+
+    /**
      * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
@@ -53,7 +60,9 @@ class Item {
      * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
-    private $personRole;
+    // TODO 2022-02-25
+    // link roles via person?!
+    // private $personRole;
 
     /**
      * @ORM\OneToOne(targetEntity="Institution")
@@ -145,6 +154,10 @@ class Item {
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getItemProperty() {
+        return $this->itemProperty;
     }
 
     public function getIdExternal() {

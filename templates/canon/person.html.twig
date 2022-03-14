@@ -21,10 +21,10 @@
 			{value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
 		    {{ include('canon/_button_step.html.twig',
 			{value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
-		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm ms-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
-		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm ms-1 me-3">Neue Suche</a>
+		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Neue Suche</a>
 		{% else %}
-		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm ms-1 me-3">Suche</a>
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
 		{% set btnaction=path('id', {id: person.item.idPublic}) %}
 		{{ include('canon/_button_data.html.twig',

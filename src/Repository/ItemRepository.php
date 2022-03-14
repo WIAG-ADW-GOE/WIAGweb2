@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\PersonRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -71,10 +72,8 @@ class ItemRepository extends ServiceEntityRepository
 
     public function countBishop($model) {
         $result = array('n' => 0);
-        if ($model->isEmpty()) return $result;
 
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
-
 
         // diocese or office
         $diocese = $model->diocese;
@@ -82,6 +81,7 @@ class ItemRepository extends ServiceEntityRepository
         $year = $model->year;
         $name = $model->name;
         $someid = $model ->someid;
+
         if ($diocese || $office) {
             $qb = $this->createQueryBuilder('i')
                        ->join('i.personRole', 'pr')
@@ -97,7 +97,7 @@ class ItemRepository extends ServiceEntityRepository
                        ->select('COUNT(DISTINCT i.id) as n')
                        ->andWhere("i.itemTypeId = ${itemTypeId}")
                        ->andWhere('i.isOnline = 1');
-        } elseif ($name || $someid) {
+        } elseif ($model->isEmpty() || $name || $someid) {
             $qb = $this->createQueryBuilder('i')
                        ->select('COUNT(DISTINCT i.id) as n')
                        ->andWhere("i.itemTypeId = ${itemTypeId}")
@@ -113,9 +113,14 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
+    public function findIdsByName($itemTypeName, $limit = 0, $offset = 0) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+
+
+    }
+
     public function bishopIds($model, $limit = 0, $offset = 0) {
         $result = null;
-        if ($model->isEmpty()) return $result;
 
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
@@ -124,7 +129,9 @@ class ItemRepository extends ServiceEntityRepository
         $year = $model->year;
         $name = $model->name;
         $someid = $model->someid;
+
         if ($office || $diocese) {
+            // sort: if diocese is a query condition, this filters personRoles
             $qb = $this->createQueryBuilder('i')
                        ->select('i.id, min(pr.numDateBegin) as sort')
                        ->join('i.personRole', 'pr')
@@ -149,7 +156,7 @@ class ItemRepository extends ServiceEntityRepository
                        ->addOrderBy('p.familyname')
                        ->addOrderBy('p.givenname')
                        ->addOrderBy('p.id');
-        } elseif ($name || $someid) {
+        } elseif ($model->isEmpty() || $name || $someid) {
             $qb = $this->createQueryBuilder('i')
                        ->select('i.id')
                        ->join('i.person', 'p')
@@ -160,7 +167,6 @@ class ItemRepository extends ServiceEntityRepository
                        ->addOrderBy('p.givenname')
                        ->addOrderBy('p.id');
         }
-
 
         $qb = $this->addBishopConditions($qb, $model);
         $qb = $this->addBishopFacets($qb, $model);
@@ -173,7 +179,7 @@ class ItemRepository extends ServiceEntityRepository
                          $query->getResult());
         return $ids;
 
-    }
+        }
 
     private function addBishopConditions($qb, $model) {
         $diocese = $model->diocese;
@@ -245,6 +251,7 @@ class ItemRepository extends ServiceEntityRepository
         return $qb;
     }
 
+
     /**
      * countBishopDiocese($model)
      *
@@ -254,7 +261,7 @@ class ItemRepository extends ServiceEntityRepository
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
         $qb = $this->createQueryBuilder('i')
-                   ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) as n')
+                   ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) AS n')
                    ->join('i.personRole', 'prcount')
                    ->join('i.personRole', 'pr') # for form conditions
                    ->join('i.person', 'p') # for form conditions
@@ -359,5 +366,269 @@ class ItemRepository extends ServiceEntityRepository
 
         return $suggestions;
     }
+
+    /**
+     * countCanonDomstift($model)
+     *
+     * return array of dioceses related to a person's role (used for facet)
+     */
+    public function countCanonDomstift($model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
+        $institutionItemTypeId = Item::ITEM_TYPE_ID['Domstift'];
+
+
+        $ids = $this->canonIds($model);
+
+        $repository = $this->getEntityManager()
+                           ->getRepository(PersonRole::class);
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('DISTINCT(iprp.value) AS name, COUNT(DISTINCT(pr.personId)) as n')
+                   ->join('i.itemProperty', 'iprp')
+                   ->join('App\Entity\PersonRole', 'pr',
+                          'WITH', 'pr.institutionId = i.id')
+                   ->join('App\Entity\CanonLookup', 'cl',
+                          'WITH', 'pr.personId = cl.personIdCanon')
+                   ->andWhere("i.itemTypeId = ${institutionItemTypeId}")
+                   ->andWhere("iprp.name = 'domstift_short'")
+                   ->andWhere('pr.personId in (:ids)')
+                   ->setParameter('ids', $ids)
+                   ->groupBy('iprp.value');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * countCanonOffice($model)
+     *
+     * return array of offices related to a person's role (used for facet)
+     */
+    public function countCanonOffice($model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
+                   ->join('i.personRole', 'prcount')
+                   ->join('i.personRole', 'pr') # for form conditions
+                   ->join('i.person', 'p') # for form conditions
+                   ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("prcount.roleName IS NOT NULL");
+
+        $this->addBishopConditions($qb, $model);
+        $this->addBishopFacets($qb, $model);
+
+        $qb->groupBy('prcount.roleName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+
+    /**
+     * return number of canons matching the criteria in `model`
+     */
+    public function countCanon($model) {
+        $result = array('n' => 0);
+
+        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
+        $institutionItemTypeId = Item::ITEM_TYPE_ID['Domstift'];
+
+        // domstift or office
+        $domstift = $model->domstift;
+        $office = $model->office;
+        $place = $model->place;
+        $year = $model->year;
+        $name = $model->name;
+        $someid = $model ->someid;
+
+        /* all entries in canon_lookup.person_id_canon have status 'online' */
+        if ($model->isEmpty() || $domstift || $office) {
+            # we do not need `ipr` and `ip` here but we keep it consistent with `canonIds`
+            $qb = $this->createQueryBuilder('i')
+                       ->select('COUNT(DISTINCT i.id) as n')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = cr.personId')
+                       ->join('App\Entity\Item', 'ipr', 'WITH', 'ipr.id = pr.institutionId')
+                       ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
+                       ->andWhere("ipr.itemTypeId = ${institutionItemTypeId}")
+                       ->andWhere('i.isOnline = 1');
+            if($year) {
+                $qb->join('i.person', 'p');
+            }
+        } elseif ($place) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('COUNT(DISTINCT i.id) as n')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = cr.personId')
+                       ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
+                       ->andWhere('i.isOnline = 1');
+            if($year) {
+                $qb->join('i.person', 'p');
+            }
+        }
+        elseif ($year) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('COUNT(DISTINCT i.id) as n')
+                       ->join('i.person', 'p')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->andWhere('i.isOnline = 1');
+        } elseif ($name || $someid) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('COUNT(DISTINCT i.id) as n')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->andWhere('i.isOnline = 1');
+        }
+
+        $qb = $this->addCanonConditions($qb, $model);
+        // $qb = $this->addCanonFacets($qb, $model);
+
+        $query = $qb->getQuery();
+        $result = $query->getOneOrNullResult();
+
+        return $result;
+    }
+
+    public function canonIds($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
+        $institutionItemTypeId = Item::ITEM_TYPE_ID['Domstift'];
+
+        $domstift = $model->domstift;
+        $office = $model->office;
+        $place = $model->place;
+        $year = $model->year;
+        $name = $model->name;
+        $someid = $model->someid;
+        if ($model->isEmpty() || $domstift || $office) {
+            // sort: if domstift is a query condition, this filters personRoles
+            // we need not to check for item.is_online because the is guaranteed for entries in canon_lookup
+            $qb = $this->createQueryBuilder('i')
+                       ->select('i.id, i.itemTypeId, min(role_srt.dateSortKey) as sort')
+                       ->join('i.canonLookup', 'clp')
+                       ->join('i.person', 'p')
+                       ->join('p.role', 'role_srt')
+                       ->leftjoin('App\Entity\ItemProperty', 'prp',
+                                  'WITH', "role_srt.institutionId = prp.itemId AND prp.name = 'domstift_short'")
+                       ->addGroupBy('i.id')
+                       ->addOrderBy('prp.value')
+                       ->addOrderBy('sort')
+                       ->addOrderBy('p.familyname')
+                       ->addOrderBy('p.givenname')
+                       ->addOrderBy('p.id');
+        } elseif ($place) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('i.id, i.itemTypeId, min(role_place.numDateBegin) as sort')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->join('i.person', 'p')
+                       ->join('p.role', 'role_place')
+                       ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = role_place.institutionId')
+                       ->andWhere('i.isOnline = 1')
+                       ->addGroupBy('i.id')
+                       ->addOrderBy('ip.placeName')
+                       ->addOrderBy('sort')
+                       ->addOrderBy('p.familyname')
+                       ->addOrderBy('p.givenname')
+                       ->addOrderBy('p.id');
+        } elseif ($year) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('i.id')
+                       ->join('i.person', 'p')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->andWhere('i.isOnline = 1')
+                       ->addOrderBy('p.dateMin')
+                       ->addOrderBy('p.dateMax')
+                       ->addOrderBy('p.familyname')
+                       ->addOrderBy('p.givenname')
+                       ->addOrderBy('p.id');
+        } elseif ($name || $someid) {
+            $qb = $this->createQueryBuilder('i')
+                       ->select('DISTINCT(cr.personIdCanon) AS id')
+                       ->join('App\Entity\CanonLookup', 'cr', 'WITH', 'i.id = cr.personIdCanon')
+                       ->join('i.person', 'p')
+                       ->andWhere('i.isOnline = 1')
+                       ->addGroupBy('p.id')
+                       ->addOrderBy('p.familyname')
+                       ->addOrderBy('p.givenname')
+                       ->addOrderBy('p.id');
+        }
+
+        $qb = $this->addCanonConditions($qb, $model);
+        // TODO 2022-02-15
+        // $qb = $this->addCanonFacets($qb, $model);
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
+        $query = $qb->getQuery();
+
+        // $ids = array_map(function($a) { return $a["id"]; },
+        //                  $query->getResult());
+
+        return $query->getResult();
+
+    }
+
+    private function addCanonConditions($qb, $model) {
+        $domstift = $model->domstift;
+        $office = $model->office;
+        $place = $model->place;
+        $year = $model->year;
+        $name = $model->name;
+        $someid = $model->someid;
+
+        if ($domstift) {
+            $qb->join('p.role', 'role_inst')
+               ->andWhere("role_inst.institutionName LIKE :domstift")
+               ->setParameter('domstift', '%'.$domstift.'%');
+        }
+
+        if ($office) {
+            $qb->join('p.role', 'role')
+               ->andWhere("role.roleName LIKE :value")
+               ->setParameter('value', '%'.$office.'%');
+        }
+        if ($place) {
+            $qb->andWhere("ip.placeName LIKE :value")
+               ->andWhere('role_place.numDateEnd IS NOT NULL AND role_place.numDateBegin IS NOT NULL AND '.
+                          'ip.numDateBegin < (role_place.numDateEnd + role_place.numDateBegin) / 2 AND '.
+                          '(role_place.numDateEnd + role_place.numDateBegin) / 2 < ip.numDateEnd'.
+                          ' OR '.
+                          'role_place.numDateEnd IS NOT NULL AND '.
+                          'ip.numDateBegin < role_place.numDateEnd AND '.
+                          'role_place.numDateEnd < ip.numDateEnd'.
+                          ' OR '.
+                          'role_place.numDateBegin IS NOT NULL AND '.
+                          'ip.numDateBegin < role_place.numDateBegin AND '.
+                          'role_place.numDateBegin < ip.numDateEnd')
+               ->setParameter('value', '%'.$place.'%');
+        }
+
+        if ($year) {
+            $qb->andWhere("p.dateMin - :mgnyear < :value ".
+                          " AND :value < p.dateMax + :mgnyear")
+               ->setParameter(':mgnyear', self::MARGINYEAR)
+               ->setParameter('value', $year);
+        }
+
+        if ($name) {
+            $qb->join('i.nameLookup', 'nl')
+               ->andWhere("nl.gnFn LIKE :qname OR nl.gnPrefixFn LIKE :qname")
+               ->setParameter('qname', '%'.$name.'%');
+        }
+
+        if ($someid) {
+            $qb->join('i.idExternal', 'ixt')
+               ->andWhere("i.idPublic LIKE :value ".
+                          "OR ixt.value LIKE :value")
+               ->setParameter('value', '%'.$someid.'%');
+        }
+        return $qb;
+    }
+
 
 }

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\InstitutionPlace;
+use App\Entity\PersonRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -48,15 +49,18 @@ class InstitutionPlaceRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * 2022-03-11 obsolete?!
+     */
     public function findByDate($id, $date) {
         if (is_null($date)) {
             $qb = $this->createQueryBuilder('ip')
-                       ->addSelect('ip.placeName')
+                       ->select('ip.placeName')
                        ->andWhere('ip.institutionId = :id')
                        ->setParameter('id', $id);
         } else {
             $qb = $this->createQueryBuilder('ip')
-                       ->addSelect('ip.placeName')
+                       ->select('ip.placeName')
                        ->andWhere('ip.institutionId =:id')
                        ->andWhere('ip.numDateBegin < :date')
                        ->andWhere(':date < ip.numDateEnd')
@@ -65,12 +69,46 @@ class InstitutionPlaceRepository extends ServiceEntityRepository
                        ->addOrderBy('ip.numDateBegin', 'ASC');
         }
 
-        $result = $qb->getQuery()
-                     ->getResult();
+        $query = $qb->getQuery();
 
-        if ($result) {
-            return $result[0]['placeName'];
+        return $query->getResult();
+    }
+
+    /**
+     * find all places matching the parameters in `role`;
+     */
+    public function findPlaceForRole(PersonRole $role) {
+        $institution_id = $role->getInstitutionId();
+        if (is_null($institution_id)) {
+            return null;
+        }
+        $roleBegin = $role->getNumDateBegin();
+        $roleEnd = $role->getNumDateEnd();
+        if (is_null($roleBegin) && is_null($roleEnd)) {
+            $roleBegin = 0;
+            $roleEnd = 4000;
+        } elseif (is_null($roleBegin)) {
+            $roleBegin = $roleEnd - 40;
+        } elseif (is_null($roleEnd)) {
+            $roleEndn = $roleBegin + 40;
         }
 
+        $qb = $this->createQueryBuilder('ip')
+                   ->select('ip.placeName')
+                   ->andWhere('ip.institutionId = :institution_id')
+                   ->andWhere(':roleBegin < ip.numDateBegin AND ip.numDateBegin < :roleEnd '.
+                              'OR :roleBegin < ip.numDateEnd AND ip.numDateEnd < :roleEnd ')
+                   ->setParameter('institution_id', $role->getInstitutionId())
+                   ->setParameter('roleBegin', $roleBegin)
+                   ->setParameter('roleEnd', $roleEnd);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        if (!empty($result)) {
+            $place = array_column($result, 'placeName');
+            return implode(", ", $place);
+        } else {
+            return null;
+        }
     }
 }

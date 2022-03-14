@@ -53,4 +53,15 @@ class BishopFormModel {
         return $value;
     }
 
+    public function hasFacets() {
+        $value = false;
+        $keys = ['facetDiocese', 'facetOffice'];
+        foreach($keys as $key) {
+            $value = $value || !is_null($this->$key);
+        }
+
+        return $value;
+    }
+
+
 }

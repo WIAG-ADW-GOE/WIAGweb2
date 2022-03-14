@@ -11,12 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 class CanonLookup
 {
     /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="canonLookup")
-     * @ORM\JoinColumn(name="person_id_canon", referencedColumnName="id")
-     */
-    private $person;
-
-    /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -24,41 +18,90 @@ class CanonLookup
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
-    private $personId;
+    private $personIdName;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
-    private $personIdCanon;
+    private $personIdRole;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $prioRole;
+
+    private $person;
+
+    private $roleListView;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getPersonId(): ?int
+    public function getPersonIdName(): ?int
     {
-        return $this->personId;
+        return $this->personIdName;
     }
 
-    public function setPersonId(int $personId): self
+    public function setPersonIdName(int $personIdName): self
     {
-        $this->personId = $personId;
+        $this->personIdName = $personIdName;
 
         return $this;
     }
 
-    public function getPersonIdCanon(): ?int
+    public function getPersonIdRole(): ?int
     {
-        return $this->personIdCanon;
+        return $this->personIdRole;
     }
 
-    public function setPersonIdCanon(int $personIdCanon): self
+    public function setCanonGs(?int $personIdRole): self
     {
-        $this->personIdCanon = $personIdCanon;
+        $this->personIdRole = $personIdRole;
 
         return $this;
     }
+
+    public function getPrioRole(): ?int
+    {
+        return $this->prioRole;
+    }
+
+    public function setPrioRole(?int $prioRole): self
+    {
+        $this->prioRole = $prioRole;
+
+        return $this;
+    }
+
+    public function getPerson()
+    {
+        return $this->person;
+    }
+
+    public function setPerson($person): self
+    {
+        $this->person = $person;
+
+        return $this;
+    }
+
+    public function getRoleListView()
+    {
+        return $this->roleListView;
+    }
+
+    public function setRoleListView($role): self
+    {
+        $this->roleListView = $role;
+
+        return $this;
+    }
+
+
+
+
 }

@@ -19,6 +19,12 @@ class PersonRole
     private $id;
 
     /**
+     * @ORM\OneToMany(targetEntity="PersonRoleProperty", mappedBy="personRole")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_role_id")
+     */
+    private $roleProperty;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
@@ -32,12 +38,6 @@ class PersonRole
      * @ORM\ManyToOne(targetEntity="Person", inversedBy="role")
      */
     private $person;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="personRole")
-     * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
-     */
-    private $item;
 
     /**
      * @ORM\OneToOne(targetEntity="Institution")
@@ -119,14 +119,38 @@ class PersonRole
      */
     private $institutionName;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $dateSortKey;
+
+    public function getRoleProperty()
+    {
+        return $this->roleProperty;
+    }
+
+    public function setRoleProperty($property): self
+    {
+        $this->roleProperty = $property;
+
+        return $this;
+    }
+
+    public function institutionPlace()
+    {
+        return $this->institutionPlace;
+    }
+
+    public function setInstitutionPlace($institutionPlace): self
+    {
+        $this->institutionPlace = $institutionPlace;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getItem()
-    {
-        return $this->item;
     }
 
     public function getInstitution()
@@ -321,6 +345,18 @@ class PersonRole
     public function setInstitutionName(?string $institutionName): self
     {
         $this->institutionName = $institutionName;
+
+        return $this;
+    }
+
+    public function getDateSortKey(): ?int
+    {
+        return $this->dateSortKey;
+    }
+
+    public function setDateSortKey(?int $dateSortKey): self
+    {
+        $this->dateSortKey = $dateSortKey;
 
         return $this;
     }

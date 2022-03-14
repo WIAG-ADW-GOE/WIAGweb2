@@ -74,6 +74,7 @@ class PersonRepository extends ServiceEntityRepository {
             $em = $this->getEntityManager();
             $repository = $em->getRepository(InstitutionPlace::class);
             foreach ($person->getRole() as $role) {
+                // TODO prüfe korrekt auf alle Überlappungen
                 $institutionId = $role->getInstitutionId();
                 if (is_null($institutionId)) {
                     continue;
@@ -85,10 +86,11 @@ class PersonRepository extends ServiceEntityRepository {
                     $dateQuery = intdiv($dateBegin + $dateEnd, 2);
                 } elseif (!is_null($dateEnd)) {
                     $dateQuery = $dateEnd;
+                } elseif (!is_null($dateBegin)) {
+                    $dateQuery = $dateBegin;
                 }
-
                 $placeName = $repository->findByDate($institutionId, $dateQuery);
-                $role->setPlaceName($placeName);
+                $role->setPlaceName(', ', implode(array_column($placeName, 'placeName')));
             }
         }
 

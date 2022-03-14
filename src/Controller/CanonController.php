@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\Canon;
+use App\Entity\CanonLookup;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
@@ -39,51 +40,52 @@ class CanonController extends AbstractController {
         // we need to pass an instance of CanonFormModel, because facets depend on it's data
         $model = new CanonFormModel;
 
-        $form = $this->createForm(CanonFormType::class, $model);
+        $flagInit = count($request->request->all()) == 0;
+
+        $form = $this->createForm(CanonFormType::class, $model, [
+            'forceFacets' => $flagInit,
+        ]);
+
         $offset = 0;
 
-
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+        $model = $form->getData();
 
-            $model = $form->getData();
-
-            $countResult = $repository->countCanon($model);
-            $count = $countResult["n"];
-
-
-            $offset = $request->request->get('offset');
+        if ($form->isSubmitted() && !$form->isValid()) {
+            return $this->renderForm('canon/query.html.twig', [
+                    'menuItem' => 'collections',
+                    'form' => $form,
+            ]);
+        } else {
+            $offset = $request->request->get('offset') ?? 0;
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $ids = $repository->canonIds($model,
-                                          self::PAGE_SIZE,
-                                          $offset);
+            // $countResult = $repository->countCanon($model);
+            // $count = $countResult["n"];
 
-            $cCnGroup = array();
+            $idAll = $repository->canonIds($model);
+            $count = count($idAll);
 
-            # easy way to get all persons in the right order
-            foreach($ids as $id) {
-                $cCnGroup[] = $repository->findRelatedCanon($id);
+            $id = array_slice($idAll, $offset, self::PAGE_SIZE);
+
+            $canon = array();
+            // easy way to keep the order of the entries
+            foreach($id as $idLoop) {
+                $canon[] = $repository->findWithOffice($idLoop["personIdName"]);
             }
 
             return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,
-                'ccngroup' => $cCnGroup,
+                'canon' => $canon,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
-
         }
-
-        return $this->renderForm('canon/query.html.twig', [
-            'menuItem' => 'collections',
-            'form' => $form,
-        ]);
-
     }
+
 
     /**
      * display details for a canon
@@ -91,7 +93,7 @@ class CanonController extends AbstractController {
      * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
-                                    CanonLookupRepository $repository) {
+                                    ItemRepository $repository) {
         $model = new CanonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
@@ -117,13 +119,14 @@ class CanonController extends AbstractController {
             $idx += 1;
         }
 
-        $cnGroup = $repository->findRelatedCanonWithAssociations($ids[$idx]);
+        $canonLookupRepository = $this->getDoctrine()
+                                      ->getRepository(CanonLookup::class);
+        $cnGroup = $canonLookupRepository->findRelatedCanonWithAssociations($ids[$idx]);
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
-            'repository' => $personRepository,
             'cngroup' => $cnGroup,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,

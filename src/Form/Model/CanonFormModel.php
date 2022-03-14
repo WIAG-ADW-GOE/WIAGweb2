@@ -40,19 +40,19 @@ class CanonFormModel {
             $model->$key = $data[$key];
         }
 
-        $model->facetDiocese = self::makeChoices($data, 'facetDiocese');
+        $model->facetDomstift = self::makeChoices($data, 'facetDomstift');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
         return $model;
     }
 
     public function isEmpty() {
-        $value = true;
-        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid'];
+        $result = true;
+        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid', 'facetDomstift', 'facetOffice'];
         foreach($keys as $key) {
-            $value = $value && is_null($this->$key);
+            $result = $result && !$this->$key;
         }
 
-        return $value;
+        return $result;
     }
 
 }

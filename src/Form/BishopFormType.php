@@ -36,12 +36,14 @@ class BishopFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => BishopFormModel::class,
+            'forceFacets' => false,
         ]);
 
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
+        $forceFacets = $options['forceFacets'];
 
         $builder
             ->add('name', TextType::class, [
@@ -88,26 +90,25 @@ class BishopFormType extends AbstractType
                 'mapped' => false,
             ]);
 
+        if ($forceFacets) {
+            $this->createFacetDiocese($builder, $model);
+            $this->createFacetOffice($builder, $model);
+        }
 
+        // add facets with current model data
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            array($this, 'createFacetDioceseByEvent'));
+            function ($event) {
+                $data = $event->getData();
+                if (!$data) {
+                    $model = new BishopFormModel();
+                } else {
+                    $model = BishopFormModel::newByArray($data);
+                }
 
-
-        $builder->addEventListener(
-            FormEvents::PRE_SUBMIT,
-            array($this, 'createFacetOfficeByEvent'));
-
-    }
-
-    public function createFacetDioceseByEvent(FormEvent $event) {
-        # $event->getForm() is still empty
-        $data = $event->getData();
-        if (!$data) return;
-        $model = BishopFormModel::newByArray($data);
-        if ($model->isEmpty()) return;
-
-        $this->createFacetDiocese($event->getForm(), $model);
+                $this->createFacetDiocese($event->getForm(), $model);
+                $this->createFacetOffice($event->getForm(), $model);
+            });
     }
 
     public function createFacetDiocese($form, $modelIn) {
@@ -116,7 +117,6 @@ class BishopFormType extends AbstractType
         $model->facetDiocese = null;
 
         $dioceses = $this->repository->countBishopDiocese($model);
-
 
         $choices = array();
         foreach($dioceses as $diocese) {
@@ -127,7 +127,6 @@ class BishopFormType extends AbstractType
         $choicesIn = $modelIn->facetDiocese;
         FacetChoice::mergeByName($choices, $choicesIn);
 
-
         if ($dioceses) {
             $form->add('facetDiocese', ChoiceType::class, [
                 'label' => 'Filter Bistum',
@@ -137,20 +136,8 @@ class BishopFormType extends AbstractType
                 'choice_label' => ChoiceList::label($this, 'label'),
                 'choice_value' => 'name',
             ]);
-
             // it is not possible to set data for field stateFctDioc
         }
-    }
-
-    public function createFacetOfficeByEvent(FormEvent $event) {
-        # $event->getForm() is still empty
-        $data = $event->getData();
-
-        if (!$data) return;
-        $model = BishopFormModel::newByArray($data);
-        if ($model->isEmpty()) return;
-
-        $this->createFacetOffice($event->getForm(), $model);
     }
 
     public function createFacetOffice($form, $modelIn) {

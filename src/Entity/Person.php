@@ -33,12 +33,6 @@ class Person
     private $role;
 
     /**
-     * @ORM\OneToMany(targetEntity="CanonLookup", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id_canon")
-     */
-    private $canonLookup;
-
-    /**
      * @ORM\OneToMany(targetEntity="PersonDisplayOrder", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */

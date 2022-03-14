@@ -43,6 +43,7 @@
 			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
 			{{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
 		    {% endif %}
+		    <a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
 		</div>
 	    </div>
 	    <div data-hide-on-input-target="result">

@@ -245,7 +245,7 @@ class PersonService {
         }
 
         // roles (offices)
-        $roles = $person->getRoles();
+        $roles = $person->getRole();
         $nd = array();
         foreach ($roles as $role) {
              $fv = $this->roleData($role);
@@ -368,7 +368,7 @@ class PersonService {
 
         $exids = array();
 
-        foreach ($person->getItem()->getIdsExternal() as $id) {
+        foreach ($person->getItem()->getIdExternal() as $id) {
             $exids[] = [
                 '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
             ];
@@ -389,7 +389,7 @@ class PersonService {
         ];
 
         // offices
-        $roles = $person->getRoles();
+        $roles = $person->getRole();
         $descOffices = array();
         if($roles) {
             foreach($roles as $oc) {
@@ -569,7 +569,7 @@ class PersonService {
 
         $exids = array();
 
-        foreach ($person->getItem()->getIdsExternal() as $id) {
+        foreach ($person->getItem()->getIdExternal() as $id) {
             $exids[] = $id->getAuthority()->getUrlFormatter().$id->getValue();
         }
 
@@ -584,7 +584,7 @@ class PersonService {
 
 
         /* offices */
-        $roles = $person->getRoles();
+        $roles = $person->getRole();
         $nodesOffices = array();
         if($roles) {
             foreach ($roles as $oc) {
