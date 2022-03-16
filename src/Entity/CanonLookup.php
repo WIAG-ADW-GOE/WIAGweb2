@@ -32,9 +32,17 @@ class CanonLookup
      */
     private $prioRole;
 
-    private $person;
+    // see personIdName
+    private $person = null;
 
-    private $roleListView;
+    private $roleListView = null;
+
+    private $hasSibling = null;
+
+    // see personIdRole
+    private $personRole = null;
+
+    private $itemTypeId = null;
 
     public function getId(): ?int
     {
@@ -101,7 +109,41 @@ class CanonLookup
         return $this;
     }
 
+    public function getHasSibling()
+    {
+        return $this->hasSibling;
+    }
 
+    public function setHasSibling($hasSibling): self
+    {
+        $this->hasSibling = $hasSibling;
+
+        return $this;
+    }
+
+    public function getPersonRole()
+    {
+        return $this->personRole;
+    }
+
+    public function setPersonRole($personRole): self
+    {
+        $this->personRole = $personRole;
+
+        return $this;
+    }
+
+    public function getItemTypeId()
+    {
+        return $this->itemTypeId;
+    }
+
+    public function setItemTypeId($itemTypeId): self
+    {
+        $this->itemTypeId = $itemTypeId;
+
+        return $this;
+    }
 
 
 }

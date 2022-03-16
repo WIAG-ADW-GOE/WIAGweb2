@@ -57,56 +57,22 @@ class PersonRepository extends ServiceEntityRepository {
 
     public function findWithOffice($id) {
         $qb = $this->createQueryBuilder('p')
-                   ->join('p.role', 'pr')
-                   ->addSelect('pr')
+                   ->addSelect('i')
+                   ->join('p.item', 'i')
                    ->andWhere('p.id = :id')
                    ->setParameter('id', $id);
         $query = $qb->getQuery();
         $person = $query->getOneOrNullResult();
 
-        $this->addInstitutionPlace($person);
+        $personRoleRepository = $this->getEntityManager()
+                                     ->getRepository(PersonRole::class);
 
-        return $person;
-    }
-
-    public function addInstitutionPlace($person) {
-        if ($person) {
-            $em = $this->getEntityManager();
-            $repository = $em->getRepository(InstitutionPlace::class);
-            foreach ($person->getRole() as $role) {
-                // TODO prüfe korrekt auf alle Überlappungen
-                $institutionId = $role->getInstitutionId();
-                if (is_null($institutionId)) {
-                    continue;
-                }
-                $dateBegin = $role->getNumDateBegin();
-                $dateEnd = $role->getNumDateEnd();
-                $dateQuery = $dateBegin;
-                if (!is_null($dateBegin) && !is_null($dateEnd)) {
-                    $dateQuery = intdiv($dateBegin + $dateEnd, 2);
-                } elseif (!is_null($dateEnd)) {
-                    $dateQuery = $dateEnd;
-                } elseif (!is_null($dateBegin)) {
-                    $dateQuery = $dateBegin;
-                }
-                $placeName = $repository->findByDate($institutionId, $dateQuery);
-                $role->setPlaceName(', ', implode(array_column($placeName, 'placeName')));
-            }
-        }
+        $person->setRole($personRoleRepository->findRoleWithPlace($id));
 
         return $person;
     }
 
     public function findWithAssociations($id) {
-        $qb = $this->createQueryBuilder('p')
-                   ->join('p.role', 'pr')
-                   ->join('p.item', 'i')
-                   ->join('i.itemReference', 'r')
-                   ->addSelect('pr')
-                   ->addSelect('r')
-                   ->andWhere('p.id = :id')
-                   ->setParameter('id', $id);
-
         $person = $this->findWithOffice($id);
         if ($person) {
             $this->addReferenceVolumes($person);

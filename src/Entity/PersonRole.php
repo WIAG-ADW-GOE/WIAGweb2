@@ -326,13 +326,13 @@ class PersonRole
         return $this;
     }
 
-    public function setPlaceName(?string $placeName): self
+    public function setPlaceName($placeName): self
     {
         $this->placeName = $placeName;
         return $this;
     }
 
-    public function getPlaceName(): ?string
+    public function getPlaceName()
     {
         return $this->placeName;
     }

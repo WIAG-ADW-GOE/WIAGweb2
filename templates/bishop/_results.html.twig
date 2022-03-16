@@ -14,7 +14,7 @@
 			    type="submit"
 			    form="form"
 			    formaction="{{ path('bishop_list_detail')  }}"
-			    class="btn btn-link text-sm-start"
+			    class="btn btn-link p-0 text-sm-start"
 			    name="offset"
 			    value="{{ offset + loop.index0 }}">{{ person.givenname }} {{ person.prefixname }} {{ person.familyname }}</button>
 			{% if not person.datebirth and not person.datedeath %}

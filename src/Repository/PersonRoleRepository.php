@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\PersonRole;
+use App\Entity\InstitutionPlace;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,4 +48,58 @@ class PersonRoleRepository extends ServiceEntityRepository
         ;
     }
     */
+
+
+    /**
+     * find roles for `$personId`; set place names
+     * @return PersonRole[] Returns an array of PersonRole objects
+     */
+    public function findRoleWithPlace($personId) {
+        $qb = $this->createQueryBuilder('r')
+                   ->addSelect('r, ip.placeName')
+                   ->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',
+                              'r.institutionId = ip.institutionId '.
+                              'AND ( '.
+                              'r.numDateBegin IS NULL AND r.numDateEnd IS NULL '.
+                              'OR (ip.numDateBegin < r.numDateBegin AND r.numDateBegin < ip.numDateEnd) '.
+                              'OR (ip.numDateBegin < r.numDateEnd AND r.numDateEnd < ip.numDateEnd) '.
+                              'OR (r.numDateBegin < ip.numDateBegin AND ip.numDateBegin < r.numDateEnd) '.
+                              'OR (r.numDateBegin < ip.numDateEnd AND ip.numDateEnd < r.numDateEnd))')
+                   ->addOrderBy('r.dateSortKey')
+                   ->andWhere('r.personId = :personId')
+                   ->setParameter('personId', $personId);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        $role = array();
+        $roleLast = null;
+        $placeName = array();
+        $itemTypeId = null;
+
+        foreach ($result as $rLoop) {
+            // save current role with places or collect places for current role
+            if ($roleLast !== $rLoop[0]) {
+                if (!is_null($roleLast)) {
+                    $roleLast->setPlaceName($placeName);
+                    $role[] = $roleLast;
+                }
+                $roleLast = $rLoop[0];
+                if (!is_null($rLoop['placeName'])) {
+                    $placeName = array($rLoop['placeName']);
+                } else {
+                    $placeName = array();
+                }
+            } else {
+                if (!is_null($rLoop['placeName'])) {
+                    $placeName = array($rLoop['placeName']);
+                }
+            }
+        }
+        if (!is_null($roleLast)) {
+            $roleLast->setPlaceName($placeName);
+            $role[] = $roleLast;
+        }
+
+        return($role);
+    }
 }

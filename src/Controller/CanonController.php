@@ -72,7 +72,7 @@ class CanonController extends AbstractController {
             $canon = array();
             // easy way to keep the order of the entries
             foreach($id as $idLoop) {
-                $canon[] = $repository->findWithOffice($idLoop["personIdName"]);
+                $canon[] = $repository->findWithRoleListView($idLoop["personIdName"]);
             }
 
             return $this->renderForm('canon/query_result.html.twig', [
@@ -93,7 +93,7 @@ class CanonController extends AbstractController {
      * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
-                                    ItemRepository $repository) {
+                                    CanonLookupRepository $repository) {
         $model = new CanonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
@@ -119,15 +119,13 @@ class CanonController extends AbstractController {
             $idx += 1;
         }
 
-        $canonLookupRepository = $this->getDoctrine()
-                                      ->getRepository(CanonLookup::class);
-        $cnGroup = $canonLookupRepository->findRelatedCanonWithAssociations($ids[$idx]);
+        $canonLookup = $repository->findWithPerson($ids[$idx]['personIdName']);
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
-            'cngroup' => $cnGroup,
+            'canonlookup' => $canonLookup,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);

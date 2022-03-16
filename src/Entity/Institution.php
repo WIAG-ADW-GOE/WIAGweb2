@@ -69,6 +69,16 @@ class Institution
      */
     private $note;
 
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $nameShort;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $itemTypeId;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -166,6 +176,30 @@ class Institution
     public function setNote(?string $note): self
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getNameShort(): ?string
+    {
+        return $this->nameShort;
+    }
+
+    public function setNameShort(?string $nameShort): self
+    {
+        $this->nameShort = $nameShort;
+
+        return $this;
+    }
+
+    public function getItemTypeId(): ?int
+    {
+        return $this->itemTypeId;
+    }
+
+    public function setItemTypeId(int $itemTypeId): self
+    {
+        $this->itemTypeId = $itemTypeId;
 
         return $this;
     }

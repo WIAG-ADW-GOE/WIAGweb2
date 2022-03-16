@@ -145,6 +145,12 @@ class Person
         return $this->role;
     }
 
+    public function setRole($role) {
+       $this->role = $role;
+       return $this;
+    }
+
+
     public function getComment(): ?string
     {
         return $this->comment;
