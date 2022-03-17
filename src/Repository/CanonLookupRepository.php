@@ -20,6 +20,8 @@ class CanonLookupRepository extends ServiceEntityRepository
 {
     // tolerance for the comparison of dates
     const MARGINYEAR = 1;
+    // item type for domstift
+    const ITEMTYPEDOMSTIFT = 3;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -71,13 +73,13 @@ class CanonLookupRepository extends ServiceEntityRepository
             // we need not to check for item.is_online because the is guaranteed
             // for entries in canon_lookup
             $qb = $this->createQueryBuilder('c')
-                       ->select('c.personIdName, inst.nameShort as sortA')
+                       ->select('c.personIdName, inst_domstift.nameShort as sortA')
                        ->join('app\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
                        ->join('App\Entity\PersonRole', 'role_domstift', 'WITH', 'role_domstift.personId = c.personIdRole')
                        ->join('App\Entity\Institution',
-                              'inst',
-                              'WITH', "role_domstift.institutionId = inst.id")
-                       ->andWhere('inst.itemTypeId = :inst_type_id')
+                              'inst_domstift',
+                              'WITH', "role_domstift.institutionId = inst_domstift.id")
+                       ->andWhere('inst_domstift.itemTypeId = :inst_type_id')
                        ->groupBy('c.personIdName')
                        ->addOrderBy('sortA')
                        ->addOrderBy('role_domstift.dateSortKey')
@@ -117,8 +119,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         $qb = $this->addCanonConditions($qb, $model);
-        // TODO 2022-02-15
-        // $qb = $this->addCanonFacets($qb, $model);
+        $qb = $this->addCanonFacets($qb, $model);
 
         if ($limit > 0) {
             $qb->setMaxResults($limit)
@@ -134,6 +135,8 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     public function addCanonConditions($qb, $model) {
+        $instTypeId = Item::ITEM_TYPE_ID['Domstift'];
+
         $domstift = $model->domstift;
         $office = $model->office;
         $name = $model->name;
@@ -142,12 +145,14 @@ class CanonLookupRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         if ($domstift) {
-            $qb->andWhere('inst.name LIKE :q_domstift')
+            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
+               ->join('role.institution', 'inst')
+                ->andWhere('inst.name LIKE :q_domstift')
+               ->andWhere("inst.itemTypeId = $instTypeId")
                ->setParameter('q_domstift', '%'.$domstift.'%');
             // combine queries at the level of offices
             if ($office) {
-            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.institutionId = inst.id AND role.personId = c.personIdRole')
-               ->join('role.role', 'role_type')
+            $qb->join('role.role', 'role_type')
                ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
                ->setParameter('q_office', '%'.$office.'%');
             }
@@ -159,14 +164,15 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         if ($place) {
-            $qb->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'role.institutionId = ip.institutionId '.
+            $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
+               ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
+                          'role_place.institutionId = ip.institutionId '.
                           'AND ( '.
-                          'role.numDateBegin IS NULL AND role.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < role.numDateBegin AND role.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < role.numDateEnd AND role.numDateEnd < ip.numDateEnd) '.
-                          'OR (role.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role.numDateEnd) '.
-                          'OR (role.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role.numDateEnd))')
+                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
+                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
+                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
                 ->andWhere('ip.placeName LIKE :q_place')
                 ->setParameter('q_place', '%'.$place.'%');
         }
@@ -182,8 +188,8 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         if ($name) {
             // link name_lookup with all canons via person_id_role
-            $qb->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-               ->andWhere('n.gnFn LIKE :q_name OR n.gnPrefixFn LIKE :q_name')
+            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
+               ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
                ->setParameter('q_name', '%'.$name.'%');
         }
 
@@ -194,6 +200,48 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->andWhere("i.idPublic LIKE :q_id ".
                           "OR ixt.value LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
+        }
+
+        return $qb;
+    }
+
+    /**
+     * add conditions set by facets
+     */
+    private function addCanonFacets($qb, $model) {
+
+        $facetDomstift = $model->facetDomstift;
+        if ($facetDomstift) {
+            $valFctDft = array_column($facetDomstift, 'name');
+            $qb->join('App\Entity\PersonRole', 'prfctdft', 'WITH', 'prfctdft.personId = c.personIdRole')
+               ->join('prfctdft.institution', 'instfctdft')
+               ->andWhere("instfctdft.nameShort IN (:valFctDft)")
+               ->setParameter('valFctDft', $valFctDft);
+        }
+
+        $facetPlace = $model->facetPlace;
+        if ($facetPlace) {
+            $valFctPlc = array_column($facetPlace, 'name');
+            $qb->join('App\Entity\PersonRole', 'prfctplc', 'WITH', 'prfctplc.personId = c.personIdRole')
+               ->join('App\Entity\InstitutionPlace', 'ipfct', 'WITH',
+                      'prfctplc.institutionId = ipfct.institutionId '.
+                      'AND ( '.
+                      'prfctplc.numDateBegin IS NULL AND prfctplc.numDateEnd IS NULL '.
+                      'OR (ipfct.numDateBegin < prfctplc.numDateBegin AND prfctplc.numDateBegin < ipfct.numDateEnd) '.
+                      'OR (ipfct.numDateBegin < prfctplc.numDateEnd AND prfctplc.numDateEnd < ipfct.numDateEnd) '.
+                      'OR (prfctplc.numDateBegin < ipfct.numDateBegin AND ipfct.numDateBegin < prfctplc.numDateEnd) '.
+                      'OR (prfctplc.numDateBegin < ipfct.numDateEnd AND ipfct.numDateEnd < prfctplc.numDateEnd))')
+               ->andWhere('ipfct.placeName IN (:valFctPlc)')
+               ->setParameter('valFctPlc', $valFctPlc);
+        }
+
+        $facetOffice = $model->facetOffice;
+        if ($facetOffice) {
+            $valFctOfc = array_column($facetOffice, 'name');
+            $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = c.personIdRole')
+               ->join('prfctofc.role', 'rolefctofc')
+               ->andWhere('rolefctofc.name in (:valFctOfc)')
+               ->setParameter('valFctOfc', $valFctOfc);
         }
 
         return $qb;
@@ -270,6 +318,82 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $result;
 
     }
+
+    /**
+     * countCanonDomstift($model)
+     *
+     * return array of domstift names related to a person's role (used for facet)
+     */
+    public function countCanonDomstift($model) {
+        // $model should not contain domstift facet
+        dump($model);
+
+        $qb = $this->createQueryBuilder('c')
+                   ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+                   ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
+                   ->join('pr_count.institution', 'inst_count')
+                   ->andWhere("inst_count.itemTypeId = :itemTypeDomstift")
+                   ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID["Domstift"]);
+
+        $this->addCanonConditions($qb, $model);
+        $this->addCanonFacets($qb, $model);
+
+        $qb->groupBy('inst_count.nameShort');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * countCanonOffice($model)
+     *
+     * return array of role names (used for facet)
+     */
+    public function countCanonOffice($model) {
+        // $model should not contain office facet
+        dump($model);
+
+        $qb = $this->createQueryBuilder('c')
+                   ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+                   ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
+                   ->join('pr_count.role', 'role_count');
+
+        $this->addCanonConditions($qb, $model);
+        $this->addCanonFacets($qb, $model);
+
+        $qb->groupBy('role_count.name');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * countCanonPlace($model)
+     *
+     * return array of places related to a person's role (used for facet)
+     */
+    public function countCanonPlace($model) {
+        // $model should not contain place facet
+
+        $qb = $this->createQueryBuilder('c')
+                   ->select('ip_count.placeName AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+                   ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
+                   ->join('pr_count.institution', 'inst_count')
+                   ->join('inst_count.institutionPlace', 'ip_count')
+                   ->andWhere('ip_count.placeName IS NOT NULL');
+
+        $this->addCanonConditions($qb, $model);
+        $this->addCanonFacets($qb, $model);
+
+        $qb->groupBy('ip_count.placeName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
 
     /**
      * AJAX

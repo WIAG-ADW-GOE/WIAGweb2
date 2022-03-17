@@ -42,12 +42,13 @@ class CanonFormModel {
 
         $model->facetDomstift = self::makeChoices($data, 'facetDomstift');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
+        $model->facetPlace = self::makeChoices($data, 'facetPlace');
         return $model;
     }
 
     public function isEmpty() {
         $result = true;
-        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid', 'facetDomstift', 'facetOffice'];
+        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid'];
         foreach($keys as $key) {
             $result = $result && !$this->$key;
         }

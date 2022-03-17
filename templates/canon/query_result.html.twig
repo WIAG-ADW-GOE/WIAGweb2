@@ -77,15 +77,24 @@
 				}) }}
 				{{ form_row(form.stateFctDmt) }}
 			    {% endif %}
-				{% if form.facetOffice is defined %}
-				    {{ include('canon/_facet.html.twig', {
-					facet: form.facetOffice,
-					facetTitle: 'Filter Amt',
-					facetState: form.stateFctOfc.vars.value,
-					facetShort: 'Ofc'
-				    }) }}
-				    {{ form_row(form.stateFctOfc) }}
-				{% endif %}
+			    {% if form.facetOffice is defined %}
+				{{ include('canon/_facet.html.twig', {
+				    facet: form.facetOffice,
+				    facetTitle: 'Filter Amt',
+				    facetState: form.stateFctOfc.vars.value,
+				    facetShort: 'Ofc'
+				}) }}
+				{{ form_row(form.stateFctOfc) }}
+			    {% endif %}
+			    {% if form.facetPlace is defined %}
+				{{ include('canon/_facet.html.twig', {
+				    facet: form.facetPlace,
+				    facetTitle: 'Filter Ort',
+				    facetState: form.stateFctPlc.vars.value,
+				    facetShort: 'Plc'
+				}) }}
+				{{ form_row(form.stateFctPlc) }}
+			    {% endif %}
 			</div>
 		    </div>
 		{% endif %}

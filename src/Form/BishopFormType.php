@@ -112,7 +112,7 @@ class BishopFormType extends AbstractType
     }
 
     public function createFacetDiocese($form, $modelIn) {
-        // do not filter by diocese themselves
+        // do not filter by dioceses themselves
         $model = clone $modelIn;
         $model->facetDiocese = null;
 

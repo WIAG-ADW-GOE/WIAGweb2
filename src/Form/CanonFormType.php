@@ -5,6 +5,7 @@ use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\CanonFormModel;
 use App\Repository\ItemRepository;
+use App\Repository\CanonLookupRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,7 +30,7 @@ class CanonFormType extends AbstractType
 {
     private $repository;
 
-    public function __construct(ItemRepository $repository) {
+    public function __construct(CanonLookupRepository $repository) {
         $this->repository = $repository;
     }
 
@@ -43,6 +44,7 @@ class CanonFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
+        $forceFacets = $options['forceFacets'];
 
         $builder
             ->add('name', TextType::class, [
@@ -95,34 +97,33 @@ class CanonFormType extends AbstractType
             ])
             ->add('stateFctOfc', HiddenType::class, [
                 'mapped' => false,
+            ])
+            ->add('stateFctPlc', HiddenType::class, [
+                 'mapped' => false,
             ]);
-        // TODO 2022-01-26
-            // ->add('stateFctPlc', HiddenType::class, [
-            //     'mapped' => false,
-            // ]);
 
-        // TODO 2022-02-25
-        // Facetten
-        // if ($options['forceFacets']) {
-        //     $this->createFacets($builder, $model);
-        //     // $this->createFacetOffice($builder, $model);
-        //     // $this->createFacetPlace($builder, $model);
-        // }
+        if ($forceFacets) {
+            $this->createFacetDomstift($builder, $model);
+            $this->createFacetOffice($builder, $model);
+            $this->createFacetPlace($builder, $model);
+        }
 
 
-        // $builder->addEventListener(
-        //     FormEvents::PRE_SUBMIT,
-        //     function($event) {
-        //         $data = $event->getData();
-        //         $model = CanonFormModel::newByArray($data);
-        //         $this->createFacets($event->getForm(), $model);
-        //         // $this->createFacetOffice($event->getForm(), $model);
-        //     });
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            function($event) {
+                $data = $event->getData();
+                $model = CanonFormModel::newByArray($data);
+
+                $this->createFacetDomstift($event->getForm(), $model);
+                $this->createFacetOffice($event->getForm(), $model);
+                $this->createFacetPlace($event->getForm(), $model);
+            });
 
     }
 
-    public function createFacets($form, $modelIn) {
-        // do not filter by domstift themselves
+    public function createFacetDomstift($form, $modelIn) {
+        // do not filter by filter domstift itsself
         $model = clone $modelIn;
         $model->facetDomstift = null;
 
@@ -151,12 +152,41 @@ class CanonFormType extends AbstractType
         }
     }
 
+    public function createFacetPlace($form, $modelIn) {
+        // do not filter by facet place itsself
+        $model = clone $modelIn;
+        $model->facetPlace = null;
+
+        $places = $this->repository->countCanonPlace($model);
+
+        $choices = array();
+        foreach($places as $place) {
+            $choices[] = new FacetChoice($place['name'], $place['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetPlace;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+
+        if ($places) {
+            $form->add('facetPlace', ChoiceType::class, [
+                'label' => 'Filter Ort',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
     public function createFacetOffice($form, $modelIn) {
-        // do not filter by office themselves
+        // do not filter by facet office itsself
         $model = clone $modelIn;
         $model->facetOffice = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
         $offices = $this->repository->countCanonOffice($model);
 
         $choices = array();
