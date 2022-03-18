@@ -61,7 +61,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $result = null;
 
         $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
-        $instTypeId = Item::ITEM_TYPE_ID['Domstift'];
+        $itemTypeIdDomstift = Item::ITEM_TYPE_ID['Domstift'];
 
         $domstift = $model->domstift;
         $office = $model->office;
@@ -69,6 +69,67 @@ class CanonLookupRepository extends ServiceEntityRepository
         $year = $model->year;
         $name = $model->name;
         $someid = $model->someid;
+
+        // table person (linked via personIdName is always used for sorting
+        // all queries are combined at the level of a person, so join it here once and forever
+        $qb = $this->createQueryBuilder('c')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName');
+
+        $this->addCanonConditions($qb, $model);
+        $this->addCanonFacets($qb, $model);
+
+        if ($domstift) {
+            $qb->select('c.personIdName, inst_domstift.nameShort as sortA')
+               ->join('App\Entity\PersonRole', 'role_list_view',
+                      'WITH', 'role_list_view.personId = c.personIdRole AND c.prioRole = 1')
+               ->groupBy('c.personIdName')
+               ->addOrderBy('sortA')
+               ->addOrderBy('role_list_view.dateSortKey');
+        } elseif ($office || $model->isEmpty()) {
+            // use role with prio 1 for sorting; requires join of CanonLookup to itself
+            $qb->select('c.personIdName, inst.nameShort as sortA')
+               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
+               ->join('App\Entity\PersonRole', 'role_all',
+                      'WITH', 'role_all.personId = c_all.personIdRole and c_all.prioRole = 1')
+                ->join('role_all.institution', 'inst')
+                ->andWhere('inst.itemTypeId = :itemTypeIdDomstift')
+                ->setParameter('itemTypeIdDomstift', $itemTypeIdDomstift)
+                ->groupBy('c.personIdName')
+                ->addOrderBy('sortA')
+                ->addOrderBy('role_all.dateSortKey');
+        } elseif ($place) {
+            // use role with prio 1 for sorting; requires join of CanonLookup to itself
+            $qb->select('c.personIdName')
+               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
+               ->join('App\Entity\PersonRole', 'role_all',
+                      'WITH', 'role_all.personId = c_all.personIdRole and c_all.prioRole = 1')
+                ->groupBy('c.personIdName')
+                ->addOrderBy('ip.placeName')
+                ->addOrderBy('role_all.dateSortKey');
+        } elseif ($name || $someid || $year) {
+            $qb->select('DISTINCT(c.personIdName) as personIdName');
+            if ($year) {
+                $qb->addOrderBy('p_by_role.dateMin')
+                   ->addOrderBy('p_by_role.dateMax');
+            }
+        }
+
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname')
+           ->addOrderBy('p.id');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
+        $query = $qb->getQuery();
+
+        return $query->getResult();
+
+
+
+        // before 2022-03-17
+
         if ($model->isEmpty() || $domstift || $office) {
             // we need not to check for item.is_online because the is guaranteed
             // for entries in canon_lookup
@@ -135,7 +196,7 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     public function addCanonConditions($qb, $model) {
-        $instTypeId = Item::ITEM_TYPE_ID['Domstift'];
+        $itemTypeDomstift = Item::ITEM_TYPE_ID['Domstift'];
 
         $domstift = $model->domstift;
         $office = $model->office;
@@ -143,6 +204,67 @@ class CanonLookupRepository extends ServiceEntityRepository
         $place = $model->place;
         $year = $model->year;
         $someid = $model->someid;
+
+
+
+        if ($domstift) {
+            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
+               ->join('role.institution', 'inst_domstift')
+               ->andWhere('inst_domstift.name LIKE :q_domstift')
+               ->setParameter('q_domstift', '%'.$domstift.'%');
+            // combine queries for domstift and office at the level of PersonRole
+            if ($office) {
+                $qb->join('role.role', 'role_type')
+                   ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
+                   ->setParameter('q_office', '%'.$office.'%');
+            }
+            $qb->andWhere('inst_domstift.itemTypeId = :itemTypeDomstift')
+               ->setParameter('itemTypeDomstift', $itemTypeDomstift);
+        } elseif ($office) {
+            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
+               ->join('role.role', 'role_type')
+               // ->leftjoin('role.institution', 'inst_domstift') // sorting
+               // ->andWhere('inst_domstift.itemTypeId = :itemTypeDomstift')
+               // ->setParameter('itemTypeDomstift', $itemTypeDomstift)
+               ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
+               ->setParameter('q_office', '%'.$office.'%');
+        } elseif ($place) {
+            // combine queries for place only at the level of Person
+            $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
+               ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
+                          'role_place.institutionId = ip.institutionId '.
+                          'AND ( '.
+                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
+                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
+                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
+                ->andWhere('ip.placeName LIKE :q_place')
+                ->setParameter('q_place', '%'.$place.'%');
+        } elseif ($name) {
+            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
+               ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
+               ->setParameter('q_name', '%'.$name.'%');
+        } elseif ($someid || $year) {
+            $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c.personIdRole');
+            if ($someid) {
+                $qb->join('p_by_role.item', 'item')
+                   ->join('item.idExternal', 'ixt')
+                   ->andWhere("item.idPublic LIKE :q_id ".
+                              "OR ixt.value LIKE :q_id")
+                   ->setParameter('q_id', '%'.$someid.'%');
+            }
+            if ($year) {
+                $qb->andWhere("p_by_role.dateMin - :mgnyear < :q_year ".
+                              " AND :q_year < p_by_role.dateMax + :mgnyear")
+                   ->setParameter(':mgnyear', self::MARGINYEAR)
+                   ->setParameter('q_year', $year);
+            }
+        }
+
+        return $qb;
+
+        // before 2022-03-17
 
         if ($domstift) {
             $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
@@ -326,7 +448,6 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function countCanonDomstift($model) {
         // $model should not contain domstift facet
-        dump($model);
 
         $qb = $this->createQueryBuilder('c')
                    ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
@@ -352,7 +473,6 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function countCanonOffice($model) {
         // $model should not contain office facet
-        dump($model);
 
         $qb = $this->createQueryBuilder('c')
                    ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
