@@ -13,6 +13,30 @@
     {% if not person%}
 	<p class="em">Person nicht gefunden.</p>
     {% else %}
+	{% set btnpanel %}
+	<div class="row mx-2 col-12 mt-4 mb-2">
+	    <div class="d-flex">
+		{% if form is defined %}
+		    {{ include('bishop/_button_step.html.twig',
+			{value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
+		    {{ include('bishop/_button_step.html.twig',
+			{value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
+		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Neue Suche</a>
+		{% else %}
+		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
+		{% endif %}
+		{% set btnaction=path('id', {id: person.item.idpublic}) %}
+		{{ include('bishop/_button_data.html.twig',
+		    {action: btnaction, format: 'Csv', text: 'CSV' }) }}
+		{{ include('bishop/_button_data.html.twig',
+		    {action: btnaction, format: 'Rdf', text: 'RDF-XML' }) }}
+		{{ include('bishop/_button_data.html.twig',
+		    {action: btnaction, format: 'Json', text: 'JSON' }) }}
+		{{ include('bishop/_button_data.html.twig', {action: btnaction, format: 'Jsonld', text: 'JSON-LD' }) }}
+	    </div>
+	</div>
+	{% endset %}
 	{% if form is defined %}
 	    {{ form_start(form, {'attr': {'id':'form', 'action':path('bishop_query'), 'hidden': 'hidden'} }) }}
 		{{ include('bishop/_form_elements.html.twig') }}
@@ -22,6 +46,7 @@
 	    <div class="row mx-2 col-12">
 		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	    </div>
+	    {{ btnpanel }}
 	    {# name and button to copy permalink to the clipboard #}
 	    <div class="row col-12 mx-2 mt-2 mb-0">
 		<div class="d-flex justify-content-between">
@@ -102,26 +127,7 @@
 		</div>
 	    </div>
 	    {# button line #}
-	    <div class="row mx-2 col-12 mt-4 mb-2">
-		<div class="d-flex">
-		    {% if form is defined %}
-			<button type="submit" form="form" formaction="{{ path('bishop_list_detail') }}" class="btn btn-secondary btn-sm" name="offset" value="{{ offset - 1 }}" {% if offset == 0 %}disabled="disabled"{% endif %}>vorheriger Treffer</button>
-			<button type="submit" form="form" formaction="{{ path('bishop_list_detail') }}" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset + 1 }}" {% if not hassuccessor %}disabled="disabled"{% endif %}>nächster Treffer</button>
-			<button type="submit" form="form" class="btn btn-secondary btn-sm ms-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
-			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</a>
-
-			{# <a href="{{ path('launch_query') }}"><button class="btn btn-secondary btn-sm ms-1 me-3">Neue Suche</button></a> #}
-		    {% else %}
-			<a href="{{ path('bishop_query') }}" type="button" class="btn btn-secondary btn-sm ms-1 me-3">Suche</a>
-		    {% endif %}
-		    {% set btnaction=path('id', {id: person.item.idPublic}) %}
-		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
-		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
-		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
-		    {{ include('bishop/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
-		</div>
-	    </div>
+	    {{ btnpanel }}
 	</div>
-
     {% endif %}
 {% endblock %}

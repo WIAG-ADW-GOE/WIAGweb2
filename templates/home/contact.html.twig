@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% import 'basemacros.html.twig' as bmc%}
-
 {% block body %}
     <div class="container-md">
 	<div class="row m-2">
@@ -24,7 +22,7 @@
 	    <li><a href="http://wiag.adw-goe.de">http://wiag.adw-goe.de</a>
 	</ul>
 	<ul class="list-unstyled">
-	    <li><a href="{{ protocol }}:{{ url('wiag_welcome', schemeRelative = true) }}">{{ protocol }}:{{ url('wiag_welcome', schemeRelative = true) }}</a></li>
+	    <li><a href="{{ protocol }}:{{ url('home', schemeRelative = true) }}">{{ protocol }}:{{ url('home', schemeRelative = true) }}</a></li>
 	</ul>
 
 	    </div>

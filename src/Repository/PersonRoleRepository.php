@@ -70,7 +70,6 @@ class PersonRoleRepository extends ServiceEntityRepository
                    ->setParameter('personId', $personId);
 
         $query = $qb->getQuery();
-        dump($query->getDQL());
         $result = $query->getResult();
         $role = array();
         $roleLast = null;

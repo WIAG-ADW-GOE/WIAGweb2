@@ -136,10 +136,7 @@ class ItemRepository extends ServiceEntityRepository
                        ->andWhere('i.isOnline = 1')
                        ->addGroupBy('pr.personId')
                        ->addOrderBy('pr.dioceseName')
-                       ->addOrderBy('sort')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
+                       ->addOrderBy('sort');
         } elseif ($year) {
             $qb = $this->createQueryBuilder('i')
                        ->select('i.id')
@@ -148,21 +145,20 @@ class ItemRepository extends ServiceEntityRepository
                        ->andWhere('i.isOnline = 1')
                        ->addGroupBy('p.id')
                        ->addOrderBy('p.dateMin')
-                       ->addOrderBy('p.dateMax')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
+                       ->addOrderBy('p.dateMax');
         } elseif ($model->isEmpty() || $name || $someid) {
             $qb = $this->createQueryBuilder('i')
                        ->select('i.id')
                        ->join('i.person', 'p')
                        ->andWhere("i.itemTypeId = ${itemTypeId}")
                        ->andWhere('i.isOnline = 1')
-                       ->addGroupBy('p.id')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
+                       ->addGroupBy('p.id');
         }
+
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname')
+           ->addOrderBy('p.id');
+
 
         $qb = $this->addBishopConditions($qb, $model);
         $qb = $this->addBishopFacets($qb, $model);
@@ -204,7 +200,7 @@ class ItemRepository extends ServiceEntityRepository
         $name = $model->name;
         if ($name) {
             $qb->join('i.nameLookup', 'nlu')
-               ->andWhere("nlu.gnFn LIKE :qname OR nlu.gnPrefixFn LIKE :q_name")
+               ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
 
@@ -212,7 +208,7 @@ class ItemRepository extends ServiceEntityRepository
         if ($someid) {
             $qb->join('i.idExternal', 'ixt')
                ->andWhere("i.idPublic LIKE :q_id ".
-                          "OR ixt.value LIKE :value")
+                          "OR ixt.value LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
         }
         return $qb;

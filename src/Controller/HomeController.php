@@ -22,10 +22,17 @@ class HomeController extends AbstractController {
     }
 
     /**
+     * @Route("/about", name="about")
+     */
+    public function about() {
+        return $this->render('home/about.html.twig', ['menuItem' => 'about']);
+    }
+
+    /**
      * @Route("/about/images", name="about_images")
      */
     public function images() {
-        return $this->render('home/images.html.twig');
+        return $this->render('home/images.html.twig', ['menuItem' => 'about']);
     }
 
     /**
@@ -37,6 +44,11 @@ class HomeController extends AbstractController {
         ]);
     }
 
-
+    /**
+     * @Route("/about/data-service", name="data_service")
+     */
+    public function dataService() {
+        return $this->render('home/data_service.html.twig', ['menuItem' => 'service']);
+    }
 
 }

@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set urldi="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/deutsche-inschriften/" %}
+    {% set urlgs="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/" %}
+
+    <div class="container-sm">
+	<div class="row col-12 m-2">
+	    <h3>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</h3>
+	    <p>WIAG stellt als eine frei verfügbare, browserbasierte Anwendung
+		Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen
+		Neuzeit zur Verfügung. Die Forschungsdaten werden gut erreichbar, interoperabel und
+		nachnutzbar aufbereitet und veröffentlicht.
+		Eingebettet in eine fachspezifische Wissensplattform,
+		ermöglicht ein Redaktionssystem die Strukturierung, Standardisierung und
+		Bereitstellung von Forschungsdaten.</p>
+	    <p>Mit den umfangreichen Datensammlungen der
+		Akademieprojekte <a href={{ urldi }}>Deutsche Inschriften (DI)</a> und
+		<a href={{ urlgs }}>Germania Sacra</a> kann eine
+		zentrale Wissensbasis für die Mittelalter- und Frühneuzeitforschung geschaffen
+		werden. WIAG kombiniert die Vorteile einer freien und kollaborativ erarbeiteten
+		Datensammlung mit qualitätssichernden Standards kontrollierter Normdateien. Mit
+		WIAG sollen innovative Wege aufgezeigt werden, wie das (häufig noch analoge)
+		Expertenwissen von Forscherinnen und Forschern fachspezifischer
+		Wissens-Communities Eingang in die weltweite digitale Wissensbasis finden
+		kann.</p>
+	    <p> Das interdisziplinäre Forschungsprojekt <a href={{ urldi }}>Deutsche Inschriften (DI)</a>
+		sammelt und
+		erschließt Inschriften aus dem Mittelalter und der Frühen Neuzeit, die sich auf
+		Objekten wie Grabdenkmälern, kirchlichen Ausstattungsstücken und Hausfassaden
+		finden lassen.
+		Die <a href={{ urlgs }}>Germania Sacra</a> hat zur Aufgabe, die Quellen der Kirche des Alten
+		Reiches zu erschließen, das überlieferte Material aufzubereiten und in
+		Handbuchformat zu publizieren. Der Untersuchungszeitraum erstreckt sich vom
+		3./4. Jahrhundert bis zum Beginn des 19. Jahrhunderts.
+		Sowohl die Deutschen Inschriften als auch die Germania Sacra haben
+		bereits digitale Ressourcen und Tools entwickelt, die für die Entwicklung von
+		WIAG übernommen werden.</p>
+	</div>
+    </div>
+{% endblock %}

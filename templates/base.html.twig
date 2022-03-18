@@ -57,9 +57,11 @@
 				<a class="nav-link dropdown-toggle fw-bold" href="#" id="about-wiag" data-bs-toggle="dropdown" aria-expanded="false">Über WIAG</a>
 			    {% endif %}
 			    <ul class="dropdown-menu" aria-labelledby="about-wiag">
-				<li><a class="dropdown-item" href="{{ path('home') }}">Ziele</a></li>
-				<li><a class="dropdown-item" href="{{ path('home') }}">Referenzwerke</a></li>
-				<li><a class="dropdown-item" href="{{ path('home') }}">API</a></li>
+				<li><a class="dropdown-item" href="{{ path('about') }}">Ziele</a></li>
+				{% if false %} {# TODO 2022-03-18 #}
+				    <li><a class="dropdown-item" href="{{ path('home') }}">Referenzwerke</a></li>
+				    <li><a class="dropdown-item" href="{{ path('home') }}">API</a></li>
+				{% endif %}
 				<li><a class="dropdown-item" href="{{ path('contact') }}">Kontakt</a></li>
 			    </ul>
 			</li>
@@ -80,23 +82,25 @@
 			</li>
 			<li class="nav-item">
 			    {% if menuItem == 'service' %}
-				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Datenservice</a>
+				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('data_service') }}">Datenservice</a>
 			    {% else %}
-				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Datenservice</a>
+				<a class="nav-link fw-bold" type="button" href="{{ path('data_service') }}">Datenservice</a>
 			    {% endif %}
 			</li>
-			{% if is_granted('ROLE_USER') %}
-			    <li class="nav-item">
-				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Logout</a>
-			    </li>
-			{% else %}
-			    <li class="nav-item">
-				{% if menuItem == 'login' %}
-				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Login</a>
-				{% else %}
-				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Login</a>
-				{% endif %}
-			    </li>
+			{% if false %} {# TODO 2022-03-18 #}
+			    {% if is_granted('ROLE_USER') and false %}
+				<li class="nav-item">
+				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Logout</a>
+				</li>
+			    {% else %}
+				<li class="nav-item">
+				    {% if menuItem == 'login' %}
+					<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Login</a>
+				    {% else %}
+					<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Login</a>
+				    {% endif %}
+				</li>
+			    {% endif %}
 			{% endif %}
 		    </ul>
 		</div>
