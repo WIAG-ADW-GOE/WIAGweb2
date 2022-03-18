@@ -30,6 +30,9 @@ yarn-error.log
 *~
 ###< emacs temporary files
 
-
 #
 /public/images/available/
+
+###> secrets
+config/secrets/prod/
+###< secrets

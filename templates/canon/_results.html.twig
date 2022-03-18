@@ -9,9 +9,6 @@
 	</thead>
 	<tbody>
 	    {% for c in canon %}
-		{% if false %}
-		    {{ dump(c) }}
-		{% else %}
 		{% set person=c.person %}
 		{% macro single_btn(offset, content) %}
 		    <button
@@ -49,7 +46,6 @@
 			{% endif %}
 		    </td>
 		</tr>
-		{% endif %}
 	    {% endfor %}
 	</tbody>
     </table>
