@@ -126,73 +126,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         return $query->getResult();
 
-
-
-        // before 2022-03-17
-
-        if ($model->isEmpty() || $domstift || $office) {
-            // we need not to check for item.is_online because the is guaranteed
-            // for entries in canon_lookup
-            $qb = $this->createQueryBuilder('c')
-                       ->select('c.personIdName, inst_domstift.nameShort as sortA')
-                       ->join('app\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
-                       ->join('App\Entity\PersonRole', 'role_domstift', 'WITH', 'role_domstift.personId = c.personIdRole')
-                       ->join('App\Entity\Institution',
-                              'inst_domstift',
-                              'WITH', "role_domstift.institutionId = inst_domstift.id")
-                       ->andWhere('inst_domstift.itemTypeId = :inst_type_id')
-                       ->groupBy('c.personIdName')
-                       ->addOrderBy('sortA')
-                       ->addOrderBy('role_domstift.dateSortKey')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id')
-                       ->setParameter('inst_type_id', $instTypeId);
-        } elseif ($place) {
-            $qb = $this->createQueryBuilder('c')
-                       ->select('c.personIdName')
-                       ->join('app\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
-                       ->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
-                       ->groupBy('c.personIdName')
-                       ->addOrderBy('ip.placeName')
-                       ->addOrderBy('role.dateSortKey')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
-        } elseif ($year) {
-            $qb = $this->createQueryBuilder('c')
-                       ->select('c.personIdName')
-                       ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
-                       ->addGroupBy('c.personIdName')
-                       ->addOrderBy('p.dateMin')
-                       ->addOrderBy('p.dateMax')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
-        } elseif ($name || $someid) {
-            $qb = $this->createQueryBuilder('c')
-                       ->select('c.personIdName')
-                       ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
-                       ->addGroupBy('c.personIdName')
-                       ->addOrderBy('p.familyname')
-                       ->addOrderBy('p.givenname')
-                       ->addOrderBy('p.id');
-        }
-
-        $qb = $this->addCanonConditions($qb, $model);
-        $qb = $this->addCanonFacets($qb, $model);
-
-        if ($limit > 0) {
-            $qb->setMaxResults($limit)
-               ->setFirstResult($offset);
-        }
-        $query = $qb->getQuery();
-
-        // $ids = array_map(function($a) { return $a["id"]; },
-        //                  $query->getResult());
-
-        return $query->getResult();
-
     }
 
     public function addCanonConditions($qb, $model) {
@@ -228,7 +161,9 @@ class CanonLookupRepository extends ServiceEntityRepository
                // ->setParameter('itemTypeDomstift', $itemTypeDomstift)
                ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
                ->setParameter('q_office', '%'.$office.'%');
-        } elseif ($place) {
+        }
+
+        if ($place) {
             // combine queries for place only at the level of Person
             $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
@@ -241,11 +176,15 @@ class CanonLookupRepository extends ServiceEntityRepository
                           'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
                 ->andWhere('ip.placeName LIKE :q_place')
                 ->setParameter('q_place', '%'.$place.'%');
-        } elseif ($name) {
+        }
+
+        if ($name) {
             $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
                ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
                ->setParameter('q_name', '%'.$name.'%');
-        } elseif ($someid || $year) {
+        }
+
+        if ($someid || $year) {
             $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c.personIdRole');
             if ($someid) {
                 $qb->join('p_by_role.item', 'item')
@@ -264,67 +203,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         return $qb;
 
-        // before 2022-03-17
-
-        if ($domstift) {
-            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
-               ->join('role.institution', 'inst')
-                ->andWhere('inst.name LIKE :q_domstift')
-               ->andWhere("inst.itemTypeId = $instTypeId")
-               ->setParameter('q_domstift', '%'.$domstift.'%');
-            // combine queries at the level of offices
-            if ($office) {
-            $qb->join('role.role', 'role_type')
-               ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
-               ->setParameter('q_office', '%'.$office.'%');
-            }
-        } elseif ($office) {
-            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
-               ->join('role.role', 'role_type')
-               ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
-               ->setParameter('q_office', '%'.$office.'%');
-        }
-
-        if ($place) {
-            $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
-               ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'role_place.institutionId = ip.institutionId '.
-                          'AND ( '.
-                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
-                ->andWhere('ip.placeName LIKE :q_place')
-                ->setParameter('q_place', '%'.$place.'%');
-        }
-
-        if ($year) {
-            // link person with all canons via person_id_role
-            $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = c.personIdRole')
-               ->andWhere("p_year.dateMin - :mgnyear < :q_year ".
-                          " AND :q_year < p_year.dateMax + :mgnyear")
-               ->setParameter(':mgnyear', self::MARGINYEAR)
-               ->setParameter('q_year', $year);
-        }
-
-        if ($name) {
-            // link name_lookup with all canons via person_id_role
-            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
-               ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
-               ->setParameter('q_name', '%'.$name.'%');
-        }
-
-        if ($someid) {
-            $qb->join('App\Entity\Person', 'p_id', 'WITH', 'p_id.id = c.personIdRole')
-               ->join('p_id.item', 'i')
-               ->join('i.idExternal', 'ixt')
-               ->andWhere("i.idPublic LIKE :q_id ".
-                          "OR ixt.value LIKE :q_id")
-               ->setParameter('q_id', '%'.$someid.'%');
-        }
-
-        return $qb;
     }
 
     /**
