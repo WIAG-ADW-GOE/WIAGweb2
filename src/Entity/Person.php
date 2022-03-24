@@ -125,6 +125,11 @@ class Person
      */
     private $numDateDeath;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $itemTypeId;
+
     public function __construct() {
         $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
@@ -383,5 +388,35 @@ class Person
 
         return $commentLine;
     }
+
+    /**
+     * get external id for `authority_id`
+     */
+    public function getIdExternal(int $authorityId) {
+        $item = $this->getItem();
+        if (is_null($item)) return null;
+        $idExternal = $item->getIdExternal();
+        if (is_null($idExternal) || count($idExternal) == 0) return null;
+
+        foreach ($idExternal as $id) {
+            if ($id->getAuthorityId() == $authorityId) {
+                return $id->getValue();
+            }
+        }
+        return null;
+    }
+
+    public function getItemTypeId(): ?int
+    {
+        return $this->itemTypeId;
+    }
+
+    public function setItemTypeId(?int $itemTypeId): self
+    {
+        $this->itemTypeId = $itemTypeId;
+
+        return $this;
+    }
+
 
 }

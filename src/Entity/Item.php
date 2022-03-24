@@ -16,6 +16,7 @@ class Item {
         'Bischof' => 4,
         'Domherr' => 5,
         'Domherr GS' => 6,
+        'Bischof GS' => 9,
     ];
 
     // map authority name

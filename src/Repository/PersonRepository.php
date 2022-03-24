@@ -6,6 +6,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\InstitutionPlace;
+use App\Entity\Authority;
 use App\Form\Model\BishopFormModel;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -90,6 +91,33 @@ class PersonRepository extends ServiceEntityRepository {
             $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
             $reference->setReferenceVolume($referenceVolume);
         }
+        return $person;
+    }
+
+    public function findByIdExternal($itemTypeId, $value, $authId) {
+        $qb = $this->createQueryBuilder('p')
+                   ->addSelect('i')
+                   ->join('p.item', 'i')
+                   ->join('i.idExternal', 'ext')
+                   ->andWhere('p.itemTypeId = :itemTypeId')
+                   ->andWhere('ext.value = :value')
+                   ->andWhere('ext.authorityId = :authId')
+                   ->setParameter(':itemTypeId', $itemTypeId)
+                   ->setParameter(':value', $value)
+                   ->setParameter(':authId', $authId);
+
+        $query = $qb->getQuery();
+        $person = $query->getResult();
+
+        $personRoleRepository = $this->getEntityManager()
+                                     ->getRepository(PersonRole::class);
+
+        foreach ($person as $pLoop) {
+            $personId = $pLoop->getId();
+            $pLoop->setRole($personRoleRepository->findRoleWithPlace($personId));
+            $this->addReferenceVolumes($pLoop);
+        }
+
         return $person;
     }
 }

@@ -118,7 +118,7 @@ class ItemRepository extends ServiceEntityRepository
     public function bishopIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof'];
 
         $diocese = $model->diocese;
         $office = $model->office;
@@ -126,50 +126,47 @@ class ItemRepository extends ServiceEntityRepository
         $name = $model->name;
         $someid = $model->someid;
 
-        if ($office || $diocese) {
-            // sort: if diocese is a query condition, this filters personRoles
-            $qb = $this->createQueryBuilder('i')
-                       ->select('i.id, min(pr.numDateBegin) as sort')
-                       ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
-                       ->join('i.person', 'p')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1')
-                       ->addGroupBy('pr.personId')
-                       ->addOrderBy('pr.dioceseName')
-                       ->addOrderBy('sort');
-        } elseif ($year) {
-            $qb = $this->createQueryBuilder('i')
-                       ->select('i.id')
-                       ->join('i.person', 'p')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1')
-                       ->addGroupBy('p.id')
-                       ->addOrderBy('p.dateMin')
-                       ->addOrderBy('p.dateMax');
-        } elseif ($model->isEmpty() || $name || $someid) {
-            $qb = $this->createQueryBuilder('i')
-                       ->select('i.id')
-                       ->join('i.person', 'p')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1')
-                       ->addGroupBy('p.id');
-        }
-
-        $qb->addOrderBy('p.familyname')
-           ->addOrderBy('p.givenname')
-           ->addOrderBy('p.id');
-
+        $qb = $this->createQueryBuilder('i')
+                   ->join('i.person', 'p')
+                   ->andWhere('i.itemTypeId = :itemTypeBishop')
+                   ->andWhere('i.isOnline = 1')
+                   ->setParameter(':itemTypeBishop', $itemTypeBishop);
 
         $qb = $this->addBishopConditions($qb, $model);
         $qb = $this->addBishopFacets($qb, $model);
+
+        if ($office || $diocese) {
+            // sort: if diocese is a query condition, this filters personRoles
+            $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
+               ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
+               ->addGroupBy('pr.personId')
+               ->addOrderBy('pr.dioceseName')
+               ->addOrderBy('dateSortKey');
+        } elseif ($model->isEmpty() || $name || $someid || $year) {
+            $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
+               ->join('p.role', 'role_srt')
+               ->addGroupBy('personId');
+            if ($year) {
+                $qb->addOrderBy('dateSortKey');
+            }
+        }
+
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname');
+
+        if (($model->isEmpty() || $name || $someid) && !$year) {
+            $qb->addOrderBy('dateSortKey');
+        }
+
+        $qb->addOrderBy('p.id');
 
         $qb->setMaxResults($limit)
            ->setFirstResult($offset);
         $query = $qb->getQuery();
 
-        $ids = array_map(function($a) { return $a["id"]; },
-                         $query->getResult());
-        return $ids;
+        // $ids = array_map(function($a) { return $a["id"]; },
+        //              $query->getResult());
+        return $query->getResult();
 
         }
 

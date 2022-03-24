@@ -107,16 +107,25 @@ class CanonLookupRepository extends ServiceEntityRepository
                 ->addOrderBy('ip.placeName')
                 ->addOrderBy('role_all.dateSortKey');
         } elseif ($name || $someid || $year) {
-            $qb->select('DISTINCT(c.personIdName) as personIdName');
+            $qb->select('c.personIdName, min(role_all.dateSortKey) as dateSortKey')
+               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
+               ->join('App\Entity\PersonRole', 'role_all',
+                      'WITH', 'role_all.personId = c_all.personIdRole')
+               ->groupBy('c.personIdName');
             if ($year) {
-                $qb->addOrderBy('p_by_role.dateMin')
-                   ->addOrderBy('p_by_role.dateMax');
+                $qb->addOrderBy('dateSortKey');
             }
         }
 
         $qb->addOrderBy('p.familyname')
-           ->addOrderBy('p.givenname')
-           ->addOrderBy('p.id');
+           ->addOrderBy('p.givenname');
+
+        if (($name || $someid) && !$year) {
+            $qb->addOrderBy('dateSortKey');
+        }
+
+        // make the list stable
+        $qb->addOrderBy('p.id');
 
         if ($limit > 0) {
             $qb->setMaxResults($limit)
@@ -184,7 +193,8 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->setParameter('q_name', '%'.$name.'%');
         }
 
-        if ($someid || $year) {
+        if ($someid || $year || $name) {
+            // case name: add p_by_role for sorting
             $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c.personIdRole');
             if ($someid) {
                 $qb->join('p_by_role.item', 'item')

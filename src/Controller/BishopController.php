@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\Person;
+use App\Entity\Authority;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
@@ -70,7 +71,7 @@ class BishopController extends AbstractController {
             # easy way to get all persons in the right order
             $cPerson = array();
             foreach($ids as $id) {
-                $cPerson[] = $personRepository->findWithOffice($id);
+                $cPerson[] = $personRepository->findWithOffice($id["personId"]);
             }
 
             return $this->renderForm('bishop/query_result.html.twig', [
@@ -91,6 +92,7 @@ class BishopController extends AbstractController {
      */
     public function bishopListDetail(Request $request,
                                      ItemRepository $repository) {
+
         $model = new BishopFormModel;
 
         $form = $this->createForm(BishopFormType::class, $model);
@@ -117,11 +119,24 @@ class BishopController extends AbstractController {
         }
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->findWithAssociations($ids[$idx]);
+        $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
+
+        $authorityGs = Authority::ID['Germania Sacra'];
+        $gsn = $person->getIdExternal($authorityGs);
+        $personGs = array();
+        if (!is_null($gsn)) {
+            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
+            $bishopGs = $personRepository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
+            $personGs = array_merge($personGs, $bishopGs);
+            $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
+            $canonGs = $personRepository->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
+            $personGs = array_merge($personGs, $canonGs);
+        }
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
+            'persongs' => $personGs,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);

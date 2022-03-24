@@ -10,6 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Authority
 {
+    const ID = [
+        'GND' => 1,
+        'Germania Sacra' => 200,
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
