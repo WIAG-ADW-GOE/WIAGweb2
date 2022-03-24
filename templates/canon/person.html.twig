@@ -95,6 +95,7 @@
 		{{ include('canon/_person_role_group.html.twig', {
 		    person: person,
 		    title: 'Amtsangaben aus Referenzwerken',
+		    with_context: false,
 		}) }}
 	    {% endif %}
 	    {% set person = null %}
@@ -112,7 +113,8 @@
 		{% endset %}
 		{{ include('canon/_person_role_group.html.twig', {
 		    person: person,
-		    title: title
+		    title: title,
+		    with_context: false
 		}) }}
 	    {% endif %}
 	    {% set person = null %}
@@ -130,7 +132,8 @@
 		{% endset %}
 		{{ include('canon/_person_role_group.html.twig', {
 		    person: person,
-		    title: title
+		    title: title,
+		    with_context: false
 		}) }}
 	    {% endif %}
 	    {# external IDs #}

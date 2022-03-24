@@ -80,32 +80,32 @@
 		</div>
 	    {% endif %}
 	    {# offices #}
-	    <div class="row mx-2 mt-3 mb-2">
-		<div class="col-12">
-		    <div class="card">
-			<span class="card-header"><strong>Amtsangaben aus Referenzwerken</strong></span>
-			<dl class="card-body row">
-			    {{ include('bishop/_person_roles.html.twig', {
-				roles: person.role
-			    }) }}
-			    {% if person.item.reference %}
-				{% set references=person.item.reference %}
-				<dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
-				<dd class="col-sm-9">
-				    <ul class="{% if references|length == 1 %}list-unstyled{% else %}pl-3{% endif %} small">
-					{% for ref in references %}
-					    {% set idinref = ref.idinreference %}
-					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
-					    <li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
-					{% endfor %}
-				    </ul>
-				</dd>
-			    {% endif %}
-			</dl>
-		    </div>
-		</div>
-	    </div>
-	    {# TODO Amtsangaben aus der Germania Sacra #}
+	    {% if person %}
+		{{ include('bishop/_person_role_group.html.twig', {
+		    person: person,
+		    title: "Amtsangaben aus Referenzwerken",
+		    with_context: false
+		}) }}
+	    {% endif %}
+	    {% for canon_loop in canon %}
+		{{ include('bishop/_person_role_group.html.twig', {
+		    person: canon_loop,
+		    title: "Amtsangaben aus der Datenbank Domherren des Alten Reiches",
+		    with_context: false
+		}) }}
+	    {% endfor %}
+	    {% for persongs_loop in persongs %}
+		{% set gsnid = person.item.getidexternalobj('GS') %}
+		{% set title %}
+		<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>
+		{% endset %}
+		{{ include('bishop/_person_role_group.html.twig', {
+		    person: persongs_loop,
+		    title: title,
+		    with_context: false
+		}) }}
+	    {% endfor %}
+
 	    {# external IDs #}
 	    {% if person.item.idExternal %}
 		<div class="row mx-2 mt-3 mb-2">

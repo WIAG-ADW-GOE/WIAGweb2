@@ -121,6 +121,7 @@ class BishopController extends AbstractController {
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
         $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
 
+        // get data from Germania Sacra
         $authorityGs = Authority::ID['Germania Sacra'];
         $gsn = $person->getIdExternal($authorityGs);
         $personGs = array();
@@ -128,14 +129,25 @@ class BishopController extends AbstractController {
             $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
             $bishopGs = $personRepository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $personGs = array_merge($personGs, $bishopGs);
+
             $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
             $canonGs = $personRepository->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
             $personGs = array_merge($personGs, $canonGs);
         }
 
+        // get data from Domherrendatenbank
+        $authorityWIAG = Authority::ID['WIAG-ID'];
+        $wiagid = $person->getItem()->getIdPublic();
+        $canon = array();
+        if (!is_null($wiagid)) {
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $canon = $personRepository->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+        }
+
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
+            'canon' => $canon,
             'persongs' => $personGs,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,

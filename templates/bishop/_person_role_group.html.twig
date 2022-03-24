@@ -1,0 +1,43 @@
+<div class="row mx-2 mt-3 mb-2">
+    <div class="col-12">
+	<div class="card">
+	    <span class="card-header"><strong>{{ title }}</strong></span>
+	    <dl class="card-body row pb-1 mb-1">
+		{{ include('canon/_person_roles.html.twig', {
+		    roles: person.role
+		}) }}
+		{% set references = null %}
+		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
+		    {% set references = person.item.reference|filter(r => r.containsbio) %}
+		{% else %}
+		    {% set references = person.item.reference %}
+		{% endif %}
+		{% if references and references|length > 0 %}
+		    <dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>
+		    <dd class="col-sm-9">
+			<ul class="{% if references|length == 1 %}list-unstyled{% else %}ps-3{% endif %} small">
+			    {% for ref in references %}
+				{% if not ref.referencevolume %}
+				    <li>Band nicht gefunden</li>
+				{% else %}
+				    {% if person.item.source == "Bischof" %} {# bishops #}
+					<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }} {% endif %}</li>
+				    {% elseif person.item.source == "Domherr GS" or person.item.source == "Bischof GS" %} {# germania sacra #}
+					<li>{{ include('canon/_person_biogram_link.html.twig', {
+					    volume: ref.referencevolume,
+					    pages: ref.splitpage
+					    }) }}</li>
+				    {% else %}
+					{% set idinref = ref.idinreference %}
+					{% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
+					<li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+				    {% endif %}
+				{% endif %}
+			    {% endfor %}
+			</ul>
+		    </dd>
+		{% endif %}
+	    </dl>
+	</div>
+    </div>
+</div>

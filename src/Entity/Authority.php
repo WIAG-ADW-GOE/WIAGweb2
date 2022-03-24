@@ -12,6 +12,7 @@ class Authority
 {
     const ID = [
         'GND' => 1,
+        'WIAG-ID' => 5,
         'Germania Sacra' => 200,
     ];
 

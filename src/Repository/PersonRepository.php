@@ -94,7 +94,7 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
-    public function findByIdExternal($itemTypeId, $value, $authId) {
+    public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
         $qb = $this->createQueryBuilder('p')
                    ->addSelect('i')
                    ->join('p.item', 'i')
@@ -105,6 +105,10 @@ class PersonRepository extends ServiceEntityRepository {
                    ->setParameter(':itemTypeId', $itemTypeId)
                    ->setParameter(':value', $value)
                    ->setParameter(':authId', $authId);
+
+        if ($isonline) {
+            $qb->andWhere('i.isOnline = 1');
+        }
 
         $query = $qb->getQuery();
         $person = $query->getResult();

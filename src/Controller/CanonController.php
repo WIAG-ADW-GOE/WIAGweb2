@@ -113,8 +113,8 @@ class CanonController extends AbstractController {
 
         } else {
             $ids = $repository->canonIds($model,
-                                           3,
-                                           $offset - 1);
+                                         3,
+                                         $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
             $idx += 1;
         }
