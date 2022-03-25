@@ -121,8 +121,6 @@ class CanonController extends AbstractController {
 
         $canonLookup = $repository->findWithPerson($ids[$idx]['personIdName']);
 
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
-
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
             'canonlookup' => $canonLookup,

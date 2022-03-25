@@ -5,6 +5,8 @@ use App\Entity\Item;
 use App\Entity\ItemType;
 use App\Entity\Person;
 use App\Entity\Diocese;
+use App\Entity\CanonLookup;
+use App\Entity\Authority;
 
 use App\Service\PersonService;
 use App\Service\DioceseService;
@@ -65,21 +67,46 @@ class IdController extends AbstractController {
      }
 
     public function bishop($id, $format) {
-        $repository = $this->getDoctrine()
+        $personRepository = $this->getDoctrine()
                            ->getRepository(Person::class);
 
-        $result = $repository->findWithAssociations($id);
+        $person = $personRepository->findWithAssociations($id);
 
         if ($format == 'html') {
+
+            // get data from Germania Sacra
+            $authorityGs = Authority::ID['Germania Sacra'];
+            $gsn = $person->getIdExternal($authorityGs);
+            $personGs = array();
+            if (!is_null($gsn)) {
+                $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
+                $bishopGs = $personRepository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
+                $personGs = array_merge($personGs, $bishopGs);
+
+                $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
+                $canonGs = $personRepository->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
+                $personGs = array_merge($personGs, $canonGs);
+            }
+
+            // get data from Domherrendatenbank
+            $authorityWIAG = Authority::ID['WIAG-ID'];
+            $wiagid = $person->getItem()->getIdPublic();
+            $canon = array();
+            if (!is_null($wiagid)) {
+                $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+                $canon = $personRepository->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            }
             return $this->render('bishop/person.html.twig', [
-                'person' => $result,
+                'person' => $person,
+                'persongs' => $personGs,
+                'canon' => $canon,
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse([$result]);
+            return $this->personService->$fncResponse([$person]);
         }
     }
 
@@ -110,6 +137,38 @@ class IdController extends AbstractController {
         }
 
     }
+
+    public function canon_gs($id, $format) {
+        return $this->canon($id, $format);
+    }
+
+    public function canon($id, $format) {
+
+        if ($format == 'html') {
+            $canonLookupRepository = $this->getDoctrine()
+                                          ->getRepository(CanonLookup::class);
+
+            $canonLookup = $canonLookupRepository->findWithPerson($id);
+
+            return $this->render('canon/person.html.twig', [
+                'canonlookup' => $canonLookup,
+            ]);
+
+        } else {
+            $personRepository = $this->getDoctrine()
+                                     ->getRepository(Person::class);
+
+            // TODO 2022-03-24 find person and roles with prio = 1
+            $person = $personRepository->findWithAssociations($id);
+
+            if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+            }
+            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+            return $this->personService->$fncResponse([$person]);
+        }
+    }
+
 
 
 }
