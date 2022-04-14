@@ -91,7 +91,6 @@
 
 	    {# external IDs #}
 	    {% if person.item.idExternal and person.item.idExternal|length > 0%}
-		{{ dump(person.item.idExternal) }}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
 			{{ include('priest_ut/_person_id_external.html.twig', {
