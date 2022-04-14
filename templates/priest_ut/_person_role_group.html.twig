@@ -3,9 +3,11 @@
 	<div class="card">
 	    <span class="card-header"><strong>{{ title }}</strong></span>
 	    <dl class="card-body row pb-1 mb-1">
-		{{ include('canon/_person_roles.html.twig', {
-		    roles: person.role
-		}) }}
+		{% if person.role %}
+		    {{ include('canon/_person_roles.html.twig', {
+			roles: person.role
+		    }) }}
+		{% endif %}
 		{% set references = null %}
 		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
 		    {% set references = person.item.reference|filter(r => r.containsbio) %}

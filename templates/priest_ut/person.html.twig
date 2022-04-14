@@ -8,6 +8,7 @@
 {% block body %}
     {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
     {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+    {% set prop = person.item.combineitemproperty %}
 
     {# person is passed as an object #}
     {% if not person%}
@@ -50,7 +51,7 @@
 	    {# name and button to copy permalink to the clipboard #}
 	    <div class="row col-12 mx-2 mt-2 mb-0">
 		<div class="d-flex justify-content-between">
-		    <span class="fs-2">{{ person.displayname[:200] }}</span>
+		    <span class="fs-2">{{ person.displayname[:200] }}{% if person.religiousorder %} {{ person.religiousorder.abbreviation }}{% endif %}</span>
 		    <button type="button"
 			    class="btn"
 			    title={{ permalink }}
@@ -87,27 +88,10 @@
 		    with_context: false
 		}) }}
 	    {% endif %}
-	    {% for canon_loop in canon %}
-		{{ include('priest_ut/_person_role_group.html.twig', {
-		    person: canon_loop,
-		    title: "Amtsangaben aus der Datenbank Domherren des Alten Reiches",
-		    with_context: false
-		}) }}
-	    {% endfor %}
-	    {% for persongs_loop in persongs %}
-		{% set gsnid = person.item.getidexternalobj('GS') %}
-		{% set title %}
-		<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>
-		{% endset %}
-		{{ include('priest_ut/_person_role_group.html.twig', {
-		    person: persongs_loop,
-		    title: title,
-		    with_context: false
-		}) }}
-	    {% endfor %}
 
 	    {# external IDs #}
-	    {% if person.item.idExternal %}
+	    {% if person.item.idExternal and person.item.idExternal|length > 0%}
+		{{ dump(person.item.idExternal) }}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
 			{{ include('priest_ut/_person_id_external.html.twig', {

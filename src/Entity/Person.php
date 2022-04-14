@@ -367,12 +367,17 @@ class Person
         $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
         $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
 
+        $prop = $this->getItem()->combineItemProperty();
+        $patronym = array_key_exists('patronym', $prop) ? 'Patronym: '.$prop['patronym'] : null;
+
         $eltCands = [
             $strGnVariants,
             $strFnVariants,
+            $patronym,
             $this->noteName,
             $this->notePerson,
         ];
+        // dump($eltCands);
 
         $lineElts = array();
         foreach ($eltCands as $elt) {

@@ -169,6 +169,30 @@ class IdController extends AbstractController {
         }
     }
 
+    public function priest_ut($id, $format) {
+        $personRepository = $this->getDoctrine()
+                           ->getRepository(Person::class);
+
+        $person = $personRepository->findWithAssociations($id);
+
+        if ($format == 'html') {
+
+            return $this->render('priest_ut/person.html.twig', [
+                'person' => $person,
+            ]);
+        } else {
+            if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+            }
+            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
+            return $this->personService->$fncResponse([$person]);
+        }
+
+        ## see PriestUtController
+
+    }
+
+
 
 
 }
