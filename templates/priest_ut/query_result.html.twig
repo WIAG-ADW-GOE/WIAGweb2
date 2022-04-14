@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% set fb_elements %}
+<button type="submit"
+	      class="btn btn-secondary"
+	      {% if offset < pageSize %} disabled="disabled" {% endif %}
+	      name="offset"
+	      value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
+<button type="submit"
+	      class="btn btn-secondary"
+	      {% if offset + pageSize >= count%}disabled="disabled"{% endif %}
+	      name="offset"
+	      value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
+{% endset %}
+
+{% block body %}
+    {{ form_start(form, {
+	'attr': {
+	    'id': 'form',
+	    'data-controller': 'facet-state hide-on-input facet-submit',
+	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->hide-on-input#hideResults input->facet-submit#submit'
+	}
+    }) }}
+	<div class="container-fluid">
+	    <div class="row ms-2 col-12">
+		<span class="topic-title">{{ priest_ut_title }}</span>
+	    </div>
+	    {{ include("priest_ut/_form_elements.html.twig") }}
+	    <div class="row mt-2 mx-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		    {% if count > 0 %}
+			{% set btnaction=path('priest_ut_query_data') %}
+			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
+			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
+			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
+			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
+		    {% endif %}
+		    <a href="{{ path('priest_ut_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+		</div>
+	    </div>
+	    <div data-hide-on-input-target="result">
+		<div class="row mt-2 mx-2">
+		    <div class="col-12">
+			{% if count == 0 %}
+			    <p>Treffer: keine</p>
+			{% elseif count == 1 %}
+			    <p> Treffer: 1</p>
+			{% else %}
+			    <p> Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+				{% if count > pageSize %}<span class="ms-3">{{ fb_elements }}</span>{% endif %} </p>
+			{% endif %}
+		    </div>
+		</div>
+		{# show facets if they cause an empty result list #}
+		{% if count > 0 or form.facetDiocese is defined or form.facetOffice is defined %}
+		    <div class="row my-2 mx-2">
+			<div class="col-9">
+			    {# table #}
+			    {{ include("priest_ut/_results.html.twig") }}
+			</div>
+			{# facets #}
+			<div class="col-3" data-facet-state-target="facets">
+			    {% if form.facetDiocese is defined %}
+				{{ include('priest_ut/_facet.html.twig', {
+				    facet: form.facetDiocese,
+				    facetTitle: 'Filter Bistum',
+				    facetState: form.stateFctDioc.vars.value,
+				    facetShort: 'Dioc'
+				}) }}
+				{{ form_row(form.stateFctDioc) }}
+			    {% endif %}
+				{% if form.facetOffice is defined %}
+				    {{ include('priest_ut/_facet.html.twig', {
+					facet: form.facetOffice,
+					facetTitle: 'Filter Amt',
+					facetState: form.stateFctOfc.vars.value,
+					facetShort: 'Ofc'
+				    }) }}
+				    {{ form_row(form.stateFctOfc) }}
+				{% endif %}
+			</div>
+		    </div>
+		{% endif %}
+	    </div>
+	</div>
+    {{ form_end(form) }}
+
+{% endblock %}

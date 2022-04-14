@@ -17,6 +17,7 @@ class Item {
         'Domherr' => 5,
         'Domherr GS' => 6,
         'Bischof GS' => 9,
+        'Priester Utrecht' => 10,
     ];
 
     // map authority name
@@ -380,6 +381,17 @@ class Item {
     public function getSource() {
         $typeId = $this->itemTypeId;
         return $typeId ? array_flip(self::ITEM_TYPE_ID)[$typeId] : null;
+    }
+
+    /**
+     * combineItemProperty
+     */
+    public function combineItemProperty() {
+        $itemPropByName = array();
+        foreach ($this->itemProperty as $ip) {
+            $itemPropByName[$ip->getName()] = $ip->getValue();
+        }
+        return $itemPropByName;
     }
 
 }

@@ -19,94 +19,95 @@
 	    {% set menuItem='home' %}
 	{% endif %}
 	<main class="flex-shrink-0">
-	<div class="container-fluid">
-	    <div class="row mt-3 mx-2">
-		<div class="col-12">
-		    <a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
-		    <a class="home-title text-reset text-decoration-none"
-		       href="{{ path('home') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> <span class="version ms-1">Version: Beta</span>
-		    <p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
+	    <div class="container-fluid">
+		<div class="row mt-3 mx-2">
+		    <div class="col-12">
+			<a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
+			<a class="home-title text-reset text-decoration-none"
+			   href="{{ path('home') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> <span class="version ms-1">Version: Beta</span>
+			<p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
+		    </div>
 		</div>
 	    </div>
-	</div>
-	<nav class="navbar navbar-expand-lg navbar-light bg-white">
-	    <div class="container-fluid mx-3">
-		<button class="navbar-toggler"
-			       type="button"
-			       data-bs-toggle="collapse"
-			       data-bs-target="#navbarSupportedContent"
-			       aria-controls="navbarSupportedContent"
-			       aria-expanded="false"
-			       aria-label="Toggle navigation">
-		    <span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-		    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-			<li class="nav-item">
-			    {% if menuItem == 'home' %}
-				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Start</a>
-			    {% else %}
-				<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Start</a>
-			    {% endif %}
-			</li>
+	    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+		<div class="container-fluid mx-3">
+		    <button class="navbar-toggler"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target="#navbarSupportedContent"
+			    aria-controls="navbarSupportedContent"
+			    aria-expanded="false"
+			    aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		    </button>
+		    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			    <li class="nav-item">
+				{% if menuItem == 'home' %}
+				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Start</a>
+				{% else %}
+				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Start</a>
+				{% endif %}
+			    </li>
 
-			<li class="nav-item dropdown">
-			    {% if menuItem == 'about' %}
-				<a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Über WIAG</a>
-			    {% else %}
-				<a class="nav-link dropdown-toggle fw-bold" href="#" id="about-wiag" data-bs-toggle="dropdown" aria-expanded="false">Über WIAG</a>
-			    {% endif %}
-			    <ul class="dropdown-menu" aria-labelledby="about-wiag">
-				<li><a class="dropdown-item" href="{{ path('about') }}">Ziele</a></li>
-				{% if false %} {# TODO 2022-03-18 #}
-				    <li><a class="dropdown-item" href="{{ path('home') }}">Referenzwerke</a></li>
-				    <li><a class="dropdown-item" href="{{ path('home') }}">API</a></li>
+			    <li class="nav-item dropdown">
+				{% if menuItem == 'about' %}
+				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Über WIAG</a>
+				{% else %}
+				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="about-wiag" data-bs-toggle="dropdown" aria-expanded="false">Über WIAG</a>
 				{% endif %}
-				<li><a class="dropdown-item" href="{{ path('contact') }}">Kontakt</a></li>
-			    </ul>
-			</li>
-			<li class="nav-item dropdown">
-			    {% if menuItem == 'collections' %}
-				<a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Datensammlungen</a>
-			    {% else %}
-				<a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
-			    {% endif %}
-			    <ul class="dropdown-menu" aria-labelledby="collections">
-				<li><a class="dropdown-item" href="{{ path('bishop_query') }}">Bischöfe des Alten Reiches</a></li>
-				<li><a class="dropdown-item" href="{{ path('diocese_query') }}">Bistümer des Alten Reiches</a></li>
-				<li><a class="dropdown-item" href="{{ path('canon_query') }}">Domherren des Alten Reiches</a></li>
-				{% if false and is_granted('ROLE_DATA_ADMIN') %}
-				    <li><a class="dropdown-item" href="{{ path('bulk_export_dispatch') }}">Datenexport</a></li>
-				{% endif %}
-			    </ul>
-			</li>
-			<li class="nav-item">
-			    {% if menuItem == 'service' %}
-				<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('data_service') }}">Datenservice</a>
-			    {% else %}
-				<a class="nav-link fw-bold" type="button" href="{{ path('data_service') }}">Datenservice</a>
-			    {% endif %}
-			</li>
-			{% if false %} {# TODO 2022-03-18 #}
-			    {% if is_granted('ROLE_USER') and false %}
-				<li class="nav-item">
-				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Logout</a>
-				</li>
-			    {% else %}
-				<li class="nav-item">
-				    {% if menuItem == 'login' %}
-					<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Login</a>
-				    {% else %}
-					<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Login</a>
+				<ul class="dropdown-menu" aria-labelledby="about-wiag">
+				    <li><a class="dropdown-item" href="{{ path('about') }}">Ziele</a></li>
+				    {% if false %} {# TODO 2022-03-18 #}
+					<li><a class="dropdown-item" href="{{ path('home') }}">Referenzwerke</a></li>
+					<li><a class="dropdown-item" href="{{ path('home') }}">API</a></li>
 				    {% endif %}
-				</li>
+				    <li><a class="dropdown-item" href="{{ path('contact') }}">Kontakt</a></li>
+				</ul>
+			    </li>
+			    <li class="nav-item dropdown">
+				{% if menuItem == 'collections' %}
+				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Datensammlungen</a>
+				{% else %}
+				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
+				{% endif %}
+				<ul class="dropdown-menu" aria-labelledby="collections">
+				    <li><a class="dropdown-item" href="{{ path('bishop_query') }}">Bischöfe des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('diocese_query') }}">Bistümer des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('canon_query') }}">Domherren des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('priest_ut_query') }}">Priester des Bistums Utrecht</a></li>
+				    {% if false and is_granted('ROLE_DATA_ADMIN') %}
+					<li><a class="dropdown-item" href="{{ path('bulk_export_dispatch') }}">Datenexport</a></li>
+				    {% endif %}
+				</ul>
+			    </li>
+			    <li class="nav-item">
+				{% if menuItem == 'service' %}
+				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('data_service') }}">Datenservice</a>
+				{% else %}
+				    <a class="nav-link fw-bold" type="button" href="{{ path('data_service') }}">Datenservice</a>
+				{% endif %}
+			    </li>
+			    {% if false %} {# TODO 2022-03-18 #}
+				{% if is_granted('ROLE_USER') and false %}
+				    <li class="nav-item">
+					<a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Logout</a>
+				    </li>
+				{% else %}
+				    <li class="nav-item">
+					{% if menuItem == 'login' %}
+					    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Login</a>
+					{% else %}
+					    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Login</a>
+					{% endif %}
+				    </li>
+				{% endif %}
 			    {% endif %}
-			{% endif %}
-		    </ul>
+			</ul>
+		    </div>
 		</div>
-	    </div>
-	</nav>
-	{% block body %}{% endblock %}
+	    </nav>
+	    {% block body %}{% endblock %}
 	</main>
 	<footer class="mt-auto pt-3 pb-2">
 	    <div class="container-fluid">

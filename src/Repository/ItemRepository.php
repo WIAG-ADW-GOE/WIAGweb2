@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemProperty;
 use App\Entity\PersonRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -164,8 +165,6 @@ class ItemRepository extends ServiceEntityRepository
            ->setFirstResult($offset);
         $query = $qb->getQuery();
 
-        // $ids = array_map(function($a) { return $a["id"]; },
-        //              $query->getResult());
         return $query->getResult();
 
         }
@@ -356,5 +355,178 @@ class ItemRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
+    public function countPriestUt($model) {
+        $result = array('n' => 0);
+
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+
+        $qb = $this->createQueryBuilder('i')
+                       ->join('i.person', 'p')
+                       ->select('COUNT(DISTINCT i.id) as n')
+                       ->andWhere("i.itemTypeId = ${itemTypeId}")
+                       ->andWhere('i.isOnline = 1');
+
+        $qb = $this->addPriestUtConditions($qb, $model);
+        # $qb = $this->addBishopFacets($qb, $model);
+
+        $query = $qb->getQuery();
+        $result = $query->getOneOrNullResult();
+
+        return $result;
+    }
+
+
+    public function priestUtIds($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $itemTypePriestUt = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+        $name = $model->name;
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+        $year = $model->year;
+        $someid = $model->someid;
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.id as personId')
+                   ->join('i.person', 'p')
+                   ->andWhere('i.itemTypeId = :itemTypePriestUt')
+                   ->andWhere('i.isOnline = 1')
+                   ->setParameter(':itemTypePriestUt', $itemTypePriestUt);
+
+        $qb = $this->addPriestUtConditions($qb, $model);
+        // TODO $qb = $this->addPriestUtFacets($qb, $model);
+
+        if ($religious_order) {
+            $qb->addOrderBy('rlgord.abbreviation');
+        }
+        if ($birthplace) {
+            $qb->addSelect('ip_birthplace.value as birthplace')
+               ->addOrderBy('birthplace');
+        }
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname')
+           ->addOrderBy('p.dateMin')
+           ->addOrderBy('p.id');
+
+
+        $qb->addOrderBy('p.id');
+
+        $qb->setMaxResults($limit)
+           ->setFirstResult($offset);
+        $query = $qb->getQuery();
+
+        return $query->getResult();
+
+        }
+
+    private function addPriestUtConditions($qb, $model) {
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+
+        if ($birthplace) {
+            $qb->join('\App\Entity\ItemProperty', 'ip_birthplace', 'WITH', 'p.id = ip_birthplace.itemId')
+               ->andWhere('ip_birthplace.name = :ip_name')
+               ->andWhere('ip_birthplace.value LIKE :birthplace')
+               ->setParameter('ip_name', 'birthplace')
+               ->setParameter('birthplace', '%'.$birthplace.'%');
+        }
+
+        if ($religious_order) {
+            $qb->join('p.religiousOrder', 'rlgord')
+               ->andWhere("rlgord.abbreviation LIKE :religious_order")
+               ->setParameter('religious_order', '%'.$religious_order.'%');
+        }
+
+        $year = $model->year;
+        if ($year) {
+            $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                          " AND :q_year < p.dateMax + :mgnyear")
+               ->setParameter(':mgnyear', self::MARGINYEAR)
+               ->setParameter('q_year', $year);
+        }
+
+        $name = $model->name;
+        if ($name) {
+            $qb->join('i.nameLookup', 'nlu')
+               ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
+               ->setParameter('q_name', '%'.$name.'%');
+        }
+
+        $someid = $model->someid;
+        if ($someid) {
+            $qb->join('i.idExternal', 'ixt')
+               ->andWhere("i.idPublic LIKE :q_id ".
+                          "OR ixt.value LIKE :q_id")
+               ->setParameter('q_id', '%'.$someid.'%');
+        }
+        return $qb;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtName($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
+                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
+                            "AS suggestion")
+                   ->join('i.nameLookup', 'n')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
+                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtBirthplace($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT ip.value as suggestion")
+                   ->join('i.itemProperty', 'ip')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->andWhere('ip.name = :birthplace')
+                   ->andWhere('ip.value LIKE :value')
+                   ->setParameter('itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
+                   ->setParameter('birthplace', 'birthplace')
+                   ->setParameter('value', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtReligiousOrder($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT r.abbreviation as suggestion")
+                   ->join('i.person', 'p')
+                   ->join('p.religiousOrder', 'r')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->andWhere('r.abbreviation LIKE :value')
+                   ->setParameter('itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
+                   ->setParameter('value', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
 
 }

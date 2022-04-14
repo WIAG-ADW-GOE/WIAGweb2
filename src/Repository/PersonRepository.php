@@ -58,8 +58,8 @@ class PersonRepository extends ServiceEntityRepository {
 
     public function findWithOffice($id) {
         $qb = $this->createQueryBuilder('p')
-                   ->addSelect('i')
                    ->join('p.item', 'i')
+                   ->leftjoin('i.itemProperty', 'ip')
                    ->andWhere('p.id = :id')
                    ->setParameter('id', $id);
         $query = $qb->getQuery();
@@ -124,4 +124,25 @@ class PersonRepository extends ServiceEntityRepository {
 
         return $person;
     }
+
+    /**
+     * findPriestWithItemProperties($id)
+     */
+    public function findPriestWithItemProperties($id) {
+        $qb = $this->createQueryBuilder('p')
+                   ->join('p.item', 'i')
+                   ->join('i.itemProperty', 'ip')
+                   ->andWhere('p.id = :id')
+                   ->setParameter('id', $id);
+        $query = $qb->getQuery();
+        $person = $query->getOneOrNullResult();
+
+        $personRoleRepository = $this->getEntityManager()
+                                     ->getRepository(PersonRole::class);
+
+        $person->setRole($personRoleRepository->findRoleWithPlace($id));
+
+        return $person;
+    }
+
 }

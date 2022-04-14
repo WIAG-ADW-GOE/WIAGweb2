@@ -1,0 +1,42 @@
+{# facet = query_form.facetMonasteries #}
+{# facetTitle = 'Filter Domstift' #}
+{# facetState = query_form.stateFctMon.vars.value #}
+{# facetShort = 'Mon' #}
+{% set isLong=facet|length > 12 %}
+
+<div class="card card-body">
+    {% if isLong %}
+	<div class="card-title mb-0">
+	    <div class="row justify-content-between">
+		<div class="col-8"><strong>{{ facetTitle }}</strong></div>
+		<div class="col text-end">
+		    <button class="btn btn-outline-secondary btn-sm"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target={{ "#restFct#{facetShort}" }}
+			    aria-expanded="false"
+			    aria-controls={{ "restFct#{facetShort}" }}
+			    {{ stimulus_controller('toggle-arrow', {
+				state: facetState
+			    }) }}
+			    data-action="toggle-arrow#toggle"
+			    data-value="down"><img src="{{ asset('images/symbols/arrow-down.svg') }}"/></button>
+		</div>
+	    </div>
+	</div>
+    {% else %}
+	<p class="card-title"><strong>{{ facetTitle }}</strong></p>
+    {% endif %}
+    <div>
+	{% for fpl in facet%}
+	    {# <div class="form-group small"> #}
+	    <div class="form-group p-1 m-0">
+		{{ form_widget(fpl) }}
+	    </div>
+	    {% if isLong and loop.index == 7 %}
+    </div>
+    <div class="collapse" id={{ "restFct#{facetShort}" }} >
+	    {% endif %}
+	{% endfor %}
+    </div>
+</div>

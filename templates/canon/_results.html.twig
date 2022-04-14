@@ -32,7 +32,7 @@
 			    {% endif %}
 		    </td>
 		    <td class="align-top">{% for r in c.roleListView %}
-			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}
+			<small>{% if r.role and r.role.name %}{{ r.role.name }}{% elseif r.rolename %}{{ r.rolename }}{% endif %}
 			    {% if r.placename %}({{ r.placename|join(', ') }})
 			    {% elseif  r.diocese %}({{ r.diocese.name }})
 			    {% elseif r.diocesename %}({{ r.diocesename }})

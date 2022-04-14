@@ -1,0 +1,61 @@
+<div class="row mx-2 mt-3">
+    <div class="col-12">
+	<div class="d-flex flex-wrap">
+	    {# name #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('priest_ut_suggest', {field: 'name'}),
+		 }) }}>
+		{{ form_label(form.name) }}
+		{{ form_errors(form.name) }}
+		{{ form_widget(form.name, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 31,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    {# birthplace #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('priest_ut_suggest', {field: 'birthplace'}),
+		 }) }}>
+		{{ form_label(form.birthplace) }}
+		{{ form_errors(form.birthplace) }}
+		{{ form_widget(form.birthplace, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 15,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 9em;"></ul>
+	    </div>
+	    {# religious order #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('priest_ut_suggest', {field: 'religiousOrder'}),
+		 }) }}>
+		{{ form_label(form.religiousOrder) }}
+		{{ form_errors(form.religiousOrder) }}
+		{{ form_widget(form.religiousOrder, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 18,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 12em;"></ul>
+	    </div>
+	    {{  form_row(form.year, { row_attr: {class: 'me-2 mt-1'}}) }}
+	    {{  form_row(form.someid, {row_attr: {class: 'mt-1'}}) }}
+	</div>
+    </div>
+</div>
+
+{# {{ form_end(form) }} #}
