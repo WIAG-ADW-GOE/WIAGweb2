@@ -60,7 +60,7 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
                    ->select('r')
                    ->join('\App\Entity\ItemReference', 'ir', 'WITH', 'i.id = ir.itemId')
-                   ->join('\App\Entity\ReferenceVolume', 'r', 'WITH', 'ir.referenceVolumeId = r.id')
+                   ->join('\App\Entity\ReferenceVolume', 'r', 'WITH', 'ir.referenceId = r.id')
                    ->andWhere('i.itemTypeId = :itemTypeId')
                    ->setParameter(':itemTypeId', $itemTypeId)
                    ->orderBy('r.displayOrder');
