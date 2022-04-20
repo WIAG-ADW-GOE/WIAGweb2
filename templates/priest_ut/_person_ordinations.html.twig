@@ -1,0 +1,14 @@
+{# ordinations, parameter: properties #}
+<dt class="col-sm-3">Weihen</dt>
+<dd class="col-sm-9">
+    <ul class="list-unstyled">
+	{% set propkeys = properties|keys %}
+	<li>
+	    <ul class="list-inlined list-unstyled">
+		<li class="list-inline-item">{{ properties.ordination_priest }}</li>
+		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_place }}</li>{% endif %}
+		{% if 'ordination_priest_date' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_date|date("d.m.Y") }}</li>{% endif %}
+	    </ul>
+	</li>
+    </ul>
+</dd>

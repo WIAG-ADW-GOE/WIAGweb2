@@ -389,10 +389,15 @@ class ItemRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         $qb = $this->createQueryBuilder('i')
-                   ->select('i.id as personId')
+                   ->select('distinct(i.id) as personId, ip_ord_date.dateValue as sort')
                    ->join('i.person', 'p')
+                   ->join('\App\Entity\ItemProperty',
+                          'ip_ord_date',
+                          'WITH',
+                          'ip_ord_date.itemId = i.id AND ip_ord_date.name = :ordination')
                    ->andWhere('i.itemTypeId = :itemTypePriestUt')
                    ->andWhere('i.isOnline = 1')
+                   ->setParameter(':ordination', 'ordination_priest')
                    ->setParameter(':itemTypePriestUt', $itemTypePriestUt);
 
         $qb = $this->addPriestUtConditions($qb, $model);
@@ -407,7 +412,7 @@ class ItemRepository extends ServiceEntityRepository
         }
         $qb->addOrderBy('p.familyname')
            ->addOrderBy('p.givenname')
-           ->addOrderBy('p.dateMin')
+           ->addOrderBy('sort', 'ASC')
            ->addOrderBy('p.id');
 
 

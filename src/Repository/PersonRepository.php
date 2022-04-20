@@ -128,7 +128,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * findPriestWithItemProperties($id)
      */
-    public function findPriestWithItemProperties($id) {
+    public function findPriestWithItemProperties_hide($id) {
         $qb = $this->createQueryBuilder('p')
                    ->join('p.item', 'i')
                    ->join('i.itemProperty', 'ip')

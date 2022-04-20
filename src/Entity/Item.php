@@ -390,6 +390,7 @@ class Item {
         $itemPropByName = array();
         foreach ($this->itemProperty as $ip) {
             $itemPropByName[$ip->getName()] = $ip->getValue();
+            $itemPropByName[$ip->getName().'_date'] = $ip->getDateValue();
         }
         return $itemPropByName;
     }

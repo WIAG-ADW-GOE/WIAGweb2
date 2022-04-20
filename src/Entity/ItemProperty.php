@@ -43,6 +43,11 @@ class ItemProperty
      */
     private $value;
 
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $dateValue;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -92,6 +97,18 @@ class ItemProperty
     public function setValue(?string $value): self
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getDateValue(): ?\DateTimeInterface
+    {
+        return $this->dateValue;
+    }
+
+    public function setDateValue(?\DateTimeInterface $date_value): self
+    {
+        $this->dateValue = $date_value;
 
         return $this;
     }
