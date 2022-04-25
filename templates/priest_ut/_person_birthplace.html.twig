@@ -1,10 +1,14 @@
 {# birthplace by likelyhood, parameter: birthplace #}
-<dt class="col-sm-3">Mögliche Geburtsorte</dt>
+{% set mlt = birthplace|length > 1 %}
+{% if mlt %}
+    <dt class="col-sm-3">Mögliche Geburtsorte</dt>
+{% else %}
+    <dt class="col-sm-3">Geburtsort</dt>
+{% endif %}
 <dd class="col-sm-9">
     <ul class="list-unstyled">
 	<li>
 	    <ul class="list-inlined list-unstyled">
-		{% set mlt = birthplace|length > 1 %}
 		{% for bp in birthplace %}
 		    {% if bp.urlwhg %}
 			<a href="{{ bp.urlwhg }}" target="_blank" rel="noopener">{{ bp.placeName }}</a>{% if mlt %} ({{ loop.index }}){% endif %}{% if not loop.last %}, {% endif %}

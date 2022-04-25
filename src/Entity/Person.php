@@ -53,6 +53,7 @@ class Person
     /**
      * @ORM\OneToMany(targetEntity="PersonBirthplace", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     * @ORM\OrderBy({"weight" = "DESC"})
      */
     private $birthplace;
 

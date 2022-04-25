@@ -79,7 +79,7 @@ class PriestUtFormType extends AbstractType
                 'label' => 'Nummer',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'GSN, GND, Wikidata, VIAF',
+                    'placeholder' => 'ID',
                     'size' => '25',
                 ],
             ])

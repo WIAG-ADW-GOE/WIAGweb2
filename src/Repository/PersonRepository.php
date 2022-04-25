@@ -66,6 +66,8 @@ class PersonRepository extends ServiceEntityRepository {
                    ->andWhere('p.id = :id')
                    ->setParameter('id', $id);
 
+        // sorting of birthplaces see annotation
+
         $query = $qb->getQuery();
         $person = $query->getOneOrNullResult();
 
