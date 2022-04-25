@@ -51,6 +51,12 @@ class Person
     private $familynameVariants;
 
     /**
+     * @ORM\OneToMany(targetEntity="PersonBirthplace", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $birthplace;
+
+    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $comment;
@@ -134,6 +140,7 @@ class Person
         $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
+        $this->birthPlace = new ArrayCollection();
     }
 
 
@@ -154,7 +161,6 @@ class Person
        $this->role = $role;
        return $this;
     }
-
 
     public function getComment(): ?string
     {
@@ -351,6 +357,9 @@ class Person
         return $this->familynameVariants;
     }
 
+    public function getBirthplace() {
+        return $this->birthplace;
+    }
 
     /**
      * concatenate name variants and comments

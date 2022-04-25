@@ -7,6 +7,7 @@ use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\InstitutionPlace;
 use App\Entity\Authority;
+use App\Entity\PlaceIdExternal;
 use App\Form\Model\BishopFormModel;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -58,10 +59,13 @@ class PersonRepository extends ServiceEntityRepository {
 
     public function findWithOffice($id) {
         $qb = $this->createQueryBuilder('p')
+                   ->addSelect('bp')
                    ->join('p.item', 'i')
                    ->leftjoin('i.itemProperty', 'ip')
+                   ->leftjoin('p.birthplace', 'bp')
                    ->andWhere('p.id = :id')
                    ->setParameter('id', $id);
+
         $query = $qb->getQuery();
         $person = $query->getOneOrNullResult();
 
@@ -77,6 +81,14 @@ class PersonRepository extends ServiceEntityRepository {
         $person = $this->findWithOffice($id);
         if ($person) {
             $this->addReferenceVolumes($person);
+            $birthplace = $person->getBirthplace();
+            if ($birthplace) {
+                $pieRepository = $this->getEntityManager()
+                                      ->getRepository(PlaceIdExternal::class);
+                foreach ($birthplace as $bp) {
+                    $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
+                }
+            }
         }
         return $person;
     }

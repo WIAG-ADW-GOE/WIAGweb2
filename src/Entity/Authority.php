@@ -14,6 +14,7 @@ class Authority
         'GND' => 1,
         'WIAG-ID' => 5,
         'Germania Sacra' => 200,
+        'World Historical Gazetteer' => 54,
     ];
 
     /**

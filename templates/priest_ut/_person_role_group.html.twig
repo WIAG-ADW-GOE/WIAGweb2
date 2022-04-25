@@ -13,6 +13,11 @@
 			roles: person.role
 		    }) }}
 		{% endif %}
+		{% if person.birthplace %}
+		    {{ include('priest_ut/_person_birthplace.html.twig', {
+			birthplace: person.birthplace
+		    }) }}
+		{% endif %}
 		{% set references = null %}
 		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
 		    {% set references = person.item.reference|filter(r => r.containsbio) %}

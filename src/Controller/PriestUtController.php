@@ -122,7 +122,6 @@ class PriestUtController extends AbstractController {
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
         $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
 
-
         return $this->render('priest_ut/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
