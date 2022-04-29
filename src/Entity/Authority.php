@@ -30,7 +30,6 @@ class Authority
      */
     private $idsExternal;
 
-
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */

@@ -7,6 +7,7 @@ use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\InstitutionPlace;
+use App\Entity\UrlExternal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -198,7 +199,7 @@ class CanonLookupRepository extends ServiceEntityRepository
             $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c.personIdRole');
             if ($someid) {
                 $qb->join('p_by_role.item', 'item')
-                   ->join('item.idExternal', 'ixt')
+                   ->leftJoin('item.idExternal', 'ixt')
                    ->andWhere("item.idPublic LIKE :q_id ".
                               "OR ixt.value LIKE :q_id")
                    ->setParameter('q_id', '%'.$someid.'%');
@@ -206,7 +207,7 @@ class CanonLookupRepository extends ServiceEntityRepository
             if ($year) {
                 $qb->andWhere("p_by_role.dateMin - :mgnyear < :q_year ".
                               " AND :q_year < p_by_role.dateMax + :mgnyear")
-                   ->setParameter(':mgnyear', self::MARGINYEAR)
+                   ->setParameter('mgnyear', self::MARGINYEAR)
                    ->setParameter('q_year', $year);
             }
         }
@@ -313,13 +314,17 @@ class CanonLookupRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
 
-        $personRepository = $this->getEntityManager()
-                                 ->getRepository(Person::class);
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
+        $em = $this->getEntityManager();
+
+        $personRepository = $em->getRepository(Person::class);
+        $personRoleRepository = $em->getRepository(PersonRole::class);
+        $urlExternalRepository = $em->getRepository(UrlExternal::class);
 
         foreach ($result as $r) {
-            $person = $personRepository->find($r->getPersonIdName());
+            $person_id_name = $r->getPersonIdName();
+            $person = $personRepository->find($person_id_name);
+            $urlByType = $urlExternalRepository->groupByType($person_id_name);
+            $person->setUrlByType($urlByType);
             $r->setPerson($person);
             $personRole = $personRepository->findWithAssociations($r->getPersonIdRole());
             $r->setPersonRole($personRole);
@@ -414,7 +419,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                             "AS suggestion")
                    ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
-                   ->setParameter(':name', '%'.$name.'%');
+                   ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
 
@@ -435,7 +440,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->join('pr.institution', 'inst')
                    ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
                    ->andWhere('inst.name like :name')
-                   ->setParameter(':name', '%'.$name.'%');
+                   ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
 
@@ -454,7 +459,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->select("DISTINCT pr.roleName AS suggestion")
                    ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
                    ->andWhere('pr.roleName like :name')
-                   ->setParameter(':name', '%'.$name.'%');
+                   ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
 
@@ -473,7 +478,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
                    ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
                    ->andWhere('ip.placeName like :name')
-                   ->setParameter(':name', '%'.$name.'%');
+                   ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
 

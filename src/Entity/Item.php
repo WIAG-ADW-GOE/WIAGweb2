@@ -39,12 +39,18 @@ class Item {
      */
     private $itemProperty;
 
-
     /**
      * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $idExternal;
+
+    /**
+     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $urlExternal;
+
 
     /**
      * @ORM\OneToMany(targetEntity="ItemReference", mappedBy="item")
@@ -164,6 +170,10 @@ class Item {
 
     public function getIdExternal() {
         return $this->idExternal;
+    }
+
+    public function getUrlExternal() {
+        return $this->urlExternal;
     }
 
     public function getReference() {

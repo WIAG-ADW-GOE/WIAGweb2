@@ -137,11 +137,17 @@ class Person
      */
     private $itemTypeId;
 
+    /**
+     * external urls grouped by authority type
+     */
+    private $urlByType;
+
     public function __construct() {
         $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
+        # TODO $this-urlByType;
     }
 
 
@@ -432,5 +438,16 @@ class Person
 
         return $this;
     }
+
+    public function getUrlByType(): array
+    {
+        return $this->urlByType;
+    }
+
+    public function setUrlByType(?array $urlByType): self {
+        $this->urlByType = $urlByType;
+        return $this;
+    }
+
 
 }

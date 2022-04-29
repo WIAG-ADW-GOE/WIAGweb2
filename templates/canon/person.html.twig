@@ -118,6 +118,7 @@
 		}) }}
 	    {% endif %}
 	    {% set person = null %}
+	    {# canon is in Gatz bishops #}
 	    {% set bishopid = null %}
 	    {% for canon in canonlookup %}
 		{% if canon.personRole.item.itemtypeid == 4 %}
@@ -140,6 +141,7 @@
 	    {% if not (hascanongs and hasbishop and not hascanon) %}
 		{% set bishopid = null %}
 	    {% endif %}
+	    {# select person with highest role priority (Domherr > Domherr GS > Bishop) #}
 	    {% set person = canonlookup[0].person %}
 	    {% if (person.item.idExternal and person.item.idExternal|length > 0) or bishopid %}
 		<div class="row mx-2 mt-3 mb-2">
@@ -151,6 +153,16 @@
 		    </div>
 		</div>
 	    {% endif %}
+	    {% for urltype in person.urlbytype|keys %}
+		<div class="row mx-2 mt-3 mb-2">
+		    <div class="col-12">
+			{{ include('canon/_person_url_external.html.twig', {
+			    urltype: urltype,
+			    urls: person.urlbytype[urltype],
+			}) }}
+		    </div>
+		</div>
+	    {% endfor %}
 	    <div class="row mx-2">
 		<div class="col-12">
 		    Empfohlene Zitierweise:
