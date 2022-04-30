@@ -109,12 +109,25 @@ class IdExternal
         if (!$this->value) {
             return null;
         }
-        $prettyValue = urldecode($this->value);
+        $val_elts = explode('/',$this->value);
+        $value = end($val_elts);
+        $prettyValue = urldecode($value);
         $prettyValue = str_replace('_', ' ', $prettyValue);
 
         return $prettyValue;
     }
 
+    public function getUrl(): ?string {
+        if (!$this->value) {
+            return null;
+        }
+        // check if the complete URL is stored in `value`.
+        if (str_starts_with($this->value, "http")) {
+            return $this->value;
+        } else {
+            return $this->authority->getUrlFormatter().$this->value;
+        }
+    }
 
     public function setValue(string $value): self
     {
