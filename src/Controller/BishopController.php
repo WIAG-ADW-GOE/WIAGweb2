@@ -121,11 +121,13 @@ class BishopController extends AbstractController {
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
         $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
 
+
         // get data from Germania Sacra
         $authorityGs = Authority::ID['Germania Sacra'];
         $gsn = $person->getIdExternal($authorityGs);
         $personGs = array();
         if (!is_null($gsn)) {
+            // if data are up to date at most of these requests is successful.
             $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
             $bishopGs = $personRepository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $personGs = array_merge($personGs, $bishopGs);

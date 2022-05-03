@@ -47,7 +47,7 @@
 			</small><br/>{% endfor %}
 		    </td>
 		    <td>
-			{% if prop and 'birthplace' in propkeys %}{{ prop.birthplace }}{% endif %}
+			{% if person.birthplace %}{{ person.birthplace|first.placename }}{% if person.birthplace|length > 1 %} &hellip;{% endif %}{% endif %}
 		    </td>
 		</tr>
 	    {% endfor %}

@@ -25,6 +25,7 @@ class PersonService {
         'Wikipedia' => 3,
     ];
 
+    // 2022-04-30 obsolete?
     const URL_GS = "http://personendatenbank.germania-sacra.de/index/gsn/";
     const URL_GND = "http://d-nb.info/gnd/";
     const URL_WIKIDATA = "https://www.wikidata.org/wiki/";
@@ -184,6 +185,8 @@ class PersonService {
      * personData
      */
     public function personData($person) {
+        $item = $person->getItem();
+
         $pj = array();
         $pj['wiagId'] = $person->getItem()->getIdPublic();
 
@@ -228,16 +231,12 @@ class PersonService {
         if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
 
         // external identifiers
-        $item = $person->getItem();
         $nd = array();
 
-        foreach (self::AUTH_ID as $key => $auth) {
-            if ($key == 'Wikipedia') {
-                $fv = $item->getUriExternalByAuthorityId($auth);
-            } else {
-                $fv = $item->getIdExternalByAuthorityId($auth);
-            }
-            if ($fv) $nd[$key] = $fv;
+        $id_external = $item->getIdExternal();
+        foreach ($id_external as $id_loop) {
+            $auth = $id_loop->getAuthority();
+            $nd[$auth->getUrlNameFormatter()] = $id_loop->getUrl();
         }
 
         if ($nd) {
@@ -255,14 +254,74 @@ class PersonService {
             $pj['offices'] = $nd;
         }
 
+        $item_refs = $item->getReference();
 
-        // $fv = $person->getReference();
-        // if($fv) {
-        //     $pj['reference'] = $fv->toArray();
-        //     $fiv = $person->getPagesGatz();
-        //     if($fiv)
-        //         $pj['reference']['pages'] = $fiv;
-        // }
+        $nd = array();
+
+        foreach ($item_refs as $ref_loop) {
+            $rd = array();
+            // citation
+            $vol = $ref_loop->getReferenceVolume();
+            $cce = [$vol->getFullCitation()];
+            $ce = $ref_loop->getPage();
+            if ($ce) {
+                $cce[] = "S. ".$ce;
+            }
+            $ce = $ref_loop->getIdInReference();
+            if ($ce) {
+                $cce[] = "ID/Nr. ".$ce;
+            }
+            $rd['citation'] = implode(', ', $cce);
+            // authorOrEditor, RiOpac, shortTitle
+            $rd['authorOrEditor'] = $vol->getAuthorEditor();
+            $fvi = $vol->getRiOpacId();
+            if ($fvi) {
+                $nd['RiOpac'] = $fvi;
+            }
+            $fvi = $vol->getTitleShort();
+            if ($fvi) {
+                $rd['shortTitle'] = $fvi;
+            }
+            $nd[] = $rd;
+        }
+
+        if ($nd) {
+            if (array_key_exists('offices', $pj)) {
+                $pj['offices']['references'] = $nd;
+            } else {
+                $pj['references'] = $nd;
+            }
+        }
+
+
+        // extra properties for priests in Utrecht
+        // ordination
+        $nd = array();
+        $itemProp = $item->combineItemProperty();
+        if (array_key_exists('ordination_priest', $itemProp)) {
+            $nd['office'] = $itemProp['ordination_priest'];
+        }
+        if (array_key_exists('ordination_priest_date', $itemProp)) {
+            $nd['date'] = $itemProp['ordination_priest_date']->format('d.m.Y');
+        }
+        if ($nd) {
+            $pj['ordination'] = $nd;
+        }
+
+        // birthplace
+        $nd = array();
+        foreach ($person->getBirthPlace() as $bp) {
+            $bpd['name'] = $bp->getPlaceName();
+            $urlwhg = $bp->getUrlWhg();
+            if ($urlwhg) {
+                $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
+            }
+            $nd[] = $bpd;
+        }
+
+        if ($nd) {
+            $pj['birthplaces'] = $nd;
+        }
 
         return $pj;
 
