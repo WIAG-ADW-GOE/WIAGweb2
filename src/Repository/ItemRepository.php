@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\PersonRole;
+use App\Entity\ReferenceVolume;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -466,6 +467,53 @@ class ItemRepository extends ServiceEntityRepository
         }
         return $qb;
     }
+
+
+    public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
+        $qb = $this->createQueryBuilder('i')
+                   ->addSelect('i')
+                   ->join('i.idExternal', 'ext')
+                   ->andWhere('i.itemTypeId = :itemTypeId')
+                   ->andWhere('ext.value = :value')
+                   ->andWhere('ext.authorityId = :authId')
+                   ->setParameter(':itemTypeId', $itemTypeId)
+                   ->setParameter(':value', $value)
+                   ->setParameter(':authId', $authId);
+
+        if ($isonline) {
+            $qb->andWhere('i.isOnline = 1');
+        }
+
+        $query = $qb->getQuery();
+        $item = $query->getResult();
+
+        $personRoleRepository = $this->getEntityManager()
+                                     ->getRepository(PersonRole::class);
+
+        foreach ($item as $item_loop) {
+            $item_id = $item_loop->getId();
+            $person = $item_loop->getPerson();
+            $person->setRole($personRoleRepository->findRoleWithPlace($item_id));
+            $this->addReferenceVolumes($item_loop);
+        }
+
+        return $item;
+    }
+
+    public function addReferenceVolumes($item) {
+        $em = $this->getEntityManager();
+        # add reference volumes (combined key)
+        $repository = $em->getRepository(ReferenceVolume::class);
+        foreach ($item->getReference() as $reference) {
+            $itemTypeId = $reference->getItemTypeId();
+            $referenceId = $reference->getReferenceId();
+            $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+            $reference->setReferenceVolume($referenceVolume);
+        }
+        return $item;
+    }
+
+
 
     /**
      * AJAX

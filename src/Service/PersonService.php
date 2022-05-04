@@ -4,12 +4,12 @@ namespace App\Service;
 
 
 use App\Entity\Person;
-use App\Repository\PersonRepository;
+# use App\Repository\PersonRepository;
 # use App\Service\RDFService;
 
 use Symfony\Component\HttpFoundation\Response;
 
-use Doctrine\ORM\EntityManagerInterface;
+# use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;

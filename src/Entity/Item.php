@@ -65,14 +65,6 @@ class Item {
     private $person;
 
     /**
-     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
-    // TODO 2022-02-25
-    // link roles via person?!
-    // private $personRole;
-
-    /**
      * @ORM\OneToOne(targetEntity="Institution")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
@@ -178,6 +170,10 @@ class Item {
 
     public function getReference() {
         return $this->reference;
+    }
+
+    public function getPerson() {
+        return $this->person;
     }
 
     public function getItemTypeId(): ?int
@@ -360,8 +356,17 @@ class Item {
         return $this;
     }
 
+    /**
+     *
+     */
+    public function isa($itemTypeName) {
+        return $this->itemTypeId == self::ITEMTYPEID[$itemTypeName];
+    }
+
+    /**
+     * @return object of type IdExternal for $authorityIdOrName
+     */
     public function getIdExternalObj($authorityIdOrName) {
-        $authorityId = 5;
         if (is_int($authorityIdOrName)) {
             $authorityId = $authorityIdOrName;
         } else {

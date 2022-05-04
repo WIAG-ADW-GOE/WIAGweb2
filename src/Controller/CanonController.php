@@ -61,9 +61,6 @@ class CanonController extends AbstractController {
             // set offset to page begin
             $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            // $countResult = $repository->countCanon($model);
-            // $count = $countResult["n"];
-
             $idAll = $repository->canonIds($model);
             $count = count($idAll);
 

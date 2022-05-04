@@ -95,6 +95,9 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
+    /**
+     * 2022-05-03: copy in ItemRepository
+     */
     public function addReferenceVolumes($person) {
         $em = $this->getEntityManager();
         # add reference volumes (combined key)
@@ -108,6 +111,9 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
+    /**
+     * called in BishopController; 2022-05-03: copy in ItemRepository; obsolete?
+     */
     public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
         $qb = $this->createQueryBuilder('p')
                    ->addSelect('i')

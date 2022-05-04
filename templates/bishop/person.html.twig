@@ -80,6 +80,24 @@
 		</div>
 	    {% endif %}
 	    {# offices #}
+	    {% for item_loop in item %}
+		{% set office_title = '' %}
+		{% if item_loop.getsource == 'Bischof' %}
+		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
+		{% elseif item_loop.getsource == 'Domherr' %}
+		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
+		{% elseif item_loop.getsource == 'Bischof GS' or item_loop.getsource == 'Domherr GS' %}
+		    {% set gsnid = item_loop.getidexternalobj('GS') %}
+		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
+		{% endif %}
+		{{ include('bishop/_person_role_group.html.twig', {
+		    person: item_loop.person,
+		    title: office_title,
+		    with_context: false
+		}) }}
+	    {% endfor %}
+	    {# offices; 2022-05-04 obsolete?#}
+	    {% if false %}
 	    {% if person %}
 		{{ include('bishop/_person_role_group.html.twig', {
 		    person: person,
@@ -105,6 +123,7 @@
 		    with_context: false
 		}) }}
 	    {% endfor %}
+	    {% endif %}
 
 	    {# external IDs #}
 	    {% if person.item.idExternal %}
