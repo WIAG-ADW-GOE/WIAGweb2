@@ -5,6 +5,9 @@ namespace App\Service;
 
 use App\Entity\Item;
 use App\Entity\Authority;
+use App\Entity\PersonRole;
+use App\Entity\ReferenceVolume;
+use App\Entity\CanonLookup;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -24,7 +27,7 @@ class ItemService {
         $repository = $this->em->getRepository(Item::class);
 
         $item = array($person->getItem());
-        // get office data from Germania Sacra
+        // get item from Germania Sacra
         $authorityGs = Authority::ID['Germania Sacra'];
         $gsn = $person->getIdExternal($authorityGs);
         if (!is_null($gsn)) {
@@ -38,7 +41,7 @@ class ItemService {
             $item = array_merge($item, $canonGs);
         }
 
-        // get data from Domherrendatenbank
+        // get item from Domherrendatenbank
         $authorityWIAG = Authority::ID['WIAG-ID'];
         $wiagid = $person->getItem()->getIdPublic();
         if (!is_null($wiagid)) {
@@ -46,6 +49,35 @@ class ItemService {
             $canon = $repository->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             $item = array_merge($item, $canon);
         }
+
+        // get office data and references
+        $personRoleRepository = $this->em->getRepository(PersonRole::class);
+        $referenceVolumeRepository = $this->em->getRepository(ReferenceVolume::class);
+        foreach ($item as $item_loop) {
+            $item_id = $item_loop->getId();
+            $person = $item_loop->getPerson();
+            $person->setRole($personRoleRepository->findRoleWithPlace($item_id));
+            $referenceVolumeRepository->addReferenceVolumes($item_loop);
+        }
+
+        return $item;
+    }
+
+    public function getCanonOfficeData($person) {
+        $itemRepository = $this->em->getRepository(Item::class);
+        $canonLookupRepository = $this->em->getRepository(CanonLookup::class);
+        $ids = $canonLookupRepository->getRoleIds($person->getId());
+        $item = array();
+        $personRoleRepository = $this->em->getRepository(PersonRole::class);
+        $referenceVolumeRepository = $this->em->getRepository(ReferenceVolume::class);
+        foreach ($ids as $id) {
+            $item_loop = $itemRepository->find($id);
+            $person = $item_loop->getPerson();
+            $person->setRole($personRoleRepository->findRoleWithPlace($id));
+            $referenceVolumeRepository->addReferenceVolumes($item_loop);
+            $item[] = $item_loop;
+        }
+
         return $item;
     }
 

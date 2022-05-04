@@ -79,21 +79,6 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
-    public function findWithAssociations($id) {
-        $person = $this->findWithOffice($id);
-        if ($person) {
-            $this->addReferenceVolumes($person);
-            $birthplace = $person->getBirthplace();
-            if ($birthplace) {
-                $pieRepository = $this->getEntityManager()
-                                      ->getRepository(PlaceIdExternal::class);
-                foreach ($birthplace as $bp) {
-                    $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
-                }
-            }
-        }
-        return $person;
-    }
 
     /**
      * 2022-05-03: copy in ItemRepository
@@ -111,58 +96,5 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
-    /**
-     * called in BishopController; 2022-05-03: copy in ItemRepository; obsolete?
-     */
-    public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
-        $qb = $this->createQueryBuilder('p')
-                   ->addSelect('i')
-                   ->join('p.item', 'i')
-                   ->join('i.idExternal', 'ext')
-                   ->andWhere('p.itemTypeId = :itemTypeId')
-                   ->andWhere('ext.value = :value')
-                   ->andWhere('ext.authorityId = :authId')
-                   ->setParameter(':itemTypeId', $itemTypeId)
-                   ->setParameter(':value', $value)
-                   ->setParameter(':authId', $authId);
-
-        if ($isonline) {
-            $qb->andWhere('i.isOnline = 1');
-        }
-
-        $query = $qb->getQuery();
-        $person = $query->getResult();
-
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
-
-        foreach ($person as $pLoop) {
-            $personId = $pLoop->getId();
-            $pLoop->setRole($personRoleRepository->findRoleWithPlace($personId));
-            $this->addReferenceVolumes($pLoop);
-        }
-
-        return $person;
-    }
-
-    /**
-     * findPriestWithItemProperties($id)
-     */
-    public function findPriestWithItemProperties_hide($id) {
-        $qb = $this->createQueryBuilder('p')
-                   ->join('p.item', 'i')
-                   ->join('i.itemProperty', 'ip')
-                   ->andWhere('p.id = :id')
-                   ->setParameter('id', $id);
-        $query = $qb->getQuery();
-        $person = $query->getOneOrNullResult();
-
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
-
-        $person->setRole($personRoleRepository->findRoleWithPlace($id));
-
-        return $person;
-    }
 
 }

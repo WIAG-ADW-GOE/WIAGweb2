@@ -125,7 +125,7 @@ class CanonLookupRepository extends ServiceEntityRepository
             $qb->addOrderBy('dateSortKey');
         }
 
-        // make the list stable
+        // make sure that the list is stable
         $qb->addOrderBy('p.id');
 
         if ($limit > 0) {
@@ -300,7 +300,20 @@ class CanonLookupRepository extends ServiceEntityRepository
 
     }
 
+    public function getRoleIds($id) {
+        $qb = $this->createQueryBuilder('c')
+                   ->select('c.personIdRole')
+                   ->andWhere('c.personIdName = :id')
+                   ->addOrderBy('c.prioRole')
+                   ->setParameter('id', $id);
+
+        $query = $qb->getQuery();
+        return array_column($query->getResult(), 'personIdRole');
+    }
+
+
     /**
+     * 2022-05-04 obsolete?
      * find canons with person via personIdName and personIdRole, respectively
      * @return CanonLookup[]
      */
@@ -324,9 +337,11 @@ class CanonLookupRepository extends ServiceEntityRepository
             $person_id_name = $r->getPersonIdName();
             $person = $personRepository->find($person_id_name);
             $urlByType = $urlExternalRepository->groupByType($person_id_name);
-            $person->setUrlByType($urlByType);
+            // $person->setUrlByType($urlByType);
             $r->setPerson($person);
-            $personRole = $personRepository->findWithAssociations($r->getPersonIdRole());
+            // 2022-05-04 TODO
+            $personRole = $personRepository->findWithOffice($r->getPersonIdRole());
+            $personRepository->addReferenceVolumes($personRole);
             $r->setPersonRole($personRole);
         }
 

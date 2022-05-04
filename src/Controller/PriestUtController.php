@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\Authority;
+use App\Entity\PlaceIdExternal;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Form\PriestUtFormType;
@@ -120,7 +121,19 @@ class PriestUtController extends AbstractController {
         }
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
+        $person_id = $ids[$idx]['personId'];
+        $person = $personRepository->findWithOffice($person_id);
+
+        $personRepository->addReferenceVolumes($person);
+
+        $birthplace = $person->getBirthplace();
+        if ($birthplace) {
+            $pieRepository = $this->getDoctrine()
+                                  ->getRepository(PlaceIdExternal::class);
+            foreach ($birthplace as $bp) {
+                $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
+            }
+        }
 
         return $this->render('priest_ut/person.html.twig', [
             'form' => $form->createView(),

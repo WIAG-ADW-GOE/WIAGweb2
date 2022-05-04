@@ -439,7 +439,7 @@ class Person
         return $this;
     }
 
-    public function getUrlByType(): array
+    public function getUrlByType(): ?array
     {
         return $this->urlByType;
     }

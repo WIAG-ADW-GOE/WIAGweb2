@@ -487,16 +487,6 @@ class ItemRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $item = $query->getResult();
 
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
-
-        foreach ($item as $item_loop) {
-            $item_id = $item_loop->getId();
-            $person = $item_loop->getPerson();
-            $person->setRole($personRoleRepository->findRoleWithPlace($item_id));
-            $this->addReferenceVolumes($item_loop);
-        }
-
         return $item;
     }
 

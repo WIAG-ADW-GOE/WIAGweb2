@@ -259,6 +259,7 @@ class PersonService {
         $nd = array();
 
         foreach ($item_refs as $ref_loop) {
+            dump($ref_loop);
             $rd = array();
             // citation
             $vol = $ref_loop->getReferenceVolume();

@@ -7,6 +7,7 @@ use App\Entity\Person;
 use App\Entity\Diocese;
 use App\Entity\CanonLookup;
 use App\Entity\Authority;
+use App\Entity\UrlExternal;
 
 use App\Service\PersonService;
 use App\Service\ItemService;
@@ -73,35 +74,16 @@ class IdController extends AbstractController {
 
     public function bishop($id, $format) {
         $personRepository = $this->getDoctrine()
-                           ->getRepository(Person::class);
+                                 ->getRepository(Person::class);
 
-        $person = $personRepository->findWithAssociations($id);
+        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+        $person = $personRepository->find($id);
+
 
         if ($format == 'html') {
 
             $item = $this->itemService->getBishopOfficeData($person);
-            // // get data from Germania Sacra
-            // $authorityGs = Authority::ID['Germania Sacra'];
-            // $gsn = $person->getIdExternal($authorityGs);
-            // $personGs = array();
-            // if (!is_null($gsn)) {
-            //     $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
-            //     $bishopGs = $personRepository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
-            //     $personGs = array_merge($personGs, $bishopGs);
 
-            //     $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
-            //     $canonGs = $personRepository->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
-            //     $personGs = array_merge($personGs, $canonGs);
-            // }
-
-            // // get data from Domherrendatenbank
-            // $authorityWIAG = Authority::ID['WIAG-ID'];
-            // $wiagid = $person->getItem()->getIdPublic();
-            // $canon = array();
-            // if (!is_null($wiagid)) {
-            //     $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
-            //     $canon = $personRepository->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
-            // }
             return $this->render('bishop/person.html.twig', [
                 'person' => $person,
                 'item' => $item,
@@ -148,15 +130,24 @@ class IdController extends AbstractController {
     }
 
     public function canon($id, $format) {
+        $dcn = $this->getDoctrine();
+        $personRepository = $dcn->getRepository(Person::class);
 
         if ($format == 'html') {
-            $canonLookupRepository = $this->getDoctrine()
-                                          ->getRepository(CanonLookup::class);
 
-            $canonLookup = $canonLookupRepository->findWithPerson($id);
+            $person = $personRepository->find($id);
+
+            // collect external URLs
+            $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
+            $urlByType = $urlExternalRepository->groupByType($id);
+            $person->setUrlByType($urlByType);
+
+            // collect office data in an array of Items
+            $item = $this->itemService->getCanonOfficeData($person);
 
             return $this->render('canon/person.html.twig', [
-                'canonlookup' => $canonLookup,
+                'person' => $person,
+                'item' => $item,
             ]);
 
         } else {

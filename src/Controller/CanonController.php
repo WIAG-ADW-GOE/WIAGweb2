@@ -5,12 +5,14 @@ use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\Canon;
 use App\Entity\CanonLookup;
+use App\Entity\UrlExternal;
+use App\Entity\Role;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
+use App\Service\ItemService;
 use App\Form\CanonFormType;
 use App\Form\Model\CanonFormModel;
-use App\Entity\Role;
 
 use App\Service\PersonService;
 
@@ -90,7 +92,8 @@ class CanonController extends AbstractController {
      * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
-                                    CanonLookupRepository $repository) {
+                                    CanonLookupRepository $repository,
+                                    ItemService $service) {
         $model = new CanonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
@@ -116,11 +119,25 @@ class CanonController extends AbstractController {
             $idx += 1;
         }
 
-        $canonLookup = $repository->findWithPerson($ids[$idx]['personIdName']);
+        $dcn = $this->getDoctrine();
+
+        // get person (name, date of birth ...)
+        $personRepository = $dcn->getRepository(Person::class);
+        $person_id = $ids[$idx]['personIdName'];
+        $person = $personRepository->find($person_id);
+
+        // collect external URLs
+        $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
+        $urlByType = $urlExternalRepository->groupByType($person_id);
+        $person->setUrlByType($urlByType);
+
+        // collect office data in an array of Items
+        $item = $service->getCanonOfficeData($person);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
-            'canonlookup' => $canonLookup,
+            'person' => $person,
+            'item' => $item,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);

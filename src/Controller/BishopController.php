@@ -121,7 +121,9 @@ class BishopController extends AbstractController {
         }
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->findWithAssociations($ids[$idx]['personId']);
+        $person_id = $ids[$idx]['personId'];
+        $person = $personRepository->find($person_id);
+
 
         // collect office data in an array of Items
         $item = $service->getBishopOfficeData($person);
@@ -157,15 +159,18 @@ class BishopController extends AbstractController {
             $format = $request->query->get('format') ?? 'json';
         }
 
-        # TODO 2022-01-26 call $repository->bishopIds
-        $result = $repository->bishopWithOfficeByModel($model);
+        $ids = $repository->bishopIds($model);
+
+        // 2022-05-04 TODO
+        // foreach id get an object of type Person and it's office data
+        // use PersonService to serialize data and to create the response finally.
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
         $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
-        return $service->$fncResponse($result);
+        return $service->$fncResponse($ids);
 
     }
 
