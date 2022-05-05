@@ -6,6 +6,7 @@ use App\Entity\Person;
 use App\Entity\Canon;
 use App\Entity\CanonLookup;
 use App\Entity\UrlExternal;
+use App\Entity\PersonRole;
 use App\Entity\Role;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
@@ -68,10 +69,14 @@ class CanonController extends AbstractController {
 
             $id = array_slice($idAll, $offset, self::PAGE_SIZE);
 
+            $personRoleRepository = $this->getDoctrine()->getRepository(PersonRole::class);
             $canon = array();
             // easy way to keep the order of the entries
             foreach($id as $idLoop) {
-                $canon[] = $repository->findWithRoleListView($idLoop["personIdName"]);
+                $canon_loop = $repository->findPrioRoleOne($idLoop["personIdName"]);
+                $personRole = $personRoleRepository->findRoleWithPlace($canon_loop->getPersonIdRole());
+                $canon_loop->setRoleListView($personRole);
+                $canon[] = $canon_loop;
             }
 
             return $this->renderForm('canon/query_result.html.twig', [

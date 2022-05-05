@@ -52,7 +52,7 @@ class PersonRoleRepository extends ServiceEntityRepository
 
     /**
      * find roles for `$personId`; set place names
-     * @return PersonRole[] Returns an array of PersonRole objects
+     * @return PersonRole[]
      */
     public function findRoleWithPlace($personId) {
         $qb = $this->createQueryBuilder('r')

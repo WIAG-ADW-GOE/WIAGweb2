@@ -6,13 +6,14 @@
 {% endblock %}
 
 {% block body %}
-    {% if not canonlookup%}
-	<p class="em">Domherr nicht gefunden.</p>
+    {% if not person %}
+	<div class="row mx-2 col-12 mt-4 mb-2">
+	    <p class="em">Domherr nicht gefunden.</p>
+	</div>
     {% else %}
-	{% set person = canonlookup[0].person %}
-	{% set idpublic = person.item.idpublic %}
-	{% set permalink %}{{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }}{% endset %}
-	{% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+	{% set id_public = person.item.idpublic %}
+	{% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
+	{% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
@@ -26,7 +27,7 @@
 		{% else %}
 		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
-		{% set btnaction=path('id', {id: idpublic}) %}
+		{% set btnaction=path('id', {id: id_public}) %}
 		{{ include('canon/_button_data.html.twig',
 		    {action: btnaction, format: 'Csv', text: 'CSV' }) }}
 		{{ include('canon/_button_data.html.twig',
@@ -55,7 +56,7 @@
 			    class="btn"
 			    title={{ permalink }}
 			    {{ stimulus_controller('clipboard') }}
-			    data-action="clipboard#copyTitle">{{ person.item.idPublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
+			    data-action="clipboard#copyTitle">{{ id_public }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
 		</div>
 	    </div>
 	    {# comments, dates #}
@@ -80,67 +81,27 @@
 		</div>
 	    {% endif %}
 	    {# offices and references#}
-	    {# canon is in Domherrendatenbank #}
-	    {% set person = null %}
-	    {% set hascanon = false %}
-	    {% set hascanongs = false %}
-	    {% set hasbishop = false %}
-	    {% for canon in canonlookup %}
-		{% if canon.personRole.item.itemtypeid == 5 %}
-		    {% set person = canon.personRole %}
-		    {% set hascanon = true %}
+	    {% for item_loop in item %}
+		{% set office_title = '' %}
+		{% if item_loop.getsource == 'Domherr' %}
+		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
+		{% elseif item_loop.getsource == 'Bischof GS' or item_loop.getsource == 'Domherr GS' %}
+		    {% set gsnid = item_loop.getidexternalobj('GS') %}
+		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
+		{% elseif item_loop.getsource == 'Bischof' %}
+		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
+		    {% set office_title %}<a href="{{ path('id', {id: id_public}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ id_public }}</strong></a>{% endset %}
 		{% endif %}
-	    {% endfor %}
-	    {% if person %}
 		{{ include('canon/_person_role_group.html.twig', {
-		    person: person,
-		    title: 'Amtsangaben aus Referenzwerken',
-		    with_context: false,
-		}) }}
-	    {% endif %}
-	    {% set person = null %}
-	    {# canon is in Digitalem Personenregister #}
-	    {% for canon in canonlookup %}
-		{% if canon.personRole.item.itemtypeid == 6 %}
-		    {% set person = canon.personRole %}
-		    {% set hascanongs = true %}
-		{% endif %}
-	    {% endfor %}
-	    {% if person %}
-		{% set gsnid = person.item.getidexternalobj('GS') %}
-		{% set title %}
-		<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>
-		{% endset %}
-		{{ include('canon/_person_role_group.html.twig', {
-		    person: person,
-		    title: title,
+		    person: item_loop.person,
+		    title: office_title,
 		    with_context: false
 		}) }}
-	    {% endif %}
-	    {% set person = null %}
-	    {# canon is in Gatz bishops #}
-	    {% set bishopid = null %}
-	    {% for canon in canonlookup %}
-		{% if canon.personRole.item.itemtypeid == 4 %}
-		    {% set person = canon.personRole %}
-		    {% set hasbishop = true %}
-		    {% set bishopid = person.item.idpublic %}
-		{% endif %}
 	    {% endfor %}
-	    {% if person %}
-		{% set title %}
-		<a href="{{ path('id', {id: bishopid}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ bishopid }}</strong></a>
-		{% endset %}
-		{{ include('canon/_person_role_group.html.twig', {
-		    person: person,
-		    title: title,
-		    with_context: false
-		}) }}
-	    {% endif %}
+
 	    {# external IDs #}
 	    {# select person with highest role priority (Domherr > Domherr GS > Bishop) #}
-	    {% set person = canonlookup[0].person %}
-	    {% if (person.item.idExternal and person.item.idExternal|length > 0) or bishopid %}
+	    {% if (item[0].idExternal and item[0].idExternal|length > 0) %}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
 			{{ include('canon/_person_id_external.html.twig', {

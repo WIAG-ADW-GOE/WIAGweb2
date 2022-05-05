@@ -79,6 +79,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $this->addCanonConditions($qb, $model);
         $this->addCanonFacets($qb, $model);
 
+        $add_dateSortKey = false;
         if ($domstift) {
             $qb->select('c.personIdName, inst_domstift.nameShort as sortA')
                ->join('App\Entity\PersonRole', 'role_list_view',
@@ -115,13 +116,15 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->groupBy('c.personIdName');
             if ($year) {
                 $qb->addOrderBy('dateSortKey');
+            } else {
+                $add_dateSortKey = true;
             }
         }
 
         $qb->addOrderBy('p.familyname')
            ->addOrderBy('p.givenname');
 
-        if (($name || $someid) && !$year) {
+        if ($add_dateSortKey) {
             $qb->addOrderBy('dateSortKey');
         }
 
@@ -258,11 +261,31 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    public function findPrioOne($id) {
+        $qb = $this->createQueryBuilder('c')
+                   ->select('c, p')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
+                   ->andWhere('c.personIdName = :id')
+                   ->andWhere('c.prioRole = 1')
+                   ->setParameter('id', $id);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        $canon = null;
+        if ($result) {
+            $canon = $result[0];
+            $canon->setPerson($result[1]);
+        }
+
+    }
+
     /**
-     * find canon with person via personIdName and roles via personIdRole where prioRole == 1
+     * find canon with person via personIdName where prioRole == 1
+     *
      * @return CanonLookup
      */
-    public function findWithRoleListView($id) {
+    public function findPrioRoleOne($id) {
+        // person can not be retrieved via association, because pesonIdName is not unique
         $qb = $this->createQueryBuilder('c')
                    ->select('c, p')
                    ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
@@ -274,28 +297,12 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $result = $query->getResult();
 
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
-
         $canon = null;
-        $person = null;
-        foreach ($result as $r) {
-            if (is_a($r, CanonLookup::class)) {
-                if ($r->getPrioRole() == 1) {
-                    $canon = $r;
-                } else {
-                    $canon->setHasSibling(true);
-                }
-            } elseif (is_a($r, Person::class)) {
-                $person = $r;
-            }
+        if ($result) {
+            $canon = $result[0];
+            $canon->setPerson($result[1]);
+            $canon->setHasSibling(count($result) > 2);
         }
-
-        if (!is_null($canon)) {
-            $canon->setPerson($person);
-            $canon->setRoleListView($personRoleRepository->findRoleWithPlace($canon->getPersonIdRole()));
-        }
-
         return $canon;
 
     }
