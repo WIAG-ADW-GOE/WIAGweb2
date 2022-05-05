@@ -79,6 +79,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $this->addCanonConditions($qb, $model);
         $this->addCanonFacets($qb, $model);
 
+        $add_dateSortKey = false;
         if ($domstift) {
             $qb->select('c.personIdName, inst_domstift.nameShort as sortA')
                ->join('App\Entity\PersonRole', 'role_list_view',
@@ -115,13 +116,15 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->groupBy('c.personIdName');
             if ($year) {
                 $qb->addOrderBy('dateSortKey');
+            } else {
+                $add_dateSortKey = true;
             }
         }
 
         $qb->addOrderBy('p.familyname')
            ->addOrderBy('p.givenname');
 
-        if (($name || $someid) && !$year) {
+        if ($add_dateSortKey) {
             $qb->addOrderBy('dateSortKey');
         }
 
