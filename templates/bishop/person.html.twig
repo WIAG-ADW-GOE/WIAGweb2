@@ -26,14 +26,15 @@
 		{% else %}
 		    <a href="{{ path('bishop_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
-		{% set btnaction=path('id', {id: person.item.idpublic}) %}
-		{{ include('bishop/_button_data.html.twig',
-		    {action: btnaction, format: 'Csv', text: 'CSV' }) }}
-		{{ include('bishop/_button_data.html.twig',
-		    {action: btnaction, format: 'Rdf', text: 'RDF-XML' }) }}
-		{{ include('bishop/_button_data.html.twig',
-		    {action: btnaction, format: 'Json', text: 'JSON' }) }}
-		{{ include('bishop/_button_data.html.twig', {action: btnaction, format: 'Jsonld', text: 'JSON-LD' }) }}
+		{# button data #}
+		{% for fmtft in [
+		    {format: 'Csv', text: 'CSV'},
+		    {format: 'Rdf', text: 'RDF-XML'},
+		    {format: 'Json', text: 'JSON'},
+		    {format: 'Jsonld', text: 'JSON-LD'},
+		] %}
+		    <a href="{{ path('id', {id: person.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
+		{% endfor %}
 	    </div>
 	</div>
 	{% endset %}
@@ -41,6 +42,10 @@
 	    {{ form_start(form, {'attr': {'id':'form', 'action':path('bishop_query'), 'hidden': 'hidden'} }) }}
 		{{ include('bishop/_form_elements.html.twig') }}
 	    {{ form_end(form) }}
+	{% else %}
+	    {# add a form for data requests #}	    <form action="{{ path('id', {id: person.item.idpublic}) }}" id="form" method="post">
+		<input type="hidden" name="token" value="{{ csrf_token('data-request') }}"/>
+	    </form>
 	{% endif %}
 	<div class="container-fluid mt-3 mb-2">
 	    <div class="row mx-2 col-12">

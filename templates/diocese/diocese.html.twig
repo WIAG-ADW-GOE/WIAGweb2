@@ -23,14 +23,15 @@
 			    {value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
 			<button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
 		    {% endif %}
-		    {% set btnaction=path('id', {id: diocese.item.idpublic}) %}
-		    {{ include('diocese/_button_data.html.twig',
-			{action: btnaction, format: 'Csv', text: 'CSV' }) }}
-		    {{ include('diocese/_button_data.html.twig',
-			{action: btnaction, format: 'Rdf', text: 'RDF-XML' }) }}
-		    {{ include('diocese/_button_data.html.twig',
-			{action: btnaction, format: 'Json', text: 'JSON' }) }}
-		    {{ include('diocese/_button_data.html.twig', {action: btnaction, format: 'Jsonld', text: 'JSON-LD' }) }}
+		    {# button data #}
+		    {% for fmtft in [
+			{format: 'Csv', text: 'CSV'},
+			{format: 'Rdf', text: 'RDF-XML'},
+			{format: 'Json', text: 'JSON'},
+			{format: 'Jsonld', text: 'JSON-LD'},
+		    ] %}
+			<a href="{{ path('id', {id: diocese.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
+		    {% endfor %}
 		</div>
 	    </div>
 	{% endset %}

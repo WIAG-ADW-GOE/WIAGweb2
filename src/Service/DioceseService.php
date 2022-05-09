@@ -67,58 +67,36 @@ class DioceseService {
         return $uriId;
     }
 
-    public function createResponseJson($dioceses) {
+    public function createResponseJson($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
-        # handle a single diocese
-        if (is_a($dioceses, Diocese::class)) {
-            $dioceses = array($dioceses);
-        }
-
-        $data = null;
-        if (count($dioceses) == 1) {
-            $dioceseNode = $this->dioceseData($dioceses[0]);
-            $data = $serializer->serialize($dioceseNode, 'json');
-        } else {
-            $dioceseNodes = array();
-            foreach($dioceses as $diocese) {
-                array_push($dioceseNodes, $this->dioceseData($diocese));
-            }
-            $data = $serializer->serialize(['dioceses' => $dioceseNodes], 'json');
-        }
+        $data = $serializer->serialize(['dioceses' => $node_list], 'json');
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['json']);
 
         $response->setContent($data);
         return $response;
+
     }
 
-    public function createResponseCsv($dioceses) {
+    public function createResponseCsv($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-csvencoder
         $csvEncoder = new CsvEncoder();
         $csvOptions = ['csv_delimiter' => "\t"];
 
-        # handle a single diocese
-        if (is_a($dioceses, Diocese::class)) {
-            $dioceses = array($dioceses);
+        if(count($node_list) == 1) {
+            $filename = $node_list[0]['wiagId'].'csv';
+        } else {
+            $filename = "WIAG-Bistuemer.csv";
         }
 
-        $dioceseData = null;
-        if (count($dioceses) == 1) {
-            $dioceseData = $this->dioceseData($dioceses[0]);
-        } else {
-            $dioceseData = array();
-            foreach($dioceses as $diocese) {
-                array_push($dioceseData, $this->dioceseData($diocese));
-            }
-        }
-        $data = $csvEncoder->encode($dioceseData, 'csv', $csvOptions);
+        $data = $csvEncoder->encode($node_list, 'csv', $csvOptions);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['csv']);
-        $response->headers->set('Content-Disposition', "filename=".self::DIOCESE_FILENAME_CSV);
+        $response->headers->set('Content-Disposition', "filename=".$filename);
 
         $response->setContent($data);
         return $response;
@@ -252,7 +230,7 @@ class DioceseService {
 
         // references
         $nd = array();
-        $references = $item->getReferences();
+        $references = $item->getReference();
 
         foreach ($references as $reference) {
             $volData = array();

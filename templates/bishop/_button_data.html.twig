@@ -1,1 +1,2 @@
-<button type="submit" form="form" formaction="{{ action }}" name="format" value="{{ format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ text }}</button>
+{# <button type="submit" form="form" formaction="{{ action }}" name="format" value="{{ format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ text }}</button> #}
+<a href="{{ path('id', {id: id, format: format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ text }}</a>

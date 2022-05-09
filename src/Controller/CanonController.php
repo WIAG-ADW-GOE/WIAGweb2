@@ -156,8 +156,10 @@ class CanonController extends AbstractController {
      * @Route("/domherr/data", name="canon_query_data")
      */
     public function queryData(Request $request,
-                              PersonRepository $repository,
-                              PersonService $service) {
+                              CanonLookupRepository $repository,
+                              ItemService $itemService,
+                              PersonRepository $personRepository,
+                              PersonService $personService) {
 
         if ($request->isMethod('POST')) {
             $model = new CanonFormModel();
@@ -170,15 +172,25 @@ class CanonController extends AbstractController {
             $format = $request->query->get('format') ?? 'json';
         }
 
-        # TODO 2022-01-26 call $repository->canonIds
-        $result = $repository->canonWithOfficeByModel($model);
+
+        $ids = $repository->canonIds($model);
+
+        $node_list = array();
+        foreach ($ids as $id) {
+
+            $person = $personRepository->find($id['personIdName']);
+
+            // collect office data in an array of Items
+            $item_list = $itemService->getCanonOfficeData($person);
+            $node_list[] = $personService->personData($person, $item_list);
+        }
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
         $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
-        return $service->$fncResponse($result);
+        return $personService->$fncResponse($node_list);
 
     }
 

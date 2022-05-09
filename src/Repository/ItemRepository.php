@@ -162,8 +162,10 @@ class ItemRepository extends ServiceEntityRepository
 
         $qb->addOrderBy('p.id');
 
-        $qb->setMaxResults($limit)
-           ->setFirstResult($offset);
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
         $query = $qb->getQuery();
 
         return $query->getResult();
@@ -416,16 +418,15 @@ class ItemRepository extends ServiceEntityRepository
            ->addOrderBy('sort', 'ASC')
            ->addOrderBy('p.id');
 
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
 
-        $qb->addOrderBy('p.id');
-
-        $qb->setMaxResults($limit)
-           ->setFirstResult($offset);
         $query = $qb->getQuery();
-
         return $query->getResult();
 
-        }
+    }
 
     private function addPriestUtConditions($qb, $model) {
         $birthplace = $model->birthplace;

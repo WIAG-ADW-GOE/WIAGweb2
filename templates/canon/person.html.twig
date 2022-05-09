@@ -27,14 +27,15 @@
 		{% else %}
 		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
-		{% set btnaction=path('id', {id: id_public}) %}
-		{{ include('canon/_button_data.html.twig',
-		    {action: btnaction, format: 'Csv', text: 'CSV' }) }}
-		{{ include('canon/_button_data.html.twig',
-		    {action: btnaction, format: 'Rdf', text: 'RDF-XML' }) }}
-		{{ include('canon/_button_data.html.twig',
-		    {action: btnaction, format: 'Json', text: 'JSON' }) }}
-		{{ include('canon/_button_data.html.twig', {action: btnaction, format: 'Jsonld', text: 'JSON-LD' }) }}
+		{# button data #}
+		{% for fmtft in [
+		    {format: 'Csv', text: 'CSV'},
+		    {format: 'Rdf', text: 'RDF-XML'},
+		    {format: 'Json', text: 'JSON'},
+		    {format: 'Jsonld', text: 'JSON-LD'},
+		] %}
+		    <a href="{{ path('id', {id: person.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
+		{% endfor %}
 	    </div>
 	</div>
 	{% endset %}

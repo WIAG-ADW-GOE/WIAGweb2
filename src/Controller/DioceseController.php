@@ -49,6 +49,7 @@ class DioceseController extends AbstractController {
             return $this->render('diocese/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form->createView(),
+                'count' => $count,
                 'offset' => $offset,
                 'data' => $result,
                 'pageSize' => self::PAGE_SIZE,
@@ -63,6 +64,7 @@ class DioceseController extends AbstractController {
         return $this->render('diocese/query_result.html.twig', [
             'menuItem' => 'collections',
             'form' => $form->createView(),
+            'count' => $count,
             'offset' => $offset,
             'data' => $result,
             'pageSize' => self::PAGE_SIZE,
@@ -133,14 +135,20 @@ class DioceseController extends AbstractController {
         }
 
         $name = $data['name'];
-        $result = $repository->dioceseWithBishopricSeatByName($name);
+        $diocese_list = $repository->dioceseWithBishopricSeatByName($name);
+
+        $node_list = [];
+        foreach ($diocese_list as $diocese) {
+            $node_list[] = $service->dioceseData($diocese);
+        }
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
+
         $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-        return $service->$fncResponse($result);
+        return $service->$fncResponse($node_list);
 
     }
 

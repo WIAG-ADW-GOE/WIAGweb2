@@ -8,6 +8,9 @@ use App\Entity\Diocese;
 use App\Entity\CanonLookup;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
+use App\Entity\PlaceIdExternal;
+
+use App\Repository\PersonRepository;
 
 use App\Service\PersonService;
 use App\Service\ItemService;
@@ -43,13 +46,12 @@ class IdController extends AbstractController {
      */
     public function id(string $id, Request $request) {
 
-        $format = $request->request->get('format') ?? 'html';
+        // $format = $request->request->get('format') ?? 'html';
+        $format = $request->query->get('format') ?? 'html';
 
-        $itemRepository = $this->getDoctrine()
-                               ->getRepository(Item::class);
-
-        $itemTypeRepository = $this->getDoctrine()
-                                   ->getRepository(ItemType::class);
+        $dcn = $this->getDoctrine();
+        $itemRepository = $dcn->getRepository(Item::class);
+        $itemTypeRepository = $dcn->getRepository(ItemType::class);
 
         $itemResult = $itemRepository->findByIdPublic($id);
 
@@ -72,28 +74,36 @@ class IdController extends AbstractController {
 
      }
 
+    public function getTypeName($item_type_id) {
+
+    }
+
     public function bishop($id, $format) {
-        $personRepository = $this->getDoctrine()
-                                 ->getRepository(Person::class);
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
+
         $person = $personRepository->find($id);
+        // collect office data in an array of Items
+        $item_list = $this->itemService->getBishopOfficeData($person);
 
 
         if ($format == 'html') {
 
-            $item = $this->itemService->getBishopOfficeData($person);
-
             return $this->render('bishop/person.html.twig', [
                 'person' => $person,
-                'item' => $item,
+                'item' => $item_list,
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
+
+            // build data array
+            $node_list = array();
+            $node_list[] = $this->personService->personData($person, $item_list);
+
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse([$person]);
+            return $this->personService->$fncResponse($node_list);
         }
     }
 
@@ -101,7 +111,7 @@ class IdController extends AbstractController {
         $repository = $this->getDoctrine()
                            ->getRepository(Diocese::class);
 
-        $result = $repository->dioceseWithBishopricSeatById($id);
+        $diocese = $repository->dioceseWithBishopricSeatById($id);
 
         if ($format == 'html') {
             return $this->render('diocese/diocese.html.twig', [
@@ -111,8 +121,12 @@ class IdController extends AbstractController {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
+
+            $node_list = array();
+            $node_list[] = $this->dioceseService->dioceseData($diocese);
+
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->dioceseService->$fncResponse([$result]);
+            return $this->dioceseService->$fncResponse($node_list);
         }
 
 
@@ -129,47 +143,59 @@ class IdController extends AbstractController {
         return $this->canon($id, $format);
     }
 
+
     public function canon($id, $format) {
-        $dcn = $this->getDoctrine();
-        $personRepository = $dcn->getRepository(Person::class);
+
+        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+        $person = $personRepository->find($id);
+        // collect external URLs
+        $urlExternalRepository = $this->getDoctrine()->getRepository(UrlExternal::class);
+        $urlByType = $urlExternalRepository->groupByType($id);
+        $person->setUrlByType($urlByType);
+
+        // collect office data in an array of Items
+        $item_list = $this->itemService->getCanonOfficeData($person);
+
 
         if ($format == 'html') {
-
-            $person = $personRepository->find($id);
-
-            // collect external URLs
-            $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
-            $urlByType = $urlExternalRepository->groupByType($id);
-            $person->setUrlByType($urlByType);
-
-            // collect office data in an array of Items
-            $item = $this->itemService->getCanonOfficeData($person);
-
             return $this->render('canon/person.html.twig', [
                 'person' => $person,
-                'item' => $item,
+                'item' => $item_list,
             ]);
 
+
         } else {
-            $personRepository = $this->getDoctrine()
-                                     ->getRepository(Person::class);
-
-            // TODO 2022-03-24 find person and roles with prio = 1
-            $person = $personRepository->findWithAssociations($id);
-
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
+
+            $node_list = array();
+
+            $node_list[] = $this->personService->personData($person, $item_list);
+
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse([$person]);
+            return $this->personService->$fncResponse($node_list);
         }
     }
+
+
 
     public function priest_ut($id, $format) {
         $personRepository = $this->getDoctrine()
                            ->getRepository(Person::class);
 
-        $person = $personRepository->findWithAssociations($id);
+        $person = $personRepository->findWithOffice($id);
+
+        $personRepository->addReferenceVolumes($person);
+
+        $birthplace = $person->getBirthplace();
+        if ($birthplace) {
+            $pieRepository = $this->getDoctrine()
+                                  ->getRepository(PlaceIdExternal::class);
+            foreach ($birthplace as $bp) {
+                $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
+            }
+        }
 
         if ($format == 'html') {
 
@@ -180,15 +206,17 @@ class IdController extends AbstractController {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
+
+            // build data array
+            $node_list = array();
+            $item_list = [$person->getItem()];
+            $node_list[] = $this->personService->personData($person, $item_list);
+
             $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse([$person]);
+            return $this->personService->$fncResponse($node_list);
+
         }
 
-        ## see PriestUtController
-
     }
-
-
-
 
 }

@@ -31,7 +31,8 @@ class ItemService {
         $authorityGs = Authority::ID['Germania Sacra'];
         $gsn = $person->getIdExternal($authorityGs);
         if (!is_null($gsn)) {
-            // if data are up to date at most of these requests is successful.
+            // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
+            // If data are up to date at most of these requests is successful.
             $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
             $bishopGs = $repository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $item = array_merge($item, $bishopGs);

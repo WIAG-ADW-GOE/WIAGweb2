@@ -68,58 +68,37 @@ class PersonService {
         return $uriId;
     }
 
-    public function createResponseJson($persons) {
+
+    public function createResponseJson($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
-        # handle a single person
-        if (is_a($persons, Person::class)) {
-            $persons = array($persons);
-        }
-
-        $data = null;
-        if (count($persons) == 1) {
-            $personNode = $this->personData($persons[0]);
-            $data = $serializer->serialize($personNode, 'json');
-        } else {
-            $personNodes = array();
-            foreach($persons as $person) {
-                array_push($personNodes, $this->personData($person));
-            }
-            $data = $serializer->serialize(['persons' => $personNodes], 'json');
-        }
+        $data = $serializer->serialize(['persons' => $node_list], 'json');
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['json']);
 
         $response->setContent($data);
         return $response;
+
     }
 
-    public function createResponseCsv($persons) {
+    public function createResponseCsv($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-csvencoder
         $csvEncoder = new CsvEncoder();
         $csvOptions = ['csv_delimiter' => "\t"];
 
-        # handle a single person
-        if (is_a($persons, Person::class)) {
-            $persons = array($persons);
+        if(count($node_list) == 1) {
+            $filename = $node_list[0]['wiagId'].'csv';
+        } else {
+            $filename = "WIAG-Persons.csv";
         }
 
-        $personData = null;
-        if (count($persons) == 1) {
-            $personData = $this->personData($persons[0]);
-        } else {
-            $personData = array();
-            foreach($persons as $person) {
-                array_push($personData, $this->personData($person));
-            }
-        }
-        $data = $csvEncoder->encode($personData, 'csv', $csvOptions);
+        $data = $csvEncoder->encode($node_list, 'csv', $csvOptions);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['csv']);
-        $response->headers->set('Content-Disposition', "filename=".self::BISHOP_FILENAME_CSV);
+        $response->headers->set('Content-Disposition', "filename=".$filename);
 
         $response->setContent($data);
         return $response;
@@ -184,7 +163,7 @@ class PersonService {
     /**
      * personData
      */
-    public function personData($person) {
+    public function personData_old($person) {
         $item = $person->getItem();
 
         $pj = array();
@@ -259,7 +238,6 @@ class PersonService {
         $nd = array();
 
         foreach ($item_refs as $ref_loop) {
-            dump($ref_loop);
             $rd = array();
             // citation
             $vol = $ref_loop->getReferenceVolume();
@@ -327,6 +305,118 @@ class PersonService {
         return $pj;
 
     }
+
+    /**
+     * personData
+     *
+     * build data array for `person` with office data in `item_list`
+     */
+    public function personData($person, $item_list) {
+
+        $pj = array();
+        $pj['wiagId'] = $person->getItem()->getIdPublic();
+
+        $fv = $person->getFamilyname();
+        if($fv) $pj['familyName'] = $fv;
+
+        $pj['givenName'] = $person->getGivenname();
+
+        $fv = $person->getPrefixName();
+        if($fv) $pj['prefix'] = $fv;
+
+        $fv = $person->getFamilynameVariants();
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
+
+        if($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
+
+        $fv = $person->getGivennameVariants();
+
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
+
+        if($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
+
+        $fv = $person->getNoteName();
+        if($fv) $pj['noteName'] = $fv;
+
+        $fv = $person->getNotePerson();
+        if($fv) $pj['notePerson'] = $fv;
+
+        $fv = $person->getDateBirth();
+        if($fv) $pj['dateOfBirth'] = $fv;
+
+        $fv = $person->getDateDeath();
+        if($fv) $pj['dateOfDeath'] = $fv;
+
+        $fv = $person->getReligiousOrder();
+        if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
+
+        // external identifiers
+        $nd = array();
+
+        $id_external = $person->getItem()->getIdExternal();
+        foreach ($id_external as $id_loop) {
+            $auth = $id_loop->getAuthority();
+            $nd[$auth->getUrlNameFormatter()] = $id_loop->getUrl();
+        }
+
+        if ($nd) {
+            $pj['identifier'] = $nd;
+        }
+
+        // roles (offices)
+
+        $nd = array();
+        foreach ($item_list as $item) {
+            $role_list = $item->getPerson()->getRole();
+            $ref_list = $item->getReference();
+            foreach ($role_list as $role) {
+                $fv = $this->roleData($role, $ref_list);
+                if ($fv) $nd[] = $fv;
+            }
+        }
+        if ($nd) {
+            $pj['offices'] = $nd;
+        }
+
+        // extra properties for priests in Utrecht
+        // ordination
+        $nd = array();
+        $itemProp = $item->combineItemProperty();
+        if (array_key_exists('ordination_priest', $itemProp)) {
+            $nd['office'] = $itemProp['ordination_priest'];
+        }
+        if (array_key_exists('ordination_priest_date', $itemProp)) {
+            $nd['date'] = $itemProp['ordination_priest_date']->format('d.m.Y');
+        }
+        if ($nd) {
+            $pj['ordination'] = $nd;
+        }
+
+        // birthplace
+        $nd = array();
+        foreach ($person->getBirthPlace() as $bp) {
+            $bpd['name'] = $bp->getPlaceName();
+            $urlwhg = $bp->getUrlWhg();
+            if ($urlwhg) {
+                $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
+            }
+            $nd[] = $bpd;
+        }
+
+        if ($nd) {
+            $pj['birthplaces'] = $nd;
+        }
+
+        return $pj;
+
+    }
+
 
     public function personLinkedData($person) {
         $pld = array();
@@ -695,11 +785,16 @@ class PersonService {
         return $ocld;
     }
 
-    public function roleData($role) {
+    public function roleData($role, $ref_list) {
         $pj = array();
 
-        $fv = $role->getRoleName();
-        if ($fv) $pj['title'] = $fv;
+        $fv = $role->getRole();
+        if ($fv) {
+            $pj['title'] = $fv->getName();
+        } else {
+            $fv = $role->getRoleName();
+            if ($fv) $pj['title'] = $fv;
+        }
 
         $fv = null;
         $diocese = $role->getDiocese();
@@ -715,6 +810,42 @@ class PersonService {
 
         $fv = $role->getDateEnd();
         if ($fv) $pj['dateEnd'] = $fv;
+
+        $fv = $role->getInstitution();
+        if ($fv) $pj['institution'] = $fv->getName();
+
+        $nd = array();
+
+        foreach ($ref_list as $ref) {
+            $rd = array();
+            // citation
+            $vol = $ref->getReferenceVolume();
+            $cce = [$vol->getFullCitation()];
+            $ce = $ref->getPage();
+            if ($ce) {
+                $cce[] = "S. ".$ce;
+            }
+            $ce = $ref->getIdInReference();
+            if ($ce) {
+                $cce[] = "ID/Nr. ".$ce;
+            }
+            $rd['citation'] = implode(', ', $cce);
+            // authorOrEditor, RiOpac, shortTitle
+            $rd['authorOrEditor'] = $vol->getAuthorEditor();
+            $fvi = $vol->getRiOpacId();
+            if ($fvi) {
+                $rd['RiOpac'] = $fvi;
+            }
+            $fvi = $vol->getTitleShort();
+            if ($fvi) {
+                $rd['shortTitle'] = $fvi;
+            }
+            $nd[] = $rd;
+        }
+
+        if ($nd) {
+            $pj['references'] = $nd;
+        }
 
         return $pj;
 

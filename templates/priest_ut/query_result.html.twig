@@ -37,11 +37,14 @@
 		<div class="col-12">
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		    {% if count > 0 %}
-			{% set btnaction=path('priest_ut_query_data') %}
-			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Csv', 'text': 'CSV' }) }}
-			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Rdf', 'text': 'RDF-XML' }) }}
-			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Json', 'text': 'JSON' }) }}
-			{{ include('priest_ut/_button_data.html.twig', {'action': btnaction, 'format': 'Jsonld', 'text': 'JSON-LD' }) }}
+			{% for fmtft in [
+			    {format: 'Csv', text: 'CSV'},
+			    {format: 'Rdf', text: 'RDF-XML'},
+			    {format: 'Json', text: 'JSON'},
+			    {format: 'Jsonld', text: 'JSON-LD'},
+			] %}
+			    <button type="submit" form="form" formaction={{ path('priest_ut_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
+			{% endfor %}
 		    {% endif %}
 		    <a href="{{ path('priest_ut_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
 		</div>

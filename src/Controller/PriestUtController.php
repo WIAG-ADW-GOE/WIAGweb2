@@ -41,7 +41,8 @@ class PriestUtController extends AbstractController {
         // we need to pass an instance of PriestUtFormModel, because facets depend on it's data
         $model = new PriestUtFormModel;
 
-        // TODO $flagInit = count($request->request->all()) == 0;
+        // TODO Facets?!
+        // $flagInit = count($request->request->all()) == 0;
         $flagInit = false;
 
         $form = $this->createForm(PriestUtFormType::class, $model, [
@@ -151,8 +152,9 @@ class PriestUtController extends AbstractController {
      * @Route("/priest_utrecht/data", name="priest_ut_query_data")
      */
     public function queryData(Request $request,
-                              PersonRepository $repository,
-                              PersonService $service) {
+                              ItemRepository $itemRepository,
+                              PersonRepository $personRepository,
+                              PersonService $personService) {
 
         if ($request->isMethod('POST')) {
             $model = new PriestUtFormModel();
@@ -164,6 +166,24 @@ class PriestUtController extends AbstractController {
             $model = PriestUtFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
+
+        $ids = $itemRepository->priestUtIds($model);
+        $node_list = array();
+        foreach ($ids as $id) {
+
+            $person = $personRepository->findWithOffice($id['personId']);
+
+            $item_list = [$person->getItem()];
+            $node_list[] = $personService->personData($person, $item_list);
+        }
+
+        $format = ucfirst(strtolower($format));
+        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+        }
+        $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
+        return $personService->$fncResponse($node_list);
+
 
         # TODO 2022-01-26 call $repository->priestUtIds
         $result = $repository->priestUtWithOfficeByModel($model);
