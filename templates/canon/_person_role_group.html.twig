@@ -29,7 +29,6 @@
 					    }) }}</li>
 				    {% else %}
 					{% set idinref = ref.idinreference %}
-					{% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
 					<li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
 				    {% endif %}
 				{% endif %}

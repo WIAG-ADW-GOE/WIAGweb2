@@ -47,6 +47,7 @@ class DioceseService {
             "foaf" => "http://xmlns.com/foaf/0.1/",
             "gndo" => "https://d-nb.info/standards/elementset/gnd#",
             "schema" => "https://schema.org/",
+            "dcterms" => "http://purl.org/dc/terms/", # Dublin Core
             "variantNamesByLang" => [
                 "@id" => "https://d-nb.info/standards/elementset/gnd#variantName",
                 "@container" => "@language",
@@ -65,6 +66,11 @@ class DioceseService {
         # Apache (GWDG server) does not forward https to Symfony
         $uriId = str_replace('http:', 'https:', $uriId);
         return $uriId;
+    }
+
+    public function createResponse($format, $node_list) {
+        $fcn = 'createResponse'.$format;
+        return $this->$fcn($node_list);
     }
 
     public function createResponseJson($node_list) {
@@ -87,7 +93,7 @@ class DioceseService {
         $csvOptions = ['csv_delimiter' => "\t"];
 
         if(count($node_list) == 1) {
-            $filename = $node_list[0]['wiagId'].'csv';
+            $filename = $node_list[0]['wiagId'].'.csv';
         } else {
             $filename = "WIAG-Bistuemer.csv";
         }
@@ -122,7 +128,6 @@ class DioceseService {
         }
         $xmlroot = RDFService::xmlroot($dioceseNodes);
         $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
-        # dd($data);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
@@ -131,24 +136,12 @@ class DioceseService {
         return $response;
     }
 
-    public function createResponseJsonld($dioceses) {
+    public function createResponseJsonld($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
-        # handle a single diocese
-        if (is_a($dioceses, Diocese::class)) {
-            $dioceses = array($dioceses);
-        }
-
-        $dioceseNodes = self::JSONLDCONTEXT;
-        if (count($dioceses) == 1) {
-            array_push($dioceseNodes, $this->dioceseJsonLinkedData($dioceses[0]));
-        } else {
-            foreach($dioceses as $diocese) {
-                array_push($dioceseNodes, $this->dioceseJsonLinkedData($diocese));
-            }
-        }
-        $data = $serializer->serialize($dioceseNodes, 'json');
+        $node_list = array_merge(self::JSONLDCONTEXT, ['@set' => $node_list]);
+        $data = $serializer->serialize($node_list, 'json');
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['jsonld']);
@@ -158,11 +151,28 @@ class DioceseService {
 
     }
 
+    /**
+     */
+    public function dioceseData($format, $diocese) {
+        switch ($format) {
+        case 'Json':
+        case 'Csv':
+            return $this->dioceseDataPlain($diocese);
+            break;
+        case 'Jsonld':
+            return $this->dioceseJSONLinkedData($diocese);
+            break;
+        case 'Rdf':
+        default:
+            return null;
+        }
+    }
+
 
     /**
-     * dioceseData
+     * dioceseDataPlain
      */
-    public function dioceseData($diocese) {
+    public function dioceseDataPlain($diocese) {
         $cd = array();
         $idPublic = $diocese->getItem()->getIdPublic();
         $cd['wiagId'] = $idPublic;
@@ -250,7 +260,7 @@ class DioceseService {
             $fv = $volume->getOnlineResource();
             if ($fv) $volData['online'] = $fv;
 
-            $fv = $reference->getPage();
+            $fv = $reference->getPagePlain();
             if ($fv) $volData['page'] = $fv;
 
             if ($volData) $nd[] = $volData;
@@ -355,6 +365,7 @@ class DioceseService {
         $owlfx = "owl:";
         $foaffx = "foaf:";
         $scafx = "schema:";
+        $dctermsfx = "dcterms:";
 
         $dioceseId = [
             "@id" => $this->uriWiagId($diocese->getItem()->getIdPublic()),
@@ -397,7 +408,7 @@ class DioceseService {
         // external identifiers
         $item = $diocese->getItem();
 
-        $fv = $item->getIdsExternal();
+        $fv = $item->getIdExternal();
         if($fv) {
             $cei = array();
             foreach($fv as $extid) {
@@ -416,6 +427,29 @@ class DioceseService {
             }
             $dld[$owlfx.'sameAs'] = $cei;
         }
+
+        // references
+        $nd = array();
+        foreach ($item->getReference() as $ref) {
+            // citation
+            $vol = $ref->getReferenceVolume();
+            $cce = [$vol->getFullCitation()];
+            $ce = $ref->getPagePlain();
+            if ($ce) {
+                $cce[] = "S. ".$ce;
+            }
+            $ce = $ref->getIdInReference();
+            if ($ce) {
+                $cce[] = "ID/Nr. ".$ce;
+            }
+            $nd[] = implode(', ', $cce);
+        }
+
+        if ($nd) {
+            $fv = count($nd) > 1 ? $nd : $nd[0];
+            $dld[$dctermsfx.'bibliographicCitation'] = $fv;
+        }
+
 
         return array_merge($dioceseId, $dld);
     }

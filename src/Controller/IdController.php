@@ -100,10 +100,9 @@ class IdController extends AbstractController {
 
             // build data array
             $node_list = array();
-            $node_list[] = $this->personService->personData($person, $item_list);
+            $node_list[] = $this->personService->personData($format, $person, $item_list);
 
-            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse($node_list);
+            return $this->personService->createResponse($format, $node_list);
         }
     }
 
@@ -115,7 +114,7 @@ class IdController extends AbstractController {
 
         if ($format == 'html') {
             return $this->render('diocese/diocese.html.twig', [
-                'diocese' => $result,
+                'diocese' => $diocese,
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
@@ -123,18 +122,9 @@ class IdController extends AbstractController {
             }
 
             $node_list = array();
-            $node_list[] = $this->dioceseService->dioceseData($diocese);
+            $node_list[] = $this->dioceseService->dioceseData($format, $diocese);
 
-            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->dioceseService->$fncResponse($node_list);
-        }
-
-
-        switch($format) {
-        case 'html':
-            return $this->render('diocese/diocese.html.twig', [
-                'diocese' => $result,
-            ]);
+            return $this->dioceseService->createResponse($format, $node_list);
         }
 
     }
@@ -169,12 +159,11 @@ class IdController extends AbstractController {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
 
+            // build data array
             $node_list = array();
+            $node_list[] = $this->personService->personData($format, $person, $item_list);
 
-            $node_list[] = $this->personService->personData($person, $item_list);
-
-            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse($node_list);
+            return $this->personService->createResponse($format, $node_list);
         }
     }
 
@@ -210,10 +199,9 @@ class IdController extends AbstractController {
             // build data array
             $node_list = array();
             $item_list = [$person->getItem()];
-            $node_list[] = $this->personService->personData($person, $item_list);
+            $node_list[] = $this->personService->personData($format, $person, $item_list);
 
-            $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-            return $this->personService->$fncResponse($node_list);
+            return $this->personService->createResponse($format, $node_list);
 
         }
 

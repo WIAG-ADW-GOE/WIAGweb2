@@ -371,17 +371,21 @@ class Person
     /**
      * concatenate name variants and comments
      */
-    public function commentLine() {
-        $gnVariants = array ();
-        foreach ($this->givennameVariants as $gn) {
-            $gnVariants[] = $gn->getName();
+    public function commentLine($flag_names = true) {
+        $strGnVariants = null;
+        $strFnVariants = null;
+        if ($flag_names) {
+            $gnVariants = array ();
+            foreach ($this->givennameVariants as $gn) {
+                $gnVariants[] = $gn->getName();
+            }
+            $fnVariants = array ();
+            foreach ($this->familynameVariants as $fn) {
+                $fnVariants[] = $fn->getName();
+            }
+            $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
+            $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
         }
-        $fnVariants = array ();
-        foreach ($this->familynameVariants as $fn) {
-            $fnVariants[] = $fn->getName();
-        }
-        $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
-        $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
 
         $prop = $this->getItem()->combineItemProperty();
         $patronym = array_key_exists('patronym', $prop) ? 'Patronym: '.$prop['patronym'] : null;

@@ -137,18 +137,18 @@ class DioceseController extends AbstractController {
         $name = $data['name'];
         $diocese_list = $repository->dioceseWithBishopricSeatByName($name);
 
-        $node_list = [];
-        foreach ($diocese_list as $diocese) {
-            $node_list[] = $service->dioceseData($diocese);
-        }
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
-        $fncResponse='createResponse'.$format; # e.g. 'createResponseRdf'
-        return $service->$fncResponse($node_list);
+        $node_list = [];
+        foreach ($diocese_list as $diocese) {
+            $node_list[] = $service->dioceseData($format, $diocese);
+        }
+
+        return $service->createResponse($format, $node_list);
 
     }
 

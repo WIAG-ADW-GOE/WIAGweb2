@@ -87,6 +87,15 @@ class ItemReference
         return $this->page;
     }
 
+    /**
+     * @return page without markup
+     */
+    public function getPagePlain(): ?string
+    {
+        return preg_replace('~</?[a-z]+>~', '', $this->page);
+    }
+
+
     public function setPage(?string $page): self
     {
         $this->page = $page;

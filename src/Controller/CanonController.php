@@ -175,6 +175,12 @@ class CanonController extends AbstractController {
 
         $ids = $repository->canonIds($model);
 
+
+        $format = ucfirst(strtolower($format));
+        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
+            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+        }
+
         $node_list = array();
         foreach ($ids as $id) {
 
@@ -182,15 +188,10 @@ class CanonController extends AbstractController {
 
             // collect office data in an array of Items
             $item_list = $itemService->getCanonOfficeData($person);
-            $node_list[] = $personService->personData($person, $item_list);
+            $node_list[] = $personService->personData($format, $person, $item_list);
         }
 
-        $format = ucfirst(strtolower($format));
-        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
-            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
-        }
-        $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
-        return $personService->$fncResponse($node_list);
+        return $personService->createResponse($format, $node_list);
 
     }
 
