@@ -74,10 +74,6 @@ class IdController extends AbstractController {
 
      }
 
-    public function getTypeName($item_type_id) {
-
-    }
-
     public function bishop($id, $format) {
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
@@ -133,7 +129,6 @@ class IdController extends AbstractController {
         return $this->canon($id, $format);
     }
 
-
     public function canon($id, $format) {
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
@@ -174,9 +169,7 @@ class IdController extends AbstractController {
                            ->getRepository(Person::class);
 
         $person = $personRepository->findWithOffice($id);
-
         $personRepository->addReferenceVolumes($person);
-
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
             $pieRepository = $this->getDoctrine()

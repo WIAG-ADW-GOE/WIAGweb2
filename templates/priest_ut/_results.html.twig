@@ -47,7 +47,10 @@
 			</small><br/>{% endfor %}
 		    </td>
 		    <td>
-			{% if person.birthplace %}{{ person.birthplace|first.placename }}{% if person.birthplace|length > 1 %} &hellip;{% endif %}{% endif %}
+			{% if person.birthplace %}
+			    {% set n_birthplace=person.birthplace|length %}
+			    {% if n_birthplace > 0 %}{{ person.birthplace|first.placename }}{% if n_birthplace > 1 %} &hellip;{% endif %}{% endif %}
+			{% endif %}
 		    </td>
 		</tr>
 	    {% endfor %}

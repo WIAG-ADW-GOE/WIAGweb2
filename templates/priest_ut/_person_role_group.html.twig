@@ -13,7 +13,7 @@
 			roles: person.role
 		    }) }}
 		{% endif %}
-		{% if person.birthplace %}
+		{% if person.birthplace and person.birthplace|length > 0 %}
 		    {{ include('priest_ut/_person_birthplace.html.twig', {
 			birthplace: person.birthplace
 		    }) }}

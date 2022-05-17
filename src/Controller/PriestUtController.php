@@ -167,20 +167,34 @@ class PriestUtController extends AbstractController {
             $format = $request->query->get('format') ?? 'json';
         }
 
-        $ids = $itemRepository->priestUtIds($model);
-        $node_list = array();
-        foreach ($ids as $id) {
 
-            $person = $personRepository->findWithOffice($id['personId']);
-
-            $item_list = [$person->getItem()];
-            $node_list[] = $personService->personData($person, $item_list);
-        }
 
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
+
+        $ids = $itemRepository->priestUtIds($model);
+        $node_list = array();
+        foreach ($ids as $id) {
+
+            $person = $personRepository->findWithOffice($id['personId']);
+            $personRepository->addReferenceVolumes($person);
+            $birthplace = $person->getBirthplace();
+            if ($birthplace) {
+                $pieRepository = $this->getDoctrine()
+                                      ->getRepository(PlaceIdExternal::class);
+                foreach ($birthplace as $bp) {
+                    $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
+                }
+            }
+
+            $item_list = [$person->getItem()];
+            $node_list[] = $personService->personData($format, $person, $item_list);
+        }
+
+        return $personService->createResponse($format, $node_list);
+
         $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
         return $personService->$fncResponse($node_list);
 

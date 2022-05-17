@@ -110,27 +110,14 @@ class PersonService {
         return $response;
     }
 
-    public function createResponseRdf($persons) {
+    public function createResponseRdf($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
         $serializer = new Serializer([], array(new XMLEncoder()));
 
-        # handle a single person
-        if (is_a($persons, Person::class)) {
-            $persons = array($persons);
-        }
+        // remove top node
+        $xmlroot = RDFService::xmlroot(array_merge(...$node_list));
 
-
-        $personNodes = array();
-        if (count($persons) == 1) {
-            $personNodes = $this->personLinkedData($persons[0]);
-        } else {
-            foreach($persons as $person) {
-                array_push($personNodes, ...$this->personLinkedData($person));
-            }
-        }
-        $xmlroot = RDFService::xmlroot($personNodes);
         $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
-        # dd($data);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
@@ -340,6 +327,8 @@ class PersonService {
             return $this->personJSONLinkedData($person, $item_list);
             break;
         case 'Rdf':
+            return $this->personLinkedData($person, $item_list);
+            break;
         default:
             return null;
         }
@@ -419,8 +408,15 @@ class PersonService {
                 if ($fv) $nd[] = $fv;
             }
         }
+
         if ($nd) {
+            # references are part of the role node
             $pj['offices'] = $nd;
+        } else {
+            $ref_list = $item_list[0]->getReference();
+            if ($ref_list) {
+                $pj['references'] = $this->referenceData($ref_list);
+            }
         }
 
         // extra properties for priests in Utrecht
@@ -456,14 +452,15 @@ class PersonService {
 
     }
 
-
-    public function personLinkedData($person) {
+    public function personLinkedData($person, $item_list) {
         $pld = array();
 
         $gfx = "gndo:";
         $owlfx = "owl:";
         $foaffx = "foaf:";
         $scafx = "schema:";
+        $dctermsfx = "dcterms:";
+
 
         $pld = [
             'rdf:type' => [
@@ -540,9 +537,25 @@ class PersonService {
             $pld[$gfx.'variantNameEntityForThePerson'] = RDFService::blankNode($vneftps);
 
 
-        $fv = $person->getNotePerson();
-        if($fv)
-            $pld[$gfx.'biographicalOrHistoricalInformation'] = RDFService::xmlStringData($fv);
+        // additional information
+        $bhi = array();
+        $fv = $person->commentLine(false);
+        if($fv) {
+            $bhi[] = $fv;
+        }
+
+        $fv = $person->getItem()->combineItemProperty();
+        if ($fv) {
+            $ipt = $this->itemPropertyText($fv, 'ordination_priest');
+            if ($ipt) {
+                $bhi[] = $ipt;
+            }
+        }
+
+        if ($bhi) {
+            $bhi_string = RDFService::xmlStringData(implode('; ', $bhi));
+            $pld[$gfx.'biographicalOrHistoricalInformation'] = $bhi_string;
+        }
 
         $fv = $person->getDateBirth();
         if($fv) $pld[$gfx.'dateOfBirth'] = RDFService::xmlStringData($fv);
@@ -572,39 +585,77 @@ class PersonService {
             $pld[$foaffx.'page'] = $fv;
         }
 
+        // birthplace
+        $nd = array();
+        foreach ($person->getBirthPlace() as $bp) {
+            $urlwhg = $bp->getUrlWhg();
+            if ($urlwhg) {
+                $nd[] = ['@rdf:resource' => $urlwhg];
+            } else {
+                $nd[] = RDFService::xmlStringData($bp->getPlaceName());
+            }
+        }
+
+        if ($nd) {
+            if (count($nd) == 1) {
+                $pld[$scafx.'birthPlace'] = $nd[0];
+            } else {
+                $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
+            }
+        }
+
         $descName = [
             '@rdf:about' => $this->uriWiagId($personId),
             '#' => $pld,
         ];
 
+
         // offices
-        $roles = $person->getRole();
         $descOffices = array();
-        if($roles) {
-            foreach($roles as $oc) {
+        foreach ($item_list as $item) {
+            $role_list = $item->getPerson()->getRole();
+            $ref_list = $item->getReference();
+
+            foreach($role_list as $oc) {
                 $roleNodeId = uniqid('role');
                 $descOffices[] = [
-                    '@rdf:about' => $this->uriWiagId($personID),
+                    '@rdf:about' => $this->uriWiagId($personId),
                     '#' => [
                         $scafx.'hasOccupation' => [
                             '@rdf:nodeID' => $roleNodeId,
                         ]
                     ]
                 ];
-                $descOffices[] = $this->roleNode($oc, $roleNodeId);
+                $descOffices[] = $this->roleNode($oc, $roleNodeId, $ref_list);
+            }
+        }
+
+        // add reference(s) in case there are no offices
+        if (count($descOffices) == 0) {
+            $ref_list = $item->getReference();
+            if ($ref_list) {
+                // references
+                $nd = $this->referenceCitation($ref_list);
+
+                if ($nd) {
+                    $nd = array_map([RDFService::class, 'xmlStringData'], $nd);
+                    if (count($nd) == 1) {
+                        $descName[$dctermsfx.'bibliographicCitation'] = $nd[0];
+                    } else {
+                        $descName[$dctermsfx.'bibliographicCitation'] = RDFService::list("rdf:Bag", $nd);
+                    }
+                }
             }
         }
 
         return array_merge([$descName], $descOffices);
 
-
-        // references ?!
-
     }
 
-    public function roleNode($office, $roleNodeID) {
+    public function roleNode($office, $roleNodeID, $ref_list) {
         $scafx = "schema:";
         $gfx = "gndo:";
+        $dctermsfx = "dcterms:";
 
         $ocld['rdf:type'] = [
             '@rdf:resource' => RDFService::NAMESP_SCHEMA.'Role'
@@ -618,27 +669,51 @@ class PersonService {
         $fv = $office->getDateEnd();
         if($fv) $ocld[$scafx.'endDate'] = RDFService::xmlStringData($fv);
 
-        $fv = $office->getDiocese();
-        if($fv) {
-            $dioceseID = $fv->getItem()->getIdPublic();
-            if($dioceseID)
-                $ocld[$scafx.'affiliation'] = [
-                    '@rdf:resource' => $this->uriWiagId($dioceseID)
-                ];
-            $ocld[$scafx.'description'] = RDFService::xmlStringData($fv->getName());
+        // monastery or diocese
+        $inst_name = null;
+        $inst_url = null;
+        $fv = $office->getInstitution();
+        if ($fv) {
+            $inst_name = $fv->getName();
+            $inst_url = self::URL_KLOSTERDATENBANK.$fv->getIdGsn();
         } else {
-            $fv = $office->getDioceseName();
-            if ($fv) $ocld[$scafx.'description'] = $fv;
+            $fv = $office->getInstitutionName();
+            if ($fv) {
+                $inst_name = $fv;
+            } else {
+                $fv = $office->getDiocese();
+                if($fv) {
+                    $inst_name = $fv->getDioceseStatus().' '.$fv->getName();
+                    $inst_url = $this->uriWiagId($fv->getItem()->getIdPublic());
+                } else {
+                    $fv = $office->getDioceseName();
+                    if ($fv) {
+                        $inst_name = $fv;
+                    }
+                }
+            }
         }
 
-        # 2021-11-08 We have no data about monasteries in the tbl_bischofaemter_gatz?!
-        // $id_monastery = $office->getIdMonastery();
-        // if (!is_null($id_monastery) && $id_monastery != "") {
-        //     $fv = $office->getMonastery();
-        //     if ($fv) {
-        //         $ocld[$scafx.'description'] = RDFService::xmlStringData($fv->getMonasteryName());
-        //     }
-        // }
+        if($inst_url) {
+            $ocld[$scafx.'affiliation'] = ['@rdf:resource' => $inst_url];
+        } else {
+            $nd = array(
+                [$scafx.'name' => RDFService::xmlStringData($inst_name)]
+            );
+            $ocld[$scafx.'affiliation'] = RDFService::blankNode($nd);
+        }
+
+        // references
+        $nd = $this->referenceCitation($ref_list);
+
+        if ($nd) {
+            $nd = array_map([RDFService::class, 'xmlStringData'], $nd);
+            if (count($nd) == 1) {
+                $ocld[$dctermsfx.'bibliographicCitation'] = $nd[0];
+            } else {
+                $ocld[$dctermsfx.'bibliographicCitation'] = RDFService::list("rdf:Bag", $nd);
+            }
+        }
 
         $roleNode = [
             '@rdf:nodeID' => $roleNodeID,
@@ -646,6 +721,25 @@ class PersonService {
         ];
 
         return $roleNode;
+    }
+
+    public function referenceCitation($ref_list) {
+        $nd = array();
+        foreach ($ref_list as $ref) {
+            // citation
+            $vol = $ref->getReferenceVolume();
+            $cce = [$vol->getFullCitation()];
+            $ce = $ref->getPagePlain();
+            if ($ce) {
+                $cce[] = "S. ".$ce;
+            }
+            $ce = $ref->getIdInReference();
+            if ($ce) {
+                $cce[] = "ID/Nr. ".$ce;
+            }
+            $nd[] = implode(', ', $cce);
+        }
+        return $nd;
     }
 
     public function personJSONLinkedData_old($person) {
@@ -785,7 +879,8 @@ class PersonService {
 
         return array_merge($personID, $pld);
 
-        # references?
+        // references
+
 
     }
 
@@ -796,6 +891,7 @@ class PersonService {
         $owlfx = "owl:";
         $foaffx = "foaf:";
         $scafx = "schema:";
+        $dctermsfx = "dcterms:";
 
         // $persondetails = [
         //         "http://wiag-vocab.adw-goe.de/10891" => [
@@ -903,9 +999,6 @@ class PersonService {
         $fv = $person->getDateDeath();
         if($fv) $pld[$scafx.'deathDate'] = $fv;
 
-        // $fv = $person->getReligiousOrder();
-        // if($fv) $pld['religiousOrder'] = $fv;
-
         // birthplace
         $nd = array();
         foreach ($person->getBirthPlace() as $bp) {
@@ -942,17 +1035,6 @@ class PersonService {
             $pld[$foaffx.'page'] = $fv;
         }
 
-
-        /* offices */
-        // $roles = $person->getRole();
-        // $nodesOffices = array();
-        // if($roles) {
-        //     foreach ($roles as $oc) {
-        //         $nodesOffices[] = $this->jsonRoleNode($oc);
-        //     }
-        //     $pld[$scafx.'hasOccupation'] = $nodesOffices;
-        // }
-
         // roles (offices)
 
         $nd = array();
@@ -967,7 +1049,18 @@ class PersonService {
 
         if ($nd) {
             $pld[$scafx.'hasOccupation'] = $nd;
+        } else { # add reference(s) in case there are no offices
+            $ref_list = $item_list[0]->getReference();
+            if ($ref_list) {
+                // references
+                $nd = $this->referenceCitation($ref_list);
+                if ($nd) {
+                    $fv = count($nd) > 1 ? $nd : $nd[0];
+                    $pld[$dctermsfx.'bibliographicCitation'] = $fv;
+                }
+            }
         }
+
 
         // $jsondata = array_merge(CanonLinkedData::JSONLDCONTEXT, $canonNode);
 
@@ -1029,21 +1122,8 @@ class PersonService {
         }
 
         // references
-        $nd = array();
-        foreach ($ref_list as $ref) {
-            // citation
-            $vol = $ref->getReferenceVolume();
-            $cce = [$vol->getFullCitation()];
-            $ce = $ref->getPagePlain();
-            if ($ce) {
-                $cce[] = "S. ".$ce;
-            }
-            $ce = $ref->getIdInReference();
-            if ($ce) {
-                $cce[] = "ID/Nr. ".$ce;
-            }
-            $nd[] = implode(', ', $cce);
-        }
+        //$nd = $this->referenceJSONLinkedData($ref_list);
+        $nd = $this->referenceCitation($ref_list);
 
         if ($nd) {
             $fv = count($nd) > 1 ? $nd : $nd[0];
@@ -1082,6 +1162,20 @@ class PersonService {
         $fv = $role->getInstitution();
         if ($fv) $pj['institution'] = $fv->getName();
 
+        $reference_nodes = $this->referenceData($ref_list);
+        if ($reference_nodes) {
+            $pj['references'] = $reference_nodes;
+        }
+
+        return $pj;
+
+    }
+
+    /**
+     * collect reference data
+     * @return list of reference nodes
+     */
+    public function referenceData($ref_list) {
         $nd = array();
 
         foreach ($ref_list as $ref) {
@@ -1111,16 +1205,11 @@ class PersonService {
             $nd[] = $rd;
         }
 
-        if ($nd) {
-            $pj['references'] = $nd;
-        }
-
-        return $pj;
-
+        return $nd;
     }
 
     public function itemPropertyText($properties, string $key): ?string {
-        # ordination of pries
+        # ordination of priests
         if (!array_key_exists($key, $properties)) {
             return null;
         }

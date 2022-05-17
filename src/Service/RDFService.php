@@ -25,6 +25,7 @@ class RDFService {
             '@xmlns:schema' => "http://schema.org/",
             '@xmlns:gndo' => self::NAMESP_GND,
             '@xmlns:foaf' => "http://xmlns.com/foaf/0.1/",
+            '@xmlns:dcterms' => "http://purl.org/dc/terms/", # Dublin Core
             '#' => [
                 'rdf:Description' => $data
                 ]
@@ -63,6 +64,18 @@ class RDFService {
             ]
         ];
         return $description;
+    }
+
+    static public function list($type, $data) {
+        $list = [
+            $type => [
+                '#' => [
+                    'rdf:li' => $data
+                ]
+            ]
+        ];
+
+        return $list;
     }
 
 };

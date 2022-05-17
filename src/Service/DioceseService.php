@@ -108,7 +108,7 @@ class DioceseService {
         return $response;
     }
 
-    public function createResponseRdf($dioceses) {
+    public function createResponseRdf_old($dioceses) {
         # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
         $serializer = new Serializer([], array(new XMLEncoder()));
 
@@ -127,6 +127,20 @@ class DioceseService {
             }
         }
         $xmlroot = RDFService::xmlroot($dioceseNodes);
+        $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
+
+        $response = new Response();
+        $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
+
+        $response->setContent($data);
+        return $response;
+    }
+
+    public function createResponseRdf($node_list) {
+        # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
+        $serializer = new Serializer([], array(new XMLEncoder()));
+
+        $xmlroot = RDFService::xmlroot($node_list);
         $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
 
         $response = new Response();
@@ -163,6 +177,8 @@ class DioceseService {
             return $this->dioceseJSONLinkedData($diocese);
             break;
         case 'Rdf':
+            return $this->dioceseLinkedData($diocese);
+            break;
         default:
             return null;
         }
@@ -278,6 +294,7 @@ class DioceseService {
         $owlfx = "owl:";
         $foaffx = "foaf:";
         $scafx = "schema:";
+        $dctermsfx = "dcterms:";
 
         $dld = [
             'rdf:type' => [
@@ -313,10 +330,10 @@ class DioceseService {
         if($note) {
             $noteout = $note;
             if($noteSeat) $noteout = $noteout.' '.$noteSeat;
-            $dld[$scafx.'description'] = $note;
+            $dld[$scafx.'description'] = RDFService::xmlStringData($note);
         }
         elseif($noteSeat) {
-            $dld[$scafx.'description'] = $noteSeat;
+            $dld[$scafx.'description'] = RDFService::xmlStringData($noteSeat);
         }
 
         // rdf types?!
@@ -326,7 +343,7 @@ class DioceseService {
         // external identifiers
         $item = $diocese->getItem();
 
-        $fv = $item->getIdsExternal();
+        $fv = $item->getIdExternal();
         if($fv) {
             $cei = array();
             foreach($fv as $extid) {
@@ -344,6 +361,18 @@ class DioceseService {
 
             }
             $dld[$owlfx.'sameAs'] = $cei;
+        }
+
+        // references
+        $nd = $this->referenceCitation($item->getReference());
+
+        if ($nd) {
+            $nd = array_map([RDFService::class, 'xmlStringData'], $nd);
+            if (count($nd) == 1) {
+                $dld[$dctermsfx.'bibliographicCitation'] = $nd[0];
+            } else {
+                $dld[$dctermsfx.'bibliographicCitation'] = RDFService::list("rdf:Bag", $nd);
+            }
         }
 
         // rdf type?!
@@ -429,8 +458,21 @@ class DioceseService {
         }
 
         // references
+        $nd = $this->referenceCitation($item->getReference());
+
+
+        if ($nd) {
+            $fv = count($nd) > 1 ? $nd : $nd[0];
+            $dld[$dctermsfx.'bibliographicCitation'] = $fv;
+        }
+
+
+        return array_merge($dioceseId, $dld);
+    }
+
+    public function referenceCitation($ref_list) {
         $nd = array();
-        foreach ($item->getReference() as $ref) {
+        foreach ($ref_list as $ref) {
             // citation
             $vol = $ref->getReferenceVolume();
             $cce = [$vol->getFullCitation()];
@@ -445,14 +487,11 @@ class DioceseService {
             $nd[] = implode(', ', $cce);
         }
 
-        if ($nd) {
-            $fv = count($nd) > 1 ? $nd : $nd[0];
-            $dld[$dctermsfx.'bibliographicCitation'] = $fv;
-        }
+        return $nd;
 
-
-        return array_merge($dioceseId, $dld);
     }
+
+
 
 
 
