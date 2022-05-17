@@ -68,9 +68,8 @@
 		    </div>
 		</div>
 	    {% endif %}
-
-	    {% if not person.datebirth and not person.datedeath %}
-	    {% else %}
+	    {# date birth, date death #}
+	    {% if person.datebirth or person.datedeath %}
 		<div class="row mx-2 col-12 mt-2">
 		    {% if person.datebirth and not person.datedeath %}
 			<span class="wiag-large">* {{ person.datebirth }}</span>
@@ -79,6 +78,17 @@
 		    {% else %}
 			<span class="wiag-large">* {{ person.datebirth }} <span class="pl-3">&dagger; {{ person.datedeath }}</span></span>
 		    {% endif %}
+		</div>
+	    {% endif %}
+	    {# religious order #}
+	    {% if  person.religiousorder %}
+		<div class="row mx-2 mt-2">
+		    <div class="col-2">
+			Orden
+		    </div>
+		    <div class="col-10">
+			{{ person.religiousorder.abbreviation }}
+		    </div>
 		</div>
 	    {% endif %}
 	    {# offices and references#}
