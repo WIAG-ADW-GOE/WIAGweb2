@@ -10,7 +10,7 @@
 	</thead>
 	<tbody>
 	    {% for person in cperson %}
-		{% set personname %}{{ person.givenname }}{{ person.prefixname }}{{ person.familyname }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}
+		{% set personname %}{{ [person.givenname, person.prefixname, person.familyname]|join(' ') }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}
 		{% set prop = person.item.combineitemproperty %}
 		{% set propkeys = prop|keys %}
 		<tr>

@@ -108,34 +108,6 @@ class DioceseService {
         return $response;
     }
 
-    public function createResponseRdf_old($dioceses) {
-        # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
-        $serializer = new Serializer([], array(new XMLEncoder()));
-
-        # handle a single diocese
-        if (is_a($dioceses, Diocese::class)) {
-            $dioceses = array($dioceses);
-        }
-
-
-        $dioceseNodes = array();
-        if (count($dioceses) == 1) {
-            $dioceseNodes = $this->dioceseLinkedData($dioceses[0]);
-        } else {
-            foreach($dioceses as $diocese) {
-                array_push($dioceseNodes, $this->dioceseLinkedData($diocese));
-            }
-        }
-        $xmlroot = RDFService::xmlroot($dioceseNodes);
-        $data = $serializer->serialize($xmlroot, 'xml', RDFService::XML_CONTEXT);
-
-        $response = new Response();
-        $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
-
-        $response->setContent($data);
-        return $response;
-    }
-
     public function createResponseRdf($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
         $serializer = new Serializer([], array(new XMLEncoder()));
@@ -166,6 +138,7 @@ class DioceseService {
     }
 
     /**
+     * @return node list with structured data for a diocese
      */
     public function dioceseData($format, $diocese) {
         switch ($format) {
@@ -490,10 +463,5 @@ class DioceseService {
         return $nd;
 
     }
-
-
-
-
-
 
 };

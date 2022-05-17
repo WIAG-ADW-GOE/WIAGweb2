@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersonService {
+    // see table `authority
     const AUTH_ID = [
         'GND' => 1,
         'GS' => 200,
@@ -25,11 +26,6 @@ class PersonService {
         'Wikipedia' => 3,
     ];
 
-    // 2022-04-30 obsolete?
-    // const URL_GS = "http://personendatenbank.germania-sacra.de/index/gsn/";
-    // const URL_GND = "http://d-nb.info/gnd/";
-    // const URL_WIKIDATA = "https://www.wikidata.org/wiki/";
-    // const URL_VIAF = "https://viaf.org/viaf/";
     const URL_KLOSTERDATENBANK = 'https://klosterdatenbank.adw-goe.de/gsn/';
 
     const CONTENT_TYPE = [
@@ -126,33 +122,6 @@ class PersonService {
         return $response;
     }
 
-    public function createResponseJsonld_old($persons) {
-        # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
-        $serializer = new Serializer([], array(new JSONEncoder()));
-
-        # handle a single person
-        if (is_a($persons, Person::class)) {
-            $persons = array($persons);
-        }
-
-        $personNodes = self::JSONLDCONTEXT;
-        if (count($persons) == 1) {
-            array_push($personNodes, $this->personJsonLinkedData($persons[0]));
-        } else {
-            foreach($persons as $person) {
-                array_push($personNodes, $this->personJsonLinkedData($person));
-            }
-        }
-        $data = $serializer->serialize($personNodes, 'json');
-
-        $response = new Response();
-        $response->headers->set('Content-Type', self::CONTENT_TYPE['jsonld']);
-
-        $response->setContent($data);
-        return $response;
-
-    }
-
     public function createResponseJsonld($node_list) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
@@ -168,154 +137,8 @@ class PersonService {
 
     }
 
-
     /**
-     * personData
-     */
-    public function personData_old($person) {
-        $item = $person->getItem();
-
-        $pj = array();
-        $pj['wiagId'] = $person->getItem()->getIdPublic();
-
-        $fv = $person->getFamilyname();
-        if($fv) $pj['familyName'] = $fv;
-
-        $pj['givenName'] = $person->getGivenname();
-
-        $fv = $person->getPrefixName();
-        if($fv) $pj['prefix'] = $fv;
-
-        $fv = $person->getFamilynameVariants();
-        $fnvs = array();
-        foreach ($fv as $fvi) {
-            $fnvs[] = $fvi->getName();
-        }
-
-        if($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
-
-        $fv = $person->getGivennameVariants();
-
-        $fnvs = array();
-        foreach ($fv as $fvi) {
-            $fnvs[] = $fvi->getName();
-        }
-
-        if($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
-
-        $fv = $person->getNoteName();
-        if($fv) $pj['noteName'] = $fv;
-
-        $fv = $person->getNotePerson();
-        if($fv) $pj['notePerson'] = $fv;
-
-        $fv = $person->getDateBirth();
-        if($fv) $pj['dateOfBirth'] = $fv;
-
-        $fv = $person->getDateDeath();
-        if($fv) $pj['dateOfDeath'] = $fv;
-
-        $fv = $person->getReligiousOrder();
-        if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
-
-        // external identifiers
-        $nd = array();
-
-        $id_external = $item->getIdExternal();
-        foreach ($id_external as $id_loop) {
-            $auth = $id_loop->getAuthority();
-            $nd[$auth->getUrlNameFormatter()] = $id_loop->getUrl();
-        }
-
-        if ($nd) {
-            $pj['identifier'] = $nd;
-        }
-
-        // roles (offices)
-        $roles = $person->getRole();
-        $nd = array();
-        foreach ($roles as $role) {
-             $fv = $this->roleData($role);
-             if ($fv) $nd[] = $fv;
-        }
-        if ($nd) {
-            $pj['offices'] = $nd;
-        }
-
-        $item_refs = $item->getReference();
-
-        $nd = array();
-
-        foreach ($item_refs as $ref_loop) {
-            $rd = array();
-            // citation
-            $vol = $ref_loop->getReferenceVolume();
-            $cce = [$vol->getFullCitation()];
-            $ce = $ref_loop->getPagePlain();
-            if ($ce) {
-                $cce[] = "S. ".$ce;
-            }
-            $ce = $ref_loop->getIdInReference();
-            if ($ce) {
-                $cce[] = "ID/Nr. ".$ce;
-            }
-            $rd['citation'] = implode(', ', $cce);
-            // authorOrEditor, RiOpac, shortTitle
-            $rd['authorOrEditor'] = $vol->getAuthorEditor();
-            $fvi = $vol->getRiOpacId();
-            if ($fvi) {
-                $nd['RiOpac'] = $fvi;
-            }
-            $fvi = $vol->getTitleShort();
-            if ($fvi) {
-                $rd['shortTitle'] = $fvi;
-            }
-            $nd[] = $rd;
-        }
-
-        if ($nd) {
-            if (array_key_exists('offices', $pj)) {
-                $pj['offices']['references'] = $nd;
-            } else {
-                $pj['references'] = $nd;
-            }
-        }
-
-
-        // extra properties for priests in Utrecht
-        // ordination
-        $nd = array();
-        $itemProp = $item->combineItemProperty();
-        if (array_key_exists('ordination_priest', $itemProp)) {
-            $nd['office'] = $itemProp['ordination_priest'];
-        }
-        if (array_key_exists('ordination_priest_date', $itemProp)) {
-            $nd['date'] = $itemProp['ordination_priest_date']->format('d.m.Y');
-        }
-        if ($nd) {
-            $pj['ordination'] = $nd;
-        }
-
-        // birthplace
-        $nd = array();
-        foreach ($person->getBirthPlace() as $bp) {
-            $bpd['name'] = $bp->getPlaceName();
-            $urlwhg = $bp->getUrlWhg();
-            if ($urlwhg) {
-                $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
-            }
-            $nd[] = $bpd;
-        }
-
-        if ($nd) {
-            $pj['birthplaces'] = $nd;
-        }
-
-        return $pj;
-
-    }
-
-    /**
+     * @return node list with structured data for a person with office data in `item_list`.
      */
     public function personData($format, $person, $item_list) {
         switch ($format) {
@@ -532,10 +355,10 @@ class PersonService {
             }
         }
 
-        /* Set 'variantNameEntityForThePerson' as string or array */
-        if(count($vneftps) > 0)
+        // 'variantNameEntityForThePerson' as string or array
+        if(count($vneftps) > 0) {
             $pld[$gfx.'variantNameEntityForThePerson'] = RDFService::blankNode($vneftps);
-
+        }
 
         // additional information
         $bhi = array();
@@ -723,6 +546,9 @@ class PersonService {
         return $roleNode;
     }
 
+    /**
+     * @return string for bibliographic citation
+     */
     public function referenceCitation($ref_list) {
         $nd = array();
         foreach ($ref_list as $ref) {
@@ -742,147 +568,6 @@ class PersonService {
         return $nd;
     }
 
-    public function personJSONLinkedData_old($person) {
-        $pld = array();
-
-        $gfx = "gndo:";
-        $owlfx = "owl:";
-        $foaffx = "foaf:";
-        $scafx = "schema:";
-
-        // $persondetails = [
-        //         "http://wiag-vocab.adw-goe.de/10891" => [
-        //             "gndo:preferredName" => "Ignaz Heinrich Wessenberg",
-        //             "gndo:preferredNameEntityForThePerson"=> [
-        //                 "gndo:forename"=>"Ignaz Heinrich",
-        //                 "gndo:prefix"=>"von",
-        //                 "gndo:surname"=>"Wessenberg"
-        //             ]
-        //         ]
-        //     ];
-
-        // return $persondetails;
-
-        $personID = [
-            "@id" => $person->getItem()->getIdPublic(),
-            "@type" => $gfx."DifferentiatedPerson",
-        ];
-
-        $fn = $person->getFamilyname();
-
-        $gn = $person->getGivenname();
-
-        $prefixname = $person->getPrefixName();
-
-        $aname = array_filter([$gn, $prefixname, $fn],
-                              function($v){return $v !== null;});
-        $pld[$gfx.'preferredName'] = implode(' ', $aname);
-
-        $pfeftp[$gfx.'forename'] = $gn;
-        if($prefixname)
-            $pfeftp[$gfx.'prefix'] = $prefixname;
-        if($fn)
-            $pfeftp[$gfx.'surname'] = $fn;
-
-        $pld[$gfx.'preferredNameEntityForThePerson'] = $pfeftp;
-
-
-        $gnvs = $person->getGivennameVariants();
-
-        $vneftps = array();
-        /* one or more variants for the given name */
-        if($gnvs) {
-            foreach($gnvs as $gnvi) {
-                $vneftp = [];
-                $vneftp[$gfx.'forename'] = $gnvi->getName();
-                if($prefixname)
-                    $vneftp[$gfx.'prefix'] = $prefixname;
-                if($fn)
-                    $vneftp[$gfx.'surname'] = $fn;
-                $vneftps[] = $vneftp;
-            }
-        }
-
-        $fnvs = $person->getFamilynameVariants();
-        /* one or more variants for the familyname */
-        if($fnvs) {
-            foreach($fnvs as $fnvi) {
-                $vneftp = [];
-                $vneftp[$gfx.'forename'] = $gn;
-                if($prefixname)
-                    $vneftp[$gfx.'prefix'] = $prefixname;
-                $vneftp[$gfx.'surname'] = $fnvi->getName();
-                $vneftps[] = $vneftp;
-            }
-        }
-
-        if($gnvs && $fnvs) {
-            foreach($fnvs as $fnvi) {
-                foreach($gnvs as $gnvi) {
-                    $vneftp = [];
-                    $vneftp[$gfx.'forename'] = $gnvi->getName();
-                    if($prefixname)
-                        $vneftp[$gfx.'prefix'] = $prefixname;
-                    $vneftp[$gfx.'surname'] = $fnvi->getName();
-                    $vneftps[] = $vneftp;
-                }
-            }
-        }
-
-        /* Set 'variantNameEntityForThePerson' */
-        if(count($vneftps) > 0)
-            $pld[$gfx.'variantNameEntityForThePerson'] = $vneftps;
-
-        $fv = $person->commentLine(false);
-        if($fv) {
-            $pld[$gfx.'biographicalOrHistoricalInformation'] = $fv;
-        }
-
-        $fv = $person->getDateBirth();
-        if($fv) $pld[$scafx.'birthDate'] = $fv;
-
-        $fv = $person->getDateDeath();
-        if($fv) $pld[$scafx.'deathDate'] = $fv;
-
-        // $fv = $person->getReligiousOrder();
-        // if($fv) $pld['religiousOrder'] = $fv;
-
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::AUTH_ID['GND']);
-        if($fv) $pld[$gfx.'gndIdentifier'] = $fv;
-
-
-        $exids = array();
-
-        foreach ($person->getItem()->getIdExternal() as $id) {
-            $exids[] = $id->getAuthority()->getUrlFormatter().$id->getValue();
-        }
-
-        if(count($exids) > 0) {
-            $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
-        }
-
-        $fv = $person->getItem()->getUriExternalByAuthorityId(self::AUTH_ID['Wikipedia']);
-        if($fv) {
-            $pld[$foaffx.'page'] = $fv;
-        }
-
-
-        /* offices */
-        $roles = $person->getRole();
-        $nodesOffices = array();
-        if($roles) {
-            foreach ($roles as $oc) {
-                $nodesOffices[] = $this->jsonRoleNode($oc);
-            }
-            $pld[$scafx.'hasOccupation'] = $nodesOffices;
-        }
-
-        return array_merge($personID, $pld);
-
-        // references
-
-
-    }
 
     public function personJSONLinkedData($person, $item_list) {
         $pld = array();
@@ -933,7 +618,7 @@ class PersonService {
         $gnvs = $person->getGivennameVariants();
 
         $vneftps = array();
-        /* one or more variants for the given name */
+        // one or more variants for the given name
         if($gnvs) {
             foreach($gnvs as $gnvi) {
                 $vneftp = [];
@@ -947,7 +632,7 @@ class PersonService {
         }
 
         $fnvs = $person->getFamilynameVariants();
-        /* one or more variants for the familyname */
+        // one or more variants for the familyname
         if($fnvs) {
             foreach($fnvs as $fnvi) {
                 $vneftp = [];
@@ -972,7 +657,7 @@ class PersonService {
             }
         }
 
-        /* Set 'variantNameEntityForThePerson' */
+        // set 'variantNameEntityForThePerson'
         if(count($vneftps) > 0)
             $pld[$gfx.'variantNameEntityForThePerson'] = $vneftps;
 
@@ -1061,9 +746,6 @@ class PersonService {
             }
         }
 
-
-        // $jsondata = array_merge(CanonLinkedData::JSONLDCONTEXT, $canonNode);
-
         return array_merge($personID, $pld);
 
     }
@@ -1073,7 +755,6 @@ class PersonService {
         $gndfx = "gndo:";
         $dctermsfx = "dcterms:";
 
-        // $ocld['@id'] = $roleNodeID;
         $ocld['@type'] = RDFService::NAMESP_SCHEMA.'Role';
 
         $ocld[$scafx.'roleName'] = $office->getRoleName();
@@ -1122,7 +803,6 @@ class PersonService {
         }
 
         // references
-        //$nd = $this->referenceJSONLinkedData($ref_list);
         $nd = $this->referenceCitation($ref_list);
 
         if ($nd) {
@@ -1208,22 +888,20 @@ class PersonService {
         return $nd;
     }
 
+    /**
+     * @return a text version for a set of elements in `properties`
+     */
     public function itemPropertyText($properties, string $key): ?string {
-        # ordination of priests
-        if (!array_key_exists($key, $properties)) {
-            return null;
-        }
-        //dd($properties);
 
         if ($key == 'ordination_priest') {
-            $text = 'Weihe zum '.$properties['ordination_priest'];
-            $fv = $properties['ordination_priest_date'];
+            $text = 'Weihe zum '.$properties[$key];
+            $fv = $properties[$key.'_date'];
             if (!is_null($fv)) {
                 // $date_value = date('d.m.Y', $fv);
                 $text = $text.' am '.$fv->format('d.m.Y');
             }
-            if (array_key_exists('ordination_priest_place', $properties)) {
-                $text = $text.' in '.$properties['ordination_priest_place'];
+            if (array_key_exists($key.'_place', $properties)) {
+                $text = $text.' in '.$properties[$key.'_place'];
             }
             return $text;
         }
