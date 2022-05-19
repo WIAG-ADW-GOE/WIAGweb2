@@ -142,6 +142,11 @@ class Person
      */
     private $urlByType;
 
+    /**
+     * data from alternative source (canon)
+     */
+    private $sibling = null;
+
     public function __construct() {
         $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
@@ -371,7 +376,7 @@ class Person
     /**
      * concatenate name variants and comments
      */
-    public function commentLine($flag_names = true) {
+    public function commentLine_hide($flag_names = true) {
         $strGnVariants = null;
         $strFnVariants = null;
         if ($flag_names) {
@@ -451,6 +456,92 @@ class Person
     public function setUrlByType(?array $urlByType): self {
         $this->urlByType = $urlByType;
         return $this;
+    }
+
+    private function combineData($a, $b) {
+        if (is_null($a)) {
+            return $b;
+        }
+        if (is_null($b)) {
+            return $a;
+        }
+        if ($a == $b) {
+            return $a;
+        }
+        return $a.'/'.$b;
+    }
+
+    public function get($field) {
+        $getfnc = 'get'.ucfirst($field);
+
+        if (is_null($this->sibling)) {
+            return $this->$getfnc();
+        }
+        return $this->combineData($this->$getfnc(), $this->sibling->$getfnc());
+    }
+
+    public function setSibling($sibling): self {
+        $this->sibling = $sibling;
+        return $this;
+    }
+
+    /**
+     * concatenate name variants and comments
+     */
+    public function commentLine($flag_names = true) {
+
+        $strGnVariants = null;
+        $strFnVariants = null;
+        if ($flag_names) {
+            $givennameVariants = $this->getGivennameVariants();
+            $familynameVariants = $this->getFamilynameVariants();
+
+            $gnVariants = array ();
+            foreach ($givennameVariants as $gn) {
+                $gnVariants[] = $gn->getName();
+            }
+            $fnVariants = array ();
+            foreach ($familynameVariants as $fn) {
+                $fnVariants[] = $fn->getName();
+            }
+
+            if (!is_null($this->sibling)) {
+                foreach ($this->sibling->getGivennameVariants() as $gn) {
+                    $gnVariants[] = $gn->getName();
+                }
+                foreach ($this->sibling->getFamilynameVariants() as $fn) {
+                    $fnVariants[] = $fn->getName();
+                }
+
+            }
+            $gnVariants = array_unique($gnVariants);
+            $fnVariants = array_unique($fnVariants);
+
+            $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
+            $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
+        }
+
+        $eltCands = [
+            $strGnVariants,
+            $strFnVariants,
+            $this->get('noteName'),
+            $this->get('notePerson'),
+        ];
+        // dump($eltCands);
+
+        $lineElts = array();
+        foreach ($eltCands as $elt) {
+            if (!is_null($elt) && $elt != '') {
+                $lineElts[] = $elt;
+            }
+        }
+
+        $commentLine = null;
+        if (count($lineElts) > 0) {
+            $commentLine = implode('; ', $lineElts);
+        }
+
+        return $commentLine;
     }
 
 

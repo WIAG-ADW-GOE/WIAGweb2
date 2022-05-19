@@ -9,7 +9,6 @@ use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
 use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
-use App\Entity\PersonHeader;
 
 use App\Service\ItemService;
 use App\Service\PersonService;
@@ -35,7 +34,8 @@ class BishopController extends AbstractController {
      * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
-                          ItemRepository $repository) {
+                          ItemRepository $repository,
+                          ItemService $service) {
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
@@ -71,16 +71,18 @@ class BishopController extends AbstractController {
                                           $offset);
 
             # easy way to get all persons in the right order
-            $cPerson = array();
+            $person_list = array();
             foreach($ids as $id) {
-                $cPerson[] = $personRepository->findWithOffice($id["personId"]);
+                $person = $personRepository->findWithOffice($id["personId"]);
+                $person->setSibling($service->getSibling($person));
+                $person_list[] = $person;
             }
 
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,
-                'cperson' => $cPerson,
+                'personlist' => $person_list,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -128,17 +130,11 @@ class BishopController extends AbstractController {
         // collect office data in an array of Items
         $item = $service->getBishopOfficeData($person);
 
-        $person_header = new PersonHeader($person);
-        foreach($item as $item_loop) {
-            if ($item_loop->getSource() == 'Domherr') {
-                $person_header->setSecond($item_loop->getPerson());
-            }
-        }
+        $person->setSibling($service->getSibling($person));
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
-            'personheader' => $person_header,
             'item' => $item,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,

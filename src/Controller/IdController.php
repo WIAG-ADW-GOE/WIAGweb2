@@ -9,7 +9,6 @@ use App\Entity\CanonLookup;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
-use App\Entity\PersonHeader;
 
 use App\Repository\PersonRepository;
 
@@ -85,16 +84,10 @@ class IdController extends AbstractController {
 
 
         if ($format == 'html') {
-            $person_header = new PersonHeader($person);
-            foreach($item_list as $item_loop) {
-                if ($item_loop->getSource() == 'Domherr') {
-                    $person_header->setSecond($item_loop->getPerson());
-                }
-            }
+            $person->setSibling($this->itemService->getSibling($person));
 
             return $this->render('bishop/person.html.twig', [
                 'person' => $person,
-                'personheader' => $person_header,
                 'item' => $item_list,
             ]);
         } else {
@@ -151,18 +144,9 @@ class IdController extends AbstractController {
 
 
         if ($format == 'html') {
-            $person_header = new PersonHeader($person);
-            if ($person->getItem()->getSource() == 'Bischof') {
-                foreach($item_list as $item_loop) {
-                    if ($item_loop->getSource() == 'Domherr') {
-                        $person_header->setSecond($item_loop->getPerson());
-                    }
-                }
-            }
 
             return $this->render('canon/person.html.twig', [
                 'person' => $person,
-                'personheader' => $person_header,
                 'item' => $item_list,
             ]);
 

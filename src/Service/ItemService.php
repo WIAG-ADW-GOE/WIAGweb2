@@ -82,4 +82,20 @@ class ItemService {
         return $item;
     }
 
+    public function getSibling($person) {
+        $repository = $this->em->getRepository(Item::class);
+        // get person from Domherrendatenbank
+        $authorityWIAG = Authority::ID['WIAG-ID'];
+        $wiagid = $person->getItem()->getIdPublic();
+        $person = null;
+        if (!is_null($wiagid)) {
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $item = $repository->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            if ($item) {
+                $person = $item[0]->getPerson();
+            }
+        }
+        return $person;
+    }
+
 }
