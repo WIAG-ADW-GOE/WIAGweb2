@@ -32,14 +32,14 @@ class ItemService {
         $gsn = $person->getIdExternal($authorityGs);
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
-            // If data are up to date at most of these requests is successful.
-            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
-            $bishopGs = $repository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
-            $item = array_merge($item, $bishopGs);
-
+            // If data are up to date at most one of these requests is successful.
             $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
             $canonGs = $repository->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
             $item = array_merge($item, $canonGs);
+
+            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
+            $bishopGs = $repository->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
+            $item = array_merge($item, $bishopGs);
         }
 
         // get item from Domherrendatenbank

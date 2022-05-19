@@ -3,7 +3,7 @@
 	<div class="card">
 	    <span class="card-header"><strong>{{ title }}</strong></span>
 	    <dl class="card-body row pb-1 mb-1">
-		{{ include('bishop/_person_roles.html.twig', {
+		{{ include('person/_person_roles.html.twig', {
 		    roles: person.role
 		}) }}
 		{% set references = null %}
@@ -23,7 +23,7 @@
 				    {% if person.item.source == "Bischof" %} {# bishops #}
 					<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }} {% endif %}</li>
 				    {% elseif person.item.source == "Domherr GS" or person.item.source == "Bischof GS" %} {# germania sacra #}
-					<li>{{ include('canon/_person_biogram_link.html.twig', {
+					<li>{{ include('person/_person_biogram_link.html.twig', {
 					    volume: ref.referencevolume,
 					    pages: ref.splitpage
 					    }) }}</li>

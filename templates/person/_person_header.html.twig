@@ -1,0 +1,35 @@
+{# name and button to copy permalink to the clipboard #}
+{% set permalink %}{{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }}{% endset %}
+<div class="row col-12 mx-2 mt-2 mb-0">
+    <div class="d-flex justify-content-between">
+	<span class="fs-2">{{ personheader.get('displayname') }}</span>
+	<button type="button"
+		class="btn"
+		title={{ permalink }}
+		{{ stimulus_controller('clipboard') }}
+		data-action="clipboard#copyTitle">{{ idpublic }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
+    </div>
+</div>
+{# comments, dates #}
+{% if personheader.commentLine %}
+    <div class="row mx-2">
+	<div class="col-12 comment">
+	    {{ personheader.commentLine }}
+	</div>
+    </div>
+{% endif %}
+
+{% set datebirth = personheader.get('datebirth') %}
+{% set datedeath = personheader.get('datedeath') %}
+{% if not datebirth and not datedeath %}
+{% else %}
+    <div class="row mx-2 col-12 mt-2">
+	{% if datebirth and not datedeath %}
+	    <span class="wiag-large">* {{ datebirth }}</span>
+	{% elseif not datebirth and datedeath %}
+	    <span class="wiag-large">&dagger; {{ datedeath }}</span>
+	{% else %}
+	    <span class="wiag-large">* {{ datebirth }} <span class="pl-3">&dagger; {{ datedeath }}</span></span>
+	{% endif %}
+    </div>
+{% endif %}

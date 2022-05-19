@@ -13,15 +13,15 @@
     {% else %}
 	{% set id_public = person.item.idpublic %}
 	{% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
-	{% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+	{% set citation %}"{{ personheader.get('displayname') }}" in: WIAG, {{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
 		{% if form is defined %}
-		    {{ include('canon/_button_step.html.twig',
-			{value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
-		    {{ include('canon/_button_step.html.twig',
-			{value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
+		    {{ include('person/_button_step.html.twig',
+			{formaction: path('canon_list_detail'), value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
+		    {{ include('person/_button_step.html.twig',
+			{formaction: path('canon_list_detail'),value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
 		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
 		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Neue Suche</a>
 		{% else %}
@@ -49,37 +49,8 @@
 		<span class="topic-title">{{ canon_title }}</span>
 	    </div>
 	    {{ btnpanel }}
-	    {# name and button to copy permalink to the clipboard #}
-	    <div class="row col-12 mx-2 mt-2 mb-0">
-		<div class="d-flex justify-content-between">
-		    <span class="fs-2">{{ person.displayname[:200] }}</span>
-		    <button type="button"
-			    class="btn"
-			    title={{ permalink }}
-			    {{ stimulus_controller('clipboard') }}
-			    data-action="clipboard#copyTitle">{{ id_public }} <img src="{{ asset('images/link45deg.svg') }}" width="18"></button>
-		</div>
-	    </div>
-	    {# comments, dates #}
-	    {% if person.commentLine %}
-		<div class="row mx-2">
-		    <div class="col-12 comment">
-			{{ person.commentLine }}
-		    </div>
-		</div>
-	    {% endif %}
-	    {# date birth, date death #}
-	    {% if person.datebirth or person.datedeath %}
-		<div class="row mx-2 col-12 mt-2">
-		    {% if person.datebirth and not person.datedeath %}
-			<span class="wiag-large">* {{ person.datebirth }}</span>
-		    {% elseif not person.datebirth and person.datedeath %}
-			<span class="wiag-large">&dagger; {{ person.datedeath }}</span>
-		    {% else %}
-			<span class="wiag-large">* {{ person.datebirth }} <span class="pl-3">&dagger; {{ person.datedeath }}</span></span>
-		    {% endif %}
-		</div>
-	    {% endif %}
+	    {# name, comments, dates of birth and death #}
+	    {{ include('person/_person_header.html.twig', {personheader: personheader, person: person, idpublic: person.item.idpublic }, with_context = false) }}
 	    {# religious order #}
 	    {% if  person.religiousorder %}
 		<div class="row mx-2 mt-2">
@@ -103,7 +74,7 @@
 		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
 		    {% set office_title %}<a href="{{ path('id', {id: id_public}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ id_public }}</strong></a>{% endset %}
 		{% endif %}
-		{{ include('canon/_person_role_group.html.twig', {
+		{{ include('person/_person_role_group.html.twig', {
 		    person: item_loop.person,
 		    title: office_title,
 		    with_context: false
@@ -115,7 +86,7 @@
 	    {% if (item[0].idExternal and item[0].idExternal|length > 0) %}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
-			{{ include('canon/_person_id_external.html.twig', {
+			{{ include('person/_person_id_external.html.twig', {
 			    ids: person.item.idExternal
 			}) }}
 		    </div>

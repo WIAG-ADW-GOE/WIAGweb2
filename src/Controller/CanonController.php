@@ -14,6 +14,7 @@ use App\Repository\CanonLookupRepository;
 use App\Service\ItemService;
 use App\Form\CanonFormType;
 use App\Form\Model\CanonFormModel;
+use App\Entity\PersonHeader;
 
 use App\Service\PersonService;
 
@@ -139,9 +140,19 @@ class CanonController extends AbstractController {
         // collect office data in an array of Items
         $item = $service->getCanonOfficeData($person);
 
+        $person_header = new PersonHeader($person);
+        if ($person->getItem()->getSource() == 'Bischof') {
+            foreach($item as $item_loop) {
+                if ($item_loop->getSource() == 'Domherr') {
+                    $person_header->setSecond($item_loop->getPerson());
+                }
+            }
+        }
+
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
             'person' => $person,
+            'personheader' => $person_header,
             'item' => $item,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
