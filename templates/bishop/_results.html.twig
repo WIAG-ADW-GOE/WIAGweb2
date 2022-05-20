@@ -8,7 +8,10 @@
 	    </tr>
 	</thead>
 	<tbody>
-	    {% for person in cperson %}
+	    {% for person in personlist %}
+		{% set displayname = person.get('displayname') %}
+		{% set datebirth = person.get('datebirth') %}
+		{% set datedeath = person.get('datedeath') %}
 		<tr>
 		    <td><button
 			    type="submit"
@@ -16,14 +19,14 @@
 			    formaction="{{ path('bishop_list_detail')  }}"
 			    class="btn btn-link p-0 text-sm-start"
 			    name="offset"
-			    value="{{ offset + loop.index0 }}">{{ person.givenname }} {{ person.prefixname }} {{ person.familyname }}</button>
-			{% if not person.datebirth and not person.datedeath %}
-			{% elseif person.datebirth and not person.datedeath %}
-			    <p class="ms-3">* {{ person.datebirth }}</p>
-			{% elseif not person.datebirth and person.datedeath %}
-			    <p class="ms-3">&dagger; {{ person.datedeath }}</p>
+			    value="{{ offset + loop.index0 }}">{{ displayname }}</button>
+			{% if not datebirth and not datedeath %}
+			{% elseif datebirth and not datedeath %}
+			    <p class="ms-3">* {{ datebirth }}</p>
+			{% elseif not datebirth and datedeath %}
+			    <p class="ms-3">&dagger; {{ datedeath }}</p>
 			{% else %}
-			    <p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+			    <p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
 			{% endif %}
 		    </td>
 		    <td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}

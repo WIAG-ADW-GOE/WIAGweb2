@@ -10,6 +10,9 @@
 	<tbody>
 	    {% for c in canon %}
 		{% set person=c.person %}
+		{% set displayname = person.get('displayname') %}
+		{% set datebirth = person.get('datebirth') %}
+		{% set datedeath = person.get('datedeath') %}
 		{% macro single_btn(offset, content) %}
 		    <button
 			type="submit"
@@ -21,14 +24,14 @@
 		{% endmacro %}
 		<tr>
 		    <td class="align-top">
-			{{ _self.single_btn(offset + loop.index0, person.givenname~" "~person.prefixname~" "~person.familyname) }}
-			    {% if not person.datebirth and not person.datedeath %}
-			    {% elseif person.datebirth and not person.datedeath %}
-				<p class="ms-3">* {{ person.datebirth }}</p>
-			    {% elseif not person.datebirth and person.datedeath %}
-				<p class="ms-3">&dagger; {{ person.datedeath }}</p>
+			{{ _self.single_btn(offset + loop.index0, displayname) }}
+			    {% if not datebirth and not datedeath %}
+			    {% elseif datebirth and not datedeath %}
+				<p class="ms-3">* {{ datebirth }}</p>
+			    {% elseif not datebirth and datedeath %}
+				<p class="ms-3">&dagger; {{ datedeath }}</p>
 			    {% else %}
-				<p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+				<p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
 			    {% endif %}
 		    </td>
 		    <td class="align-top">{% for r in c.roleListView %}

@@ -13,7 +13,7 @@
     {% else %}
 	{% set id_public = person.item.idpublic %}
 	{% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
-	{% set citation %}"{{ personheader.get('displayname') }}" in: WIAG, {{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+	{% set citation %}"{{ person.get('displayname') }}" in: WIAG, {{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
@@ -50,7 +50,7 @@
 	    </div>
 	    {{ btnpanel }}
 	    {# name, comments, dates of birth and death #}
-	    {{ include('person/_person_header.html.twig', {personheader: personheader, person: person, idpublic: person.item.idpublic }, with_context = false) }}
+	    {{ include('person/_person_header.html.twig', {person: person, idpublic: person.item.idpublic }, with_context = false) }}
 	    {# religious order #}
 	    {% if  person.religiousorder %}
 		<div class="row mx-2 mt-2">

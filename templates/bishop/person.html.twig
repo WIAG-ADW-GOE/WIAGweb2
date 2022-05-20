@@ -49,7 +49,7 @@
 	    </div>
 	    {{ btnpanel }}
 	    {# name, comments, dates of birth and death #}
-	    {{ include('person/_person_header.html.twig', {personheader: personheader, person: person, idpublic: person.item.idpublic }, with_context = false) }}
+	    {{ include('person/_person_header.html.twig', {person: person, idpublic: person.item.idpublic }, with_context = false) }}
 	    {# offices #}
 	    {% for item_loop in item %}
 		{% set office_title = '' %}
