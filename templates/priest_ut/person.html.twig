@@ -62,10 +62,14 @@
 		</div>
 	    </div>
 	    {# comments, dates #}
-	    {% if person.commentLine %}
+	    {% set commentline = person.commentline %}
+	    {% set persontitle = person.item.itemPropertyValue('title') %}
+	    {% set patronym = person.item.itemPropertyValue('patronym') %}
+	    {% if patronym %}{% set patronym = 'Patronym: '~patronym %}{% endif %}
+	    {% if commentline or persontitle or patronym%}
 		<div class="row mx-2">
 		    <div class="col-12 comment">
-			{{ person.commentLine }}
+			{{ [commentline, persontitle, patronym]|filter(v => v != null)|join('; ') }}
 		    </div>
 		</div>
 	    {% endif %}

@@ -399,7 +399,7 @@ class Item {
     }
 
     /**
-     * combineItemProperty
+     * @return elements of `itemProperty` as array
      */
     public function combineItemProperty() {
         $itemPropByName = array();
@@ -408,6 +408,18 @@ class Item {
             $itemPropByName[$ip->getName().'_date'] = $ip->getDateValue();
         }
         return $itemPropByName;
+    }
+
+    /**
+     * get a value in `itemProperty` if present or null
+     */
+    public function itemPropertyValue(string $key) {
+        $itemPropertyList = $this->combineItemProperty();
+        $value = null;
+        if (array_key_exists($key, $itemPropertyList)) {
+            $value =  $itemPropertyList[$key];
+        }
+        return $value;
     }
 
 }

@@ -463,8 +463,9 @@ class ItemRepository extends ServiceEntityRepository
 
         $someid = $model->someid;
         if ($someid) {
-            $qb->andWhere("i.idPublic LIKE :q_id ")
-               ->setParameter('q_id', '%'.$someid.'%');
+            $qb->andWhere("i.idPublic = :q_id OR i.idInSource = :q_id OR i.idInSource = :q_id_long")
+               ->setParameter('q_id', $someid)
+               ->setParameter('q_id_long', 'id_'.$someid);
         }
         return $qb;
     }
