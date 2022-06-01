@@ -8,6 +8,7 @@
 		<li class="list-inline-item">{{ properties.ordination_priest }}</li>
 		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_place }}</li>{% endif %}
 		{% if 'ordination_priest_date' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_date|date("d.m.Y") }}</li>{% endif %}
+		{% if 'contribution' in propkeys %}<li class="list-inline-item comment">(verminderter Beitrag)</li>{% endif %}
 	    </ul>
 	</li>
     </ul>
