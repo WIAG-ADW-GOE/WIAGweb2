@@ -6,6 +6,7 @@ use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
+use App\Entity\PersonBirthplace;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -410,7 +411,7 @@ class ItemRepository extends ServiceEntityRepository
             $qb->addOrderBy('rlgord.abbreviation');
         }
         if ($birthplace) {
-            $qb->addSelect('ip_birthplace.value as birthplace')
+            $qb->addSelect('bp.placeName as birthplace')
                ->addOrderBy('birthplace');
         }
         $qb->addOrderBy('p.familyname')
@@ -433,10 +434,8 @@ class ItemRepository extends ServiceEntityRepository
         $religious_order = $model->religiousOrder;
 
         if ($birthplace) {
-            $qb->join('\App\Entity\ItemProperty', 'ip_birthplace', 'WITH', 'p.id = ip_birthplace.itemId')
-               ->andWhere('ip_birthplace.name = :ip_name')
-               ->andWhere('ip_birthplace.value LIKE :birthplace')
-               ->setParameter('ip_name', 'birthplace')
+            $qb->join('\App\Entity\PersonBirthplace', 'bp', 'WITH', 'p.id = bp.personId')
+               ->andWhere('bp.placeName LIKE :birthplace')
                ->setParameter('birthplace', '%'.$birthplace.'%');
         }
 
@@ -533,15 +532,15 @@ class ItemRepository extends ServiceEntityRepository
      * AJAX
      */
     public function suggestPriestUtBirthplace($name, $hintSize) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT ip.value as suggestion")
-                   ->join('i.itemProperty', 'ip')
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->andWhere('ip.name = :birthplace')
-                   ->andWhere('ip.value LIKE :value')
-                   ->setParameter('itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
-                   ->setParameter('birthplace', 'birthplace')
-                   ->setParameter('value', '%'.$name.'%');
+        $repository = $this->getEntityManager()->getRepository(PersonBirthplace::class);
+
+        $qb = $repository->createQueryBuilder('b')
+                         ->select("DISTINCT b.placeName as suggestion")
+                         ->join('b.person', 'person')
+                         ->andWhere('person.itemTypeId = :itemType')
+                         ->andWhere('b.placeName LIKE :value')
+                         ->setParameter('itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
+                         ->setParameter('value', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
 

@@ -9,15 +9,15 @@
 
 {% set fb_elements %}
 <button type="submit"
-	      class="btn btn-secondary"
-	      {% if offset < pageSize %} disabled="disabled" {% endif %}
-	      name="offset"
-	      value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
+	class="btn btn-secondary"
+	{% if offset < pageSize %} disabled="disabled" {% endif %}
+	name="offset"
+	value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
 <button type="submit"
-	      class="btn btn-secondary"
-	      {% if offset + pageSize >= count%}disabled="disabled"{% endif %}
-	      name="offset"
-	      value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
+	class="btn btn-secondary"
+	{% if offset + pageSize >= count%}disabled="disabled"{% endif %}
+	name="offset"
+	value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
 {% endset %}
 
 {% block body %}
