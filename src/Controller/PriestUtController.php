@@ -42,8 +42,7 @@ class PriestUtController extends AbstractController {
         $model = new PriestUtFormModel;
 
         // TODO Facets?!
-        // $flagInit = count($request->request->all()) == 0;
-        $flagInit = false;
+        $flagInit = count($request->request->all()) == 0;
 
         $form = $this->createForm(PriestUtFormType::class, $model, [
             'forceFacets' => $flagInit,

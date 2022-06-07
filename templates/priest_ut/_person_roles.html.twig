@@ -1,14 +1,11 @@
 {# offices, parameter: roles #}
 <dt class="col-sm-3">Ämter</dt>
-<dd class="col-sm-9">
-    <ul class="list-unstyled">
+<dd class="col-sm-9 mb-1">
+    <ul class="list-unstyled mb-1">
 	{% for o in roles %}
 	    <li>
 		<ul class="list-inlined list-unstyled">
 		    <li class="list-inline-item"> {{ o.rolename }}</li>
-		    {% if o.diocesename and not o.institutionid %}
-			<li class="list-inline-item">{% if o.dioceseid %}<a href="{{ path('id', {'id': o.diocese.item.idpublic}) }}">{{ o.diocesename }}</a>{% else %}{{ o.diocesename }}{% endif %}</li>
-		    {% endif %}
 		    {% if o.institutionid %}
 			{% set institutionname = o.institution.name ?: o.institutionname %}
 			<li class="list-inline-item">

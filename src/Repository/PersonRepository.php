@@ -79,7 +79,6 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
-
     /**
      * 2022-05-03: copy in ItemRepository
      */
@@ -95,6 +94,5 @@ class PersonRepository extends ServiceEntityRepository {
         }
         return $person;
     }
-
 
 }

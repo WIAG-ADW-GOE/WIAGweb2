@@ -63,7 +63,7 @@
 		    </div>
 		</div>
 		{# show facets if they cause an empty result list #}
-		{% if count > 0 or form.facetDiocese is defined or form.facetOffice is defined %}
+		{% if count > 0 or form.facetReligiousOrder is defined %}
 		    <div class="row my-2 mx-2">
 			<div class="col-9">
 			    {# table #}
@@ -71,24 +71,15 @@
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    {% if form.facetDiocese is defined %}
+			    {% if form.facetReligiousOrder is defined %}
 				{{ include('priest_ut/_facet.html.twig', {
-				    facet: form.facetDiocese,
-				    facetTitle: 'Filter Bistum',
-				    facetState: form.stateFctDioc.vars.value,
-				    facetShort: 'Dioc'
+				    facet: form.facetReligiousOrder,
+				    facetTitle: 'Filter Orden',
+				    facetState: form.stateFctRo.vars.value,
+				    facetShort: 'Ro'
 				}) }}
-				{{ form_row(form.stateFctDioc) }}
+				{{ form_row(form.stateFctRo) }}
 			    {% endif %}
-				{% if form.facetOffice is defined %}
-				    {{ include('priest_ut/_facet.html.twig', {
-					facet: form.facetOffice,
-					facetTitle: 'Filter Amt',
-					facetState: form.stateFctOfc.vars.value,
-					facetShort: 'Ofc'
-				    }) }}
-				    {{ form_row(form.stateFctOfc) }}
-				{% endif %}
 			</div>
 		    </div>
 		{% endif %}

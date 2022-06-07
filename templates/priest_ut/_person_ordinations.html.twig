@@ -1,6 +1,6 @@
 {# ordinations, parameter: properties #}
 <dt class="col-sm-3">Weihen</dt>
-<dd class="col-sm-9">
+<dd class="col-sm-9 mb-1">
     <ul class="list-unstyled mb-1">
 	{% set propkeys = properties|keys %}
 	<li>
@@ -8,7 +8,7 @@
 		<li class="list-inline-item">{{ properties.ordination_priest }}</li>
 		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_place }}</li>{% endif %}
 		{% if 'ordination_priest_date' in propkeys %}<li class="list-inline-item">{{ properties.ordination_priest_date|date("d.m.Y") }}</li>{% endif %}
-		{% if 'contribution' in propkeys %}<li class="list-inline-item comment">(verminderter Beitrag)</li>{% endif %}
+		{% if 'contribution' in propkeys %}<li class="list-inline-item comment">(verminderte Weihegebühr)</li>{% endif %}
 	    </ul>
 	</li>
     </ul>

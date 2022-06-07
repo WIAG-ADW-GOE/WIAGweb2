@@ -14,7 +14,6 @@ class PriestUtFormModel {
     public $religiousOrder = null;
     public $year = null;
     public $someid = null;
-    public $facetBirthplace = null;
     public $facetReligiousOrder = null;
 
     static public function makeChoices($data, $key) {
@@ -38,8 +37,7 @@ class PriestUtFormModel {
             $model->$key = $data[$key];
         }
 
-        $model->facetDiocese = self::makeChoices($data, 'facetBirthplace');
-        $model->facetOffice = self::makeChoices($data, 'facetReligiousOrder');
+        $model->facetReligiousOrder = self::makeChoices($data, 'facetReligiousOrder');
         return $model;
     }
 
@@ -55,7 +53,7 @@ class PriestUtFormModel {
 
     public function hasFacets() {
         $value = false;
-        $keys = ['facetBirthplace', 'facetReligiousOrder'];
+        $keys = ['facetReligiousOrder'];
         foreach($keys as $key) {
             $value = $value || !is_null($this->$key);
         }

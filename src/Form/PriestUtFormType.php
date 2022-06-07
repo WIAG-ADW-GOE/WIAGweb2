@@ -64,7 +64,7 @@ class PriestUtFormType extends AbstractType
                 'label' => 'Orden',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Orden',
+                    'placeholder' => 'OSB, OP, OCarm, ...',
                 ],
             ])
             ->add('year', NumberType::class, [
@@ -83,18 +83,14 @@ class PriestUtFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('stateFctDioc', HiddenType::class, [
-                'mapped' => false,
-            ])
-            ->add('stateFctOfc', HiddenType::class, [
+            ->add('stateFctRo', HiddenType::class, [
                 'mapped' => false,
             ]);
 
-        if (false) {# TODO facets
         if ($forceFacets) {
-            $this->createFacetDiocese($builder, $model);
-            $this->createFacetOffice($builder, $model);
+            $this->createFacetOrder($builder, $model);
         }
+
 
         // add facets with current model data
         $builder->addEventListener(
@@ -107,9 +103,35 @@ class PriestUtFormType extends AbstractType
                     $model = PriestUtFormModel::newByArray($data);
                 }
 
-                $this->createFacetDiocese($event->getForm(), $model);
-                $this->createFacetOffice($event->getForm(), $model);
+                $this->createFacetOrder($event->getForm(), $model);
             });
+    }
+
+    public function createFacetOrder($form, $modelIn) {
+        // do not filter by dioceses themselves
+        $model = clone $modelIn;
+        $model->facetOrder = null;
+
+        $order_list = $this->repository->countPriestUtOrder($model);
+
+        $choices = array();
+        foreach($order_list as $order) {
+            $choices[] = new FacetChoice($order['name'], $order['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetReligiousOrder;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+        if ($order_list) {
+            $form->add('facetReligiousOrder', ChoiceType::class, [
+                'label' => 'Filter Orden',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
         }
     }
 

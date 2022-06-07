@@ -372,7 +372,7 @@ class ItemRepository extends ServiceEntityRepository
                        ->andWhere('i.isOnline = 1');
 
         $qb = $this->addPriestUtConditions($qb, $model);
-        # $qb = $this->addBishopFacets($qb, $model);
+        $qb = $this->addPriestUtFacets($qb, $model);
 
         $query = $qb->getQuery();
         $result = $query->getOneOrNullResult();
@@ -405,7 +405,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->setParameter(':itemTypePriestUt', $itemTypePriestUt);
 
         $qb = $this->addPriestUtConditions($qb, $model);
-        // TODO $qb = $this->addPriestUtFacets($qb, $model);
+        $qb = $this->addPriestUtFacets($qb, $model);
 
         if ($religious_order) {
             $qb->addOrderBy('rlgord.abbreviation');
@@ -469,6 +469,23 @@ class ItemRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    /**
+     * add conditions set by facets
+     */
+    private function addPriestUtFacets($qb, $model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+        $facetReligiousOrder = $model->facetReligiousOrder;
+        if ($facetReligiousOrder) {
+            $valFctRo = array_column($facetReligiousOrder, 'name');
+            $qb->join('i.person', 'pfctro')
+               ->join('pfctro.religiousOrder', 'rofct')
+               ->andWhere("rofct.abbreviation IN (:valFctRo)")
+               ->setParameter('valFctRo', $valFctRo);
+        }
+
+        return $qb;
+    }
 
     public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
         $qb = $this->createQueryBuilder('i')
@@ -504,6 +521,32 @@ class ItemRepository extends ServiceEntityRepository
         return $item;
     }
 
+    /**
+     * countPriestUtOrder($model)
+     *
+     * return array of religious orders
+     */
+    public function countPriestUtOrder($model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('ro.abbreviation AS name, COUNT(DISTINCT(p.id)) AS n')
+                   ->join('i.person', 'p')
+                   ->join('p.religiousOrder', 'ro')
+                   ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("ro.abbreviation IS NOT NULL");
+
+        $this->addPriestUtConditions($qb, $model);
+        // only relevant if there is more than one facet
+        // $this->addPriestUtFacets($qb, $model);
+
+        $qb->groupBy('ro.id')
+           ->orderBy('ro.abbreviation');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
 
 
     /**
