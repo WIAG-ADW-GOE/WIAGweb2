@@ -12,12 +12,13 @@
 			{% if url.note %}
 			    <li class="list-inline-item">{{ url.note }}</li>
 			{% endif %}
-			<li class="list-inline-item">
-			    {% if url.authority %}
-				<a href="{{ url.authority.urlformatter~url.value }}" target="_blank" rel="noopener">{{ url.authority.urlformatter~url.value }}</a></li>
-			    {% else %}
-				<a href="{{ url.value }}" target="_blank" rel="noopener">{{ url.value }}</a></li>
-			    {% endif %}
+
+			{% if url.authority %}
+			    <li class="list-inline-item">{{ url.authority.urlnameformatter }}</li>
+			    <li class="list-inline-item"><a href="{{ url.authority.urlformatter~url.value }}" target="_blank" rel="noopener">{{ url.authority.urlformatter~url.value }}</a></li>
+			{% else %}
+			    <li class="list-inline-item"><a href="{{ url.value }}" target="_blank" rel="noopener">{{ url.value }}</a></li>
+			{% endif %}
 		    </ul>
 		</li>
 	    {% endfor %}
