@@ -28,6 +28,7 @@ class PriestUtController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
+
     /**
      * display query form for priestUts; handle query
      *
@@ -41,12 +42,12 @@ class PriestUtController extends AbstractController {
         // we need to pass an instance of PriestUtFormModel, because facets depend on it's data
         $model = new PriestUtFormModel;
 
-        // TODO Facets?!
         $flagInit = count($request->request->all()) == 0;
 
         $form = $this->createForm(PriestUtFormType::class, $model, [
             'forceFacets' => $flagInit,
         ]);
+
 
         $offset = 0;
 
@@ -59,12 +60,21 @@ class PriestUtController extends AbstractController {
                     'form' => $form,
             ]);
         } else {
-            $offset = $request->request->get('offset') ?? 0;
-            // set offset to page begin
-            $offset = (int) floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
+            $count_result = $repository->countPriestUt($model);
+            $count = $count_result["n"];
 
-            $countResult = $repository->countPriestUt($model);
-            $count = $countResult["n"];
+            $offset = $request->request->get('offset');
+            $page_number = $request->request->get('pageNumber');
+
+            // set offset to page begin
+            if (!is_null($offset)) {
+                $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
+            } elseif (!is_null($page_number) && $page_number > 0) {
+                $page_number = min($page_number, intdiv($count, self::PAGE_SIZE) + 1);
+                $offset = ($page_number - 1) * self::PAGE_SIZE;
+            } else {
+                $offset = 0;
+            }
 
             $ids = $repository->priestUtIds($model,
                                             self::PAGE_SIZE,

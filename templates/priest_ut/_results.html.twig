@@ -37,9 +37,6 @@
 			{% endif %}
 			{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
 			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}
-			    {% if r.diocese %}({{ r.diocese.name }})
-			    {% elseif r.diocesename %}({{ r.diocesename }})
-			    {% endif %}
 			    {% if r.placename %}({{ r.placename }}) {% endif %}
 			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
 			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
@@ -57,4 +54,3 @@
 	</tbody>
     </table>
 </div> {# table-responsive #}
-<p>{% if count > pageSize %}<span>{{ fb_elements }}</span>{% endif %} </p>

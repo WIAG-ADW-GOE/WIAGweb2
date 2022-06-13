@@ -7,25 +7,12 @@
     {{ parent() }}
 {% endblock %}
 
-{% set fb_elements %}
-<button type="submit"
-	class="btn btn-secondary"
-	{% if offset < pageSize %} disabled="disabled" {% endif %}
-	name="offset"
-	value="{{ offset - pageSize }}">{{ include('symbols/backward.svg') }} zurück</button>
-<button type="submit"
-	class="btn btn-secondary"
-	{% if offset + pageSize >= count%}disabled="disabled"{% endif %}
-	name="offset"
-	value="{{ offset + pageSize }}">vor {{ include('symbols/forward.svg') }}</button>
-{% endset %}
-
 {% block body %}
     {{ form_start(form, {
 	'attr': {
 	    'id': 'form',
-	    'data-controller': 'facet-state hide-on-input facet-submit',
-	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->hide-on-input#hideResults input->facet-submit#submit'
+	    'data-controller': 'facet-state facet-submit hide-on-input',
+	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->facet-submit#submit'
 	}
     }) }}
 	<div class="container-fluid">
@@ -53,12 +40,24 @@
 		<div class="row mt-2 mx-2">
 		    <div class="col-12">
 			{% if count == 0 %}
-			    <p>Treffer: keine</p>
+			    Treffer: keine
 			{% elseif count == 1 %}
-			    <p> Treffer: 1</p>
+			    Treffer: 1
 			{% else %}
-			    <p> Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
-				{% if count > pageSize %}<span class="ms-3">{{ fb_elements }}</span>{% endif %} </p>
+			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+			    {% if count > pageSize %}
+				<div class="d-inline-flex p-2">
+				    {{ include('priest_ut/_button_page_backward.html.twig', {
+					value: offset - pageSize,
+					disabled: offset < pageSize,
+					text: 'zurück'}) }}
+				    <input type="text" name="pageNumber" value={{ offset // pageSize + 1 }} class="mx-1" style="width:3em" autocomplete="off" data-hide-on-input-target="pageNumber">
+				    {{ include('priest_ut/_button_page_forward.html.twig', {
+					value: offset + pageSize,
+					disabled: offset + pageSize >= count,
+					text: 'vor'}) }}
+				</div>
+			    {% endif %}
 			{% endif %}
 		    </div>
 		</div>
@@ -86,5 +85,4 @@
 	    </div>
 	</div>
     {{ form_end(form) }}
-
 {% endblock %}
