@@ -145,5 +145,4 @@ class CanonLookup
         return $this;
     }
 
-
 }

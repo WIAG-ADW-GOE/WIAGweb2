@@ -7,6 +7,7 @@ use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\InstitutionPlace;
+use App\Entity\Institution;
 use App\Entity\UrlExternal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -89,16 +90,11 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->addOrderBy('role_list_view.dateSortKey');
         } elseif ($office || $model->isEmpty()) {
             // use role with prio 1 for sorting; requires join of CanonLookup to itself
-            $qb->select('c.personIdName, inst.nameShort as sortA')
-               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
-               ->join('App\Entity\PersonRole', 'role_all',
-                      'WITH', 'role_all.personId = c_all.personIdRole and c_all.prioRole = 1')
-                ->join('role_all.institution', 'inst')
-                ->andWhere('inst.itemTypeId = :itemTypeIdDomstift')
-                ->setParameter('itemTypeIdDomstift', $itemTypeIdDomstift)
-                ->groupBy('c.personIdName')
-                ->addOrderBy('sortA')
-                ->addOrderBy('role_all.dateSortKey');
+            $qb->select('DISTINCT(c.personIdName) as personIdName')
+               ->join('App\Entity\CanonSort', 'c_sort', 'WITH', 'c.personIdName = c_sort.id')
+               ->addOrderBy('CASE WHEN c_sort.domstiftShort IS NULL THEN 1 ELSE 0 END')
+               ->addOrderBy('c_sort.domstiftShort')
+               ->addOrderBy('c_sort.dateSortKey');
         } elseif ($place) {
             // use role with prio 1 for sorting; requires join of CanonLookup to itself
             $qb->select('c.personIdName')
@@ -364,20 +360,56 @@ class CanonLookupRepository extends ServiceEntityRepository
     public function countCanonDomstift($model) {
         // $model should not contain domstift facet
 
+        // all in one query (time consuming)
+        // $qb = $this->createQueryBuilder('c')
+        //            ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+        //            ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
+        //            ->join('pr_count.institution', 'inst_count')
+        //            ->andWhere("inst_count.itemTypeId = :itemTypeDomstift")
+        //            ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID["Domstift"]);
+
+        $em = $this->getEntityManager();
+        $qbi = $em->getRepository(Institution::class)
+                  ->createQueryBuilder('i')
+                  ->select('i.id AS id, i.nameShort AS name')
+                  ->andWhere('i.itemTypeId = :itemTypeDomstift')
+                  ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID['Domstift'])
+                  ->addOrderBy('i.nameShort');
+
+        $domstift_list = $qbi->getQuery()->getResult();
+
         $qb = $this->createQueryBuilder('c')
-                   ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+                   ->select('pr_count.institutionId AS id, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
-                   ->join('pr_count.institution', 'inst_count')
-                   ->andWhere("inst_count.itemTypeId = :itemTypeDomstift")
-                   ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID["Domstift"]);
+                   ->andWhere('pr_count.institutionId IN (:instId_list)')
+                   ->setParameter('instId_list', array_column($domstift_list, 'id'));
 
         $this->addCanonConditions($qb, $model);
         $this->addCanonFacets($qb, $model);
 
-        $qb->groupBy('inst_count.nameShort');
+        $qb->groupBy('pr_count.institutionId');
 
         $query = $qb->getQuery();
-        $result = $query->getResult();
+        $count_list = $query->getResult();
+
+        // add names to the list of domstifte
+
+        $count_simple_list = array();
+        foreach($count_list as $c_loop) {
+            $count_simple_list[$c_loop['id']] = $c_loop['n'];
+        }
+        $result = array();
+        // loop over $name_list to keep order
+        foreach($domstift_list as $d_loop) {
+            $id = $d_loop['id'];
+            if (array_key_exists($id, $count_simple_list)) {
+                $result[] = [
+                    'name' => $d_loop['name'],
+                    'n' => $count_simple_list[$id],
+                ];
+            }
+        }
+
         return $result;
     }
 
