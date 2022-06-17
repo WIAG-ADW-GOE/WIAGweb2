@@ -1,5 +1,5 @@
-{% if details is defined %}<h2>{{ reference.shorttitle }}</h2>{% endif %}
+{% if details is defined %}<h2>{{ ref.shorttitle }}</h2>{% endif %}
 
-<p>{{ reference.fullcitation }}{% if reference.onlineresource %} – <a class="ms-1" href="{{ reference.onlineresource }}" target="_blank" rel="noopener">{{ reference.onlineresource }}</a>{% endif %}</p>
-{% set gbv=reference.getIdExternalByAuthorityId(53)|first %}
-{% if gbv or reference.riopacid %}<p>{% if gbv %}GBV <a class="ms-1" href="{{ gbv.authority.urlformatter }}{{ gbv.value }}" target="_blank" rel="noopener">{{ gbv.value }}</a> {% endif %}{% if reference.riopacid %}<span class="ms-3">RI OPAC</span><a class="ms-1" href="{{ reference.riopacid }}" target="_blank" rel="noopener">{{ reference.riopacid|split('/')|last }}</a>{% endif %}</p>{% endif %}
+<p>{{ ref.fullcitation }}{% if ref.onlineresource %} – <a class="ms-1" href="{{ ref.onlineresource }}" target="_blank" rel="noopener">{{ ref.onlineresource }}</a>{% endif %}</p>
+{% set gbv=ref.getIdExternalByAuthorityId(53)|first %}
+{% if gbv or ref.riopacid %}<p>{% if gbv %}GBV <a class="ms-1" href="{{ gbv.authority.urlformatter }}{{ gbv.value }}" target="_blank" rel="noopener">{{ gbv.value }}</a> {% endif %}{% if ref.riopacid %}<span class="ms-3">RI OPAC</span><a class="ms-1" href="{{ ref.riopacid }}" target="_blank" rel="noopener">{{ ref.riopacid|split('/')|last }}</a>{% endif %}</p>{% endif %}
