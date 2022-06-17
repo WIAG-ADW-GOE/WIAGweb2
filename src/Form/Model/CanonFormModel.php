@@ -18,6 +18,7 @@ class CanonFormModel {
     public $facetDomstift = null;
     public $facetOffice = null;
     public $facetPlace = null;
+    public $facetUrl = null;
 
     static public function makeChoices($data, $key) {
         $choices = [];
@@ -43,6 +44,7 @@ class CanonFormModel {
         $model->facetDomstift = self::makeChoices($data, 'facetDomstift');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
         $model->facetPlace = self::makeChoices($data, 'facetPlace');
+        $model->facetUrl = self::makeChoices($data, 'facetUrl');
         return $model;
     }
 

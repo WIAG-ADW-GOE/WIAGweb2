@@ -1,24 +1,20 @@
 {# parameters: urltype, urls #}
 <div class="card">
+    {# 2022-06-17 urls without a reference to an authority are excluded, so this case is obsolete #}
     {% if not urltype %}
 	{% set urltype="Weitere Online Ressourcen" %}
     {% endif %}
     <span class="card-header"><strong>{{ urltype }}</strong></span>
     <div class="card-body">
 	<ul class="list-unstyled mb-0">
-	    {% for url in urls %}
+	    {% for url in urls|filter(u => u.authority) %}
 		<li>
 		    <ul class="list-inlined list-unstyled">
 			{% if url.note %}
 			    <li class="list-inline-item">{{ url.note }}</li>
 			{% endif %}
-
-			{% if url.authority %}
-			    <li class="list-inline-item">{{ url.authority.urlnameformatter }}</li>
-			    <li class="list-inline-item"><a href="{{ url.authority.urlformatter~url.value }}" target="_blank" rel="noopener">{{ url.authority.urlformatter~url.value }}</a></li>
-			{% else %}
-			    <li class="list-inline-item"><a href="{{ url.value }}" target="_blank" rel="noopener">{{ url.value }}</a></li>
-			{% endif %}
+			<li class="list-inline-item">{{ url.authority.urlnameformatter }}</li>
+			<li class="list-inline-item"><a href="{{ url.authority.urlformatter~url.value }}" target="_blank" rel="noopener">{{ url.authority.urlformatter~url.value }}</a></li>
 		    </ul>
 		</li>
 	    {% endfor %}

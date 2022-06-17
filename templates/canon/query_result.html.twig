@@ -98,6 +98,15 @@
 				}) }}
 				{{ form_row(form.stateFctPlc) }}
 			    {% endif %}
+			    {% if form.facetUrl is defined %}
+				{{ include('canon/_facet.html.twig', {
+				    facet: form.facetUrl,
+				    facetTitle: 'Filter externe URL',
+				    facetState: form.stateFctUrl.vars.value,
+				    facetShort: 'Url'
+				}) }}
+				{{ form_row(form.stateFctUrl) }}
+			    {% endif %}
 			</div>
 		    </div>
 		{% endif %}

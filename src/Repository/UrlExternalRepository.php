@@ -75,15 +75,25 @@ class UrlExternalRepository extends ServiceEntityRepository
     */
 
     public function groupByType($item_id) {
+        // 2022-06-17 old version: allow missing authority
+        // $qb = $this->createQueryBuilder('u')
+        //            ->select('auth.urlType, u')
+        //            ->addSelect("(CASE WHEN u.authorityId IS NULL THEN 0 ELSE 1 END) AS HIDDEN sortHasAuth")
+        //            ->leftJoin('u.authority', 'auth')
+        //            ->andWhere('u.itemId = :itemId')
+        //            ->addOrderBy('sortHasAuth', 'DESC')
+        //            ->addOrderBy('auth.displayOrder')
+        //            ->addOrderBy('u.note', 'DESC')
+        //            ->setParameter('itemId', $item_id);
+
         $qb = $this->createQueryBuilder('u')
                    ->select('auth.urlType, u')
-                   ->addSelect("(CASE WHEN u.authorityId IS NULL THEN 0 ELSE 1 END) AS HIDDEN sortHasAuth")
-                   ->leftJoin('u.authority', 'auth')
+                   ->innerJoin('u.authority', 'auth')
                    ->andWhere('u.itemId = :itemId')
-                   ->addOrderBy('sortHasAuth', 'DESC')
                    ->addOrderBy('auth.displayOrder')
                    ->addOrderBy('u.note', 'DESC')
                    ->setParameter('itemId', $item_id);
+
 
         $query = $qb->getQuery();
         $query_result = $query->getResult();

@@ -100,12 +100,17 @@ class CanonFormType extends AbstractType
             ])
             ->add('stateFctPlc', HiddenType::class, [
                  'mapped' => false,
+            ])
+            ->add('stateFctUrl', HiddenType::class, [
+                 'mapped' => false,
             ]);
+
 
         if ($forceFacets) {
             $this->createFacetDomstift($builder, $model);
             $this->createFacetOffice($builder, $model);
             $this->createFacetPlace($builder, $model);
+            $this->createFacetUrl($builder, $model);
         }
 
 
@@ -118,6 +123,7 @@ class CanonFormType extends AbstractType
                 $this->createFacetDomstift($event->getForm(), $model);
                 $this->createFacetOffice($event->getForm(), $model);
                 $this->createFacetPlace($event->getForm(), $model);
+                $this->createFacetUrl($event->getForm(), $model);
             });
 
     }
@@ -202,6 +208,36 @@ class CanonFormType extends AbstractType
         if ($offices) {
             $form->add('facetOffice', ChoiceType::class, [
                 'label' => 'Filter Amt',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
+    public function createFacetUrl($form, $modelIn) {
+        // do not filter by facet URL itsself
+        $model = clone $modelIn;
+        $model->facetUrl = null;
+
+        $url_list = $this->repository->countCanonUrl($model);
+
+        $choices = array();
+
+        foreach($url_list as $url) {
+            $choices[] = new FacetChoice($url['name'], $url['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetUrl;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+        if ($url_list) {
+            $form->add('facetUrl', ChoiceType::class, [
+                'label' => 'Filter Externe URL',
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,

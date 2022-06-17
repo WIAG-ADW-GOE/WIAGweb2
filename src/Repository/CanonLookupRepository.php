@@ -254,6 +254,15 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->setParameter('valFctOfc', $valFctOfc);
         }
 
+        $facetUrl = $model->facetUrl;
+        if ($facetUrl) {
+            $valFctUrl = array_column($facetUrl, 'name');
+            $qb->join('App\Entity\UrlExternal', 'url', 'WITH', 'url.itemId = c.personIdName')
+               ->join('url.authority', 'auth')
+               ->andWhere('auth.urlNameFormatter in (:valFctUrl)')
+               ->setParameter('valFctUrl', $valFctUrl);
+        }
+
         return $qb;
     }
 
@@ -334,13 +343,10 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $personRepository = $em->getRepository(Person::class);
         $personRoleRepository = $em->getRepository(PersonRole::class);
-        $urlExternalRepository = $em->getRepository(UrlExternal::class);
 
         foreach ($result as $r) {
             $person_id_name = $r->getPersonIdName();
             $person = $personRepository->find($person_id_name);
-            $urlByType = $urlExternalRepository->groupByType($person_id_name);
-            // $person->setUrlByType($urlByType);
             $r->setPerson($person);
             // 2022-05-04 TODO
             $personRole = $personRepository->findWithOffice($r->getPersonIdRole());
@@ -455,6 +461,29 @@ class CanonLookupRepository extends ServiceEntityRepository
         $this->addCanonFacets($qb, $model);
 
         $qb->groupBy('ip_count.placeName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * countCanonUrl($model)
+     *
+     * return array of urls (used for facet)
+     */
+    public function countCanonUrl($model) {
+        // $model should not contain url facet
+
+        $qb = $this->createQueryBuilder('c')
+                   ->select('auth.urlNameFormatter AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+                   ->join('App\Entity\UrlExternal', 'url', 'WITH', 'url.itemId = c.personIdName')
+                   ->join('url.authority', 'auth');
+
+        $this->addCanonConditions($qb, $model);
+        $this->addCanonFacets($qb, $model);
+
+        $qb->groupBy('auth.urlNameFormatter');
 
         $query = $qb->getQuery();
         $result = $query->getResult();
