@@ -33,12 +33,6 @@ class Person
     private $role;
 
     /**
-     * @ORM\OneToMany(targetEntity="PersonDisplayOrder", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
-    private $displayOrder;
-
-    /**
      * @ORM\OneToMany(targetEntity="GivennameVariant", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      */
@@ -148,7 +142,6 @@ class Person
     private $sibling = null;
 
     public function __construct() {
-        $this->displayOrder = new ArrayCollection();
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
