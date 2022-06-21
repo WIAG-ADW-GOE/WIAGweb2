@@ -152,6 +152,7 @@ class CanonController extends AbstractController {
         // collect office data in an array of Items
         $item = $service->getCanonOfficeData($person);
 
+        // collect comments, name variants from other sources
         $sibling = $service->getSibling($person);
         $person->setSibling($sibling);
 

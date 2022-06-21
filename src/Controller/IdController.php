@@ -132,8 +132,11 @@ class IdController extends AbstractController {
 
     public function canon($id, $format) {
 
+        $canonLookupRepository = $this->getDoctrine()->getRepository(CanonLookup::class);
+        $person_id_name = $canonLookupRepository->findPersonIdName($id);
+
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->find($id);
+        $person = $personRepository->find($person_id_name);
         // collect external URLs
         $urlExternalRepository = $this->getDoctrine()->getRepository(UrlExternal::class);
         $urlByType = $urlExternalRepository->groupByType($id);

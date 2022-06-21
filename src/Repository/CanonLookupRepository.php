@@ -329,33 +329,52 @@ class CanonLookupRepository extends ServiceEntityRepository
      * find canons with person via personIdName and personIdRole, respectively
      * @return CanonLookup[]
      */
-    public function findWithPerson($id) {
+    // public function findWithPerson($id) {
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select('c')
+    //                ->andWhere('c.personIdName = :id')
+    //                ->addOrderBy('c.prioRole')
+    //                ->setParameter('id', $id);
+
+    //     $query = $qb->getQuery();
+    //     $result = $query->getResult();
+
+    //     $em = $this->getEntityManager();
+
+    //     $personRepository = $em->getRepository(Person::class);
+    //     $personRoleRepository = $em->getRepository(PersonRole::class);
+
+    //     foreach ($result as $r) {
+    //         $person_id_name = $r->getPersonIdName();
+    //         $person = $personRepository->find($person_id_name);
+    //         $r->setPerson($person);
+    //         // 2022-05-04 TODO
+    //         $personRole = $personRepository->findWithOffice($r->getPersonIdRole());
+    //         $personRepository->addReferenceVolumes($personRole);
+    //         $r->setPersonRole($personRole);
+    //     }
+
+    //     return $result;
+
+    // }
+
+
+    public function findPersonIdName($id) {
         $qb = $this->createQueryBuilder('c')
-                   ->select('c')
-                   ->andWhere('c.personIdName = :id')
-                   ->addOrderBy('c.prioRole')
+                   ->select('c.personIdName')
+                   ->andWhere('c.personIdRole = :id')
                    ->setParameter('id', $id);
 
         $query = $qb->getQuery();
         $result = $query->getResult();
+        dump($result);
 
-        $em = $this->getEntityManager();
-
-        $personRepository = $em->getRepository(Person::class);
-        $personRoleRepository = $em->getRepository(PersonRole::class);
-
-        foreach ($result as $r) {
-            $person_id_name = $r->getPersonIdName();
-            $person = $personRepository->find($person_id_name);
-            $r->setPerson($person);
-            // 2022-05-04 TODO
-            $personRole = $personRepository->findWithOffice($r->getPersonIdRole());
-            $personRepository->addReferenceVolumes($personRole);
-            $r->setPersonRole($personRole);
+        $personIdName = null;
+        if ($result) {
+            $personIdName = $result[0]['personIdName'];
         }
 
-        return $result;
-
+        return $personIdName;
     }
 
     /**
