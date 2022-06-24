@@ -4,13 +4,11 @@ namespace App\Entity;
 
 use App\Repository\UserWiagRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserWiagRepository::class)
- * @UniqueEntity(fields={"email"}, message="Diese E-Mail ist schon eingetragen.")
  */
 class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -22,33 +20,67 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=127, unique=true)
+     * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
-
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
-    private $password;
 
     /**
      * @ORM\Column(type="json")
      */
     private $roles = [];
 
-    private $plainPassword;
-
     /**
-     * @ORM\Column(type="string", length=127, nullable=true)
+     * @var string The hashed password
+     * @ORM\Column(type="string")
      */
     private $password;
 
-    private $plainPassword;
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $comment;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     */
+    private $givenname;
+
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     */
+    private $familyname;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $createdBy;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateCreated;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $changedBy;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateChanged;
 
     /**
      * @ORM\Column(type="boolean")
      */
     private $active;
+
+    private $plainPassword;
 
     public function getId(): ?int
     {
@@ -97,6 +129,7 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
 
@@ -110,7 +143,7 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -122,25 +155,60 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPlainPassword(): ?string
+    public function getPlainPassword(): string
     {
         return $this->plainPassword;
     }
 
-    public function setPlainPassword(string $plainPassword): self
+    public function setPlainPassword(string $password): self
     {
-        $this->plainPassword = $plainPassword;
+        $this->plainPassword = $password;
+
         return $this;
     }
 
     /**
-     * This method can be removed in Symfony 6.0 - is not needed for apps that do not check user passwords.
+     * Returning a salt is only needed, if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
      *
      * @see UserInterface
      */
     public function getSalt(): ?string
     {
         return null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        $this->plainPassword = null;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function setComment(?string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getGivenname(): ?string
@@ -172,21 +240,19 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->createdBy;
     }
 
-    public function setCreatedBy(int $createdBy): self
+    public function setCreatedBy(?int $createdBy): self
     {
         $this->createdBy = $createdBy;
 
         return $this;
     }
 
-    # public function getDateCreated(): ?\DateTimeInterface
-    public function getDataCreated()
+    public function getDateCreated(): ?\DateTimeInterface
     {
         return $this->dateCreated;
     }
 
-    # public function setDateCreated(\DateTimeInterface $dateCreated): self
-    public function setDateCreated($dateCreated): self
+    public function setDateCreated(?\DateTimeInterface $dateCreated): self
     {
         $this->dateCreated = $dateCreated;
 
@@ -198,7 +264,7 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->changedBy;
     }
 
-    public function setChangedBy(int $changedBy): self
+    public function setChangedBy(?int $changedBy): self
     {
         $this->changedBy = $changedBy;
 
@@ -206,32 +272,13 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function getDateChanged(): ?\DateTimeInterface
-
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials()
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        $this->plainPassword = null;
+        return $this->dateChanged;
     }
 
-    public function setPassword(?string $password): self
+    public function setDateChanged(?\DateTimeInterface $dateChanged): self
     {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function getPlainPassword(): ?string
-    {
-        return $this->plainPassword;
-    }
-
-
-    public function setPlainPassword(?string $password): self
-    {
-        $this->plainPassword = $password;
+        $this->dateChanged = $dateChanged;
 
         return $this;
     }
@@ -247,5 +294,4 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 }

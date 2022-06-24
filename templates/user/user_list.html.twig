@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Benutzerliste{% endblock %}
+
+{% block body %}
+    <div class="container">
+	<div class="col-12">
+	    <div class="row">
+		<div class="table-responsive">
+		    <table class="table">
+			<thead class="thead-light">
+			    <tr>
+				<th scope="col">Id</th>
+				<th scope="col">aktiv</th>
+				<th scope="col">Name</th>
+				<th scope="col">Vorname</th>
+				<th scope="col">Familienname</th>
+				<th scope="col">E-Mail</th>
+				<th scope="col">Rollen</th>
+				<th scope="col">angelegt</th>
+			    </tr>
+			</thead>
+			<tbody>
+			    {% for user in user_list %}
+				<tr>
+				    <td><a href="{{ path('user_edit', { 'email': user.email}) }}">{{ user.id }}</a></td>
+				    <td>{{ user.active > 0 ? 'ja' : 'nein' }}</td>
+				    <td>{{ user.name }}</td>
+				    <td>{{ user.givenname }}</td>
+				    <td>{{ user.familyname }}</td>
+				    <td>{{ user.email }}</td>
+				    <td>
+					{% for role in user.roles %}
+					    <span>{{ role }}</span><br/>
+					{% endfor %}
+				    </td>
+				    <td>{{ user.datecreated|format_datetime('short', 'short', locale='de') }}</td>
+				</tr>
+			    {% endfor %}
+			</tbody>
+		    </table>
+		</div>
+	    </div>
+	</div>
+    </div>
+{% endblock %}
