@@ -8,7 +8,7 @@
 	<div class="row">
             <div class="login-form bg-light mt-4 p-4">
 		<form method="post" class="row g-3">
-                    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                    <h1 class="h3 mb-3 font-weight-normal">Bitte anmelden</h1>
 
 		    {% if error %}
 			<div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -29,7 +29,7 @@
                     </div>
                     <div class="col-12">
 			<button class="btn btn-lg btn-primary float-end" type="submit">
-                            Sign in
+                            Anmelden
 			</button>
                     </div>
 		    <input type="hidden" name="_csrf_token"

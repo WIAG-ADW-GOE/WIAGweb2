@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block body %}
+    <div class="container">
+	<div class="row">
+            <div class="login-form bg-light mt-4 p-4">
+		{% if message %}
+		    <div class="success mb-3 p-2">{{ message }}</div>
+		{% endif %}
+		<form method="post" class="row g-3">
+                    <h1 class="h3 mb-3 font-weight-normal">Benutzerdaten</h1>
+
+		    <div class="col-5">
+			{{ form_start(userForm) }}
+			    {{ form_row(userForm.givenname) }}
+			    {{ form_row(userForm.familyname) }}
+			    {{ form_row(userForm.email) }}
+			    {{ form_row(userForm.roles) }}
+			    {{ form_row(userForm.plainPassword) }}
+
+			    <button type="submit" class="btn btn-primary float-end">Speichern</button>
+			{{ form_end(userForm) }}
+		    </div>
+		</form>
+	    </div>
+	</div>
+    </div>
+{% endblock %}
