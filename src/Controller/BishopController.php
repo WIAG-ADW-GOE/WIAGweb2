@@ -21,6 +21,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+
 
 class BishopController extends AbstractController {
     /** number of items per page */
@@ -214,6 +216,15 @@ class BishopController extends AbstractController {
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
+    }
+
+    /**
+     * @Route("bischof-neu", name="bishop_new")
+     * @IsGranted("ROLE_USER")
+     */
+    public function new() {
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        return new Response('Neuen Bischof anlegen');
     }
 
 }
