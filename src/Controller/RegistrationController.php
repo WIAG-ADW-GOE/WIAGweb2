@@ -18,7 +18,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/register", name="app_register")
+     * @Route("/register", name="user_register")
      * @IsGranted("ROLE_USER_EDIT")
      */
     public function register(Request $request,
@@ -54,6 +54,8 @@ class RegistrationController extends AbstractController
                 )
             );
 
+            $user->setNameByEmail($user->getEmail());
+
             $entityManager->persist($user);
             $entityManager->flush();
             // do anything else you need here, like send an email
@@ -65,12 +67,14 @@ class RegistrationController extends AbstractController
             //     $request
             // );
             return $this->render('registration/register_success.html.twig', [
+                'menuItem' => 'edit',
                 'user' => $user,
             ]);
 
         }
 
         return $this->render('registration/register.html.twig', [
+            'menuItem' => 'edit',
             'registrationForm' => $form->createView(),
         ]);
     }

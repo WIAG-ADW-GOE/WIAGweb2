@@ -18,6 +18,12 @@ class UserFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $role_list = array_flip(UserWiag::ROLE_DICT);
+
+        if ($options['has_admin_access']) {
+            $role_list = array_merge($role_list, array_flip(UserWiag::ROLE_DICT_EXTRA));
+        }
+
         $builder
             ->add('givenname', null, [
                 'label' => 'Vorname'
@@ -33,34 +39,30 @@ class UserFormType extends AbstractType
                 'label' => 'Rollen',
                 'expanded' => true,
                 'multiple' => true,
-                'choices' => [
-                    'Redaktion' => 'ROLE_EDIT',
-                    'Datenbank' => 'ROLE_DB_EDIT',
-                ],
+                'choices' => $role_list,
             ])
             ->add('plainPassword', RepeatedType::class, [
                 // instead of being set onto the object directly,
                 // this is read and encoded in the controller
                 'type' => PasswordType::class,
                 'invalid_message' => 'Die Passwörter müssen übereinstimmen.',
+                'required' => false,
                 'mapped' => false,
                 'first_options' => [
                     'label' => 'Passwort',
                     'attr' => ['autocomplete' => 'new-password'],
+                    'help' => 'Nur befüllen, wenn das Passwort geändert werden soll.',
                     'constraints' => [
-                        new NotBlank([
-                            'message' => 'Please enter a password',
-                        ]),
                         new Length([
                             'min' => 6,
-                            'minMessage' => 'Your password should be at least {{ limit }} characters',
+                            'minMessage' => 'Das Passwort sollte mindestens {{ limit }} Zeichen haben.',
                             // max length allowed by Symfony for security reasons
                             'max' => 4096,
                         ]),
                     ],
                 ],
                 'second_options' => [
-                    'label' => 'Passwort (Wiederholung)'
+                    'label' => 'Passwort (Wiederholung)',
                 ]
 
             ])
@@ -71,6 +73,7 @@ class UserFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => UserWiag::class,
+            'has_admin_access' => false,
         ]);
     }
 }

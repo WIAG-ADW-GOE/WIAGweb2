@@ -12,7 +12,7 @@
 		    <div>{{ user.name }}</div>
 		    <div>Name: {{ user.givenname~' '~user.familyname }}</div>
 		    <div>E-Mail: {{ user.email }}</div>
-		    <div>Rollen: {{ user.roles|join(", ") }}
+		    <div>Rollen: {% for role in user.roles|filter(r => r != 'ROLE_USER') %}{{ user.roledisplayname(role) }}{% if not loop.last %},{% endif %}{% endfor %}</div>
 		</div>
 	    </div>
 	</div>

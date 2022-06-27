@@ -30,8 +30,8 @@
 				    <td>{{ user.familyname }}</td>
 				    <td>{{ user.email }}</td>
 				    <td>
-					{% for role in user.roles %}
-					    <span>{{ role }}</span><br/>
+					{% for role in user.roles|filter(r => r != 'ROLE_USER') %}
+					    <span>{{ user.roledisplayname(role) }}</span><br/>
 					{% endfor %}
 				    </td>
 				    <td>{{ user.datecreated|format_datetime('short', 'short', locale='de') }}</td>

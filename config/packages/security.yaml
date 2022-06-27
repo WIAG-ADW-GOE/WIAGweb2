@@ -2,6 +2,9 @@ security:
     role_hierarchy:
       ROLE_ADMIN: [ROLE_USER_EDIT, ROLE_EDIT, ROLE_DB_EDIT, ROLE_ALLOWED_TO_SWITCH]
       ROLE_DATA_ADMIN: [ROLE_USER_EDIT, ROLE_EDIT, ROLE_DB_EDIT]
+      ROLE_EDIT: [ROLE_EDIT_MENU]
+      ROLE_DB_EDIT: [ROLE_EDIT_MENU]
+      ROLE_USER_EDIT: [ROLE_EDIT_MENU]
 
     enable_authenticator_manager: true
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords

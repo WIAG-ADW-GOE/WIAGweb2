@@ -19,15 +19,10 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
 
-        $role_list = [
-            'Redaktion' => 'ROLE_EDIT',
-            'Datenbank' => 'ROLE_DB_EDIT',
-        ];
+        $role_list = array_flip(UserWiag::ROLE_DICT);
 
         if ($options['has_admin_access']) {
-            $role_list['Benutzerverwaltung'] = 'ROLE_USER_EDIT';
-            $role_list['Verwaltung'] = 'ROLE_DATA_ADMIN';
-            $role_list['Administrator'] = 'ROLE_ADMIN';
+            $role_list = array_merge($role_list, array_flip(UserWiag::ROLE_DICT_EXTRA));
         }
 
         $builder
@@ -70,7 +65,7 @@ class RegistrationFormType extends AbstractType
                         ]),
                         new Length([
                             'min' => 6,
-                            'minMessage' => 'Your password should be at least {{ limit }} characters',
+                            'minMessage' => 'Das Passwort sollte mindestens {{ limit }} Zeichen haben.',
                             // max length allowed by Symfony for security reasons
                             'max' => 4096,
                         ]),

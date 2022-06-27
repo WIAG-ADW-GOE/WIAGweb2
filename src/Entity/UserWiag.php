@@ -4,14 +4,25 @@ namespace App\Entity;
 
 use App\Repository\UserWiagRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserWiagRepository::class)
+ * @UniqueEntity(fields={"email"}, message="Diese E-Mail ist schon eingetragen.")
  */
 class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    const ROLE_DICT = [
+        'ROLE_EDIT' => 'Redaktion',
+        'ROLE_DB_EDIT' => 'Datenbank',
+    ];
+    const ROLE_DICT_EXTRA = [
+        'ROLE_USER_EDIT' => 'Benutzerverwaltung',
+        'ROLE_DATA_ADMIN' => 'Datenverwaltung',
+        'ROLE_ADMIN' => 'Verwaltung der Anwendung'
+    ];
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -204,9 +215,15 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->name;
     }
 
-    public function setName(?string $name): self
-    {
+    public function setName($name): self {
         $this->name = $name;
+        return $this;
+    }
+
+    public function setNameByEmail(?string $email): self
+    {
+        $c_list = explode('@', $email);
+        $this->name = $c_list[0];
 
         return $this;
     }
@@ -293,5 +310,10 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
         $this->active = $active;
 
         return $this;
+    }
+
+    static public function roleDisplayName($role): ?string {
+        $role_dict = array_merge(self::ROLE_DICT, self::ROLE_DICT_EXTRA);
+        return $role_dict[$role];
     }
 }
