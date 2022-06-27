@@ -1,0 +1,20 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Registration success{% endblock %}
+
+{% block body %}
+    <div class="container">
+	<div class="row">
+	    <div class="col-5">
+		<div class="login-form bg-light mt-4 p-4">
+		    <h1>User eingetragen</h1>
+		    <div>{{ user.name }}</div>
+		    <div>Name: {{ user.givenname~' '~user.familyname }}</div>
+		    <div>E-Mail: {{ user.email }}</div>
+		    <div>Rollen: {{ user.roles|join(", ") }}
+		</div>
+	    </div>
+	</div>
+    </div>
+{% endblock %}

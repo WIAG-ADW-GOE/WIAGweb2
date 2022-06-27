@@ -28,14 +28,6 @@ class UserFormType extends AbstractType
             ->add('email', null, [
                 'label' => 'E-Mail'
             ])
-            // ->add('agreeTerms', CheckboxType::class, [
-            //     'mapped' => false,
-            //     'constraints' => [
-            //         new IsTrue([
-            //             'message' => 'You should agree to our terms.',
-            //         ]),
-            //     ],
-            // ])
             ->add('roles', ChoiceType::class, [
                 'mapped' => true,
                 'label' => 'Rollen',

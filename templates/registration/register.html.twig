@@ -4,6 +4,7 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
+    {% if false %}
     <div class="container">
 	<div class="col-5">
 	    <div class="row">
@@ -23,4 +24,28 @@
 	    </div>
 	</div>
     </div>
+    {% endif %}
+
+    <div class="container">
+	<div class="row">
+            <div class="login-form bg-light mt-4 p-4">
+		<form method="post" class="row g-3">
+                    <h1 class="h3 mb-3 font-weight-normal">Benutzerdaten</h1>
+
+		    <div class="col-5">
+			{{ form_start(registrationForm) }}
+			    {{ form_row(registrationForm.givenname) }}
+			    {{ form_row(registrationForm.familyname) }}
+			    {{ form_row(registrationForm.email) }}
+			    {{ form_row(registrationForm.roles) }}
+			    {{ form_row(registrationForm.plainPassword) }}
+
+			    <button type="submit" class="btn btn-primary float-end">Speichern</button>
+			{{ form_end(registrationForm) }}
+		    </div>
+		</form>
+	    </div>
+	</div>
+    </div>
+
 {% endblock %}
