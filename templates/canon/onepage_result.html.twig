@@ -1,0 +1,86 @@
+{# canon/onepage_result.html.twig #}
+<!DOCTYPE html>
+<html class="h-100">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}WIAG{% endblock %}</title>
+        {# Run `composer require symfony/webpack-encore-bundle`
+        and uncomment the following Encore helpers to start using Symfony UX #}
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
+    </head>
+    <body class="d-flex flex-column h-100">
+	{% block body %}
+	    <div class="container-fluid mt-3">
+		<div class="row mx-2 col-12">
+		    {% if domstift %}
+			<h1>Domstift {{ domstift }}</h1>
+		    {% else %}
+			<h1>Domherren</h1>
+		    {% endif %}
+		</div>
+		{% for canon in canon_list %}
+		    {{ include('canon/_onepage_person.html.twig') }}
+		{% endfor %}
+		{% if false %} {# wiag(1) version #}
+		    {# get data #}
+		    {% set void = repository.fillData(co, monasteryName) %}
+		    {% if co.iddh %}{% set canon = co.canondh %}
+		    {% elseif co.idep %}{% set canon = co.bishop %}
+		    {% else %}{% set canon = co.canongs %}
+		    {% endif %}
+		    {# dates of birth and death #}
+		    {% set dobdod = null %}
+		    {% if not canon.datebirth and not canon.datedeath %}
+		    {% else %}
+			{% if canon.datebirth and not canon.datedeath %}
+			    {% set dobdod = "* " ~ canon.datebirth %}
+			{% elseif not canon.datebirth and canon.datedeath %}
+			    {% set dobdod = "† " ~ canon.datedeath %}
+			{% else %}
+			    {% set dobdod = "* " ~ canon.datebirth ~ " † " ~ canon.datedeath %}
+			{% endif %}
+		    {% endif %}
+		    {# wiagid #}
+		    {% set permalink = wiagurl~co.wiagid %}
+		    <div custom-style="WiagId"><a href={{ permalink }}>{{ co.wiagid }}</a></div>
+		    {# name #}
+		    <h3>{{ canon.displayname }}{% if dobdod %}, {{ dobdod }}{% endif %}</h3>
+		    {# academic title #}
+		    {% set separator = canon.academictitle and canon.religiousorder ? "; " : "" %}
+		    {% if canon.academictitle or canon.religiousorder %}
+			<div custom-style="AkadTitel">{{ canon.academictitle~separator~canon.religiousorder }}</div>
+		    {% endif %}
+		    {# comments #}
+		    {% if canon.commentperson %}
+			<div custom-style="Bemerkung">{{ canon.commentperson }}</div>
+		    {% endif %}
+		    {# offices #}
+		    {% if co.iddh %} {# then canon is canondh #}
+			{{ include('canon/_print_offices.html.twig', {'offices': co.canondh.offices}) }}
+			{{ include('canon/_print_references_dh.html.twig', {
+			    'references': canon.references
+			}) }}
+		    {% endif %}
+		    {% if co.idgs %}
+			<h4><a href={{ wiagurl~canon.gsnid }}>GSN {{ canon.gsnid }}</a></h4>
+			{{ include('canon/_print_offices.html.twig', {'offices': co.officesgs}) }}
+			{{ include('canon/_print_references_gs.html.twig', {
+			    'references': co.referencesgs
+			}) }}
+		    {% endif %}
+		    {% if co.bishop %}
+			<h4><a href={{ wiagurl~co.wiagid }}>{{ co.wiagid }}</a></h4>
+			{{ include('canon/_print_offices.html.twig', {'offices': co.bishop.offices}) }}
+			<div custom-style="Compact">{{ co.bishop.reference.shorttitle }}, S. {{ co.bishop.pagesgatz }}</div>
+		    {% endif %}
+		{% endif %}
+	    </div>
+	{% endblock %}
+    </body>
+</html>
