@@ -27,7 +27,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use Doctrine\ORM\EntityManagerInterface;
+<<<<<<< HEAD
 
+=======
+>>>>>>> show canon result list on one page
 
 class CanonController extends AbstractController {
     /** number of items per page */
@@ -125,6 +128,7 @@ class CanonController extends AbstractController {
 
         $model = $form->getData();
 
+        $repository = $em->getRepository(CanonLookup::class);
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
@@ -261,16 +265,61 @@ class CanonController extends AbstractController {
 
 
     /**
+     * show selected canons (e.g. by domstift) in one page
+     * @Route("/domherr/onepage", name="canon_onepage")
+     */
+    public function onepage(Request $request,
+                            EntityManagerInterface $em,
+                            ItemService $service) {
+
+        $model = new CanonFormModel();
+        $form = $this->createForm(CanonFormType::class, $model);
+        $form->handleRequest($request);
+
+        $ids = $em->getRepository(CanonLookup::class)
+                  ->canonIds($model);
+
+        // debug
+        $limit = 20000;
+
+        $ids = array_slice($ids, 0, $limit);
+
+        $personRepository = $em->getRepository(Person::class);
+
+        $canon_list = array();
+        // easy way to keep the order of the entries
+        foreach($ids as $id_loop) {
+            // get person (name, date of birth ...)
+            $canon = array();
+            $person_id = $id_loop['personIdName'];
+            $person = $personRepository->find($person_id);
+            $canon['person'] = $person;
+
+            // collect office data in an array of Items
+            $item = $service->getCanonOfficeData($person);
+            $canon['item'] = $item;
+            $canon_list[] = $canon;
+        }
+
+        return $this->render('canon/onepage_result.html.twig', [
+            'domstift' => ucfirst($model->domstift),
+            'canon_list' => $canon_list,
+        ]);
+
+    }
+
+
+    /**
      * AJAX
      *
      * @Route("/canon-suggest/{field}", name="canon_suggest")
      */
     public function autocomplete(Request $request,
-                                 CanonLookupRepository $repository,
+                                 EntityManagerInterface $em,
                                  String $field) {
         $name = $request->query->get('q');
         $fnName = 'suggestCanon'.ucfirst($field);
-        $suggestions = $repository->$fnName($name, self::HINT_SIZE);
+        $suggestions = $em->getRepository(CanonLookup::class)->$fnName($name, self::HINT_SIZE);
 
         return $this->render('canon/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
