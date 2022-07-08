@@ -62,6 +62,13 @@ class CanonController extends AbstractController {
             ]);
         } else {
 
+            // allow GET query for domstift
+            $get_param_domstift = $request->query->get('domstift');
+            if (!$form->isSubmitted() && !is_null($get_param_domstift)) {
+                $model->domstift = $get_param_domstift;
+                $form->get('domstift')->setData($get_param_domstift);
+            }
+
             $idAll = $repository->canonIds($model);
             $count = count($idAll);
 

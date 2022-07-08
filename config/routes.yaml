@@ -1,3 +1,23 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+
+bishop_legacy:
+  path: bischoefe
+  # the controller value has the format 'controller_class::method_name'
+  controller: App\Controller\BishopController::query
+
+diocese_legacy:
+  path: bistuemer
+  # the controller value has the format 'controller_class::method_name'
+  controller: App\Controller\DioceseController::diocese
+
+canon_legacy:
+  path: domherren
+  # the controller value has the format 'controller_class::method_name'
+  controller: App\Controller\CanonController::query
+
+canon_domstift_legacy:
+  path: api/domherren
+  # the controller value has the format 'controller_class::method_name'
+  controller: App\Controller\CanonController::query
