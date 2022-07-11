@@ -18,6 +18,12 @@ class CanonLookup
     private $id;
 
     /**
+     * @ORM\OneToOne(targetEntity="CanonSort")
+     * @ORM\JoinColumn(name="person_id_Name", referencedColumnName="id")
+     */
+    private $canonSort;
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $personIdName;
@@ -47,6 +53,10 @@ class CanonLookup
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getCanonSort() {
+        return $this->canonSort;
     }
 
     public function getPersonIdName(): ?int

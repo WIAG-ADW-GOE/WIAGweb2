@@ -59,7 +59,7 @@ class Item {
     private $reference;
 
     /**
-     * @ORM\OneToOne(targetEntity="Person")
+     * @ORM\OneToOne(targetEntity="Person", fetch="EAGER")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $person;

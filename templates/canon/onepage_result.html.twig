@@ -3,7 +3,7 @@
 <html class="h-100">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}WIAG{% endblock %}</title>
+        <title>{% block title %}Domherren{% endblock %}</title>
         {# Run `composer require symfony/webpack-encore-bundle`
         and uncomment the following Encore helpers to start using Symfony UX #}
         {% block stylesheets %}
@@ -18,68 +18,88 @@
 	{% block body %}
 	    <div class="container-fluid mt-3">
 		<div class="row mx-2 col-12">
-		    {% if domstift %}
-			<h1>Domstift {{ domstift }}</h1>
+		    {% if title %}
+			<h1>{{ title }}</h1>
 		    {% else %}
 			<h1>Domherren</h1>
 		    {% endif %}
 		</div>
 		{% for canon in canon_list %}
-		    {{ include('canon/_onepage_person.html.twig') }}
-		{% endfor %}
-		{% if false %} {# wiag(1) version #}
-		    {# get data #}
-		    {% set void = repository.fillData(co, monasteryName) %}
-		    {% if co.iddh %}{% set canon = co.canondh %}
-		    {% elseif co.idep %}{% set canon = co.bishop %}
-		    {% else %}{% set canon = co.canongs %}
-		    {% endif %}
-		    {# dates of birth and death #}
+		    {% set person=canon['person'] %}
+		    {% set item=canon['item'] %}
+		    {% set id_public=person.item.idpublic %}
+		    {% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
+
+		    {# name, dates of birth and death #}
 		    {% set dobdod = null %}
-		    {% if not canon.datebirth and not canon.datedeath %}
+		    {% if not person.datebirth and not person.datedeath %}
 		    {% else %}
-			{% if canon.datebirth and not canon.datedeath %}
-			    {% set dobdod = "* " ~ canon.datebirth %}
-			{% elseif not canon.datebirth and canon.datedeath %}
-			    {% set dobdod = "† " ~ canon.datedeath %}
+			{% if person.datebirth and not person.datedeath %}
+			    {% set dobdod = "*&nbsp;" ~ person.datebirth %}
+			{% elseif not person.datebirth and person.datedeath %}
+			    {% set dobdod = "†&nbsp;" ~ person.datedeath %}
 			{% else %}
-			    {% set dobdod = "* " ~ canon.datebirth ~ " † " ~ canon.datedeath %}
+			    {% set dobdod = "*&nbsp;" ~ person.datebirth ~ " †&nbsp;" ~ person.datedeath %}
 			{% endif %}
 		    {% endif %}
-		    {# wiagid #}
-		    {% set permalink = wiagurl~co.wiagid %}
-		    <div custom-style="WiagId"><a href={{ permalink }}>{{ co.wiagid }}</a></div>
-		    {# name #}
-		    <h3>{{ canon.displayname }}{% if dobdod %}, {{ dobdod }}{% endif %}</h3>
-		    {# academic title #}
-		    {% set separator = canon.academictitle and canon.religiousorder ? "; " : "" %}
-		    {% if canon.academictitle or canon.religiousorder %}
-			<div custom-style="AkadTitel">{{ canon.academictitle~separator~canon.religiousorder }}</div>
-		    {% endif %}
-		    {# comments #}
-		    {% if canon.commentperson %}
-			<div custom-style="Bemerkung">{{ canon.commentperson }}</div>
-		    {% endif %}
-		    {# offices #}
-		    {% if co.iddh %} {# then canon is canondh #}
-			{{ include('canon/_print_offices.html.twig', {'offices': co.canondh.offices}) }}
-			{{ include('canon/_print_references_dh.html.twig', {
-			    'references': canon.references
-			}) }}
-		    {% endif %}
-		    {% if co.idgs %}
-			<h4><a href={{ wiagurl~canon.gsnid }}>GSN {{ canon.gsnid }}</a></h4>
-			{{ include('canon/_print_offices.html.twig', {'offices': co.officesgs}) }}
-			{{ include('canon/_print_references_gs.html.twig', {
-			    'references': co.referencesgs
-			}) }}
-		    {% endif %}
-		    {% if co.bishop %}
-			<h4><a href={{ wiagurl~co.wiagid }}>{{ co.wiagid }}</a></h4>
-			{{ include('canon/_print_offices.html.twig', {'offices': co.bishop.offices}) }}
-			<div custom-style="Compact">{{ co.bishop.reference.shorttitle }}, S. {{ co.bishop.pagesgatz }}</div>
-		    {% endif %}
-		{% endif %}
+		    <div class="row mx-2 col-12">
+			{# wiagid #}
+			<div custom-style="WiagId" class="d-flex"><a class="ms-auto" href={{ permalink }}>{{ id_public }}</a></div>
+			{# name #}
+			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
+			{# comments #}
+			{% if person.noteperson %}
+			    <div custom-style="Bemerkung">{{ person.noteperson|protectOrdinal|raw }}</div>
+			{% endif %}
+		    </div>
+
+		    {# offices and references#}
+		    {% for item_loop in item %}
+			{# offices, parameter: item #}
+			<div class="row col-12 mx-2">
+			    {% if item_loop.itemTypeID == 6 %}
+				<div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ item_loop.UriExternalByAuthorityId(200) }}"> GSN {{ item_loop.IdExternalByAuthorityId(200) }}</a></h4></div>
+			    {% endif %}
+			    {% if item_loop.itemTypeID == 4 %}
+				<div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ path('id', {id: item_loop.idPublic}) }}">{{ item_loop.idPublic}}</a></h4></div>
+			    {% endif %}
+			    {% for o in item_loop.person.role %}
+				<div custom-style="Aemter">
+				    {% set datestr=null %}
+				    {% if not o.datebegin and not o.dateend %}
+				    {% elseif o.datebegin and not o.dateend %}
+					{% set datestr=o.datebegin %}
+				    {% elseif not o.datebegin and o.dateend %}
+					{% set datestr=o.dateend %}
+				    {% else %}
+					{% set datestr=o.datebegin~'&nbsp;-&nbsp;'~o.dateend %}
+				    {% endif %}
+
+				    {% set orgstr=null %}
+				    {% if o.diocesename and not o.institutionid %}
+					{% set orgstr=o.diocesename %}
+				    {% endif %}
+				    {% if o.institutionid %}
+					{% set orgstr=o.institution.name ?: o.institutionname %}
+				    {% endif %}
+
+				    {% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}
+				    {{ orgstr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
+				</div>
+			    {% endfor %}
+			</div>
+			<div class="row col-12 mx-2">
+			    <div custom_style="Compact" class="small mt-2">
+				{% for ref in item_loop.reference %}
+				    {% set idinref = ref.idinreference %}
+				    {{ ref.referencevolume.titleshort }}{% if ref.page %}, S.&nbsp;{{ ref.page|replace({'<b>':'', '</b>':''}) }} {% endif %}{% if idinref %}, ID/Nr.&nbsp;{{ idinref }}{% endif %}{% if not loop.last %} &ndash; {% endif %}
+				{% endfor %}
+			    </div>
+			</div>
+
+		    {% endfor %}
+
+		{% endfor %}
 	    </div>
 	{% endblock %}
     </body>
