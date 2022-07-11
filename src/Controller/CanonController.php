@@ -27,10 +27,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use Doctrine\ORM\EntityManagerInterface;
-<<<<<<< HEAD
 
-=======
->>>>>>> show canon result list on one page
 
 class CanonController extends AbstractController {
     /** number of items per page */
@@ -276,33 +273,44 @@ class CanonController extends AbstractController {
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
-        $ids = $em->getRepository(CanonLookup::class)
-                  ->canonIds($model);
+        $canonLookupRepository = $em->getRepository(CanonLookup::class);
 
-        // debug
-        $limit = 20000;
+        // $domstift = $model->domstift;
+        $query_result = $canonLookupRepository->findWithOfficesByModel($model);
+        // dd($query_result);
 
-        $ids = array_slice($ids, 0, $limit);
-
-        $personRepository = $em->getRepository(Person::class);
-
+        $referenceVolumeRepository = $em->getRepository(ReferenceVolume::class);
         $canon_list = array();
-        // easy way to keep the order of the entries
-        foreach($ids as $id_loop) {
-            // get person (name, date of birth ...)
-            $canon = array();
-            $person_id = $id_loop['personIdName'];
-            $person = $personRepository->find($person_id);
-            $canon['person'] = $person;
+        $canon = array();
+        $item_list = array();
+        foreach($query_result as $obj) {
+            if (is_a($obj, Person::class)) {
+                if (count($canon) > 0) {
+                    $canon['item'] = $item_list;
+                    $canon_list[] = $canon;
+                    $item_list = array();
+                    $canon = array();
+                    }
+                    $canon['person'] = $obj;
+            } else {
+                $referenceVolumeRepository->addReferenceVolumes($obj);
+                $item_list[] = $obj;
+            }
+        }
 
-            // collect office data in an array of Items
-            $item = $service->getCanonOfficeData($person);
-            $canon['item'] = $item;
-            $canon_list[] = $canon;
+        $title = $model->domstift;
+        if ($title) {
+            $part_list = explode(" ", $title);
+            if (count($part_list) == 1) {
+                $title = 'Domstift '.$title;
+            }
+            $title = ucwords($title);
+        } else {
+            $title = "Domherren";
         }
 
         return $this->render('canon/onepage_result.html.twig', [
-            'domstift' => ucfirst($model->domstift),
+            'title' => $title,
             'canon_list' => $canon_list,
         ]);
 

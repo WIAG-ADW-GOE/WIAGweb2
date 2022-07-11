@@ -161,7 +161,9 @@ class CanonLookupRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         if ($domstift) {
-            $qb->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c.personIdRole')
+            // apply query criteria to all roles and join with canon_lookup
+            $qb->innerjoin('\App\Entity\CanonLookup', 'c_q', 'WITH', 'c_q.personIdName = c.personIdName')
+               ->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c_q.personIdRole')
                ->join('role.institution', 'inst_domstift')
                ->andWhere('inst_domstift.name LIKE :q_domstift')
                ->setParameter('q_domstift', '%'.$domstift.'%');
@@ -489,6 +491,28 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         return $personIdName;
+    }
+
+    /**
+     * fund person with offices and sort by date
+     */
+    public function findWithOfficesByModel($model) {
+        $qb = $this->createQueryBuilder('c')
+                   ->select('p, i')
+                   ->innerjoin('\App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
+                   ->innerjoin('\App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole')
+                   ->innerjoin('c.canonSort', 'c_sort')
+                   ->addOrderBy('c_sort.dateSortKey', 'ASC');
+
+        // $qb->setMaxResults(30); # debug
+
+        $this->addCanonConditions($qb, $model);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        return $result;
+
     }
 
     /**
