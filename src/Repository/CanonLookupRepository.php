@@ -494,17 +494,17 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
-     * fund person with offices and sort by date
+     * find person with offices and sort by date
      */
     public function findWithOfficesByModel($model) {
+        // c is subject to query conditions, c_sel collects data
         $qb = $this->createQueryBuilder('c')
-                   ->select('p, i')
-                   ->innerjoin('\App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
-                   ->innerjoin('\App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole')
+                   ->select('p_sel, i_sel')
+                   ->innerjoin('\App\Entity\CanonLookup', 'c_sel', 'WITH', 'c_sel.personIdName = c.personIdName')
+                   ->innerjoin('\App\Entity\Person', 'p_sel', 'WITH', 'p_sel.id = c_sel.personIdName')
+                   ->innerjoin('\App\Entity\Item', 'i_sel', 'WITH', 'i_sel.id = c_sel.personIdRole')
                    ->innerjoin('c.canonSort', 'c_sort')
                    ->addOrderBy('c_sort.dateSortKey', 'ASC');
-
-        // $qb->setMaxResults(30); # debug
 
         $this->addCanonConditions($qb, $model);
 
@@ -512,8 +512,32 @@ class CanonLookupRepository extends ServiceEntityRepository
         $result = $query->getResult();
 
         return $result;
-
     }
+
+    /**
+     * find references
+     */
+    public function findReferencesByModel($model, $item_type_id) {
+        $qb = $this->createQueryBuilder('c')
+                   ->select('distinct v')
+                   ->innerjoin('\App\Entity\Item', 'i_sel', 'WITH', 'i_sel.id = c.personIdRole')
+                   ->innerjoin('i_sel.reference', 'item_ref')
+                   ->innerjoin('\App\Entity\ReferenceVolume',
+                               'v',
+                               'WITH',
+                               'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
+                   ->andWhere('i_sel.itemTypeId = :item_type_id')
+                   ->setParameter('item_type_id', $item_type_id)
+                   ->addOrderBy('v.displayOrder', 'ASC');
+
+        $this->addCanonConditions($qb, $model);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        return $result;
+    }
+
 
     /**
      * countCanonDomstift($model)

@@ -98,6 +98,11 @@ class ReferenceVolume
      */
     private $onlineResource;
 
+    /**
+     * @ORM\Column(type="string", length=511, nullable=true)
+     */
+    private $gsCitation;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -289,6 +294,18 @@ class ReferenceVolume
             }
         }
         return $ids;
+    }
+
+    public function getGsCitation(): ?string
+    {
+        return $this->gsCitation;
+    }
+
+    public function setGsCitation(?string $gsCitation): self
+    {
+        $this->gsCitation = $gsCitation;
+
+        return $this;
     }
 
 }
