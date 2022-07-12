@@ -234,7 +234,7 @@ class CanonController extends AbstractController {
         $canonLookupRepository = $em->getRepository(CanonLookup::class);
 
         $query_result = $canonLookupRepository->findWithOfficesByModel($model);
-        //dd($query_result);
+        // dd($query_result);
 
         $referenceVolumeRepository = $em->getRepository(ReferenceVolume::class);
         $canon_list = array();

@@ -382,6 +382,7 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function findWithOfficesByModel($model) {
         // c is subject to query conditions, c_sel collects data
+        // to select person and item and to combine them in the controller is only possible because they are unique (?)
         $qb = $this->createQueryBuilder('c')
                    ->select('p_sel, i_sel')
                    ->innerjoin('\App\Entity\CanonLookup', 'c_sel', 'WITH', 'c_sel.personIdName = c.personIdName')
@@ -404,14 +405,15 @@ class CanonLookupRepository extends ServiceEntityRepository
     public function findReferencesByModel($model, $item_type_id) {
         $qb = $this->createQueryBuilder('c')
                    ->select('distinct v')
-                   ->innerjoin('\App\Entity\Item', 'i_sel', 'WITH', 'i_sel.id = c.personIdRole')
-                   ->innerjoin('i_sel.reference', 'item_ref')
+                   ->innerjoin('\App\Entity\CanonLookup', 'c_sel', 'WITH', 'c_sel.personIdName = c.personIdName')
+                   ->innerjoin('\App\Entity\ItemReference', 'item_ref', 'WITH', 'item_ref.itemId = c_sel.personIdRole')
                    ->innerjoin('\App\Entity\ReferenceVolume',
                                'v',
                                'WITH',
                                'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
-                   ->andWhere('i_sel.itemTypeId = :item_type_id')
+                   ->andWhere('item_ref.itemTypeId = :item_type_id')
                    ->setParameter('item_type_id', $item_type_id)
+                   ->addOrderBy('v.referenceId', 'ASC')
                    ->addOrderBy('v.displayOrder', 'ASC');
 
         $this->addCanonConditions($qb, $model);
