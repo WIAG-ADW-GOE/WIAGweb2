@@ -33,7 +33,9 @@
 			] %}
 			    <button type="submit" form="form" formaction={{ path('canon_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
 			{% endfor %}
-			<button type="submit" form="form" formaction={{ path('canon_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste</button>
+			<button type="submit" form="form" formaction={{ path('canon_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste chron.</button>
+			<button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 6}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
+			<button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 5}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
 		    {% endif %}
 		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
 		</div>

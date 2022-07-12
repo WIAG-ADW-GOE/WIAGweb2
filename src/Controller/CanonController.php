@@ -233,9 +233,8 @@ class CanonController extends AbstractController {
 
         $canonLookupRepository = $em->getRepository(CanonLookup::class);
 
-        // $domstift = $model->domstift;
         $query_result = $canonLookupRepository->findWithOfficesByModel($model);
-        // dd($query_result);
+        //dd($query_result);
 
         $referenceVolumeRepository = $em->getRepository(ReferenceVolume::class);
         $canon_list = array();
@@ -250,10 +249,10 @@ class CanonController extends AbstractController {
                     $canon = array();
                     }
                     $canon['person'] = $obj;
-            } else {
+            } elseif (is_a($obj, Item::class)) {
                 $referenceVolumeRepository->addReferenceVolumes($obj);
                 $item_list[] = $obj;
-            }
+            } else {}
         }
 
         $title = $model->domstift;
@@ -272,6 +271,35 @@ class CanonController extends AbstractController {
             'canon_list' => $canon_list,
         ]);
 
+    }
+
+     /**
+     * show references for selected canons
+     * @Route("/domherr/onepage/literatur/{itemType}", name="canon_onepage_references")
+     */
+    public function references(Request $request,
+                               EntityManagerInterface $em,
+                               ItemService $service,
+                               $itemType) {
+
+        // itemType:
+        // 6 references GS
+        // 5 other references
+
+        $model = new CanonFormModel();
+        $form = $this->createForm(CanonFormType::class, $model);
+        $form->handleRequest($request);
+
+        $canonLookupRepository = $em->getRepository(CanonLookup::class);
+
+        $reference_list = $canonLookupRepository->findReferencesByModel($model, $itemType);
+        // dd($reference_list);
+        $title = $itemType == 6 ? 'Literatur Germania Sacra' : 'Literatur andere';
+
+        return $this->render('canon/onepage_references.html.twig', [
+            'title' => $title,
+            'reference_list' => $reference_list,
+        ]);
     }
 
 
