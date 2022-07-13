@@ -418,6 +418,7 @@ class Person
         return $a.'/'.$b;
     }
 
+    // combine names, dates, ... from different sources
     public function get($field) {
         $getfnc = 'get'.ucfirst($field);
 

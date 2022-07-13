@@ -70,6 +70,7 @@ class CanonController extends AbstractController {
             }
 
             $idAll = $repository->canonIds($model);
+
             $count = count($idAll);
 
             $offset = $request->request->get('offset');
@@ -95,7 +96,7 @@ class CanonController extends AbstractController {
                 $personRole = $personRoleRepository->findRoleWithPlace($canon_loop->getPersonIdRole());
                 $canon_loop->setRoleListView($personRole);
                 $person = $canon_loop->getPerson();
-                $person->setSibling($service->getSibling($person));
+                //$person->setSibling($service->getSibling($person));
                 $canon[] = $canon_loop;
             }
 

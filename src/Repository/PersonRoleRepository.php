@@ -76,22 +76,22 @@ class PersonRoleRepository extends ServiceEntityRepository
         $placeName = array();
         $itemTypeId = null;
 
-        foreach ($result as $rLoop) {
+        foreach ($result as $r_loop) {
             // save current role with places or collect places for current role
-            if ($roleLast !== $rLoop[0]) {
+            if ($roleLast !== $r_loop[0]) {
                 if (!is_null($roleLast)) {
                     $roleLast->setPlaceName($placeName);
                     $role[] = $roleLast;
                 }
-                $roleLast = $rLoop[0];
-                if (!is_null($rLoop['placeName'])) {
-                    $placeName = array($rLoop['placeName']);
+                $roleLast = $r_loop[0];
+                if (!is_null($r_loop['placeName'])) {
+                    $placeName = array($r_loop['placeName']);
                 } else {
                     $placeName = array();
                 }
             } else {
-                if (!is_null($rLoop['placeName'])) {
-                    $placeName = array($rLoop['placeName']);
+                if (!is_null($r_loop['placeName'])) {
+                    $placeName = array($r_loop['placeName']);
                 }
             }
         }
