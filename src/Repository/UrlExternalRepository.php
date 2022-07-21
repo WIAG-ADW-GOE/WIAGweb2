@@ -74,6 +74,9 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     *
+     */
     public function groupByType($item_id) {
         // 2022-06-17 old version: allow missing authority
         // $qb = $this->createQueryBuilder('u')
@@ -115,4 +118,6 @@ class UrlExternalRepository extends ServiceEntityRepository
         }
         return $url_by_type;
     }
+
+
 }

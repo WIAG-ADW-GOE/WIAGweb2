@@ -2,7 +2,7 @@
 {% set permalink %}{{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }}{% endset %}
 <div class="row col-12 mx-2 mt-2 mb-0">
     <div class="d-flex justify-content-between">
-	<span class="fs-2">{{ person.get('displayname') }} </span>
+	<span class="fs-2">{{ person.combine('displayname') }} </span>
 	<button type="button"
 		class="btn"
 		title={{ permalink }}
@@ -20,8 +20,8 @@
     </div>
 {% endif %}
 
-{% set datebirth = person.get('datebirth') %}
-{% set datedeath = person.get('datedeath') %}
+{% set datebirth = person.combine('datebirth') %}
+{% set datedeath = person.combine('datedeath') %}
 {% if not datebirth and not datedeath %}
 {% else %}
     <div class="row mx-2 col-12 mt-2">

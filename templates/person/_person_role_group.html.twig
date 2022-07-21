@@ -21,16 +21,16 @@
 				    <li>Band nicht gefunden</li>
 				{% else %}
 				    {% if person.item.source == "Bischof" %} {# bishops #}
-					<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, S. {{ ref.page }} {% endif %}</li>
+					<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span> {% endif %}</li>
 				    {% elseif person.item.source == "Domherr GS" or person.item.source == "Bischof GS" %} {# germania sacra #}
-					<li>{{ include('person/_person_biogram_link.html.twig', {
-					    volume: ref.referencevolume,
-					    pages: ref.splitpage
-					    }) }}</li>
+					    <li>{{ include('person/_person_biogram_link.html.twig', {
+						volume: ref.referencevolume,
+						pages: ref.splitpage
+						}) }}</li>
 				    {% else %}
-					{% set idinref = ref.idinreference %}
-					{% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
-					<li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+					    {% set idinref = ref.idinreference %}
+					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
+					    <li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span>{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% else %}{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% endif %}</li>
 				    {% endif %}
 				{% endif %}
 			    {% endfor %}

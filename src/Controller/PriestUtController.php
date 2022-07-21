@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\PlaceIdExternal;
@@ -21,6 +22,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+use Doctrine\ORM\EntityManagerInterface;
 
 class PriestUtController extends AbstractController {
     /** number of items per page */
@@ -35,9 +37,7 @@ class PriestUtController extends AbstractController {
      * @Route("/priest_utrecht", name="priest_ut_query")
      */
     public function query(Request $request,
-                          ItemRepository $repository) {
-
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+                          EntityManagerInterface $entityManager) {
 
         // we need to pass an instance of PriestUtFormModel, because facets depend on it's data
         $model = new PriestUtFormModel;
@@ -54,13 +54,15 @@ class PriestUtController extends AbstractController {
         $form->handleRequest($request);
         $model = $form->getData();
 
+        $itemRepository = $entityManager->getRepository(Item::class);
+
         if ($form->isSubmitted() && !$form->isValid()) {
             return $this->renderForm('priest_ut/query.html.twig', [
                     'menuItem' => 'collections',
                     'form' => $form,
             ]);
         } else {
-            $count_result = $repository->countPriestUt($model);
+            $count_result = $itemRepository->countPriestUt($model);
             $count = $count_result["n"];
 
             $offset = $request->request->get('offset');
@@ -76,21 +78,18 @@ class PriestUtController extends AbstractController {
                 $offset = 0;
             }
 
-            $ids = $repository->priestUtIds($model,
-                                            self::PAGE_SIZE,
-                                            $offset);
+            $personRepository = $entityManager->getRepository(Person::class);
 
-            # easy way to get all persons in the right order
-            $cPerson = array();
-            foreach($ids as $id) {
-                $cPerson[] = $personRepository->findWithOffice($id["personId"]);
-            }
+            $id_all = $itemRepository->priestUtIds($model);
+
+            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
+            $person_list = $personRepository->findList($id_list);
 
             return $this->renderForm('priest_ut/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,
-                'cperson' => $cPerson,
+                'personList' => $person_list,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -103,7 +102,7 @@ class PriestUtController extends AbstractController {
      * @Route("/priest_utrecht/listenelement", name="priest_ut_list_detail")
      */
     public function priestUtListDetail(Request $request,
-                                       ItemRepository $repository) {
+                                       EntityManagerInterface $entityManager) {
 
         $model = new PriestUtFormModel;
 
@@ -111,30 +110,31 @@ class PriestUtController extends AbstractController {
         $form->handleRequest($request);
 
         $offset = $request->request->get('offset');
-
         $model = $form->getData();
+
+        $itemRepository = $entityManager->getRepository(Item::class);
 
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $repository->priestUtIds($model,
-                                           2,
-                                           $offset);
+            $ids = $itemRepository->priestUtIds($model,
+                                                2,
+                                                $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $repository->priestUtIds($model,
-                                           3,
-                                           $offset - 1);
+            $ids = $itemRepository->priestUtIds($model,
+                                                3,
+                                                $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
             $idx += 1;
         }
 
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person_id = $ids[$idx]['personId'];
+        $personRepository = $entityManager->getRepository(Person::class);
+        $person_id = $ids[$idx];
         $person = $personRepository->findWithOffice($person_id);
 
-        $personRepository->addReferenceVolumes($person);
+        $entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
 
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
@@ -161,8 +161,7 @@ class PriestUtController extends AbstractController {
      * @Route("/priest_utrecht/data", name="priest_ut_query_data")
      */
     public function queryData(Request $request,
-                              ItemRepository $itemRepository,
-                              PersonRepository $personRepository,
+                              EntityManagerInterface $entityManager,
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
@@ -177,47 +176,38 @@ class PriestUtController extends AbstractController {
         }
 
 
-
         $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
-        $ids = $itemRepository->priestUtIds($model);
-        $node_list = array();
-        foreach ($ids as $id) {
 
-            $person = $personRepository->findWithOffice($id['personId']);
-            $personRepository->addReferenceVolumes($person);
+        $itemRepository = $entityManager->getRepository(Item::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
+
+        $id_all = $itemRepository->priestUtIds($model);
+        $person_list = $personRepository->findList($id_all);
+
+        $node_list = array();
+        foreach($person_list as $person) {
+            // not really expensive
+            $itemReferenceRepository->setReferenceVolume([$person]);
             $birthplace = $person->getBirthplace();
             if ($birthplace) {
-                $pieRepository = $this->getDoctrine()
-                                      ->getRepository(PlaceIdExternal::class);
+                $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
                 foreach ($birthplace as $bp) {
                     $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
                 }
             }
 
-            $item_list = [$person->getItem()];
-            $node_list[] = $personService->personData($format, $person, $item_list);
+            $node = $personService->personData($format, $person, [$person]);
+            $node_list[] = $node;
         }
 
-        return $personService->createResponse($format, $node_list);
 
         $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
         return $personService->$fncResponse($node_list);
-
-
-        # TODO 2022-01-26 call $repository->priestUtIds
-        $result = $repository->priestUtWithOfficeByModel($model);
-
-        $format = ucfirst(strtolower($format));
-        if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
-            throw $this->createNotFoundException('Unbekanntes Format: '.$format);
-        }
-        $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
-        return $service->$fncResponse($result);
-
     }
 
 

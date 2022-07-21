@@ -40,9 +40,9 @@
 				    {% set idinref = ref.idinreference %}
 				    {% set refuri = ref.referencevolume.onlineresource %}
 				    {% if refuri %}
-					<li><a href ="{{ refuri }}" target="_blank" rel="noopener">{{ ref.referencevolume.fullcitation }}</a>{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+					<li><a href ="{{ refuri }}" target="_blank" rel="noopener">{{ ref.referencevolume.fullcitation }}</a>{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span>{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% else %}{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% endif %}</li>
 				    {% else %}
-					<li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, S. {{ ref.page }}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% else %}{% if idinref %}, ID/Nr. {{ idinref }}{% endif %}{% endif %}</li>
+					<li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span>{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% else %}{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% endif %}</li>
 				    {% endif %}
 				{% endif %}
 			    {% endfor %}

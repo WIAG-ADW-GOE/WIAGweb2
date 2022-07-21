@@ -48,15 +48,18 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
     */
 
-    public function addReferenceVolumes($item) {
-        foreach ($item->getReference() as $reference) {
-            $itemTypeId = $reference->getItemTypeId();
-            $referenceId = $reference->getReferenceId();
-            $referenceVolume = $this->findByCombinedKey($itemTypeId, $referenceId);
-            $reference->setReferenceVolume($referenceVolume);
-        }
-        return $item;
-    }
+    /**
+     * 2022-07-21 obsolete
+     */
+    // public function addReferenceVolumes($item) {
+    //     foreach ($item->getReference() as $reference) {
+    //         $itemTypeId = $reference->getItemTypeId();
+    //         $referenceId = $reference->getReferenceId();
+    //         $referenceVolume = $this->findByCombinedKey($itemTypeId, $referenceId);
+    //         $reference->setReferenceVolume($referenceVolume);
+    //     }
+    //     return $item;
+    // }
 
     public function findByCombinedKey($itemTypeId, $referenceId) {
         $qb = $this->createQueryBuilder('r')

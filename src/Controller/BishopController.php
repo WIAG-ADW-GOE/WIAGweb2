@@ -10,7 +10,6 @@ use App\Form\BishopFormType;
 use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
 
-use App\Service\ItemService;
 use App\Service\PersonService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,8 +35,7 @@ class BishopController extends AbstractController {
      * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
-                          ItemRepository $repository,
-                          ItemService $service) {
+                          ItemRepository $repository) {
 
         $personRepository = $this->getDoctrine()->getRepository(Person::class);
 
@@ -62,9 +60,6 @@ class BishopController extends AbstractController {
             ]);
         } else {
 
-            $countResult = $repository->countBishop($model);
-            $count = $countResult["n"];
-
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
@@ -78,23 +73,26 @@ class BishopController extends AbstractController {
                 $offset = 0;
             }
 
-            $ids = $repository->bishopIds($model,
-                                          self::PAGE_SIZE,
-                                          $offset);
+            $id_all = $repository->bishopIds($model);
+            $count = count($id_all);
 
+            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
+            $person_list = $personRepository->findList($id_list);
+
+            # TODO 2022-07-15 query all data for ids in $ids (see canon)
             # easy way to get all persons in the right order
-            $person_list = array();
-            foreach($ids as $id) {
-                $person = $personRepository->findWithOffice($id["personId"]);
-                $person->setSibling($service->getSibling($person));
-                $person_list[] = $person;
-            }
+            // $person_list = array();
+            // foreach($id_list as $id) {
+            //     $person = $personRepository->findWithOffice($id["personId"]);
+            //     $repository->setSibling($person);
+            //     $person_list[] = $person;
+            // }
 
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,
-                'personlist' => $person_list,
+                'personList' => $person_list,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -108,8 +106,7 @@ class BishopController extends AbstractController {
      */
     public function bishopListDetail(Request $request,
                                      ItemRepository $repository,
-                                     PersonRepository $personRepository,
-                                     ItemService $service) {
+                                     PersonRepository $personRepository) {
 
         $model = new BishopFormModel;
 
@@ -136,18 +133,18 @@ class BishopController extends AbstractController {
             $idx += 1;
         }
 
-        $person_id = $ids[$idx]['personId'];
+        $person_id = $ids[$idx];
         $person = $personRepository->find($person_id);
 
-        // collect office data in an array of Items
-        $item = $service->getBishopOfficeData($person);
+        // collect office data in Person[]
+        $personRole = $repository->getBishopOfficeData($person);
 
-        $person->setSibling($service->getSibling($person));
+        $repository->setSibling($person);
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
-            'person' => $person,
-            'item' => $item,
+            'personName' => $person,
+            'personRole' => $personRole,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);
@@ -162,7 +159,6 @@ class BishopController extends AbstractController {
      */
     public function queryData(Request $request,
                               ItemRepository $repository,
-                              ItemService $itemService,
                               PersonRepository $personRepository,
                               PersonService $personService) {
 
@@ -186,13 +182,14 @@ class BishopController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
+        // 2022-07-21 collect data in one db-query
         $node_list = array();
         foreach ($ids as $id) {
 
             $person = $personRepository->find($id['personId']);
 
             // collect office data in an array of Items
-            $item_list = $itemService->getBishopOfficeData($person);
+            $item_list = $repository->getBishopOfficeData($person);
             $node_list[] = $personService->personData($format, $person, $item_list);
         }
 

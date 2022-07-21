@@ -8,10 +8,10 @@
 	    </tr>
 	</thead>
 	<tbody>
-	    {% for person in personlist %}
-		{% set displayname = person.get('displayname') %}
-		{% set datebirth = person.get('datebirth') %}
-		{% set datedeath = person.get('datedeath') %}
+	    {% for person in personList %}
+		{% set displayname = person.combine('displayname') %}
+		{% set datebirth = person.combine('datebirth') %}
+		{% set datedeath = person.combine('datedeath') %}
 		<tr>
 		    <td><button
 			    type="submit"

@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
@@ -9,6 +10,7 @@ use App\Entity\InstitutionPlace;
 use App\Entity\Authority;
 use App\Entity\PlaceIdExternal;
 use App\Form\Model\BishopFormModel;
+use App\Service\UtilService;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -23,9 +25,13 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  */
 class PersonRepository extends ServiceEntityRepository {
 
-    public function __construct(ManagerRegistry $registry)
+    private $utilService;
+
+    public function __construct(ManagerRegistry $registry, UtilService $utilService)
     {
         parent::__construct($registry, Person::class);
+
+        $this->utilService = $utilService;
     }
 
     // /**
@@ -57,6 +63,9 @@ class PersonRepository extends ServiceEntityRepository {
     }
     */
 
+    /**
+     * see PriestUtController
+     */
     public function findWithOffice($id) {
         $qb = $this->createQueryBuilder('p')
                    ->addSelect('bp')
@@ -79,20 +88,104 @@ class PersonRepository extends ServiceEntityRepository {
         return $person;
     }
 
+
     /**
-     * 2022-05-03: copy in ItemRepository
+     *
      */
-    public function addReferenceVolumes($person) {
+    public function findList($id_list) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p, i, bp, role, role_type, institution')
+                   ->join('p.item', 'i') # avoid query in twig ...
+                   ->leftjoin('i.itemProperty', 'ip')
+                   ->leftjoin('p.birthplace', 'bp')
+                   ->leftjoin('p.role', 'role')
+                   ->leftjoin('role.role', 'role_type')
+                   ->leftjoin('role.institution', 'institution')
+                   ->andWhere('p.id in (:id_list)')
+                   ->addOrderBy('role.dateSortKey')
+                   ->addOrderBy('role.id')
+                   ->setParameter('id_list', $id_list);
+
+        // sorting of birthplaces see annotation
+
+        $query = $qb->getQuery();
+        $person_list = $query->getResult();
+
+        // restore order as in $id_list
+        $person_list = $this->utilService->reorder($person_list, $id_list, "id");
+
         $em = $this->getEntityManager();
-        # add reference volumes (combined key)
-        $repository = $em->getRepository(ReferenceVolume::class);
-        foreach ($person->getItem()->getReference() as $reference) {
-            $itemTypeId = $reference->getItemTypeId();
-            $referenceId = $reference->getReferenceId();
-            $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-            $reference->setReferenceVolume($referenceVolume);
+        $itemRepository = $em->getRepository(Item::class);
+
+        // there is not much potential for optimization
+        foreach($person_list as $person) {
+            $itemRepository->setSibling($person);
         }
-        return $person;
+
+
+        $role_list = $this->getRoleList($person_list);
+        $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
+
+        return $person_list;
     }
+
+    /**
+     *
+     */
+    private function getRoleList($person_list) {
+        $role_list = array_map(function($el) {
+            # array_merge accepts only an array
+            return $el->getRole()->toArray();
+        }, $person_list);
+        $role_list = array_merge(...$role_list);
+
+        return $role_list;
+    }
+
+
+    /**
+     *
+     */
+    public function setPersonName($canon_list) {
+
+        $id_list = array_map(function($el) {return $el->getPersonIdName();}, $canon_list);
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p')
+                   ->andWhere('p.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        $id_person_map = array();
+        foreach($result as $r) {
+            $id_person_map[$r->getId()] = $r;
+        }
+
+        foreach($canon_list as $canon) {
+            $person = $id_person_map[$canon->getPersonIdName()];
+            $canon->setPersonName($person);
+        }
+
+        return null;
+    }
+
+    /**
+     * 2022-07-21 obsolete?
+     */
+    // public function addReferenceVolumes($person) {
+    //     $em = $this->getEntityManager();
+    //     # add reference volumes (combined key)
+    //     $repository = $em->getRepository(ReferenceVolume::class);
+    //     foreach ($person->getItem()->getReference() as $reference) {
+    //         $itemTypeId = $reference->getItemTypeId();
+    //         $referenceId = $reference->getReferenceId();
+    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+    //         $reference->setReferenceVolume($referenceVolume);
+    //     }
+    //     return $person;
+    // }
+
 
 }

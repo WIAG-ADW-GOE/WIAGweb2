@@ -9,10 +9,10 @@
 	</thead>
 	<tbody>
 	    {% for c in canon %}
-		{% set person=c.person %}
-		{% set displayname = person.get('displayname') %}
-		{% set datebirth = person.get('datebirth') %}
-		{% set datedeath = person.get('datedeath') %}
+		{% set person=c.personName %}
+		{% set displayname = person.combine('displayname') %}
+		{% set datebirth = person.combine('datebirth') %}
+		{% set datedeath = person.combine('datedeath') %}
 		{% macro single_btn(offset, content) %}
 		    <button
 			type="submit"
@@ -34,7 +34,7 @@
 				<p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
 			    {% endif %}
 		    </td>
-		    <td class="align-top">{% for r in c.roleListView %}
+		    <td class="align-top">{% for r in c.person.role %}
 			{# use institution.nameShort when no place can be determined #}
 			<small>{% if r.role and r.role.name %}{{ r.role.name }}{% elseif r.rolename %}{{ r.rolename }}{% endif %}
 			    {% if r.placename %}({{ r.placename|join(', ') }})
@@ -46,7 +46,7 @@
 				{% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
 			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
 			</small><br/>{% endfor %}
-			{% if c.hasSibling %}
+			{% if c.otherSource %}
 			    {{ _self.single_btn(offset + loop.index0, "<small>&hellip;</small>") }}
 			{% endif %}
 		    </td>
