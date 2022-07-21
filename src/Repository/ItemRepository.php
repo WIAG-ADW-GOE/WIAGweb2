@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemReference;
+use App\Entity\Authority;
 use App\Entity\ItemProperty;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
@@ -169,9 +171,12 @@ class ItemRepository extends ServiceEntityRepository
         }
         $query = $qb->getQuery();
 
-        return $query->getResult();
+        $result =  $query->getResult();
 
-        }
+        return array_column($result, 'personId');
+
+    }
+
 
     private function addBishopConditions($qb, $model) {
         $diocese = $model->diocese;
@@ -295,6 +300,66 @@ class ItemRepository extends ServiceEntityRepository
         $result = $query->getResult();
         return $result;
     }
+
+    /**
+     * collect office data from different sources
+     */
+    public function getBishopOfficeData($person) {
+
+        $item = array($person->getItem());
+        // get item from Germania Sacra
+        $authorityGs = Authority::ID['Germania Sacra'];
+        $gsn = $person->getIdExternal($authorityGs);
+        if (!is_null($gsn)) {
+            // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
+            // If data are up to date at most one of these requests is successful.
+            $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
+            $canonGs = $this->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
+            $item = array_merge($item, $canonGs);
+
+            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
+            $bishopGs = $this->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
+            $item = array_merge($item, $bishopGs);
+
+        }
+
+        // get item from Domherrendatenbank
+        $authorityWIAG = Authority::ID['WIAG-ID'];
+        $wiagid = $person->getItem()->getIdPublic();
+        if (!is_null($wiagid)) {
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $canon = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            $item = array_merge($item, $canon);
+        }
+
+        $personRole = array();
+        foreach($item as $item_loop) {
+            $personRole[] = $item_loop->getPerson();
+        }
+
+
+        // set places and references in one query
+        $em = $this->getEntityManager();
+
+        $em->getRepository(PersonRole::class)->setPlaceNameInRole($personRole);
+        $em->getRepository(ItemReference::class)->setReferenceVolume($personRole);
+
+        return $personRole;
+
+        // version before 2022-07-21
+        // // get office data and references
+        // $personRoleRepository = $em->getRepository(PersonRole::class);
+        // $referenceVolumeRepository = $em->getRepository(ReferenceVolume::class);
+        // foreach ($item as $item_loop) {
+        //     $item_id = $item_loop->getId();
+        //     $person = $item_loop->getPerson();
+        //     $person->setRole($personRoleRepository->findRoleWithPlace($item_id));
+        //     $referenceVolumeRepository->addReferenceVolumes($item_loop);
+        // }
+
+        // return $item;
+    }
+
 
     /**
      * AJAX
@@ -425,8 +490,15 @@ class ItemRepository extends ServiceEntityRepository
         }
 
         $query = $qb->getQuery();
-        return $query->getResult();
+        $result =  $query->getResult();
 
+        // doctrine distinct function returns a string
+        $result = array_map(function($el) {
+            $val = $el['personId'];
+            return is_null($val) ? $val : intval($val);
+        }, $result);
+
+        return $result;
     }
 
     private function addPriestUtConditions($qb, $model) {
@@ -487,6 +559,22 @@ class ItemRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    public function setSibling($person) {
+        // get person from Domherrendatenbank
+        $authorityWIAG = Authority::ID['WIAG-ID'];
+        $wiagid = $person->getItem()->getIdPublic();
+        $f_found = false;
+        if (!is_null($wiagid)) {
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $item = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            if ($item) {
+                $person->setSibling($item[0]->getPerson());
+                $f_found = true;
+            }
+        }
+        return $f_found;
+    }
+
     public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
         $qb = $this->createQueryBuilder('i')
                    ->addSelect('i')
@@ -508,18 +596,21 @@ class ItemRepository extends ServiceEntityRepository
         return $item;
     }
 
-    public function addReferenceVolumes($item) {
-        $em = $this->getEntityManager();
-        # add reference volumes (combined key)
-        $repository = $em->getRepository(ReferenceVolume::class);
-        foreach ($item->getReference() as $reference) {
-            $itemTypeId = $reference->getItemTypeId();
-            $referenceId = $reference->getReferenceId();
-            $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-            $reference->setReferenceVolume($referenceVolume);
-        }
-        return $item;
-    }
+    /**
+     * 2022-07-21 obsolete?
+     */
+    // public function addReferenceVolumes($item) {
+    //     $em = $this->getEntityManager();
+    //     # add reference volumes (combined key)
+    //     $repository = $em->getRepository(ReferenceVolume::class);
+    //     foreach ($item->getReference() as $reference) {
+    //         $itemTypeId = $reference->getItemTypeId();
+    //         $referenceId = $reference->getReferenceId();
+    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
+    //         $reference->setReferenceVolume($referenceVolume);
+    //     }
+    //     return $item;
+    // }
 
     /**
      * countPriestUtOrder($model)

@@ -8,10 +8,11 @@ use App\Entity\CanonLookup;
 use App\Entity\UrlExternal;
 use App\Entity\PersonRole;
 use App\Entity\Role;
+use App\Entity\ItemReference;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
-use App\Service\ItemService;
+use App\Service\UtilService;
 use App\Form\CanonFormType;
 use App\Form\Model\CanonFormModel;
 
@@ -24,6 +25,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class CanonController extends AbstractController {
@@ -38,8 +41,9 @@ class CanonController extends AbstractController {
      * @Route("/domherr", name="canon_query")
      */
     public function query(Request $request,
+                          EntityManagerInterface $em,
                           CanonLookupRepository $repository,
-                          ItemService $service) {
+                          UtilService $utilService) {
 
         // we need to pass an instance of CanonFormModel, because facets depend on it's data
         $model = new CanonFormModel;
@@ -69,9 +73,9 @@ class CanonController extends AbstractController {
                 $form->get('domstift')->setData($get_param_domstift);
             }
 
-            $idAll = $repository->canonIds($model);
+            $id_all = $repository->canonIds($model);
 
-            $count = count($idAll);
+            $count = count($id_all);
 
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
@@ -86,25 +90,17 @@ class CanonController extends AbstractController {
                 $offset = 0;
             }
 
-            $id = array_slice($idAll, $offset, self::PAGE_SIZE);
+            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
 
-            $personRoleRepository = $this->getDoctrine()->getRepository(PersonRole::class);
-            $canon = array();
-            // easy way to keep the order of the entries
-            foreach($id as $idLoop) {
-                $canon_loop = $repository->findPrioRoleOne($idLoop["personIdName"]);
-                $personRole = $personRoleRepository->findRoleWithPlace($canon_loop->getPersonIdRole());
-                $canon_loop->setRoleListView($personRole);
-                $person = $canon_loop->getPerson();
-                //$person->setSibling($service->getSibling($person));
-                $canon[] = $canon_loop;
-            }
+
+            $canonLookupRepository = $em->getRepository(CanonLookup::class);
+            $canon_list = $canonLookupRepository->findList($id_list, 1);
 
             return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,
-                'canon' => $canon,
+                'canon' => $canon_list,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
             ]);
@@ -118,8 +114,8 @@ class CanonController extends AbstractController {
      * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
-                                    CanonLookupRepository $repository,
-                                    ItemService $service) {
+                                    EntityManagerInterface $entityManager,
+                                    CanonLookupRepository $repository) {
         $model = new CanonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
@@ -145,29 +141,46 @@ class CanonController extends AbstractController {
             $idx += 1;
         }
 
-        $dcn = $this->getDoctrine();
+        $person_id = $ids[$idx];
 
-        // get person (name, date of birth ...)
-        $personRepository = $dcn->getRepository(Person::class);
-        $person_id = $ids[$idx]['personIdName'];
-        $person = $personRepository->find($person_id);
+        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+        $canon_list = $canonLookupRepository->findList([$person_id], null);
+        // dd($ids, $person_id, $canon_list);
 
-        // collect external URLs
-        $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
-        $urlByType = $urlExternalRepository->groupByType($person_id);
-        $person->setUrlByType($urlByType);
+        // extract Person object to be compatible with bishops
+        $personName = $canon_list[0]->getPersonName();
+        $personRole = array_map(function($el) {
+            return $el->getPerson();
+        }, $canon_list);
 
-        // collect office data in an array of Items
-        $item = $service->getCanonOfficeData($person);
+        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
+        $itemReferenceRepository->setReferenceVolume($personRole);
 
-        // collect comments, name variants from other sources
-        $sibling = $service->getSibling($person);
-        $person->setSibling($sibling);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+        $urlByType = $urlExternalRepository->groupByType($personName->getId());
+        $personName->setUrlByType($urlByType);
+
+        // * version before 2022-07-18
+        // // get person (name, date of birth ...)
+        // $personRepository = $entityManager->getRepository(Person::class);
+        // $person = $personRepository->find($person_id);
+
+        // // collect external URLs
+        // $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
+        // $urlByType = $urlExternalRepository->groupByType($person_id);
+        // $person->setUrlByType($urlByType);
+
+        // // collect office data in an array of Items
+        // $item = $service->getCanonOfficeData($person);
+
+        // // collect comments, name variants from other sources
+        // $sibling = $service->getSibling($person);
+        // $person->setSibling($sibling);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
-            'person' => $person,
-            'item' => $item,
+            'personName' => $personName,
+            'personRole' => $personRole,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
         ]);
@@ -181,24 +194,17 @@ class CanonController extends AbstractController {
      * @Route("/domherr/data", name="canon_query_data")
      */
     public function queryData(Request $request,
-                              CanonLookupRepository $repository,
-                              ItemService $itemService,
-                              PersonRepository $personRepository,
+                              EntityManagerInterface $em,
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = new CanonFormModel();
-            $form = $this->createForm(CanonFormType::class, $model);
-            $form->handleRequest($request);
-            $model = $form->getData();
+            $model = CanonFormModel::newByArray($request->request->get('canon_form'));
             $format = $request->request->get('format');
+
         } else {
             $model = CanonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
-
-
-        $ids = $repository->canonIds($model);
 
 
         $format = ucfirst(strtolower($format));
@@ -206,19 +212,53 @@ class CanonController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
+        $canonLookupRepository = $em->getRepository(CanonLookup::class);
+        $itemReferenceRepository = $em->getRepository(ItemReference::class);
+
+        $id_all = $canonLookupRepository->canonIds($model);
+
+
+        $chunk_offset = 0;
+        $limit = 50;
+        // split up in chunks
+        $id_list = array_slice($id_all, $chunk_offset, $limit);
         $node_list = array();
-        foreach ($ids as $id) {
+        while (count($id_list) > 0) {
 
-            $person = $personRepository->find($id['personIdName']);
+            $canon_list = $canonLookupRepository->findList($id_list, null);
 
-            // collect office data in an array of Items
-            $item_list = $itemService->getCanonOfficeData($person);
-            $node_list[] = $personService->personData($format, $person, $item_list);
+            $canon_personName = array_filter($canon_list, function($el) {
+                return $el->getPrioRole() == 1;
+            });
+
+            // find all sources (persons with roles) for the elements of $canon_personName
+            foreach($canon_personName as $personName) {
+                // get roles
+                $personIdName = $personName->getPersonIdName();
+                $canon_personRole = array_filter($canon_list, function($el) use ($personIdName) {
+                    return $el->getPersonIdName() == $personIdName;
+                });
+                $personRole = array();
+                foreach($canon_personRole as $canon) {
+                    $personRole[] = $canon->getPerson();
+                }
+                // not really expensive
+                $itemReferenceRepository->setReferenceVolume($personRole);
+                // build nodes
+                $node_canon = $personService->personData($format, $personName->getPerson(), $personRole);
+                $node_list[] = $node_canon;
+
+            }
+            $chunk_offset += $limit;
+            $id_list = array_slice($id_all, $chunk_offset, $limit);
         }
+
+        // return $this->render("base.html.twig"); # debug; check performance
 
         return $personService->createResponse($format, $node_list);
 
     }
+
 
     /**
      * AJAX

@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\ItemType;
+use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Diocese;
 use App\Entity\CanonLookup;
@@ -13,7 +14,6 @@ use App\Entity\PlaceIdExternal;
 use App\Repository\PersonRepository;
 
 use App\Service\PersonService;
-use App\Service\ItemService;
 use App\Service\DioceseService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,18 +23,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+use Doctrine\ORM\EntityManagerInterface;
+
 
 class IdController extends AbstractController {
     private $personService;
     private $dioceseService;
-    private $itemService;
+    private $entityManager;
 
     public function __construct(PersonService $personService,
                                 DioceseService $dioceseService,
-                                ItemService $itemService) {
+                                EntityManagerInterface $entityManager) {
         $this->personService = $personService;
         $this->dioceseService = $dioceseService;
-        $this->itemService = $itemService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -49,9 +51,8 @@ class IdController extends AbstractController {
         // $format = $request->request->get('format') ?? 'html';
         $format = $request->query->get('format') ?? 'html';
 
-        $dcn = $this->getDoctrine();
-        $itemRepository = $dcn->getRepository(Item::class);
-        $itemTypeRepository = $dcn->getRepository(ItemType::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $itemTypeRepository = $this->entityManager->getRepository(ItemType::class);
 
         $itemResult = $itemRepository->findByIdPublic($id);
 
@@ -76,15 +77,17 @@ class IdController extends AbstractController {
 
     public function bishop($id, $format) {
 
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
 
         $person = $personRepository->find($id);
         // collect office data in an array of Items
-        $item_list = $this->itemService->getBishopOfficeData($person);
+        $personRole = $itemRepository->getBishopOfficeData($person);
 
 
         if ($format == 'html') {
-            $person->setSibling($this->itemService->getSibling($person));
+
+            $itemRepository->setSibling($person);
 
             return $this->render('bishop/person.html.twig', [
                 'person' => $person,
@@ -96,16 +99,14 @@ class IdController extends AbstractController {
             }
 
             // build data array
-            $node_list = array();
-            $node_list[] = $this->personService->personData($format, $person, $item_list);
+            $node_list = [$this->personService->personData($format, $person, $personRole)];
 
             return $this->personService->createResponse($format, $node_list);
         }
     }
 
     public function diocese($id, $format) {
-        $repository = $this->getDoctrine()
-                           ->getRepository(Diocese::class);
+        $repository = $this->entityManager->getRepository(Diocese::class);
 
         $diocese = $repository->dioceseWithBishopricSeatById($id);
 
@@ -130,27 +131,34 @@ class IdController extends AbstractController {
         return $this->canon($id, $format);
     }
 
+    /**
+     *
+     */
     public function canon($id, $format) {
 
-        $canonLookupRepository = $this->getDoctrine()->getRepository(CanonLookup::class);
-        $person_id_name = $canonLookupRepository->findPersonIdName($id);
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+        $canon_list = $canonLookupRepository->findList([$id], null);
+        // dd($ids, $person_id, $canon_list);
 
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
-        $person = $personRepository->find($person_id_name);
-        // collect external URLs
-        $urlExternalRepository = $this->getDoctrine()->getRepository(UrlExternal::class);
-        $urlByType = $urlExternalRepository->groupByType($id);
-        $person->setUrlByType($urlByType);
+        // extract Person object to be compatible with bishops
+        $personName = $canon_list[0]->getPersonName();
+        $personRole = array_map(function($el) {
+            return $el->getPerson();
+        }, $canon_list);
 
-        // collect office data in an array of Items
-        $item_list = $this->itemService->getCanonOfficeData($person);
+        $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
+        $itemReferenceRepository->setReferenceVolume($personRole);
+
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+        $urlByType = $urlExternalRepository->groupByType($personName->getId());
+        $personName->setUrlByType($urlByType);
 
 
         if ($format == 'html') {
 
             return $this->render('canon/person.html.twig', [
-                'person' => $person,
-                'item' => $item_list,
+                'personName' => $personName,
+                'personRole' => $personRole,
             ]);
 
 
@@ -160,25 +168,20 @@ class IdController extends AbstractController {
             }
 
             // build data array
-            $node_list = array();
-            $node_list[] = $this->personService->personData($format, $person, $item_list);
+            $node_list = [$this->personService->personData($format, $personName, $personRole)];
 
             return $this->personService->createResponse($format, $node_list);
         }
     }
 
-
-
     public function priest_ut($id, $format) {
-        $personRepository = $this->getDoctrine()
-                           ->getRepository(Person::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
 
         $person = $personRepository->findWithOffice($id);
-        $personRepository->addReferenceVolumes($person);
+        $this->entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
-            $pieRepository = $this->getDoctrine()
-                                  ->getRepository(PlaceIdExternal::class);
+            $pieRepository = $this->entityManager->getRepository(PlaceIdExternal::class);
             foreach ($birthplace as $bp) {
                 $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
             }
@@ -195,9 +198,7 @@ class IdController extends AbstractController {
             }
 
             // build data array
-            $node_list = array();
-            $item_list = [$person->getItem()];
-            $node_list[] = $this->personService->personData($format, $person, $item_list);
+            $node_list = [$this->personService->personData($format, $person, [$person])];
 
             return $this->personService->createResponse($format, $node_list);
 

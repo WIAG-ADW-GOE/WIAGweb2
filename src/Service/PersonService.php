@@ -138,19 +138,19 @@ class PersonService {
     }
 
     /**
-     * @return node list with structured data for a person with office data in `item_list`.
+     * @return node list with structured data for a person with office data in `personRole`
      */
-    public function personData($format, $person, $item_list) {
+    public function personData($format, $person, $personRole) {
         switch ($format) {
         case 'Json':
         case 'Csv':
-            return $this->personDataPlain($person, $item_list);
+            return $this->personDataPlain($person, $personRole);
             break;
         case 'Jsonld':
-            return $this->personJSONLinkedData($person, $item_list);
+            return $this->personJSONLinkedData($person, $personRole);
             break;
         case 'Rdf':
-            return $this->personLinkedData($person, $item_list);
+            return $this->personLinkedData($person, $personRole);
             break;
         default:
             return null;
@@ -160,20 +160,20 @@ class PersonService {
     /**
      * personDataPlain
      *
-     * build data array for `person` with office data in `item_list`
+     * build data array for `person` with office data in `personRole`
      */
-    public function personDataPlain($person, $item_list) {
+    public function personDataPlain($person, $personRole) {
 
         $pj = array();
         $pj['wiagId'] = $person->getItem()->getIdPublic();
 
         $fv = $person->getFamilyname();
-        if($fv) $pj['familyName'] = $fv;
+        if ($fv) $pj['familyName'] = $fv;
 
         $pj['givenName'] = $person->getGivenname();
 
         $fv = $person->getPrefixName();
-        if($fv) $pj['prefix'] = $fv;
+        if ($fv) $pj['prefix'] = $fv;
 
         $fv = $person->getFamilynameVariants();
         $fnvs = array();
@@ -181,7 +181,7 @@ class PersonService {
             $fnvs[] = $fvi->getName();
         }
 
-        if($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
+        if ($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
 
         $fv = $person->getGivennameVariants();
 
@@ -190,7 +190,7 @@ class PersonService {
             $fnvs[] = $fvi->getName();
         }
 
-        if($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
+        if ($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
 
         $fv = $person->getNoteName();
         if($fv) $pj['noteName'] = $fv;
@@ -223,9 +223,9 @@ class PersonService {
         // roles (offices)
 
         $nd = array();
-        foreach ($item_list as $item) {
-            $role_list = $item->getPerson()->getRole();
-            $ref_list = $item->getReference();
+        foreach ($personRole as $person_loop) {
+            $role_list = $person_loop->getRole();
+            $ref_list = $person_loop->getItem()->getReference();
             foreach ($role_list as $role) {
                 $fv = $this->roleData($role, $ref_list);
                 if ($fv) $nd[] = $fv;
@@ -236,7 +236,7 @@ class PersonService {
             # references are part of the role node
             $pj['offices'] = $nd;
         } else {
-            $ref_list = $item_list[0]->getReference();
+            $ref_list = $person->getItem()->getReference();
             if ($ref_list) {
                 $pj['references'] = $this->referenceData($ref_list);
             }
@@ -245,7 +245,7 @@ class PersonService {
         // extra properties for priests in Utrecht
         // ordination
         $nd = array();
-        $itemProp = $item->combineItemProperty();
+        $itemProp = $person->getItem()->combineItemProperty();
         if (array_key_exists('ordination_priest', $itemProp)) {
             $nd['office'] = $itemProp['ordination_priest'];
         }
@@ -275,7 +275,7 @@ class PersonService {
 
     }
 
-    public function personLinkedData($person, $item_list) {
+    public function personLinkedData($person, $personRole) {
         $pld = array();
 
         $gfx = "gndo:";
@@ -435,9 +435,9 @@ class PersonService {
 
         // offices
         $descOffices = array();
-        foreach ($item_list as $item) {
-            $role_list = $item->getPerson()->getRole();
-            $ref_list = $item->getReference();
+        foreach ($personRole as $person_loop) {
+            $role_list = $person_loop->getRole();
+            $ref_list = $person_loop->getItem()->getReference();
 
             foreach($role_list as $oc) {
                 $roleNodeId = uniqid('role');
@@ -455,7 +455,7 @@ class PersonService {
 
         // add reference(s) in case there are no offices
         if (count($descOffices) == 0) {
-            $ref_list = $item->getReference();
+            $ref_list = $person->getItem()->getReference();
             if ($ref_list) {
                 // references
                 $nd = $this->referenceCitation($ref_list);
@@ -554,22 +554,24 @@ class PersonService {
         foreach ($ref_list as $ref) {
             // citation
             $vol = $ref->getReferenceVolume();
-            $cce = [$vol->getFullCitation()];
-            $ce = $ref->getPagePlain();
-            if ($ce) {
-                $cce[] = "S. ".$ce;
+            if ($vol) {
+                $cce = [$vol->getFullCitation()];
+                $ce = $ref->getPagePlain();
+                if ($ce) {
+                    $cce[] = "S. ".$ce;
+                }
+                $ce = $ref->getIdInReference();
+                if ($ce) {
+                    $cce[] = "ID/Nr. ".$ce;
+                }
+                $nd[] = implode(', ', $cce);
             }
-            $ce = $ref->getIdInReference();
-            if ($ce) {
-                $cce[] = "ID/Nr. ".$ce;
-            }
-            $nd[] = implode(', ', $cce);
         }
         return $nd;
     }
 
 
-    public function personJSONLinkedData($person, $item_list) {
+    public function personJSONLinkedData($person, $personRole) {
         $pld = array();
 
         $gfx = "gndo:";
@@ -723,9 +725,9 @@ class PersonService {
         // roles (offices)
 
         $nd = array();
-        foreach ($item_list as $item) {
-            $role_list = $item->getPerson()->getRole();
-            $ref_list = $item->getReference();
+        foreach ($personRole as $person_loop) {
+            $role_list = $person_loop->getRole();
+            $ref_list = $person_loop->getItem()->getReference();
             foreach ($role_list as $role) {
                 $fv = $this->jsonRoleNode($role, $ref_list);
                 if ($fv) $nd[] = $fv;
@@ -735,7 +737,7 @@ class PersonService {
         if ($nd) {
             $pld[$scafx.'hasOccupation'] = $nd;
         } else { # add reference(s) in case there are no offices
-            $ref_list = $item_list[0]->getReference();
+            $ref_list = $person->getItem()->getReference();
             if ($ref_list) {
                 // references
                 $nd = $this->referenceCitation($ref_list);
@@ -860,27 +862,32 @@ class PersonService {
 
         foreach ($ref_list as $ref) {
             $rd = array();
+            $cce = array();
             // citation
             $vol = $ref->getReferenceVolume();
-            $cce = [$vol->getFullCitation()];
-            $ce = $ref->getPagePlain();
-            if ($ce) {
-                $cce[] = "S. ".$ce;
-            }
-            $ce = $ref->getIdInReference();
-            if ($ce) {
-                $cce[] = "ID/Nr. ".$ce;
-            }
-            $rd['citation'] = implode(', ', $cce);
-            // authorOrEditor, RiOpac, shortTitle
-            $rd['authorOrEditor'] = $vol->getAuthorEditor();
-            $fvi = $vol->getRiOpacId();
-            if ($fvi) {
-                $rd['RiOpac'] = $fvi;
-            }
-            $fvi = $vol->getTitleShort();
-            if ($fvi) {
-                $rd['shortTitle'] = $fvi;
+
+            if ($vol) {
+                $cce = [$vol->getFullCitation()];
+
+                $ce = $ref->getPagePlain();
+                if ($ce) {
+                    $cce[] = "S. ".$ce;
+                }
+                $ce = $ref->getIdInReference();
+                if ($ce) {
+                    $cce[] = "ID/Nr. ".$ce;
+                }
+                $rd['citation'] = implode(', ', $cce);
+                // authorOrEditor, RiOpac, shortTitle
+                $rd['authorOrEditor'] = $vol->getAuthorEditor();
+                $fvi = $vol->getRiOpacId();
+                if ($fvi) {
+                    $rd['RiOpac'] = $fvi;
+                }
+                $fvi = $vol->getTitleShort();
+                if ($fvi) {
+                    $rd['shortTitle'] = $fvi;
+                }
             }
             $nd[] = $rd;
         }

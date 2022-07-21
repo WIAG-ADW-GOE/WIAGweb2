@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Entity\Item;
+
 use App\Repository\PersonRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -139,7 +141,7 @@ class Person
     /**
      * data from alternative source (canon)
      */
-    private $sibling = null;
+    private ?Person $sibling = null;
 
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
@@ -395,6 +397,11 @@ class Person
         return $this;
     }
 
+    public function getSource() {
+        $typeId = $this->itemTypeId;
+        return $typeId ? array_flip(Item::ITEM_TYPE_ID)[$typeId] : null;
+    }
+
     public function getUrlByType(): ?array
     {
         return $this->urlByType;
@@ -405,7 +412,7 @@ class Person
         return $this;
     }
 
-    private function combineData($a, $b) {
+    static private function combineData($a, $b) {
         if (is_null($a)) {
             return $b;
         }
@@ -418,14 +425,20 @@ class Person
         return $a.'/'.$b;
     }
 
-    // combine names, dates, ... from different sources
-    public function get($field) {
+    /**
+     * combine names, dates, ... from different sources
+     */
+    public function combine($field) {
         $getfnc = 'get'.ucfirst($field);
 
         if (is_null($this->sibling)) {
             return $this->$getfnc();
         }
         return $this->combineData($this->$getfnc(), $this->sibling->$getfnc());
+    }
+
+    public function getSibling(): ?Person {
+        return $this->sibling;
     }
 
     public function setSibling($sibling): self {
@@ -472,8 +485,8 @@ class Person
         $eltCands = [
             $strGnVariants,
             $strFnVariants,
-            $this->get('noteName'),
-            $this->get('notePerson'),
+            $this->combine('noteName'),
+            $this->combine('notePerson'),
         ];
         // dump($eltCands);
 

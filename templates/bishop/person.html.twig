@@ -6,11 +6,11 @@
 {% endblock %}
 
 {% block body %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
-    {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+    {% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
+    {% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
     {# person is passed as an object #}
-    {% if not person%}
+    {% if not personName %}
 	<p class="em">Person nicht gefunden.</p>
     {% else %}
 	{% set btnpanel %}
@@ -33,7 +33,7 @@
 		    {format: 'Json', text: 'JSON'},
 		    {format: 'Jsonld', text: 'JSON-LD'},
 		] %}
-		    <a href="{{ path('id', {id: person.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
+		    <a href="{{ path('id', {id: personName.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
 		{% endfor %}
 	    </div>
 	</div>
@@ -49,31 +49,31 @@
 	    </div>
 	    {{ btnpanel }}
 	    {# name, comments, dates of birth and death #}
-	    {{ include('person/_person_header.html.twig', {person: person, idpublic: person.item.idpublic }, with_context = false) }}
+	    {{ include('person/_person_header.html.twig', {person: personName, idpublic: personName.item.idpublic }, with_context = false) }}
 	    {# offices #}
-	    {% for item_loop in item %}
+	    {% for person_loop in personRole %}
 		{% set office_title = '' %}
-		{% if item_loop.getsource == 'Bischof' %}
+		{% if person_loop.getsource == 'Bischof' %}
 		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
-		{% elseif item_loop.getsource == 'Domherr' %}
+		{% elseif person_loop.getsource == 'Domherr' %}
 		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
-		{% elseif item_loop.getsource == 'Bischof GS' or item_loop.getsource == 'Domherr GS' %}
-		    {% set gsnid = item_loop.getidexternalobj('GS') %}
+		{% elseif person_loop.getsource == 'Bischof GS' or person_loop.getsource == 'Domherr GS' %}
+		    {% set gsnid = person_loop.item.getidexternalobj('GS') %}
 		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 		{% endif %}
 		{{ include('person/_person_role_group.html.twig', {
-		    person: item_loop.person,
+		    person: person_loop,
 		    title: office_title,
 		    with_context: false
 		}) }}
 	    {% endfor %}
 
 	    {# external IDs #}
-	    {% if person.item.idExternal %}
+	    {% if personName.item.idExternal %}
 		<div class="row mx-2 mt-3 mb-2">
 		    <div class="col-12">
 			{{ include('person/_person_id_external.html.twig', {
-			    ids: person.item.idExternal
+			    ids: personName.item.idExternal
 			}) }}
 		    </div>
 		</div>

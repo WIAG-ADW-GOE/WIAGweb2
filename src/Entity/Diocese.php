@@ -278,7 +278,7 @@ class Diocese
         foreach ($this->altLabels as $label) {
             $lang = $label->getLang();
             $labelTxt = $label->getLabel();
-            $cLabel[] = $lang ? $labelTxt.' ('.$lang.' )' : $labelTxt;
+            $cLabel[] = $lang ? $labelTxt.' ('.$lang.')' : $labelTxt;
         }
 
         return implode("; ", $cLabel);
