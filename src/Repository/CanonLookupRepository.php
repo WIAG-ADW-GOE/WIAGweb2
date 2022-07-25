@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\CanonLookup;
 use App\Entity\Item;
+use App\Entity\ReferenceVolume;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\InstitutionPlace;
@@ -355,10 +356,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $canon_list = $query->getResult();
 
-        if (!is_null($prio_role)) {
-            // restore order as in $id_list
-            $canon_list = $this->utilService->reorder($canon_list, $id_list, "personIdName");
-        }
+        $canon_list = $this->utilService->reorder($canon_list, $id_list, "personIdName");
 
         $em = $this->getEntityManager();
 
@@ -369,17 +367,38 @@ class CanonLookupRepository extends ServiceEntityRepository
         $this->setOtherSource($canon_list);
 
         $itemRepository = $em->getRepository(Item::class);
-        // set sibling (works also for bishops)
+        // set sibling (only relevant for bishops)
         foreach($canon_list as $canon) {
-            $personName = $canon->getPersonName();
-            $itemRepository->setSibling($personName);
+            $person = $canon->getPersonName();
+            if ($person->getSource() == 'Bischof') {
+                $itemRepository->setSibling($person);
+            }
         }
 
+        // set reference Volumes
+        $person_list = $this->getPersonList($canon_list);
+        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($person_list);
+
+        // set place names
         $role_list = $this->getRoleList($canon_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
+
+
         return $canon_list;
 
+    }
+
+    /**
+     *
+     */
+    public function getPersonList($canon_list) {
+        $person_list = array_map(function($el) {
+            # array_merge accepts only an array
+            return $el->getPerson();
+        }, $canon_list);
+
+        return $person_list;
     }
 
     /**
@@ -458,9 +477,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         //         $canon_last = $res_loop;
         //     }
         // }
-
-
-
 
     }
 

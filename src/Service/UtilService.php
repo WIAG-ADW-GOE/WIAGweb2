@@ -88,6 +88,7 @@ class UtilService {
 
         return $is_less;
     }
+
     /**
      * use criteria in $crit_list to sort $list (array of arrays)
      */
@@ -96,8 +97,14 @@ class UtilService {
             $cmp_val = 0;
             $f_dump = false;
             foreach ($crit_list as $field) {
-                $a_val = $a[$field];
-                $b_val = $b[$field];
+                $getfnc = 'get'.ucfirst($field);
+                if (is_object($a)) {
+                    $a_val = $a->$getfnc();
+                    $b_val = $b->$getfnc();
+                } else {
+                    $a_val = $a[$field];
+                    $b_val = $b[$field];
+                }
                 // sort null last
                 if (is_null($a_val) && !is_null($b_val)) {
                     $is_less = false;
@@ -129,20 +136,62 @@ class UtilService {
     }
 
     /**
+     * use criteria in $crit_list to sort $list (array of arrays)
+     */
+    public function sortByDomstift($list, $domstift) {
+        uasort($list, function($a, $b) use ($domstift) {
+
+            $a_inst = $a->getInstitution();
+            $a_val = $a_inst ? $a_inst->getName() : null;
+            $b_inst = $b->getInstitution();
+            $b_val = $b_inst ? $b_inst->getName() : null;
+
+            $domstift_long = 'Domstift '.ucfirst($domstift);
+
+            // sort null last
+            if (is_null($a_val) && !is_null($b_val)) {
+                return 1;
+            }
+
+            if (is_null($b_val) && !is_null($a_val)) {
+                return -1;
+            }
+
+            if ($a_val == $domstift || $a_val == $domstift_long) {
+                if ($b_val == $domstift || $b_val == $domstift_long) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } elseif ($b_val == $domstift || $b_val == $domstift_long) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
+        return $list;
+    }
+
+    /**
      * use $field to reorder $list
+     *
+     * An index in $sorted may occur several times as a value in $list
      */
     public function reorder($list, $sorted, $field = "id") {
-        $sorted_flip = array_flip($sorted);
-        $reordered = array();
+        // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
-        foreach($list as $el) {
-            $key = $sorted_flip[$el->$getfnc()];
-            // dump($key);
-            $reordered[$key] = $el;
-        }
+        $idx_map = array_flip($sorted);
 
-        ksort($reordered);
-        return $reordered;
+        uasort($list, function($a, $b) use ($idx_map, $getfnc) {
+            $idx_a = $idx_map[$a->$getfnc()];
+            $idx_b = $idx_map[$b->$getfnc()];
+
+            $cmp_val =  $idx_a == $idx_b ? 0 : ($idx_a < $idx_b ? -1 : +1);
+            return $cmp_val;
+        });
+
+        return $list;
     }
 
 }

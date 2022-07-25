@@ -13,6 +13,7 @@ use App\Entity\PlaceIdExternal;
 
 use App\Repository\PersonRepository;
 
+use App\Service\UtilService;
 use App\Service\PersonService;
 use App\Service\DioceseService;
 
@@ -28,13 +29,16 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class IdController extends AbstractController {
     private $personService;
+    private $utilService;
     private $dioceseService;
     private $entityManager;
 
     public function __construct(PersonService $personService,
+                                UtilService $utilService,
                                 DioceseService $dioceseService,
                                 EntityManagerInterface $entityManager) {
         $this->personService = $personService;
+        $this->utilService = $utilService;
         $this->dioceseService = $dioceseService;
         $this->entityManager = $entityManager;
     }
@@ -90,8 +94,8 @@ class IdController extends AbstractController {
             $itemRepository->setSibling($person);
 
             return $this->render('bishop/person.html.twig', [
-                'person' => $person,
-                'item' => $item_list,
+                'personName' => $person,
+                'personRole' => $personRole,
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
@@ -141,6 +145,7 @@ class IdController extends AbstractController {
         // dd($ids, $person_id, $canon_list);
 
         // extract Person object to be compatible with bishops
+        $canon_list = $this->utilService->sortByFieldList($canon_list, ['prioRole']);
         $personName = $canon_list[0]->getPersonName();
         $personRole = array_map(function($el) {
             return $el->getPerson();

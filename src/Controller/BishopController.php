@@ -103,7 +103,7 @@ class BishopController extends AbstractController {
      * @Route("/bischof/listenelement", name="bishop_list_detail")
      */
     public function bishopListDetail(Request $request,
-                                     ItemRepository $repository,
+                                     ItemRepository $itemRepository,
                                      PersonRepository $personRepository) {
 
         $model = new BishopFormModel;
@@ -118,15 +118,15 @@ class BishopController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $repository->bishopIds($model,
-                                           2,
-                                           $offset);
+            $ids = $itemRepository->bishopIds($model,
+                                              2,
+                                              $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $repository->bishopIds($model,
-                                           3,
-                                           $offset - 1);
+            $ids = $itemRepository->bishopIds($model,
+                                              3,
+                                              $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
             $idx += 1;
         }
@@ -135,7 +135,7 @@ class BishopController extends AbstractController {
         $person = $personRepository->find($person_id);
 
         // collect office data in Person[]
-        $personRole = $repository->getBishopOfficeData($person);
+        $personRole = $itemRepository->getBishopOfficeData($person);
 
         $repository->setSibling($person);
 

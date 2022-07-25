@@ -101,12 +101,13 @@ class CanonLookup
         return $this->personIdRole;
     }
 
-    public function setCanonGs(?int $personIdRole): self
-    {
-        $this->personIdRole = $personIdRole;
+    // 2022-07-25 obsolete?
+    // public function setCanonGs(?int $personIdRole): self
+    // {
+    //     $this->personIdRole = $personIdRole;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function getPrioRole(): ?int
     {
@@ -132,17 +133,18 @@ class CanonLookup
         return $this;
     }
 
-    public function getItemTypeId()
-    {
-        return $this->itemTypeId;
-    }
+    // 2022-07-25 obsolete?
+    // public function getItemTypeId()
+    // {
+    //     return $this->itemTypeId;
+    // }
 
-    public function setItemTypeId($itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
+    // public function setItemTypeId($itemTypeId): self
+    // {
+    //     $this->itemTypeId = $itemTypeId;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function getOtherSource(): bool {
         return $this->otherSource;

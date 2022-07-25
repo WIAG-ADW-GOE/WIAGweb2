@@ -71,4 +71,46 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
 
         return $query->getOneOrNullResult();
     }
+
+    /**
+     *
+     */
+    public function setReferenceVolume($person_list) {
+        // an entry in item_reference belongs to one item at most
+        $item_ref_list_meta = array();
+        foreach ($person_list as $p) {
+            $item_ref_list_meta[] = $p->getItem()->getReference()->toArray();
+        }
+        $item_ref_list = array_merge(...$item_ref_list_meta);
+
+        $item_type_list = array();
+        foreach ($item_ref_list as $ref) {
+            $item_type_list[] = $ref->getItemTypeId();
+        }
+        $item_type_list = array_unique($item_type_list);
+
+
+        $qb = $this->createQueryBuilder('r')
+                   ->select('r')
+                   ->andWhere('r.itemTypeId in (:item_type_list)')
+                   ->setParameter('item_type_list', $item_type_list);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // the result list is not large so the filter will be efficient enough
+
+        foreach ($item_ref_list as $ref) {
+            $item_type_id = $ref->getItemTypeId();
+            $ref_id = $ref->getReferenceId();
+            $vol = array_filter($result, function($el) use ($item_type_id, $ref_id) {
+                return ($el->getReferenceId() == $ref_id) && ($el->getItemTypeId() == $item_type_id);
+            });
+            $vol_obj = !is_null($vol) ? array_values($vol)[0] : null;
+            $ref->setReferenceVolume($vol_obj);
+        }
+
+        return null;
+
+    }
 }
