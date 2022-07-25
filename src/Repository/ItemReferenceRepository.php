@@ -48,9 +48,10 @@ class ItemReferenceRepository extends ServiceEntityRepository
     }
     */
 
-
     /**
+     * set references for items in $person_list
      *
+     * (usually the elements of $person_list are all related to one canon)
      */
     public function setReferenceVolume($person_list) {
         // an entry in item_reference belongs to one item at most

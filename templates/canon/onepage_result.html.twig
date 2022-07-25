@@ -24,10 +24,14 @@
 			<h1>Domherren</h1>
 		    {% endif %}
 		</div>
-		{% for canon in canon_list %}
-		    {% set person=canon['person'] %}
-		    {% set item=canon['item'] %}
-		    {% set id_public=person.item.idpublic %}
+		{% for node in canon_node_list %}
+		    {# 2022-07-12 prefer name as stored in Domherrendatenbank #}
+		    {% set id_public=node.personName.personName.item.idpublic %}
+		    {% if node.personName.personName.sibling and false %}
+			{% set person=node.personName.personName.sibling %}
+		    {% else %}
+			{% set person=node.personName.personName %}
+		    {% endif %}
 		    {% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
 
 		    {# name, dates of birth and death #}
@@ -53,52 +57,52 @@
 			{% endif %}
 		    </div>
 
-		    {# offices and references#}
-		    {% for item_loop in item %}
-			{# offices, parameter: item #}
-			<div class="row col-12 mx-2">
-			    {% if item_loop.itemTypeID == 6 %}
-				<div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ item_loop.UriExternalByAuthorityId(200) }}"> GSN {{ item_loop.IdExternalByAuthorityId(200) }}</a></h4></div>
-			    {% endif %}
-			    {% if item_loop.itemTypeID == 4 %}
-				<div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ path('id', {id: item_loop.idPublic}) }}">{{ item_loop.idPublic}}</a></h4></div>
-			    {% endif %}
-			    {% for o in item_loop.person.role %}
-				<div custom-style="Aemter">
-				    {% set datestr=null %}
-				    {% if not o.datebegin and not o.dateend %}
-				    {% elseif o.datebegin and not o.dateend %}
-					{% set datestr=o.datebegin %}
-				    {% elseif not o.datebegin and o.dateend %}
-					{% set datestr=o.dateend %}
-				    {% else %}
-					{% set datestr=o.datebegin~'&nbsp;-&nbsp;'~o.dateend %}
-				    {% endif %}
+		    {# offices and references #}
+		    {% for person_loop in node.personRole %}
+		    {# offices, parameter: item #}
+		    <div class="row col-12 mx-2">
+			{% if person_loop.itemTypeID == 6 %}
+			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ person_loop.item.UriExternalByAuthorityId(200) }}"> GSN {{ person_loop.item.IdExternalByAuthorityId(200) }}</a></h4></div>
+			{% endif %}
+			{% if person_loop.itemTypeID == 4 %}
+			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ path('id', {id: person_loop.item.idPublic}) }}">{{ person_loop.item.idPublic}}</a></h4></div>
+			{% endif %}
+			{% for o in person_loop.role %}
+			    <div custom-style="Aemter" class="d-flex">
+				{% set datestr=null %}
+				{% if not o.datebegin and not o.dateend %}
+				{% elseif o.datebegin and not o.dateend %}
+				    {% set datestr=o.datebegin %}
+				{% elseif not o.datebegin and o.dateend %}
+				    {% set datestr=o.dateend %}
+				{% else %}
+				    {% set datestr=o.datebegin~'-'~o.dateend %}
+				{% endif %}
 
-				    {% set orgstr=null %}
-				    {% if o.diocesename and not o.institutionid %}
-					{% set orgstr=o.diocesename %}
-				    {% endif %}
-				    {% if o.institutionid %}
-					{% set orgstr=o.institution.name ?: o.institutionname %}
-				    {% endif %}
+				{% set orgstr=null %}
+				{% if o.diocesename and not o.institutionid %}
+				    {% set orgstr=o.diocesename %}
+				{% endif %}
+				{% if o.institutionid %}
+				    {% set orgstr=o.institution.name ?: o.institutionname %}
+				{% endif %}
 
-				    {% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}
-				    {{ orgstr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
-				</div>
+				{% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}
+				{{ orgstr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
+			    </div>
+			{% endfor %}
+		    </div>
+		    <div class="row col-12 mx-2">
+			<div custom_style="Compact" class="small mt-2">
+			    {% for ref in person_loop.item.reference %}
+				{% set idinref = ref.idinreference %}
+				{% if ref.referencevolume %}
+				    {{ ref.referencevolume.titleshort }}{% if ref.page %}, S.&nbsp;{{ ref.page|replace({'<b>':'', '</b>':''}) }}{% endif %}{% if idinref %}, ID/Nr.&nbsp;{{ idinref }}{% endif %}{% if not loop.last %} &ndash; {% endif %}
+				{% endif %}
 			    {% endfor %}
 			</div>
-			<div class="row col-12 mx-2">
-			    <div custom_style="Compact" class="small mt-2">
-				{% for ref in item_loop.reference %}
-				    {% set idinref = ref.idinreference %}
-				    {{ ref.referencevolume.titleshort }}{% if ref.page %}, S.&nbsp;{{ ref.page|replace({'<b>':'', '</b>':''}) }} {% endif %}{% if idinref %}, ID/Nr.&nbsp;{{ idinref }}{% endif %}{% if not loop.last %} &ndash; {% endif %}
-				{% endfor %}
-			    </div>
-			</div>
-
+		    </div>
 		    {% endfor %}
-
 		{% endfor %}
 	    </div>
 	{% endblock %}
