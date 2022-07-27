@@ -172,6 +172,32 @@ class Item {
         return $this->reference;
     }
 
+    public function getSortedReference() {
+        // sort by referece_volume.display_order
+
+        $ref_list = $this->reference->toArray();
+        uasort($ref_list, function($a, $b) {
+            $a_vol = $a->getReferenceVolume();
+            $b_vol = $b->getReferenceVolume();
+
+            if (is_null($b_vol)) {
+                return -1;
+            }
+
+            if (is_null($a_vol)) {
+                return 1;
+            }
+
+            if ($a_vol->getDisplayOrder() <= $b_vol->getDisplayOrder()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        return $ref_list;
+    }
+
     public function getPerson() {
         return $this->person;
     }

@@ -84,7 +84,8 @@ class CanonLookupRepository extends ServiceEntityRepository
         // table person (linked via personIdName is always used for sorting
         // all queries are combined at the level of a person, so join it here once and forever
         $qb = $this->createQueryBuilder('c')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName');
+                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
+                   ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName');
 
         $this->addCanonConditions($qb, $model);
         $this->addCanonFacets($qb, $model);
@@ -100,7 +101,6 @@ class CanonLookupRepository extends ServiceEntityRepository
             // sort in an extra step, see below
             // use role with prio 1 for sorting; requires join of CanonLookup to itself
             $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(role_list_view.dateSortKey) as dateSortKey')
-               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                ->join('App\Entity\PersonRole', 'role_list_view',
                       'WITH', 'role_list_view.personId = c_all.personIdRole AND c_all.prioRole = 1')
                ->leftjoin('role_list_view.institution', 'inst_domstift', 'WITH', 'inst_domstift.itemTypeId = :type_domstift')
@@ -109,7 +109,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         } elseif ($place) {
             // use role with prio 1 for sorting; requires join of CanonLookup to itself
             $qb->select('c.personIdName, min(ip.placeName) as placeName, p.givenname, p.familyname, min(role_list_view.dateSortKey) as dateSortKey')
-               ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                ->join('App\Entity\PersonRole', 'role_list_view',
                       'WITH', 'role_list_view.personId = c_all.personIdRole and c_all.prioRole = 1')
                ->groupBy('c.personIdName');
@@ -209,13 +208,12 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         if ($someid || $year || $name) {
             // case name: add p_by_role for sorting
-            $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c.personIdRole');
+            $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c_all.personIdRole');
             if ($someid) {
                 $qb->join('p_by_role.item', 'item')
-                    ->leftJoin('item.idExternal', 'ixt')
-                    ->andWhere("item.idPublic LIKE :q_id ".
+                   ->leftJoin('item.idExternal', 'ixt')
+                   ->andWhere("item.idPublic LIKE :q_id ".
                                "OR ixt.value LIKE :q_id")
-                   ->andWhere('item.idPublic LIKE :q_id')
                    ->setParameter('q_id', '%'.$someid.'%');
             }
             if ($year) {
@@ -281,51 +279,54 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $qb;
     }
 
-    public function findPrioOne($id) {
-        $qb = $this->createQueryBuilder('c')
-                   ->select('c, p')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
-                   ->andWhere('c.personIdName = :id')
-                   ->andWhere('c.prioRole = 1')
-                   ->setParameter('id', $id);
+    /**
+     * 2022-07-14 replaced by findList
+     */
+    // public function findPrioOne($id) {
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select('c, p')
+    //                ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
+    //                ->andWhere('c.personIdName = :id')
+    //                ->andWhere('c.prioRole = 1')
+    //                ->setParameter('id', $id);
 
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        $canon = null;
-        if ($result) {
-            $canon = $result[0];
-            $canon->setPerson($result[1]);
-        }
+    //     $query = $qb->getQuery();
+    //     $result = $query->getResult();
+    //     $canon = null;
+    //     if ($result) {
+    //         $canon = $result[0];
+    //         $canon->setPerson($result[1]);
+    //     }
 
-    }
+    // }
 
     /**
      * find canon with person via personIdName where prioRole == 1
      * 2022-07-14 replaced by findList
      * @return CanonLookup
      */
-    public function findPrioRoleOne($id) {
-        // person can not be retrieved via association, because pesonIdName is not unique
-        $qb = $this->createQueryBuilder('c')
-                   ->select('c, p')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
-                   ->andWhere('c.personIdName = :id')
-                   ->orderBy('c.prioRole')
-                   ->setParameter('id', $id);
+    // public function findPrioRoleOne($id) {
+    //     // person can not be retrieved via association, because pesonIdName is not unique
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select('c, p')
+    //                ->join('App\Entity\Person', 'p', 'WITH', 'c.personIdName = p.id')
+    //                ->andWhere('c.personIdName = :id')
+    //                ->orderBy('c.prioRole')
+    //                ->setParameter('id', $id);
 
-        $query = $qb->getQuery();
+    //     $query = $qb->getQuery();
 
-        $result = $query->getResult();
+    //     $result = $query->getResult();
 
-        $canon = null;
-        if ($result) {
-            $canon = $result[0];
-            $canon->setPerson($result[1]);
-            $canon->setHasSibling(count($result) > 2);
-        }
-        return $canon;
+    //     $canon = null;
+    //     if ($result) {
+    //         $canon = $result[0];
+    //         $canon->setPerson($result[1]);
+    //         $canon->setHasSibling(count($result) > 2);
+    //     }
+    //     return $canon;
 
-    }
+    // }
 
     /**
      * collect data where personIdName is in $id_list
@@ -333,11 +334,12 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function findList($id_list, $prio_role = null) {
         $qb = $this->createQueryBuilder('c')
-                   ->select('c, p, i, ref, id_ex, role, role_type, institution')
+                   ->select('c, p, i, ref, id_ex, i_prop, role, role_type, institution')
                    ->join('c.person', 'p')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.reference', 'ref')
                    ->leftjoin('i.idExternal', 'id_ex')
+                   ->leftjoin('i.itemProperty', 'i_prop')
                    ->join('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
                    ->leftjoin('role.institution', 'institution')
@@ -545,13 +547,15 @@ class CanonLookupRepository extends ServiceEntityRepository
                                'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
                    ->andWhere('item_ref.itemTypeId = :item_type_id')
                    ->setParameter('item_type_id', $item_type_id)
-                   ->addOrderBy('v.referenceId', 'ASC')
-                   ->addOrderBy('v.displayOrder', 'ASC');
+                   ->addOrderBy('v.itemTypeId', 'ASC')
+                   ->addOrderBy('v.displayOrder', 'ASC')
+                   ->addOrderBy('v.referenceId', 'ASC');
 
         $this->addCanonConditions($qb, $model);
 
         $query = $qb->getQuery();
         $result = $query->getResult();
+        dump($result);
 
         return $result;
     }
@@ -584,6 +588,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $domstift_list = $qbi->getQuery()->getResult();
 
         $qb = $this->createQueryBuilder('c')
+            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('pr_count.institutionId AS id, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->andWhere('pr_count.institutionId IN (:instId_list)')
@@ -627,6 +632,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain office facet
 
         $qb = $this->createQueryBuilder('c')
+            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.role', 'role_count');
@@ -650,6 +656,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain place facet
 
         $qb = $this->createQueryBuilder('c')
+            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('ip_count.placeName AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.institution', 'inst_count')
@@ -675,6 +682,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain url facet
 
         $qb = $this->createQueryBuilder('c')
+            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('auth.urlNameFormatter AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\UrlExternal', 'url', 'WITH', 'url.itemId = c.personIdName')
                    ->join('url.authority', 'auth');

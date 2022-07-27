@@ -202,7 +202,7 @@ class CanonController extends AbstractController {
 
         if ($request->isMethod('POST')) {
             $model = CanonFormModel::newByArray($request->request->get('canon_form'));
-            $format = $request->request->get('format');
+            $format = $request->request->get('format') ?? 'json';
 
         } else {
             $model = CanonFormModel::newByArray($request->query->all());
@@ -220,11 +220,10 @@ class CanonController extends AbstractController {
 
         $id_all = $canonLookupRepository->canonIds($model);
 
-
         $chunk_offset = 0;
-        $limit = 50;
+        $chunk_size = 50;
         // split up in chunks
-        $id_list = array_slice($id_all, $chunk_offset, $limit);
+        $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
         $node_list = array();
         while (count($id_list) > 0) {
 
@@ -250,8 +249,8 @@ class CanonController extends AbstractController {
                 $node_list[] = $node_canon;
 
             }
-            $chunk_offset += $limit;
-            $id_list = array_slice($id_all, $chunk_offset, $limit);
+            $chunk_offset += $chunk_size;
+            $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
         }
 
         // return $this->render("base.html.twig"); # debug; check performance
