@@ -1,7 +1,7 @@
 {{ volume.fullcitation }}
 {% for p in pages %}
-    {% if p.isbio %}<span class="text-nowrap">S. <strong>{{ p.page }} </strong></span><a class="btn btn-danger btn-sm" role="button" href="{{ url_gs_bios~volume.gsvolumenr~'/'~p.page }}" target="_blank" rel="noopener"><strong>Biogramm online lesen</strong></a>
+    {% if p.isbio %}<span class="text-nowrap">S. <strong>{{ p.page }} </strong></span><a class="btn btn-danger btn-sm" role="button" href="{{ url_gs_bios~volume.gsvolumenr~'/'~p.page }}" target="_blank" rel="noopener"><strong>Biogramm online lesen</strong></a>{%if not loop.last %},{% endif %}
     {% else %}
-	<span class="text-nowrap">S. {{ p.page }}</span>
-    {% endif %}{%if not loop.last %},{% endif %}
+	<span class="text-nowrap">S. {{ p.page }}{%if not loop.last %},{% endif %}</span>
+    {% endif %}
 {% endfor %}

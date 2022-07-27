@@ -79,7 +79,6 @@ class BishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
-            # TODO 2022-07-15 query all data for ids in $ids (see canon)
             # easy way to get all persons in the right order
             // $person_list = array();
             // foreach($id_list as $id) {
@@ -139,7 +138,7 @@ class BishopController extends AbstractController {
         // collect office data in Person[]
         $personRole = $itemRepository->getBishopOfficeData($person);
 
-        $repository->setSibling($person);
+        $itemRepository->setSibling($person);
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
@@ -158,23 +157,40 @@ class BishopController extends AbstractController {
      * @Route("/bischof/data", name="bishop_query_data")
      */
     public function queryData(Request $request,
-                              ItemRepository $repository,
+                              ItemRepository $itemRepository,
                               PersonRepository $personRepository,
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = new BishopFormModel();
-            $form = $this->createForm(BishopFormType::class, $model);
-            $form->handleRequest($request);
-            $model = $form->getData();
-            $format = $request->request->get('format');
+            $model = BishopFormModel::newByArray($request->request->get('bishop_form'));
+            $format = $request->request->get('format') ?? 'json';
         } else {
             $model = BishopFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
 
-        $ids = $repository->bishopIds($model);
+        $id_all = $itemRepository->bishopIds($model);
 
+        $chunk_offset = 0;
+        $chunk_size = 50;
+        // split up in chunks
+        $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
+        $node_list = array();
+        while (count($id_list) > 0) {
+
+            $person_list = $personRepository->findList($id_list);
+
+            // find all sources (persons with roles) for the elements of $canon_personName
+            foreach($person_list as $person) {
+                // get roles
+                $personRole = $itemRepository->getBishopOfficeData($person);
+                $node = $personService->personData($format, $person, $personRole);
+                $node_list[] = $node;
+
+            }
+            $chunk_offset += $chunk_size;
+            $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
+        }
 
 
         $format = ucfirst(strtolower($format));
@@ -183,15 +199,15 @@ class BishopController extends AbstractController {
         }
 
         // 2022-07-21 collect data in one db-query
-        $node_list = array();
-        foreach ($ids as $id) {
+        // $node_list = array();
+        // foreach ($ids as $id) {
 
-            $person = $personRepository->find($id['personId']);
+        //     $person = $personRepository->find($id['personId']);
 
-            // collect office data in an array of Items
-            $item_list = $repository->getBishopOfficeData($person);
-            $node_list[] = $personService->personData($format, $person, $item_list);
-        }
+        //     // collect office data in an array of Items
+        //     $item_list = $repository->getBishopOfficeData($person);
+        //     $node_list[] = $personService->personData($format, $person, $item_list);
+        // }
 
         return $personService->createResponse($format, $node_list);
 
