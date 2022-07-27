@@ -51,6 +51,10 @@
 			<div custom-style="WiagId" class="d-flex"><a class="ms-auto" href={{ permalink }}>{{ id_public }}</a></div>
 			{# name #}
 			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
+			{% set academicTitle=person.item.itemPropertyValue('academic_title') %}
+			{% if academicTitle %}
+			    <div custom-style="AkadTitel">{{ academicTitle }}</div>
+			{% endif %}
 			{# comments #}
 			{% if person.noteperson %}
 			    <div custom-style="Bemerkung">{{ person.noteperson|protectOrdinal|raw }}</div>
@@ -87,14 +91,16 @@
 				    {% set orgstr=o.institution.name ?: o.institutionname %}
 				{% endif %}
 
-				{% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}
-				{{ orgstr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
+				{% set rolestr=(o.role and o.role.name) ? o.role.name : o.rolename %}
+				{% set rolestr=orgstr ? rolestr~' '~orgstr : rolestr %}
+
+				{{ rolestr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
 			    </div>
 			{% endfor %}
 		    </div>
 		    <div class="row col-12 mx-2">
-			<div custom_style="Compact" class="small mt-2">
-			    {% for ref in person_loop.item.reference %}
+			<div custom-style="Compact" class="small mt-2">
+			    {% for ref in person_loop.item.sortedreference %}
 				{% set idinref = ref.idinreference %}
 				{% if ref.referencevolume %}
 				    {{ ref.referencevolume.titleshort }}{% if ref.page %}, S.&nbsp;{{ ref.page|replace({'<b>':'', '</b>':''}) }}{% endif %}{% if idinref %}, ID/Nr.&nbsp;{{ idinref }}{% endif %}{% if not loop.last %} &ndash; {% endif %}

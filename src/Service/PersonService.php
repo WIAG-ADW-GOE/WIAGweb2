@@ -900,7 +900,7 @@ class PersonService {
      */
     public function itemPropertyText($properties, string $key): ?string {
 
-        if ($key == 'ordination_priest') {
+        if (array_key_exists('ordination_priest', $properties)) {
             $text = 'Weihe zum '.$properties[$key];
             $fv = $properties[$key.'_date'];
             if (!is_null($fv)) {
@@ -916,7 +916,5 @@ class PersonService {
         return null;
 
     }
-
-
 
 };
