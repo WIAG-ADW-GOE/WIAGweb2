@@ -91,8 +91,10 @@
 				    {% set orgstr=o.institution.name ?: o.institutionname %}
 				{% endif %}
 
-				{% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}
-				{{ orgstr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
+				{% set rolestr=(o.role and o.role.name) ? o.role.name : o.rolename %}
+				{% set rolestr=orgstr ? rolestr~' '~orgstr : rolestr %}
+
+				{{ rolestr }}{% if datestr %}, {{ datestr|raw }}{% endif %}{% if o.roleproperty|length > 0 %}, {{ o.roleproperty|map(p => "#{p.name} #{p.value}")|join(', ') }}{% endif %}{% if o.note %} ({{ o.note|protectOrdinal|raw }}){% endif %}
 			    </div>
 			{% endfor %}
 		    </div>
