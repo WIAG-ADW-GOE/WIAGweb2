@@ -81,38 +81,30 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         // TODO (edit) include item->isOnline as criterion
 
-        // table person (linked via personIdName is always used for sorting
-        // all queries are combined at the level of a person, so join it here once and forever
+        // c (group by)
+        // p, r (sort)
         $qb = $this->createQueryBuilder('c')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName AND c.prioRole = 1')
+                   ->join('p.role', 'r')
                    ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName');
 
         $this->addCanonConditions($qb, $model);
         $this->addCanonFacets($qb, $model);
 
+        // sort in an extra step, see below
         if ($domstift) {
-            // sort in an extra step, see below
-            $qb->select('c.personIdName, p.givenname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(role_list_view.dateSortKey) as dateSortKey')
-               ->join('App\Entity\PersonRole', 'role_list_view',
-                      'WITH', 'role_list_view.personId = c.personIdRole AND c.prioRole = 1')
-               ->groupBy('c.personIdName');
+            $qb->select('c.personIdName, p.givenname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey');
         }
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
-            // sort in an extra step, see below
-            // use role with prio 1 for sorting; requires join of CanonLookup to itself
-            $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(role_list_view.dateSortKey) as dateSortKey')
-               ->join('App\Entity\PersonRole', 'role_list_view',
-                      'WITH', 'role_list_view.personId = c_all.personIdRole AND c_all.prioRole = 1')
-               ->leftjoin('role_list_view.institution', 'inst_domstift', 'WITH', 'inst_domstift.itemTypeId = :type_domstift')
-               ->setParameter('type_domstift', ITEM::ITEM_TYPE_ID['Domstift'])
-               ->groupBy('c.personIdName');
+            $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(d.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey')
+               ->leftjoin('r.institution', 'd', 'WITH', 'd.itemTypeId = :type_domstift')
+               ->setParameter('type_domstift', ITEM::ITEM_TYPE_ID['Domstift']);
         } elseif ($place) {
-            // use role with prio 1 for sorting; requires join of CanonLookup to itself
-            $qb->select('c.personIdName, min(ip.placeName) as placeName, p.givenname, p.familyname, min(role_list_view.dateSortKey) as dateSortKey')
-               ->join('App\Entity\PersonRole', 'role_list_view',
-                      'WITH', 'role_list_view.personId = c_all.personIdRole and c_all.prioRole = 1')
+            $qb->select('c.personIdName, min(ip.placeName) as placeName, p.givenname, p.familyname, min(r.dateSortKey) as dateSortKey')
                ->groupBy('c.personIdName');
         }
+
+        $qb->groupBy('c.personIdName');
 
         $query = $qb->getQuery();
 
@@ -162,32 +154,28 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         if ($domstift) {
             // apply query criteria to all roles and join with canon_lookup
-            $qb->innerjoin('\App\Entity\CanonLookup', 'c_q', 'WITH', 'c_q.personIdName = c.personIdName')
-               ->join('App\Entity\PersonRole', 'role', 'WITH', 'role.personId = c_q.personIdRole')
-               ->join('role.institution', 'inst_domstift')
+            $qb->join('App\Entity\PersonRole', 'r_all', 'WITH', 'c_all.personIdRole = r_all.personId')
+               ->join('r_all.institution', 'inst_domstift')
                ->andWhere('inst_domstift.name LIKE :q_domstift')
                ->setParameter('q_domstift', '%'.$domstift.'%');
             // combine queries for domstift and office at the level of PersonRole
             if ($office) {
-                $qb->leftjoin('role.role', 'role_type')
-                   ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
+                $qb->leftjoin('r_all.role', 'role_type')
+                   ->andWhere('r_all.roleName LIKE :q_office OR role_type.name LIKE :q_office')
                    ->setParameter('q_office', '%'.$office.'%');
             }
             $qb->andWhere('inst_domstift.itemTypeId = :itemTypeDomstift')
                ->setParameter('itemTypeDomstift', $itemTypeDomstift);
         } elseif ($office) {
-            $qb->join('App\Entity\PersonRole',
-                      'role',
-                      'WITH',
-                      'role.personId = c.personIdRole')
-               ->leftjoin('role.role', 'role_type', 'WITH')
-               ->andWhere('role.roleName LIKE :q_office OR role_type.name LIKE :q_office')
+            $qb->join('App\Entity\PersonRole', 'r_all', 'WITH', 'c_all.personIdRole = r_all.personId')
+               ->leftjoin('r_all.role', 'role_type')
+               ->andWhere('r_all.roleName LIKE :q_office OR role_type.name LIKE :q_office')
                ->setParameter('q_office', '%'.$office.'%');
         }
 
         if ($place) {
-            // combine queries for place only at the level of Person
-            $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
+            // combine queries for place only at the level of person
+            $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c_all.personIdRole')
                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
                           'role_place.institutionId = ip.institutionId '.
                           'AND ( '.
@@ -201,24 +189,25 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         if ($name) {
-            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
+            $qb->join('App\Entity\canonLookup', 'canon_name', 'WITH', 'c.personIdName = canon_name.personIdName')
+               ->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = canon_name.personIdRole')
                ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
                ->setParameter('q_name', '%'.$name.'%');
         }
 
-        if ($someid || $year || $name) {
-            // case name: add p_by_role for sorting
-            $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c_all.personIdRole');
+        if ($someid || $year) {
+            // year and id are linked now via p_all
+            $qb->join('App\Entity\Person', 'p_all', 'WITH', 'p_all.id = c_all.personIdRole');
             if ($someid) {
-                $qb->join('p_by_role.item', 'item')
+                $qb->join('p_all.item', 'item')
                    ->leftJoin('item.idExternal', 'ixt')
                    ->andWhere("item.idPublic LIKE :q_id ".
                                "OR ixt.value LIKE :q_id")
                    ->setParameter('q_id', '%'.$someid.'%');
             }
             if ($year) {
-                $qb->andWhere("p_by_role.dateMin - :mgnyear < :q_year ".
-                              " AND :q_year < p_by_role.dateMax + :mgnyear")
+                $qb->andWhere("p_all.dateMin - :mgnyear < :q_year ".
+                              " AND :q_year < p_all.dateMax + :mgnyear")
                    ->setParameter('mgnyear', self::MARGINYEAR)
                    ->setParameter('q_year', $year);
             }
