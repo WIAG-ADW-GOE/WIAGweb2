@@ -82,9 +82,9 @@ class CanonLookupRepository extends ServiceEntityRepository
         // TODO (edit) include item->isOnline as criterion
 
         // c (group by)
-        // p, r (sort)
+        // p, r (sort) use person with prioRole 1
         $qb = $this->createQueryBuilder('c')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdName AND c.prioRole = 1')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdRole AND c.prioRole = 1')
                    ->join('p.role', 'r');
 
         $this->addCanonConditions($qb, $model);
@@ -92,7 +92,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         // sort in an extra step, see below
         if ($domstift) {
-            $qb->select('c.personIdName, p.givenname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey');
+            $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey');
         }
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
             $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(d.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey')
@@ -117,8 +117,9 @@ class CanonLookupRepository extends ServiceEntityRepository
             return $el;
         }, $result);
 
+        // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
         if ($model->isEmpty() || $domstift || $office) {
-            $sort_list = ['sort_domstift', 'dateSortKey', 'familyname', 'givenname', 'personIdName'];
+            $sort_list = ['sort_domstift', 'dateSortKey', 'hasFamilyname', 'familyname', 'givenname', 'personIdName'];
         } elseif ($name) {
             $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'sort_domstift', 'dateSortKey', 'personIdName'];
         } elseif ($year) {
@@ -128,7 +129,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         } elseif ($place) {
             $sort_list = ['placeName', 'dateSortKey', 'familyname', 'givenname', 'personIdName'];
         }
-
 
         $result = $this->utilService->sortByFieldList($result, $sort_list);
 

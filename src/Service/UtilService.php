@@ -95,7 +95,6 @@ class UtilService {
     public function sortByFieldList($list, $crit_list) {
         uasort($list, function($a, $b) use ($crit_list) {
             $cmp_val = 0;
-            $f_dump = false;
             foreach ($crit_list as $field) {
                 $getfnc = 'get'.ucfirst($field);
                 if (is_object($a)) {
@@ -106,26 +105,30 @@ class UtilService {
                     $b_val = $b[$field];
                 }
                 // sort null last
+
+                if (is_null($a_val) && is_null($b_val)) {
+                    $cmp_val = 0;
+                    continue;
+                }
+
                 if (is_null($a_val) && !is_null($b_val)) {
-                    $is_less = false;
                     $cmp_val = 1;
                     break;
                 }
 
                 if (is_null($b_val) && !is_null($a_val)) {
-                    $is_less = true;
                     $cmp_val = -1;
                     break;
                 }
 
                 if ($a_val < $b_val) {
                     $cmp_val = -1;
-                    if ($f_dump) dump($a, $b, $cmp_val, $field);
                     break;
                 } elseif ($a_val > $b_val) {
                     $cmp_val = 1;
-                    if ($f_dump) dump($a, $b, $cmp_val, $field);
                     break;
+                } else {
+                    $cmp_val = 0;
                 }
             }
 
