@@ -1,0 +1,95 @@
+<div class="row mx-2 my-2 border rounded">
+    {# header #}
+    {% set online_image = person.item.isonline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+    <div class="col-12 ps-0"
+	 {{ stimulus_controller('toggle-arrow', {
+	     state: true,
+	     imgOpen: 'down',
+	     imgClosed: 'right'
+	 }) }}
+	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
+	<div class="hstack gap-3 my-2">
+	    <button class="btn btn-sm ms-1 pt-0"
+		    type="button"
+		    data-bs-toggle="collapse"
+		    data-bs-target={{ "#body#{person.item.id}" }}
+		    aria-expanded="false"
+		    aria-controls={{ "body#{person.item.id}" }}
+		    data-toggle-arrow-target="button"
+		    data-value="down"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" /></button>
+	    <img src="{{ asset(online_image) }}"/>
+	    <span><strong>{{ person.describe }}</strong>{% if person.describerole(2) %}, {{ person.describerole(2) }}{% endif %}</span>
+	    <div class="vr ms-auto"></div>
+	    <span>{{ person.item.id }}
+		<input type="text" id="{{ editFormId }}_{{ loop.index0 }}_item_id"
+		       name="{{ editFormId }}[{{ loop.index0 }}][item][id]"
+		       class="form-control form-control-sm"
+		       value="{{ person.item.id }}"
+		       hidden="hidden>">
+	    </span>
+	    <div class="bg-light">{{ person.item.editstatus }}</div>
+	</div>
+	<div class="col-12 collapse multi-collapse" id={{ "body#{person.item.id}" }}>
+	    {# name, dates, and name variants #}
+	    <div class="input-group input-group-sm mx-1 my-1">
+		<span class="input-group-text">Vorname, Präfix, Nachname</span>
+		{{ include('edit_bishop/_input_text.html.twig', { field: 'givenname', aria_label: 'Vorname'}) }}
+		{{ include('edit_bishop/_input_text.html.twig', { field: 'prefixname', aria_label: 'Präfix'}) }}
+		{{ include('edit_bishop/_input_text.html.twig', { field: 'familyname', aria_label: 'Familienname'}) }}
+		{% set field_id =editFormId~"_"~loop.index0~"_editstatus" %}
+		<label class="input-group-text ms-2" for="{{ field_id }}">Status</label>
+		<select class="form-select" id="{{ field_id }}" name="{{ editFormId }}[{{ loop.index0 }}][editstatus]">
+		    {% for value in ['importiert', 'in Arbeit', 'fertig'] %}
+			<option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
+		    {% endfor %}
+		</select>
+	    </div>
+	    <div class="input-group input-group-sm mx-1 my-1">
+		<span class="input-group-text" style="width: 10em;">Geburtsjahr</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'datebirth',
+		    aria_label: 'Geburtsjahr'}) }}
+		<span class="input-group-text">Todesjahr</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'datedeath',
+		    aria_label: 'Geburtsjahr'}) }}
+		<span class="input-group-text" style="width: 13em;">Bemerkung Lebensdaten</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'notedates',
+		    aria_label: 'Bemerkung Lebensdaten'}) }}
+	    </div>
+	    <div class="input-group input-group-sm mx-1 my-1">
+		<span class="input-group-text" style="width: 10em;">Vornamenvarianten</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'givennamevariants',
+		    value: person.givennamevariants|join(', '),
+		    aria_label: 'Vornamenvarianten'}) }}
+		<span class="input-group-text" style="width: 13em;">Familiennamenvarianten</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'familynamevariants',
+		    value: person.familynamevariants|join(', '),
+		    aria_label: 'Familiennamenvarianten'}) }}
+	    </div>
+	    {# comments #}
+	    <div class="input-group input-group-sm mx-1 my-1">
+		<span class="input-group-text" style="width: 10em;">Bemerkung Person</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'notename',
+		    aria_label: 'Bemerkung Person'}) }}
+		<span class="input-group-text" style="width: 13em;">Bemerkung Name</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'noteperson',
+		    aria_label: 'Bemerkung Name'}) }}
+	    </div>
+
+	    <div class="input-group input-group-sm mx-1 my-1">
+		<span class="input-group-text">redaktionelle Anmerkung</span>
+		{{ include('edit_bishop/_input_text.html.twig', {
+		    field: 'comment',
+		    aria_label: 'Kommentar'}) }}
+	    </div>
+
+	</div>
+    </div>
+
+</div>

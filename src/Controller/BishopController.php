@@ -20,6 +20,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+use Doctrine\ORM\EntityManagerInterface;
+
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
@@ -35,9 +37,9 @@ class BishopController extends AbstractController {
      * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
-                          ItemRepository $repository) {
+                          EntityManagerInterface $entityManager) {
 
-        $personRepository = $this->getDoctrine()->getRepository(Person::class);
+        $personRepository = $entityManager->getRepository(Person::class);
 
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
         $model = new BishopFormModel;
@@ -73,7 +75,8 @@ class BishopController extends AbstractController {
                 $offset = 0;
             }
 
-            $id_all = $repository->bishopIds($model);
+            $itemRepository = $entityManager->getRepository(Item::class);
+            $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
