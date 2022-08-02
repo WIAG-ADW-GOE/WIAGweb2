@@ -360,4 +360,49 @@ class PersonRole
 
         return $this;
     }
+
+        public function describe(): string {
+
+        $role_name = null;
+        if($this->role && $this->role->getName()) {
+            $role_name = $this->role->getName();
+        } else {
+            $role_name = $this->roleName;
+        }
+
+        $inst_or_dioc = null;
+        if($this->institution){
+            $inst_or_dioc = $this->instition->getName();
+        } elseif($this->institutionName) {
+            $inst_or_dioc = $this->institutionName;
+        } elseif($this->diocese) {
+            $inst_or_dioc = $this->diocese->getName();
+        } elseif($this->dioceseName) {
+            $inst_or_dioc = $this->dioceseName;
+        }
+
+
+        $date_info = null;
+        if($this->dateBegin && $this->dateEnd) {
+            $date_info = $this->dateBegin.'-'.$this->dateEnd;
+        } elseif($this->dateBegin) {
+            $date_info = $this->dateBegin;
+        } elseif($this->dateEnd) {
+            $date_info = 'bis '.$this->dateEnd;
+        }
+
+        $description = '';
+        if($role_name) {
+            $description = $role_name;
+        }
+        if($inst_or_dioc) {
+            $description = $description.' '.$inst_or_dioc;
+        }
+        if($date_info) {
+            $description = $description.' '.$date_info;
+        }
+
+        return $description;
+    }
+
 }

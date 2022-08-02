@@ -82,14 +82,6 @@ class BishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
-            # easy way to get all persons in the right order
-            // $person_list = array();
-            // foreach($id_list as $id) {
-            //     $person = $personRepository->findWithOffice($id["personId"]);
-            //     $repository->setSibling($person);
-            //     $person_list[] = $person;
-            // }
-
             return $this->renderForm('bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,

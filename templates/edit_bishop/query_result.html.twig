@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+	{{ form_start(form) }}
+	    <div class="row ms-2 col-12">
+		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	    </div>
+	    {{ include("edit_bishop/_form_elements.html.twig") }}
+	    <div class="row mt-2 mx-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		    <a href="{{ path('edit_bishop_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+		</div>
+	    </div>
+	    <div data-hide-on-input-target="result">
+		<div class="row mt-2 mx-2">
+ 		    <div class="col-12">
+			{% if count == 0 %}
+			    Treffer: keine
+			{% elseif count == 1 %}
+			    Treffer: 1
+			{% else %}
+			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+			    {% if count > pageSize %}
+				<div class="d-inline-flex p-2">
+				    {{ include('person/_button_page_backward.html.twig', {
+					value: offset - pageSize,
+					disabled: offset < pageSize,
+					text: 'zurück'}) }}
+				    <input type="text" name="pageNumber" value={{ offset // pageSize + 1 }} class="mx-1" style="width:3em" autocomplete="off" data-hide-on-input-target="pageNumber">
+				    {{ include('person/_button_page_forward.html.twig', {
+					value: offset + pageSize,
+					disabled: offset + pageSize >= count,
+					text: 'vor'}) }}
+				</div>
+			    {% endif %}
+			{% endif %}
+		    </div>
+		</div>
+	    </div>
+	{{ form_end(form) }}
+    </div>
+    <div class="container-fluid mx-2"
+		{{ stimulus_controller('submit', {
+		    formId: editFormId,
+		}) }}
+		data-action="submit->submit#submitForm">
+	{{ include('edit_bishop/_list.html.twig') }}
+    </div>
+{% endblock %}

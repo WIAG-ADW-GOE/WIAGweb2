@@ -96,7 +96,7 @@
 					<a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
 				    {% endif %}
 				    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="collections">
-					<li><a class="dropdown-item" href="#">Daten bearbeiten</a></li>
+					<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
 					{% if is_granted('ROLE_USER_EDIT') %}
 					    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
 					    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>

@@ -17,7 +17,9 @@
 			    aria-expanded="false"
 			    aria-controls={{ "restFct#{facetShort}" }}
 			    {{ stimulus_controller('toggle-arrow', {
-				state: facetState
+				state: facetState,
+				imgClosed: 'down',
+				imgOpen: 'up'
 			    }) }}
 			    data-action="toggle-arrow#toggle"
 			    data-value="down"><img src="{{ asset('images/symbols/arrow-down.svg') }}"/></button>

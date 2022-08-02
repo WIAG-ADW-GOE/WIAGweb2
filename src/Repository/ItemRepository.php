@@ -76,6 +76,9 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * 2022-01-08 obsolete?
+     */
     public function countBishop($model) {
         $result = array('n' => 0);
 
@@ -225,7 +228,7 @@ class ItemRepository extends ServiceEntityRepository
     private function addBishopFacets($qb, $model) {
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
 
-        $facetDiocese = $model->facetDiocese;
+        $facetDiocese = isset($model->facetDiocese) ? $model->facetDiocese : null;
         if ($facetDiocese) {
             $valFctDioc = array_column($facetDiocese, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
@@ -235,7 +238,7 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('valFctDioc', $valFctDioc);
         }
 
-        $facetOffice = $model->facetOffice;
+        $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
         if ($facetOffice) {
             $valFctOfc = array_column($facetOffice, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')

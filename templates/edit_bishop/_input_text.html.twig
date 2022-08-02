@@ -1,0 +1,10 @@
+<input type="text" id="{{ editFormId }}_{{ loop.index0 }}_{{ field }}"
+       name="{{ editFormId }}[{{ loop.index0 }}][{{ field }}]"
+       class="form-control"
+       {% if value is defined %}
+       value="{{ value }}"
+       {% else %}
+       value="{{ attribute(person, field) }}"
+       {% endif %}
+       spellcheck="false"
+       aria-label="{{ aria_label }}">

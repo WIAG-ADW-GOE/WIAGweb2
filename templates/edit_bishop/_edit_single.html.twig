@@ -30,65 +30,32 @@
 	    <div class="bg-light">{{ person.item.editstatus }}</div>
 	</div>
 	<div class="col-12 collapse multi-collapse" id={{ "body#{person.item.id}" }}>
-	    {# name, dates, and name variants #}
 	    <div class="input-group input-group-sm mx-1 my-1">
 		<span class="input-group-text">Vorname, Präfix, Nachname</span>
 		{{ include('edit_bishop/_input_text.html.twig', { field: 'givenname', aria_label: 'Vorname'}) }}
 		{{ include('edit_bishop/_input_text.html.twig', { field: 'prefixname', aria_label: 'Präfix'}) }}
 		{{ include('edit_bishop/_input_text.html.twig', { field: 'familyname', aria_label: 'Familienname'}) }}
-		{% set field_id =editFormId~"_"~loop.index0~"_editstatus" %}
+		{% set field_id =editFormId~"_"~loop.index0~"_item_editstatus" %}
 		<label class="input-group-text ms-2" for="{{ field_id }}">Status</label>
-		<select class="form-select" id="{{ field_id }}" name="{{ editFormId }}[{{ loop.index0 }}][editstatus]">
+		<select class="form-select" id="{{ field_id }}" name="{{ editFormId }}[{{ loop.index0 }}][item][editstatus]">
 		    {% for value in ['importiert', 'in Arbeit', 'fertig'] %}
 			<option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
 		    {% endfor %}
 		</select>
 	    </div>
 	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text" style="width: 10em;">Geburtsjahr</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'datebirth',
-		    aria_label: 'Geburtsjahr'}) }}
-		<span class="input-group-text">Todesjahr</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'datedeath',
-		    aria_label: 'Geburtsjahr'}) }}
-		<span class="input-group-text" style="width: 13em;">Bemerkung Lebensdaten</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'notedates',
-		    aria_label: 'Bemerkung Lebensdaten'}) }}
-	    </div>
-	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text" style="width: 10em;">Vornamenvarianten</span>
+		<span class="input-group-text">Vornamenvarianten</span>
 		{{ include('edit_bishop/_input_text.html.twig', {
 		    field: 'givennamevariants',
 		    value: person.givennamevariants|join(', '),
 		    aria_label: 'Vornamenvarianten'}) }}
-		<span class="input-group-text" style="width: 13em;">Familiennamenvarianten</span>
+		<span class="input-group-text">Familiennamenvarianten</span>
 		{{ include('edit_bishop/_input_text.html.twig', {
 		    field: 'familynamevariants',
 		    value: person.familynamevariants|join(', '),
 		    aria_label: 'Familiennamenvarianten'}) }}
-	    </div>
-	    {# comments #}
-	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text" style="width: 10em;">Bemerkung Person</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'notename',
-		    aria_label: 'Bemerkung Person'}) }}
-		<span class="input-group-text" style="width: 13em;">Bemerkung Name</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'noteperson',
-		    aria_label: 'Bemerkung Name'}) }}
-	    </div>
 
-	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text">redaktionelle Anmerkung</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'comment',
-		    aria_label: 'Kommentar'}) }}
 	    </div>
-
 	</div>
     </div>
 

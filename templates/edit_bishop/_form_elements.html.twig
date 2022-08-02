@@ -1,0 +1,62 @@
+<div class="row mx-2 mt-3">
+    <div class="col-12">
+	<div class="d-flex flex-wrap"
+	     data-action="input->hide-on-input#hideResults">
+	    {# name #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('bishop_suggest', {field: 'name'}),
+		 }) }}>
+		{{ form_label(form.name) }}
+		{{ form_errors(form.name) }}
+		{{ form_widget(form.name, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 31,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    {# diocese #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('bishop_suggest', {field: 'diocese'}),
+		 }) }}>
+		{{ form_label(form.diocese) }}
+		{{ form_errors(form.diocese) }}
+		{{ form_widget(form.diocese, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 15,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 9em;"></ul>
+	    </div>
+	    {# office #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('bishop_suggest', {field: 'office'}),
+		 }) }}>
+		{{ form_label(form.office) }}
+		{{ form_errors(form.office) }}
+		{{ form_widget(form.office, {
+		    attr: {
+			'data-autocomplete-target': "input",
+			'size': 18,
+		    },
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 12em;"></ul>
+	    </div>
+	    {{  form_row(form.year, { row_attr: {class: 'me-2 mt-1'}}) }}
+	    {{  form_row(form.someid, {row_attr: {class: 'mt-1'}}) }}
+	</div>
+    </div>
+</div>
+
+{# {{ form_end(form) }} #}

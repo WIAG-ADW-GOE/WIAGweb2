@@ -8,7 +8,6 @@ use App\Form\EditBishopFormType;
 use App\Form\Model\EditBishopFormModel;
 use App\Entity\Role;
 
-use App\Service\ItemService;
 use App\Service\PersonService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,8 +33,7 @@ class EditBishopController extends AbstractController {
      * @Route("/edit/bischof/query", name="edit_bishop_query")
      */
     public function query(Request $request,
-                          EntityManagerInterface $entityManager,
-                          ItemService $service) {
+                          EntityManagerInterface $entityManager) {
 
 
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
@@ -53,9 +51,8 @@ class EditBishopController extends AbstractController {
         if ($form->isSubmitted() && $form->isValid()) {
 
             $itemRepository = $entityManager->getRepository(Item::class);
-
-            $countResult = $itemRepository->countEditBishop($model);
-            $count = $countResult["n"];
+            $id_all = $itemRepository->bishopIds($model);
+            $count = count($id_all);
 
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
@@ -70,11 +67,9 @@ class EditBishopController extends AbstractController {
                 $offset = 0;
             }
 
-            $ids = $itemRepository->idsEditBishop($model,
-                                                  self::PAGE_SIZE,
-                                                  $offset);
-
-            $person_list = $this->personList(array_column($ids, 'personId'), $entityManager, $service);
+            $personRepository = $entityManager->getRepository(Person::class);
+            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
+            $person_list = $personRepository->findList($id_list);
 
             $edit_form_id = 'edit_bishop_edit_form';
 
@@ -101,11 +96,11 @@ class EditBishopController extends AbstractController {
      * @Route("/edit/bischof/save", name="edit_bishop_save")
      */
     public function save(Request $request,
-                         EntityManagerInterface $entityManager,
-                         ItemService $service) {
+                         EntityManagerInterface $entityManager) {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
+        // dd($form_data);
 
         // save data
         $user_id = $this->getUser()->getId();
@@ -121,7 +116,7 @@ class EditBishopController extends AbstractController {
             // TODO $service->updateItem($item, $person_loop)
             // TODO $service->updatePerson($person, $person_loop)
 
-            $person->setSibling($service->getSibling($person)); // ??
+            // $person->setSibling($service->getSibling($person)); // ??
             // TODO save to database
             $person_list[] = $person;
         }

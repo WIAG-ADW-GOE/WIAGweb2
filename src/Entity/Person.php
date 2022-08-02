@@ -506,5 +506,46 @@ class Person
         return $commentLine;
     }
 
+        public function describe(): string {
+        $description = $this->getDisplayname();
+
+        $birth_info = $this->birthInfo();
+        if($birth_info) {
+            $description = $description.' ('.$birth_info.')';
+        }
+
+        return $description;
+    }
+
+    /**
+     * get information about offices; $nOffice: number of offices
+     */
+    public function describeRole($nOffice = 3): ?string {
+
+        $office_list = array();
+        foreach(array_slice($this->role->toArray(), 0, $nOffice) as $role) {
+            $office_list[] = $role->describe();
+        }
+
+        $description = null;
+        if(count($office_list) > 0) {
+            $description = implode(', ', $office_list);
+        }
+
+        return($description);
+
+    }
+
+    public function birthInfo(): ?string {
+        $birth_info = null;
+        if($this->dateBirth && $this->dateDeath) {
+            $birth_info = '* '.$this->dateBirth.' † '.$this->dateDeath;
+        } elseif($this->dateBirth) {
+            $birth_info = '* '.$this->dateBirth;
+        } elseif($this->dateDeath) {
+            $birth_info = '† '.$this->dateDeath;
+        }
+        return $birth_info;
+    }
 
 }

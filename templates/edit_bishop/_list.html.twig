@@ -1,0 +1,34 @@
+{# it gives us more flexibility to add the controller to an extra element #}
+<form id ="{{ editFormId }}"
+      name="{{ editFormId }}"
+      action="{{ path('edit_bishop_save') }}"
+      method="post">
+    {% if false and no_submit_on_enter %}
+	<button type="submit" disabled style="display: none" aria-hidden="true"></button>
+    {% endif %}
+    <div class="row mx-2">
+	<div class="col ps-0">
+	    <button class="btn btn-sm btn-secondary float-start"
+			   type="button"
+			   data-bs-toggle="collapse"
+			   data-bs-target=".multi-collapse"
+			   aria-expanded="false"
+			   aria-controls="all"
+			   {{ stimulus_controller('toggle-arrow', {
+			       state: true,
+			       imgOpen: 'down',
+			       imgClosed: 'right'
+			   }) }}
+			   data-action="toggle-arrow#toggle"
+			   data-value="down">öffnen/schließen</button>
+	</div>
+    </div>
+    {% for person in personlist %}
+	{{ include('edit_bishop/_edit_single.html.twig', {person: person}) }}
+    {% endfor %}
+    <div class="row mx-2 mt-2">
+	<div class="col">
+	    <button type="submit" formaction="{{ path('edit_bishop_save') }}" class="btn btn-primary float-end">Speichern</button>
+	</div>
+    </div>
+</form>

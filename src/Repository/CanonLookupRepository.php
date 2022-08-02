@@ -196,19 +196,11 @@ class CanonLookupRepository extends ServiceEntityRepository
                ->setParameter('q_name', '%'.$name.'%');
         }
 
-<<<<<<< HEAD
         if ($someid || $year) {
             // year and id are linked now via p_all
             $qb->join('App\Entity\Person', 'p_all', 'WITH', 'p_all.id = c_all.personIdRole');
             if ($someid) {
                 $qb->join('p_all.item', 'item')
-=======
-        if ($someid || $year || $name) {
-            // case name: add p_by_role for sorting
-            $qb->join('App\Entity\Person', 'p_by_role', 'WITH', 'p_by_role.id = c_all.personIdRole');
-            if ($someid) {
-                $qb->join('p_by_role.item', 'item')
->>>>>>> show academic titles (canons on one page); fix csv-output (bishops)
                    ->leftJoin('item.idExternal', 'ixt')
                    ->andWhere("item.idPublic LIKE :q_id ".
                                "OR ixt.value LIKE :q_id")
@@ -586,7 +578,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $domstift_list = $qbi->getQuery()->getResult();
 
         $qb = $this->createQueryBuilder('c')
-            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('pr_count.institutionId AS id, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->andWhere('pr_count.institutionId IN (:instId_list)')
@@ -630,7 +621,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain office facet
 
         $qb = $this->createQueryBuilder('c')
-            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.role', 'role_count');
@@ -654,7 +644,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain place facet
 
         $qb = $this->createQueryBuilder('c')
-            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('ip_count.placeName AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.institution', 'inst_count')
@@ -680,7 +669,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         // $model should not contain url facet
 
         $qb = $this->createQueryBuilder('c')
-            ->join('App\Entity\CanonLookup', 'c_all', 'WITH', 'c.personIdName = c_all.personIdName')
                    ->select('auth.urlNameFormatter AS name, COUNT(DISTINCT(c.personIdName)) AS n')
                    ->join('App\Entity\UrlExternal', 'url', 'WITH', 'url.itemId = c.personIdName')
                    ->join('url.authority', 'auth');
