@@ -1,0 +1,64 @@
+{% set input_object=person %}
+<div class="input-group input-group-sm mx-1 my-1 pe-0">
+    <span class="input-group-text">Vorname, Präfix, Nachname</span>
+    {% set base_id=editFormId~'_'~loop.index0 %}
+    {% set base_input_name=editFormId~'['~loop.index0~']' %}
+    <input type="text" id="{{ base_id }}_givenname"
+	   name="{{ base_input_name}}[givenname]"
+	   class="form-control"
+	   value="{{ person.givenname }}"
+	   spellcheck="false"
+	   aria-label="Vorname">
+    <input type="text" id="{{ base_id }}_prefix"
+	   name="{{ base_input_name}}[prefixname]"
+	   class="form-control"
+	   value="{{ person.prefixname }}"
+	   style="max-width: 10em"
+	   spellcheck="false"
+	   aria-label="Präfix">
+    <input type="text" id="{{ base_id }}_familyname"
+	   name="{{ base_input_name}}[familyname]"
+	   class="form-control"
+	   value="{{ person.familyname }}"
+	   spellcheck="false"
+	   aria-label="Vorname">
+    {% set field_id=base_id~"_item_editstatus" %}
+    {% set input_name=base_input_name~"[item][editStatus]" %}
+    <label class="input-group-text" for="{{ field_id }}">Status</label>
+    <select class="form-select" style ="max-width: 10em" id="{{ field_id }}" name="{{ input_name }}">
+	{% for value in ['importiert', 'in Arbeit', 'fertig'] %}
+	    <option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
+	{% endfor %}
+    </select>
+</div>
+<div class="input-group input-group-sm mx-1 my-1 pe-0">
+    <span class="input-group-text">geboren, gestorben</span>
+    <input type="text" id="{{ base_id }}_datebirth"
+	   name="{{ base_input_name}}[dateBirth]"
+	   class="form-control"
+	   value="{{ person.dateBirth }}"
+	   style="max-width: 10em"
+	   spellcheck="false"
+	   aria-label="Geburtsdatum">
+    <input type="text" id="{{ base_id }}_datedeath"
+	   name="{{ base_input_name}}[dateDeath]"
+	   class="form-control"
+	   value="{{ person.dateDeath }}"
+	   style="max-width: 10em"
+	   spellcheck="false"
+	   aria-label="Sterbedatum">
+    <span class="input-group-text ms-2">Vornamenvarianten</span>
+    <input type="text" id="{{ base_id }}_givennamevariants"
+	   name="{{ base_input_name}}[givennamevariants]"
+	   class="form-control"
+	   value="{{ person.givennamevariants|join(', ') }}"
+	   spellcheck="false"
+	   aria-label="Vornamenvarianten">
+    <span class="input-group-text ms-2">Familiennamenvarianten</span>
+    <input type="text" id="{{ base_id }}_familynamevariants"
+	   name="{{ base_input_name}}[familynamevariants]"
+	   class="form-control"
+	   value="{{ person.familynamevariants|join(', ') }}"
+	   spellcheck="false"
+	   aria-label="Familiennamenvarianten">
+</div>

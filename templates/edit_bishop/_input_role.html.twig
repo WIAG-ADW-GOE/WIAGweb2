@@ -1,0 +1,55 @@
+<div class="input-group input-group-sm mx-1 my-1 pe-0">
+    {% set base_id=editFormId~'_'~outer_index~'_role_'~loop.index0 %}
+    {% set base_input_name=editFormId~'['~outer_index~'][role]['~loop.index0~']' %}
+    <input type="text" id="{{ base_id }}_id"
+	   name="{{ base_input_name }}[id]"
+	   class="form-control form-control-sm"
+	   value="{{ role.id }}"
+	   hidden="hidden>">
+    <span class="input-group-text">Amt, Bistum, Kloster/Stift</span>
+    <input type="text" id="{{ base_id }}_role"
+	   name="{{ base_input_name}}[role]"
+	   class="form-control"
+	   value="{{ role.roleDisplayName }}"
+	   spellcheck="false"
+	   aria-label="Amt">
+    <input type="text" id="{{ base_id }}_diocese"
+	   name="{{ base_input_name}}[diocese]"
+	   class="form-control"
+	   value="{{ role.dioceseDisplayName }}"
+	   spellcheck="false"
+	   aria-label="Bistum">
+    <input type="text" id="{{ base_id }}_institution"
+	   name="{{ base_input_name}}[institution]"
+	   class="form-control"
+	   value="{{ role.institutionDisplayName }}"
+	   spellcheck="false"
+	   aria-label="Kloster">
+    <span class="input-group-text">von, bis</span>
+    <input type="text" id="{{ base_id }}_dateBegin"
+	   name="{{ base_input_name}}[dateBegin]"
+	   class="form-control"
+	   value="{{ role.dateBegin }}"
+	   style="max-width: 10em"
+	   spellcheck="false"
+	   aria-label="Beginn">
+    <input type="text" id="{{ base_id }}_dateEnd"
+	   name="{{ base_input_name}}[dateEnd]"
+	   class="form-control"
+	   value="{{ role.dateEnd }}"
+	   style="max-width: 10em"
+	   spellcheck="false"
+	   aria-label="Ende">
+
+    {% if false %}
+	<span class="input-group-text">von, bis</span>
+	{{ include('edit_bishop/_input_text.html.twig', {
+	    field: 'dateBegin',
+	    style: 'max-width: 10em',
+	    aria_label: 'Beginn'}) }}
+    {{ include('edit_bishop/_input_text.html.twig', {
+	field: 'dateEnd',
+	style: 'max-width: 10em',
+	aria_label: 'Ende'}) }}
+    {% endif %}
+</div>

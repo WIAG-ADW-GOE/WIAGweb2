@@ -1,9 +1,9 @@
-{# it gives us more flexibility to add the controller to an extra element #}
 <form id ="{{ editFormId }}"
       name="{{ editFormId }}"
       action="{{ path('edit_bishop_save') }}"
       method="post">
-    {% if false and no_submit_on_enter %}
+    {% if false %}
+	{# disable submit via enter-key #}
 	<button type="submit" disabled style="display: none" aria-hidden="true"></button>
     {% endif %}
     <div class="row mx-2">

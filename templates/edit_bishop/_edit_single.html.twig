@@ -1,7 +1,7 @@
-<div class="row mx-2 my-2 border rounded">
+<div class="mx-2 my-2 border rounded">
     {# header #}
     {% set online_image = person.item.isonline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
-    <div class="col-12 ps-0"
+    <div class="row col-12 ps-0"
 	 {{ stimulus_controller('toggle-arrow', {
 	     state: true,
 	     imgOpen: 'down',
@@ -9,7 +9,8 @@
 	 }) }}
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
 	<div class="hstack gap-3 my-2">
-	    <button class="btn btn-sm ms-1 pt-0"
+	    <span class="text-nowrap">
+		<button class="btn btn-sm ms-1 pt-0 align-middle"
 		    type="button"
 		    data-bs-toggle="collapse"
 		    data-bs-target={{ "#body#{person.item.id}" }}
@@ -17,8 +18,12 @@
 		    aria-controls={{ "body#{person.item.id}" }}
 		    data-toggle-arrow-target="button"
 		    data-value="down"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" /></button>
-	    <img src="{{ asset(online_image) }}"/>
-	    <span><strong>{{ person.describe }}</strong>{% if person.describerole(2) %}, {{ person.describerole(2) }}{% endif %}</span>
+		<input class="form-check-input ms-0 pt-0 mt-0 align-middle" type="checkbox" value="" id="{{ editFormId }}_flag_changed" name="{{ editFormId }}[{{ loop.index0 }}][flag_changed]">
+		<img class="align-middle" src="{{ asset(online_image) }}"/>
+	    </span>
+	    <span><strong>{{ person.describe }}</strong>{% if person.describerole(2) %}, {{ person.describerole(2) }}{% endif %}
+		<span class="wiag-log text-nowrap">- geändert: {{ person.item.datechanged|format_datetime() }}, {{ person.item.userwiagchange.email }}</span>
+	    </span>
 	    <div class="vr ms-auto"></div>
 	    <span>{{ person.item.id }}
 		<input type="text" id="{{ editFormId }}_{{ loop.index0 }}_item_id"
@@ -29,33 +34,12 @@
 	    </span>
 	    <div class="bg-light">{{ person.item.editstatus }}</div>
 	</div>
-	<div class="col-12 collapse multi-collapse" id={{ "body#{person.item.id}" }}>
-	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text">Vorname, Präfix, Nachname</span>
-		{{ include('edit_bishop/_input_text.html.twig', { field: 'givenname', aria_label: 'Vorname'}) }}
-		{{ include('edit_bishop/_input_text.html.twig', { field: 'prefixname', aria_label: 'Präfix'}) }}
-		{{ include('edit_bishop/_input_text.html.twig', { field: 'familyname', aria_label: 'Familienname'}) }}
-		{% set field_id =editFormId~"_"~loop.index0~"_item_editstatus" %}
-		<label class="input-group-text ms-2" for="{{ field_id }}">Status</label>
-		<select class="form-select" id="{{ field_id }}" name="{{ editFormId }}[{{ loop.index0 }}][item][editstatus]">
-		    {% for value in ['importiert', 'in Arbeit', 'fertig'] %}
-			<option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
-		    {% endfor %}
-		</select>
-	    </div>
-	    <div class="input-group input-group-sm mx-1 my-1">
-		<span class="input-group-text">Vornamenvarianten</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'givennamevariants',
-		    value: person.givennamevariants|join(', '),
-		    aria_label: 'Vornamenvarianten'}) }}
-		<span class="input-group-text">Familiennamenvarianten</span>
-		{{ include('edit_bishop/_input_text.html.twig', {
-		    field: 'familynamevariants',
-		    value: person.familynamevariants|join(', '),
-		    aria_label: 'Familiennamenvarianten'}) }}
-
-	    </div>
+	<div class="row col-12 collapse multi-collapse pe-0" id={{ "body#{person.item.id}" }}>
+	    {{ include('edit_bishop/_input_name.html.twig') }}
+	    {% set outer_index=loop.index0 %}
+	    {% for role in person.role %}
+	    	{{ include('edit_bishop/_input_role.html.twig', { 'outer_index': outer_index }) }}
+	    {% endfor %}
 	</div>
     </div>
 

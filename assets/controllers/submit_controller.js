@@ -17,7 +17,7 @@ export default class extends Controller {
 	    // window.alert('this is submit#submitForm');
 	    const url = formElement.action;
 	    const params = new URLSearchParams({
-		'list': 1,
+		'list-only': 1,
             });
 	    const fullurl = url+'?'+params.toString();
 	    const form = new FormData(formElement);

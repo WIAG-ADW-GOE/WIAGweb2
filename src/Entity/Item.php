@@ -77,6 +77,12 @@ class Item {
     private $nameLookup;
 
     /**
+     * @ORM\OneToOne(targetEntity="UserWiag")
+     * @ORM\JoinColumn(name="changed_by", referencedColumnName="id")
+     */
+    private $userWiagChange;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $itemTypeId;
@@ -446,6 +452,15 @@ class Item {
             $value =  $itemPropertyList[$key];
         }
         return $value;
+    }
+
+    public function getUserWiagChange() {
+        return $this->userWiagChange;
+    }
+
+    public function setUserWiagChange($userChange) {
+        $this->userWiagChange = $userChange;
+        return $this;
     }
 
 }

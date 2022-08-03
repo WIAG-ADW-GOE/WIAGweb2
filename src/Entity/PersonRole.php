@@ -361,14 +361,43 @@ class PersonRole
         return $this;
     }
 
-        public function describe(): string {
-
-        $role_name = null;
+    public function roleDisplayName(): ?string {
+        $name = null;
         if($this->role && $this->role->getName()) {
-            $role_name = $this->role->getName();
+            $name = $this->role->getName();
         } else {
-            $role_name = $this->roleName;
+            $name = $this->roleName;
         }
+        return $name;
+    }
+
+    public function dioceseDisplayName(): ?string {
+        $name = null;
+        if($this->diocese && $this->diocese->getName()) {
+            $name = $this->diocese->getName();
+        } else {
+            $name = $this->dioceseName;
+        }
+        return $name;
+    }
+
+    public function institutionDisplayName(): ?string {
+        $name = null;
+        if($this->institution && $this->institution->getName()) {
+            $name = $this->institution->getName();
+        } else {
+            $name = $this->institutionName;
+        }
+        return $name;
+    }
+
+
+    /**
+     * compose string containing basic information
+     */
+    public function describe(): string {
+
+        $role_name = $this->roleDisplayName();
 
         $inst_or_dioc = null;
         if($this->institution){

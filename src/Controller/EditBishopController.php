@@ -3,7 +3,9 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\Person;
+use App\Entity\PersonRole;
 use App\Entity\Authority;
+use App\Entity\UserWiag;
 use App\Form\EditBishopFormType;
 use App\Form\Model\EditBishopFormModel;
 use App\Entity\Role;
@@ -100,28 +102,66 @@ class EditBishopController extends AbstractController {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
-        // dd($form_data);
 
-        // save data
-        $user_id = $this->getUser()->getId();
+        /* save data */
+        $current_user_id = $this->getUser()->getId();
 
         $personRepository = $entityManager->getRepository(Person::class);
+        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+        $personRoleRepository = $entityManager->getRepository(PersonRole::class);
         $person_list = array();
-        foreach($form_data as $person_loop) {
+        foreach($form_data as $edit_data) {
             // find person and update
-            $id = $person_loop['item']['id'];
-            $person = $personRepository->findWithOffice($id);
-
+            $id = $edit_data['item']['id'];
+            $result = $personRepository->findList([$id]);
+            $person = $result[0];
             $item = $person->getItem();
-            // TODO $service->updateItem($item, $person_loop)
-            // TODO $service->updatePerson($person, $person_loop)
+            if (isset($edit_data['flag_changed'])) {
+                $item->setDateChanged(new \DateTimeImmutable());
+                $item->setChangedBy($current_user_id);
+                $item->setUserWiagChange($userWiagRepository->find($current_user_id));
+                $item->setEditStatus($edit_data['item']['editStatus']);
 
-            // $person->setSibling($service->getSibling($person)); // ??
-            // TODO save to database
+                $key_list = ['givenname', 'prefixname', 'familyname', 'dateBirth', 'dateDeath'];
+                foreach($key_list as $key) {
+                    $set_fnc = 'set'.ucfirst($key);
+                    $person->$set_fnc($edit_data[$key]);
+                }
+                foreach($edit_data['role'] as $role_data) {
+                    $role = $personRoleRepository->find($role_data['id']);
+                    $key_list = ['dateBegin', 'dateEnd'];
+                    foreach($key_list as $key) {
+                        $set_fnc = 'set'.ucfirst($key);
+                        $role->$set_fnc($role_data[$key]);
+                    }
+                }
+
+            }
+            dump($edit_data, $person);
+            // use $person_list to show changes to the user
             $person_list[] = $person;
+
+        //     $item = $person->getItem();
+        //     // TODO $service->updateItem($item, $person_loop)
+        //     // TODO $service->updatePerson($person, $person_loop)
+
+        //     // $person->setSibling($service->getSibling($person)); // ??
         }
 
-        if ($request->query->get('list')) {
+        // save changes to database
+        // any object that was retrieved via Doctrine is stored to the database
+        $entityManager->flush();
+
+        // get display data
+        // $id_list = array_map(function($el) {
+        //     return $el['item']['id'];
+        // }, $form_data);
+
+        // $person_list = $personRepository->findList($id_list);
+
+
+
+        if ($request->query->get('list-only')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
