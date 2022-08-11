@@ -12,8 +12,7 @@ use Doctrine\Common\Collections\Collection;
 /**
  * @ORM\Entity(repositoryClass=PersonRepository::class)
  */
-class Person
-{
+class Person {
 
     /**
      * @ORM\Id
@@ -144,10 +143,13 @@ class Person
      */
     private ?Person $sibling = null;
 
+    private $inputError;
+
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
+        $this->inputError = new ArrayCollection();
         # TODO $this-urlByType;
     }
 
@@ -448,6 +450,16 @@ class Person
     }
 
     /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
+    }
+
+    /**
      * concatenate name variants and comments
      */
     public function commentLine($flag_names = true) {
@@ -506,7 +518,7 @@ class Person
         return $commentLine;
     }
 
-        public function describe(): string {
+    public function describe(): string {
         $description = $this->getDisplayname();
 
         $birth_info = $this->birthInfo();

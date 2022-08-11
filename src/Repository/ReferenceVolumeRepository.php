@@ -73,7 +73,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
 
     /**
-     *
+     * set reference volume for references in $person_list
      */
     public function setReferenceVolume($person_list) {
         // an entry in item_reference belongs to one item at most
@@ -98,7 +98,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
 
-        // the result list is not large so the filter will be efficient enough
+        // the result list is not large so the filter is no performance problem
 
         foreach ($item_ref_list as $ref) {
             $item_type_id = $ref->getItemTypeId();
@@ -113,4 +113,17 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         return null;
 
     }
+
+    public function findByTitleShortAndType($title, $item_type_id) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v')
+                   ->andWhere('v.titleShort LIKE :title')
+                   ->andWhere('v.itemTypeId = :item_type_id')
+                   ->setParameter('title', '%'.$title.'%')
+                   ->setParameter('item_type_id', $item_type_id);
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+
 }

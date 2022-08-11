@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Authority;
@@ -93,11 +94,13 @@ class EditBishopController extends AbstractController {
 
     }
 
+
     /**
      * map data to objects and save them to the database
      * @Route("/edit/bischof/save", name="edit_bishop_save")
      */
     public function save(Request $request,
+                         PersonService $personService,
                          EntityManagerInterface $entityManager) {
 
         $edit_form_id = 'edit_bishop_edit_form';
@@ -107,61 +110,38 @@ class EditBishopController extends AbstractController {
         $current_user_id = $this->getUser()->getId();
 
         $personRepository = $entityManager->getRepository(Person::class);
-        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
-        $personRoleRepository = $entityManager->getRepository(PersonRole::class);
         $person_list = array();
-        foreach($form_data as $edit_data) {
-            // find person and update
-            $id = $edit_data['item']['id'];
-            $result = $personRepository->findList([$id]);
-            $person = $result[0];
-            $item = $person->getItem();
-            if (isset($edit_data['flag_changed'])) {
-                $item->setDateChanged(new \DateTimeImmutable());
-                $item->setChangedBy($current_user_id);
-                $item->setUserWiagChange($userWiagRepository->find($current_user_id));
-                $item->setEditStatus($edit_data['item']['editStatus']);
-
-                $key_list = ['givenname', 'prefixname', 'familyname', 'dateBirth', 'dateDeath'];
-                foreach($key_list as $key) {
-                    $set_fnc = 'set'.ucfirst($key);
-                    $person->$set_fnc($edit_data[$key]);
+        $flag_error = false;
+        foreach($form_data as $data) {
+            // dump($data);
+            $person_id = $data['item']['id'];
+            if (isset($data['edited'])) {
+                $person = $personRepository->find($person_id);
+                $personService->mapPerson($person, $data, $current_user_id);
+                if (!$person->getInputError()->isEmpty()) {
+                    $flag_error = true;
                 }
-                foreach($edit_data['role'] as $role_data) {
-                    $role = $personRoleRepository->find($role_data['id']);
-                    $key_list = ['dateBegin', 'dateEnd'];
-                    foreach($key_list as $key) {
-                        $set_fnc = 'set'.ucfirst($key);
-                        $role->$set_fnc($role_data[$key]);
-                    }
-                }
-
+                $person_list[] = $person;
+            } else {
+                // get roles and references from the database
+                $person_list = array_merge($person_list, $personRepository->findList([$person_id]));
             }
-            dump($edit_data, $person);
-            // use $person_list to show changes to the user
-            $person_list[] = $person;
-
-        //     $item = $person->getItem();
-        //     // TODO $service->updateItem($item, $person_loop)
-        //     // TODO $service->updatePerson($person, $person_loop)
-
-        //     // $person->setSibling($service->getSibling($person)); // ??
         }
 
-        // save changes to database
-        // any object that was retrieved via Doctrine is stored to the database
-        $entityManager->flush();
+        if (!$flag_error) {
+            // save changes to database
+            // any object that was retrieved via Doctrine is stored to the database
 
-        // get display data
-        // $id_list = array_map(function($el) {
-        //     return $el['item']['id'];
-        // }, $form_data);
+            $entityManager->flush();
+            // get data from the database
+            $id_list = array_map(function($el) {
+                return $el['item']['id'];
+            }, $form_data);
 
-        // $person_list = $personRepository->findList($id_list);
+            $person_list = $personRepository->findList($id_list);
+        }
 
-
-
-        if ($request->query->get('list-only')) {
+        if ($request->query->get('list_only')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
@@ -174,6 +154,43 @@ class EditBishopController extends AbstractController {
                 'personlist' => $person_list,
                 'editFormId' => $edit_form_id,
         ]);
+    }
+
+
+    /**
+     * @return template for new role
+     *
+     * @Route("/edit/bischof/new-role", name="edit_bishop_new_role")
+     */
+    public function new_role(Request $request) {
+
+        $role = new PersonRole;
+        $role->setId(0);
+
+        return $this->render('edit_bishop/_input_role.html.twig', [
+            'base_id_role' => $request->query->get('base_id'),
+            'base_input_name_role' => $request->query->get('base_input_name'),
+            'role' => $role,
+        ]);
+
+    }
+
+    /**
+     * @return template for new reference
+     *
+     * @Route("/edit/bischof/new-reference", name="edit_bishop_new_reference")
+     */
+    public function new_reference(Request $request) {
+
+        $reference = new ItemReference(0);
+
+        return $this->render('edit_bishop/_input_reference.html.twig', [
+            'base_id_ref' => $request->query->get('base_id'),
+            'base_input_name_ref' => $request->query->get('base_input_name'),
+            'ref' => $reference,
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+        ]);
+
     }
 
     private function personList($ids,

@@ -1,64 +1,100 @@
-{% set input_object=person %}
-<div class="input-group input-group-sm mx-1 my-1 pe-0">
-    <span class="input-group-text">Vorname, Präfix, Nachname</span>
-    {% set base_id=editFormId~'_'~loop.index0 %}
-    {% set base_input_name=editFormId~'['~loop.index0~']' %}
-    <input type="text" id="{{ base_id }}_givenname"
-	   name="{{ base_input_name}}[givenname]"
-	   class="form-control"
-	   value="{{ person.givenname }}"
-	   spellcheck="false"
-	   aria-label="Vorname">
-    <input type="text" id="{{ base_id }}_prefix"
-	   name="{{ base_input_name}}[prefixname]"
-	   class="form-control"
-	   value="{{ person.prefixname }}"
-	   style="max-width: 10em"
-	   spellcheck="false"
-	   aria-label="Präfix">
-    <input type="text" id="{{ base_id }}_familyname"
-	   name="{{ base_input_name}}[familyname]"
-	   class="form-control"
-	   value="{{ person.familyname }}"
-	   spellcheck="false"
-	   aria-label="Vorname">
-    {% set field_id=base_id~"_item_editstatus" %}
-    {% set input_name=base_input_name~"[item][editStatus]" %}
-    <label class="input-group-text" for="{{ field_id }}">Status</label>
-    <select class="form-select" style ="max-width: 10em" id="{{ field_id }}" name="{{ input_name }}">
-	{% for value in ['importiert', 'in Arbeit', 'fertig'] %}
-	    <option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
-	{% endfor %}
-    </select>
-</div>
-<div class="input-group input-group-sm mx-1 my-1 pe-0">
-    <span class="input-group-text">geboren, gestorben</span>
-    <input type="text" id="{{ base_id }}_datebirth"
-	   name="{{ base_input_name}}[dateBirth]"
-	   class="form-control"
-	   value="{{ person.dateBirth }}"
-	   style="max-width: 10em"
-	   spellcheck="false"
-	   aria-label="Geburtsdatum">
-    <input type="text" id="{{ base_id }}_datedeath"
-	   name="{{ base_input_name}}[dateDeath]"
-	   class="form-control"
-	   value="{{ person.dateDeath }}"
-	   style="max-width: 10em"
-	   spellcheck="false"
-	   aria-label="Sterbedatum">
-    <span class="input-group-text ms-2">Vornamenvarianten</span>
-    <input type="text" id="{{ base_id }}_givennamevariants"
-	   name="{{ base_input_name}}[givennamevariants]"
-	   class="form-control"
-	   value="{{ person.givennamevariants|join(', ') }}"
-	   spellcheck="false"
-	   aria-label="Vornamenvarianten">
-    <span class="input-group-text ms-2">Familiennamenvarianten</span>
-    <input type="text" id="{{ base_id }}_familynamevariants"
-	   name="{{ base_input_name}}[familynamevariants]"
-	   class="form-control"
-	   value="{{ person.familynamevariants|join(', ') }}"
-	   spellcheck="false"
-	   aria-label="Familiennamenvarianten">
+<div {{ stimulus_controller('toggle-arrow', {
+     state: 0,
+     imgOpen: 'down',
+     imgClosed: 'right'
+     }) }}
+     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden"
+     class="my-1 pe-1">
+    <div class="input-group input-group-sm mt-1">
+	<span class="input-group-text">Vorname, Präfix, Nachname</span>
+	<input type="text" id="{{ base_id }}_givenname"
+	       name="{{ base_input_name}}[givenname]"
+	       class="form-control"
+	       value="{{ person.givenname }}"
+	       spellcheck="false"
+	       aria-label="Vorname">
+	<input type="text" id="{{ base_id }}_prefix"
+	       name="{{ base_input_name}}[prefixname]"
+	       class="form-control"
+	       value="{{ person.prefixname }}"
+	       style="max-width: 10em"
+	       spellcheck="false"
+	       aria-label="Präfix">
+	<input type="text" id="{{ base_id }}_familyname"
+	       name="{{ base_input_name}}[familyname]"
+	       class="form-control"
+	       value="{{ person.familyname }}"
+	       spellcheck="false"
+	       aria-label="Vorname">
+    </div>
+    <div class="input-group input-group-sm mt-1">
+	<span class="input-group-text">geboren, gestorben</span>
+	<input type="text" id="{{ base_id }}_datebirth"
+	       name="{{ base_input_name}}[dateBirth]"
+	       class="form-control"
+	       value="{{ person.dateBirth }}"
+	       style="max-width: 10em"
+	       spellcheck="false"
+	       aria-label="Geburtsdatum">
+	<input type="text" id="{{ base_id }}_datedeath"
+	       name="{{ base_input_name}}[dateDeath]"
+	       class="form-control"
+	       value="{{ person.dateDeath }}"
+	       style="max-width: 10em"
+	       spellcheck="false"
+	       aria-label="Sterbedatum">
+	<span class="input-group-text ms-2">Vornamenvarianten</span>
+	<input type="text" id="{{ base_id }}_givennamevariants"
+	       name="{{ base_input_name}}[givennamevariants]"
+	       class="form-control"
+	       value="{{ person.givennamevariants|join(', ') }}"
+	       spellcheck="false"
+	       aria-label="Vornamenvarianten">
+	<span class="input-group-text ms-2">Familiennamenvarianten</span>
+	<input type="text" id="{{ base_id }}_familynamevariants"
+	       name="{{ base_input_name}}[familynamevariants]"
+	       class="form-control"
+	       value="{{ person.familynamevariants|join(', ') }}"
+	       spellcheck="false"
+	       aria-label="Familiennamenvarianten">
+	{% if person.comment or person.noteperson or person.notename %}
+	    {% set expanded = true %}
+	{% else %}
+	    {% set expanded = false %}
+	{% endif %}
+	<button class="btn btn-sm ms-1 pt-0 align-middle"
+		type="button"
+		data-bs-toggle="collapse"
+		data-bs-target={{ "#comment#{person.id}" }}
+		aria-expanded="{{ expanded }}"
+		aria-controls={{ "comment#{person.id}" }}
+		data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
+    </div>
+    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{person.id}" }}">
+	<div class="input-group input-group-sm mt-1 ">
+	    <span class="input-group-text" style="min-width: 12rem">Kommentar (red.)</span>
+	    <textarea id="{{ base_id }}_comment"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[comment]"
+		      class="form-control form-control-sm">{{ person.comment }}</textarea>
+	</div>
+	<div class="input-group input-group-sm mt-1 ">
+	    <span class="input-group-text" style="min-width: 12rem">Bemerkung zur Person</span>
+	    <input type="text"
+		   id="{{ base_id }}_notePerson"
+		   name="{{ base_input_name }}[notePerson]"
+		   class="form-control form-control-sm"
+		   value="{{ person.noteperson }}">
+	</div>
+	<div class="input-group input-group-sm mt-1 ">
+	    <span class="input-group-text" style="min-width: 12rem">Bemerkung zum Namen</span>
+	    <input type="text"
+		   id="{{ base_id }}_noteName"
+		   name="{{ base_input_name }}[noteName]"
+		   class="form-control form-control-sm"
+		   value="{{ person.noteName }}">
+	</div>
+
+    </div>
+
 </div>

@@ -3,6 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\PersonRole;
+use App\Entity\Role;
+use App\Entity\Diocese;
+use App\Entity\Institution;
 use App\Entity\InstitutionPlace;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -167,4 +170,6 @@ class PersonRoleRepository extends ServiceEntityRepository
 
         return null;
     }
+
+
 }

@@ -1,0 +1,42 @@
+<div class="mt-1 pe-1"> {# empty div to copy the structure of the other sections #}
+    {% set base_id_extid=base_id~'_extId' %}
+    {% set base_input_name_extid=base_input_name~'[extId]' %}
+    <div class="input-group input-group-sm">
+	<span class="input-group-text"><a href="{{ person.item.geturiexternalbyauthority("GS") }}" target="_blank" rel="noopener">GS</a></span>
+	<input type="text" id="{{ base_id_extid }}_gs"
+	       name="{{ base_input_name_extid}}[gs]"
+	       class="form-control"
+	       value="{{ person.item.getidexternalbyauthority("GS") }}"
+	       spellcheck="false"
+	       aria-label="GSN">
+	<span class="input-group-text"><a href="{{ person.item.geturiexternalbyauthority("GND") }}" target="_blank" rel="noopener">GND</a></span>
+	<input type="text" id="{{ base_id_extid }}_gnd"
+	       name="{{ base_input_name_extid}}[gnd]"
+	       class="form-control"
+	       value="{{ person.item.getidexternalbyauthority("GND") }}"
+	       spellcheck="false"
+	       aria-label="GND-ID">
+	<span class="input-group-text"><a href="{{ person.item.geturiexternalbyauthority("Wikidata") }}" target="_blank" rel="noopener">Wikidata</a></span>
+	<input type="text" id="{{ base_id_extid }}_wikidata"
+	       name="{{ base_input_name_extid}}[wikidata]"
+	       class="form-control"
+	       value="{{ person.item.getidexternalbyauthority("Wikidata") }}"
+	       spellcheck="false"
+	       aria-label="Wikidata-ID">
+	<span class="input-group-text"><a href="{{ person.item.geturiexternalbyauthority("VIAF") }}" target="_blank" rel="noopener">VIAF</a></span>
+	<input type="text" id="{{ base_id_extid }}_viaf"
+	       name="{{ base_input_name_extid}}[viaf]"
+	       class="form-control"
+	       value="{{ person.item.getidexternalbyauthority("VIAF") }}"
+	       spellcheck="false"
+	       aria-label="VIAF-ID">
+	<span class="input-group-text"><a href="{{ person.item.geturiexternalbyauthority("Wikipedia") }}" target="_blank" rel="noopener">Wikipedia</a></span>
+	<input type="text" id="{{ base_id_extid }}_wikipedia"
+	       name="{{ base_input_name_extid}}[wikipedia]"
+	       class="form-control"
+	       style="width: 25%;"
+	       value="{{ person.item.getidexternalbyauthority("Wikipedia") }}"
+	       spellcheck="false"
+	       aria-label="Wikipedia">
+    </div>
+</div>

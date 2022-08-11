@@ -11,16 +11,20 @@ export default class extends Controller {
      * hide results of a previous search and reset page number
      */
     hideResults(event) {
-	// console.log('event bubbles up');
-	const eventTargetType = event.target.getAttribute('type');
-	//
 	if (this.hasPageNumberTarget) {
 	    // console.log(this.pageNumberTarget);
 	    this.pageNumberTarget.value = null;
 	}
-	if (eventTargetType == 'text') {
-	    this.resultTarget.style.visibility = "hidden";
+
+	for (let element of this.resultTargets) {
+	    element.style.visibility = "hidden";
 	}
+
+	// link this function to the div containing the input fields, then the following version is obsolete
+	// const eventTargetType = event.target.getAttribute('type');
+	// if (eventTargetType == 'text') {
+	//     this.resultTarget.style.visibility = "hidden";
+	// }
     }
 
 }

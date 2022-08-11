@@ -22,8 +22,12 @@ class Item {
 
     // map authority name
     const AUTHORITY_ID = [
-            "GS" => 200,
+            "GND" => 1,
+            "Wikidata" => 2,
+            "Wikipedia" => 3,
             "WIAG" => 5,
+            "VIAF" => 4,
+            "GS" => 200,
     ];
 
     /**
@@ -395,15 +399,21 @@ class Item {
         return $this->itemTypeId == self::ITEMTYPEID[$itemTypeName];
     }
 
-    /**
-     * @return object of type IdExternal for $authorityIdOrName
-     */
-    public function getIdExternalObj($authorityIdOrName) {
+    private function findAuthorityId($authorityIdOrName) {
         if (is_int($authorityIdOrName)) {
             $authorityId = $authorityIdOrName;
         } else {
             $authorityId = self::AUTHORITY_ID[$authorityIdOrName];
         }
+        return $authorityId;
+    }
+
+
+    /**
+     * @return object of type IdExternal for $authorityIdOrName
+     */
+    public function getIdExternalObj($authorityIdOrName) {
+        $authorityId = $this->findAuthorityId($authorityIdOrName);
 
         $result = null;
         foreach ($this->idExternal as $id) {
@@ -415,9 +425,20 @@ class Item {
         return $result;
     }
 
+    public function getIdExternalByAuthority($authorityIdOrName) {
+        $authorityId = $this->findAuthorityId($authorityIdOrName);
+        return $this->getIdExternalByAuthorityId($authorityId);
+    }
+
     public function getIdExternalByAuthorityId($authorityId) {
         $id = $this->getIdExternalObj($authorityId);
         return $id ? $id->getValue() : null;
+    }
+
+    public function getUriExternalByAuthority($authorityIdOrName) {
+        $authorityId = $this->findAuthorityId($authorityIdOrName);
+        $id = $this->getIdExternalObj($authorityId);
+        return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
 
     public function getUriExternalByAuthorityId($authorityId) {

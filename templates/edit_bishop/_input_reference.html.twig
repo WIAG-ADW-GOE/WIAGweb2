@@ -1,0 +1,42 @@
+<div class="my-1"> {# empty div to copy the structure of the other sections #}
+    <div class="input-group input-group-sm">
+	<span class="input-group-text">Band</span>
+	{# id (hidden) #}
+	<input type="text"
+	       id="{{ base_id_ref }}_id"
+	       name="{{ base_input_name_ref }}[id]"
+	       class="form-control form-control-sm"
+	       value="{{ ref.id }}"
+	       hidden="hidden>">
+	<span class="w-25"
+    	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),
+	      }) }}>
+ 	    <input type="text" id="{{ base_id_ref }}_volume"
+		   name="{{ base_input_name_ref}}[volume]"
+		   class="form-control form-control-sm"
+		   value="{% if ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% endif %}"
+		   spellcheck="false"
+		   aria-label="Band"
+		   required="required"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		data-autocomplete-target="results"
+		style="max-width: 18rem;"></ul>
+	</span>
+	<span class="input-group-text">Seite</span>
+ 	<input type="text" id="{{ base_id_ref }}_page"
+	       name="{{ base_input_name_ref}}[page]"
+	       class="form-control form-control-sm"
+	       value="{{ ref.page }}"
+	       spellcheck="false"
+	       aria-label="Band">
+	<span class="input-group-text">ID/Nr.</span>
+ 	<input type="text" id="{{ base_id_ref }}_idInReference"
+	       name="{{ base_input_name_ref}}[idInReference]"
+	       class="form-control form-control-sm"
+	       value="{{ ref.idinreference }}"
+	       spellcheck="false"
+	       aria-label="Id/Nummer">
+    </div>
+</div>

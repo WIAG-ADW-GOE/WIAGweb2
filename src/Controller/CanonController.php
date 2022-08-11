@@ -372,6 +372,7 @@ class CanonController extends AbstractController {
     }
 
     /**
+     * obsolete? 2022-08-01
      * show selected canons (e.g. by domstift) in one page
      * @Route("/domherr/onepage_legacy", name="canon_onepage_legacy")
      */

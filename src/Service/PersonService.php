@@ -3,13 +3,19 @@
 namespace App\Service;
 
 
+use App\Entity\Item;
 use App\Entity\Person;
-# use App\Repository\PersonRepository;
-# use App\Service\RDFService;
+use App\Entity\PersonRole;
+use App\Entity\ItemReference;
+use App\Entity\ReferenceVolume;
+use App\Entity\Role;
+use App\Entity\Diocese;
+use App\Entity\Institution;
+use App\Entity\InputError;
 
 use Symfony\Component\HttpFoundation\Response;
 
-# use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -54,8 +60,11 @@ class PersonService {
     ];
 
     private $router;
+    private $entityManager;
 
-    public function __construct(UrlGeneratorInterface $router) {
+    public function __construct(UrlGeneratorInterface $router,
+                                EntityManagerInterface $entityManager) {
+        $this->entityManager = $entityManager;
         $this->router = $router;
     }
 
@@ -288,7 +297,7 @@ class PersonService {
         $pld = [
             'rdf:type' => [
                 '@rdf:resource' => RDFService::NAMESP_GND.'DifferentiatedPerson'
-                ]
+            ]
         ];
 
         $personId = $person->getItem()->getIdPublic();
@@ -915,6 +924,179 @@ class PersonService {
 
         return null;
 
+    }
+
+    /**
+     * map content of $data to $obj_list
+     */
+    public function mapPerson($person, $data, $user_id) {
+        // item
+        $item = $person->getItem();
+
+        $item->setChangedBy($user_id);
+        $item->setDateChanged(new \DateTimeImmutable());
+        $editStatus = $data['item']['editStatus'];
+        if (trim($editStatus) == "") {
+            $editStatus = null;
+        }
+        $item->setEditStatus($editStatus);
+
+        // item, checkboxes
+        dump($data['item']);
+        $key_list = ['isOnline', 'isDeleted'];
+        foreach($key_list as $key) {
+            $set_fnc = 'set'.ucfirst($key);
+            $item->$set_fnc(isset($data['item'][$key]));
+        }
+
+        // person
+        $key_list = ['givenname',
+                     'prefixname',
+                     'familyname',
+                     'dateBirth',
+                     'dateDeath',
+                     'comment',
+                     'noteName',
+                     'notePerson'];
+        $this->setByKeys($person, $data, $key_list);
+
+
+
+        // TODO date sortkey, numDateBirth, numDateDeath
+        // TODO name variants
+        // TODO table name_lookup
+
+        foreach ($data['role'] as $role_data_loop) {
+            $this->mapRole($person, $role_data_loop);
+        }
+
+        foreach ($data['ref'] as $ref_data_loop) {
+             $this->mapReference($person, $ref_data_loop);
+        }
+
+        // validation
+        if (is_null($person->getItem()->getEditStatus())) {
+            $msg = "Das Feld 'Status' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('status', $msg));
+        }
+
+        return $person;
+    }
+
+    private function mapRole($person, $data) {
+        $roleRepository = $this->entityManager->getRepository(PersonRole::class);
+        $roleRoleRepository = $this->entityManager->getRepository(Role::class);
+        $dioceseRepository = $this->entityManager->getRepository(Diocese::class);
+        $institutionRepository = $this->entityManager->getRepository(Institution::class);
+
+        $id = $data['id'];
+
+        // new role?
+        if ($data['id'] == 0) {
+            $role = new PersonRole();
+            $person->getRole()->add($role);
+            $role->setPerson($person);
+            $this->entityManager->persist($role);
+        } else {
+            $role = $roleRepository->find($id);
+        }
+
+        // delete? a new role can also be deleted this way
+        if (isset($data['delete'])) {
+            $person->getRole()->removeElement($role);
+            $role->setPerson(null);
+            $this->entityManager->remove($role);
+            return $role;
+        }
+
+        $role_name = trim($data['role']);
+        $role_role = $roleRoleRepository->findOneByName($role_name);
+        if ($role_role) {
+            $role->setRole($role_role);
+        }
+        $role->setRoleName($role_name);
+
+        // diocese
+        $diocese_name = trim($data['diocese']);
+        $diocese = $dioceseRepository->findOneByName($diocese_name);
+        if ($diocese) {
+            $role->setDiocese($diocese);
+        }
+        $role->setDioceseName($diocese_name);
+
+        // institution
+        $institution_name = trim($data['institution']);
+        $institution = $institutionRepository->findOneByName($institution_name);
+        if ($institution) {
+            $role->setInstitution($institution);
+        }
+        $role->setInstitutionName($institution_name);
+
+        // other fields
+        $this->setByKeys($role, $data, ['dateBegin', 'dateEnd', 'comment', 'note']);
+        return $role;
+    }
+
+    /**
+     * fill person's references with $data
+     */
+    private function mapReference($person, $data) {
+        $referenceRepository = $this->entityManager->getRepository(ItemReference::class);
+        $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
+
+        $id = $data['id'];
+        $item = $person->getItem();
+        $item_type_id = $item->getItemTypeId();
+
+        // new reference?
+        // there is no Doctrine association
+        if ($data['id'] == 0) {
+            $reference = new ItemReference();
+            $reference->setItemId($item->getId());
+            $reference->setItemTypeId($item_type_id);
+            $this->entityManager->persist($reference);
+        } else {
+            $reference = $referenceRepository->find($id);
+        }
+
+        // delete?
+        if (isset($data['delete'])) {
+            $item->getReference()->removeElement($reference);
+            $reference->setItem(null);
+            $this->entityManager->remove($reference);
+            return $reference;
+        }
+
+        // set data
+        $volume_name = trim($data['volume']);
+        $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
+        if ($volume_query_result) {
+            $volume = $volume_query_result[0];
+            $reference->setItemTypeId($item_type_id);
+            $reference->setReferenceId($volume->getReferenceId());
+        } else {
+            $error_msg = "Kein Band für '".$volume_name."' gefunden.";
+            $person->getInputError()->add(new InputError('reference', $error_msg));
+        }
+
+        $key_list = ['page','idInReference'];
+        $this->setByKeys($reference, $data, $key_list);
+
+        return $reference;
+    }
+
+    /**
+     * set elements of $obj
+     */
+    private function setByKeys($obj, $data, $key_list) {
+        foreach($key_list as $key) {
+            $value = trim($data[$key]);
+            if (strlen($value) == 0) {
+                $value = null;
+            }
+            $set_fnc = 'set'.ucfirst($key);
+            $obj->$set_fnc($value);
+        }
     }
 
 };

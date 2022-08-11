@@ -153,9 +153,18 @@ class PersonRole
         return $this->id;
     }
 
-    public function getInstitution()
-    {
+    public function setId(int $id): self {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getInstitution() {
         return $this->institution;
+    }
+
+    public function setInstitution(Institution $institution): self {
+        $this->institution = $institution;
+        return $this;
     }
 
     public function getComment(): ?string
@@ -186,6 +195,11 @@ class PersonRole
         return $this->person;
     }
 
+    public function setPerson(?Person $person): self {
+        $this->person = $person;
+        return $this;
+    }
+
     public function getRoleId(): ?int
     {
         return $this->roleId;
@@ -200,6 +214,11 @@ class PersonRole
 
     public function getRole() {
         return $this->role;
+    }
+
+    public function setRole(Role $role): self {
+        $this->role = $role;
+        return $this;
     }
 
     public function getRoleName(): ?string
@@ -228,6 +247,11 @@ class PersonRole
 
     public function getDiocese() {
         return $this->diocese;
+    }
+
+    public function setDiocese(Diocese $diocese): self {
+        $this->diocese = $diocese;
+        return $this;
     }
 
     public function getDioceseName(): ?string
@@ -401,7 +425,7 @@ class PersonRole
 
         $inst_or_dioc = null;
         if($this->institution){
-            $inst_or_dioc = $this->instition->getName();
+            $inst_or_dioc = $this->institution->getName();
         } elseif($this->institutionName) {
             $inst_or_dioc = $this->institutionName;
         } elseif($this->diocese) {

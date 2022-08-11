@@ -38,10 +38,6 @@ class Role
         return $this->id;
     }
 
-    public function getPersonRoles() {
-        return $this->personRoles;
-    }
-
     public function getComment(): ?string
     {
         return $this->comment;

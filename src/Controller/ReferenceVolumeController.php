@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\ReferenceVolume;
 use App\Repository\ReferenceVolumeRepository;
 use App\Repository\ItemTypeRepository;
 
@@ -12,8 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+use Doctrine\ORM\EntityManagerInterface;
 
-class ReferenceController extends AbstractController {
+class ReferenceVolumeController extends AbstractController {
+    const HINT_SIZE = 12;
 
     /**
      * display a list of references by item type
@@ -21,17 +24,17 @@ class ReferenceController extends AbstractController {
      *
      * @Route("/referenz/liste-type/{itemTypeId}", name="reference_list_type")
      */
-    public function listByType(int $itemTypeId, Request $request) {
+    // public function listByType(int $itemTypeId, Request $request) {
 
-        $repository = $this->getDoctrine()
-                           ->getRepository(Item::class);
+    //     $repository = $this->getDoctrine()
+    //                        ->getRepository(Item::class);
 
-        $result = $repository->referenceByItemType($itemTypeId);
+    //     $result = $repository->referenceByItemType($itemTypeId);
 
-        return $this->renderForm('reference/list.html.twig', [
-            'references' => $result,
-        ]);
-    }
+    //     return $this->renderForm('reference/list.html.twig', [
+    //         'references' => $result,
+    //     ]);
+    // }
 
     /**
      * display the list of references

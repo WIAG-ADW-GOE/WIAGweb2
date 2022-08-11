@@ -1,55 +1,120 @@
-<div class="input-group input-group-sm mx-1 my-1 pe-0">
-    {% set base_id=editFormId~'_'~outer_index~'_role_'~loop.index0 %}
-    {% set base_input_name=editFormId~'['~outer_index~'][role]['~loop.index0~']' %}
-    <input type="text" id="{{ base_id }}_id"
-	   name="{{ base_input_name }}[id]"
-	   class="form-control form-control-sm"
-	   value="{{ role.id }}"
-	   hidden="hidden>">
-    <span class="input-group-text">Amt, Bistum, Kloster/Stift</span>
-    <input type="text" id="{{ base_id }}_role"
-	   name="{{ base_input_name}}[role]"
-	   class="form-control"
-	   value="{{ role.roleDisplayName }}"
-	   spellcheck="false"
-	   aria-label="Amt">
-    <input type="text" id="{{ base_id }}_diocese"
-	   name="{{ base_input_name}}[diocese]"
-	   class="form-control"
-	   value="{{ role.dioceseDisplayName }}"
-	   spellcheck="false"
-	   aria-label="Bistum">
-    <input type="text" id="{{ base_id }}_institution"
-	   name="{{ base_input_name}}[institution]"
-	   class="form-control"
-	   value="{{ role.institutionDisplayName }}"
-	   spellcheck="false"
-	   aria-label="Kloster">
-    <span class="input-group-text">von, bis</span>
-    <input type="text" id="{{ base_id }}_dateBegin"
-	   name="{{ base_input_name}}[dateBegin]"
-	   class="form-control"
-	   value="{{ role.dateBegin }}"
-	   style="max-width: 10em"
-	   spellcheck="false"
-	   aria-label="Beginn">
-    <input type="text" id="{{ base_id }}_dateEnd"
-	   name="{{ base_input_name}}[dateEnd]"
-	   class="form-control"
-	   value="{{ role.dateEnd }}"
-	   style="max-width: 10em"
-	   spellcheck="false"
-	   aria-label="Ende">
-
-    {% if false %}
+{# parameter: role, base_id_role, base_input_name_role #}
+<div class="my-1"
+     data-controller="toggle-arrow input-state"
+     data-toggle-arrow-img-open-value="down"
+     data-toggle-arrow-img-closed-value="right"
+     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden change->input-state#set">
+    <div class="input-group input-group-sm">
+	<span class="input-group-text">Amt, Bistum, Kloster/Stift</span>
+	{# id (hidden) #}
+	<input type="text"
+	       id="{{ base_id_role }}_id"
+	       name="{{ base_input_name_role }}[id]"
+	       class="form-control form-control-sm"
+	       value="{{ role.id }}"
+	       hidden="hidden>">
+	{# role name #}
+	<span class="w-25"
+    	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'role'}),
+	      }) }}>
+	    <input type="text" id="{{ base_id_role }}_role"
+		   name="{{ base_input_name_role }}[role]"
+		   class="form-control form-control-sm rounded-0"
+		   value="{{ role.roleDisplayName }}"
+		   spellcheck="false"
+		   aria-label="Amt"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		data-autocomplete-target="results"
+		style="max-width: 18rem;"></ul>
+	</span>
+	{# diocese #}
+	<span class="w-10"
+	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'diocese'}),
+	      }) }}>
+	    <input type="text" id="{{ base_id_role }}_diocese"
+		   name="{{ base_input_name_role }}[diocese]"
+		   class="form-control form-control-sm rounded-0"
+		   value="{{ role.dioceseDisplayName }}"
+		   spellcheck="false"
+		   aria-label="Bistum"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		data-autocomplete-target="results"
+		style="max-width: 12rem;"></ul>
+	</span>
+	{# monastery/domstift #}
+	<span class="w-15"
+	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'institution'}),
+	      }) }} >
+	    <input type="text" id="{{ base_id_role }}_institution"
+		   name="{{ base_input_name_role }}[institution]"
+		   class="form-control form-control-sm rounded-0"
+		   value="{{ role.institutionDisplayName }}"
+		   spellcheck="false"
+		   aria-label="Kloster"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		data-autocomplete-target="results"
+		style="max-width: 20rem;"></ul>
+	</span>
 	<span class="input-group-text">von, bis</span>
-	{{ include('edit_bishop/_input_text.html.twig', {
-	    field: 'dateBegin',
-	    style: 'max-width: 10em',
-	    aria_label: 'Beginn'}) }}
-    {{ include('edit_bishop/_input_text.html.twig', {
-	field: 'dateEnd',
-	style: 'max-width: 10em',
-	aria_label: 'Ende'}) }}
-    {% endif %}
+	<input type="text" id="{{ base_id_role }}_dateBegin"
+	       name="{{ base_input_name_role }}[dateBegin]"
+	       class="form-control"
+	       value="{{ role.dateBegin }}"
+	       style="max-width: 10em"
+	       spellcheck="false"
+	       aria-label="Beginn">
+	<input type="text" id="{{ base_id_role }}_dateEnd"
+	       name="{{ base_input_name_role }}[dateEnd]"
+	       class="form-control"
+	       value="{{ role.dateEnd }}"
+	       style="max-width: 10em"
+	       spellcheck="false"
+	       aria-label="Ende">
+	{% if role.comment or role.note %}
+	    {% set expanded = true %}
+	{% else %}
+	    {% set expanded = false %}
+	{% endif %}
+	<button class="btn btn-sm ms-1 pt-0 align-middle"
+		type="button"
+		data-bs-toggle="collapse"
+		data-bs-target={{ "#comment#{role.id}" }}
+		aria-expanded="{{ expanded }}"
+		aria-controls={{ "comment#{role.id}" }}
+		data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
+	{# delete #}
+	<div class="form_check ms-1 mt-1 align-middle">
+	    <input class="form-check-input"
+		   type="checkbox"
+		   value=""
+		   id="{{ base_id_role }}_delete"
+		   name="{{ base_input_name_role }}[delete]"
+		   data-input-state-target="checkbox">
+	    <label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
+	</div>
+    </div>
+    <div class="ms-4 mt-1 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{role.id}" }}">
+	<div class="input-group input-group-sm">
+	    <span class="input-group-text">Kommentar (red.)</span>
+	    <input type="text"
+		   id="{{ base_id_role }}_comment"
+		   name="{{ base_input_name_role }}[comment]"
+		   class="form-control form-control-sm"
+		   value="{{ role.comment }}">
+	</div>
+	<div class="input-group input-group-sm mt-1">
+	    <span class="input-group-text">Bemerkung</span>
+	    <input type="text"
+		   id="{{ base_id_role }}_note"
+		   name="{{ base_input_name_role }}[note]"
+		   class="form-control form-control-sm"
+		   value="{{ role.note }}">
+	</div>
+    </div>
 </div>
