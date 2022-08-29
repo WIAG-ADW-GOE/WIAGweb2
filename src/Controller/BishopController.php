@@ -61,7 +61,10 @@ class BishopController extends AbstractController {
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
-            // set offset to page begin
+            $id_all = $repository->bishopIds($model);
+            $count = count($id_all);
+
+             // set offset to page begin
             if (!is_null($offset)) {
                 $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
             } elseif (!is_null($page_number) && $page_number > 0) {
@@ -70,9 +73,6 @@ class BishopController extends AbstractController {
             } else {
                 $offset = 0;
             }
-
-            $id_all = $repository->bishopIds($model);
-            $count = count($id_all);
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
