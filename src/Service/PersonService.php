@@ -942,7 +942,6 @@ class PersonService {
         $item->setEditStatus($editStatus);
 
         // item, checkboxes
-        dump($data['item']);
         $key_list = ['isOnline', 'isDeleted'];
         foreach($key_list as $key) {
             $set_fnc = 'set'.ucfirst($key);
@@ -1048,12 +1047,11 @@ class PersonService {
         $item = $person->getItem();
         $item_type_id = $item->getItemTypeId();
 
-        // new reference?
-        // there is no Doctrine association
+        // new reference
         if ($data['id'] == 0) {
             $reference = new ItemReference();
-            $reference->setItemId($item->getId());
-            $reference->setItemTypeId($item_type_id);
+            $item->getReference()->add($reference);
+            $reference->setItem($item);
             $this->entityManager->persist($reference);
         } else {
             $reference = $referenceRepository->find($id);
@@ -1069,6 +1067,7 @@ class PersonService {
 
         // set data
         $volume_name = trim($data['volume']);
+        $reference->setVolumeTitleShort($volume_name); # save data for the form
         $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
         if ($volume_query_result) {
             $volume = $volume_query_result[0];

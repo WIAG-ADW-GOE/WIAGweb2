@@ -65,6 +65,13 @@ class ItemReference
      */
     private $referenceId;
 
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $volumeTitleShort;
+
+
     public function __construct($id = 0) {
         $this->id = $id;
     }
@@ -140,6 +147,11 @@ class ItemReference
         return $this;
     }
 
+    public function setItem($item): self {
+        $this->item = $item;
+        return $this;
+    }
+
     public function getItemId(): ?int
     {
         return $this->itemId;
@@ -174,6 +186,18 @@ class ItemReference
     {
         return $this->referenceId;
     }
+
+    public function setVolumeTitleShort(string $volumeTitleShort): self {
+        $this->volumeTitleShort = $volumeTitleShort;
+
+        return $this;
+    }
+
+    public function getVolumeTitleShort(): ?string
+    {
+        return $this->volumeTitleShort;
+    }
+
 
     public function containsBio() {
         $cpage = $this->splitPage();

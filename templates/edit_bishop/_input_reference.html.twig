@@ -15,7 +15,7 @@
  	    <input type="text" id="{{ base_id_ref }}_volume"
 		   name="{{ base_input_name_ref}}[volume]"
 		   class="form-control form-control-sm"
-		   value="{% if ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% endif %}"
+		   value="{% if ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% elseif ref.volumetitleshort %}{{ ref.volumetitleshort }}{% endif %}"
 		   spellcheck="false"
 		   aria-label="Band"
 		   required="required"
@@ -38,5 +38,16 @@
 	       value="{{ ref.idinreference }}"
 	       spellcheck="false"
 	       aria-label="Id/Nummer">
+	{# delete #}
+	<div class="form_check ms-1 mt-1 align-middle">
+	    <input class="form-check-input"
+		   type="checkbox"
+		   value=""
+		   id="{{ base_id_ref }}_delete"
+		   name="{{ base_input_name_ref }}[delete]"
+		   data-input-state-target="checkbox">
+	    <label class="form-check-label ms-1" for="{{ base_id_ref }}_delete">löschen</label>
+	</div>
+
     </div>
 </div>
