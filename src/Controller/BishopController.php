@@ -65,6 +65,10 @@ class BishopController extends AbstractController {
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
+            $itemRepository = $entityManager->getRepository(Item::class);
+            $id_all = $itemRepository->bishopIds($model);
+            $count = count($id_all);
+
             // set offset to page begin
             if (!is_null($offset)) {
                 $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
