@@ -27,7 +27,8 @@
 	{{ include('edit_bishop/_edit_single.html.twig', {person: person}) }}
     {% endfor %}
     <div class="row mx-2 mt-2">
-	{% if true %} {# submit directly for debugging#}
+	{% set submit_debug=true %} {# submit directly for debugging#}
+	{% if submit_debug %}
 	    <div class="col">
 		<button type="submit" formaction="{{ path('edit_bishop_save') }}" class="btn btn-primary float-end">Speichern</button>
 	    </div>

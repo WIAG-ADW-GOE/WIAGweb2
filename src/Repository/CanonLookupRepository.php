@@ -543,7 +543,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $query = $qb->getQuery();
         $result = $query->getResult();
-        dump($result);
 
         return $result;
     }

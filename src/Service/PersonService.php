@@ -978,6 +978,8 @@ class PersonService {
                 $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
                 $person->getInputError()->add(new InputError('name', $msg));
             }
+        } else {
+            $person->setNumDateBirth(null);
         }
 
         $date_death = $person->getDateDeath();
@@ -989,12 +991,17 @@ class PersonService {
                 $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
                 $person->getInputError()->add(new InputError('name', $msg));
             }
+        } else {
+            $person->setNumDateDeath(null);
         }
 
         // roles
         foreach ($data['role'] as $role_data_loop) {
             $this->mapRole($person, $role_data_loop);
         }
+
+        // date min/date max
+        $this->updateDateRange($person);
 
         // references
         foreach ($data['ref'] as $ref_data_loop) {
@@ -1119,7 +1126,7 @@ class PersonService {
         $role->setInstitutionName($institution_name);
 
         // other fields
-        $this->setByKeys($role, $data, ['comment', 'note']);
+        $this->setByKeys($role, $data, ['comment', 'note', 'dateBegin', 'dateEnd']);
 
 
         // numerical values for dates
@@ -1133,9 +1140,12 @@ class PersonService {
                 $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
                 $person->getInputError()->add(new InputError('role', $msg));
             }
+        } else {
+            $role->setNumDateBegin(null);
         }
 
         $date_end = $role->getDateEnd();
+
         if (!$this->emptyDate($date_end)) {
             $year = $this->utilService->parseDate($date_end, 'upper');
             if (!is_null($year)) {
@@ -1145,6 +1155,8 @@ class PersonService {
                 $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
                 $person->getInputError()->add(new InputError('role', $msg));
             }
+        } else {
+            $role->setNumDateEnd(null);
         }
 
         $sort_key = UtilService::SORT_KEY_MAX;
@@ -1232,6 +1244,50 @@ class PersonService {
             $set_fnc = 'set'.ucfirst($key);
             $obj->$set_fnc($value);
         }
+    }
+
+    /**
+     * updateDateRange($person)
+     *
+     * update dateMin and dateMax
+     */
+    private function updateDateRange($person) {
+        $date_min = null;
+        $date_max = null;
+
+        foreach ($person->getRole() as $role) {
+            if (is_null($date_min) || $date_min > $role->getNumDateBegin()) {
+                $date_min = $role->getNumDateBegin();
+            }
+            if (is_null($date_max) || $date_max < $role->getNumDateEnd()) {
+                $date_max = $role->getNumDateEnd();
+            }
+        }
+
+        // birth and death restrict date range
+        $date_birth = $person->getNumDateBirth();
+        if (!is_null($date_birth)
+            && (is_null($date_min) || $date_min < $date_birth)) {
+            $date_min = $date_birth;
+        }
+        $date_death = $person->getNumDateDeath();
+        if (!is_null($date_death)
+            && (is_null($date_max) || $date_max > $date_death)) {
+            $date_max = $date_death;
+        }
+
+        // use date_min as fallback for $date_max and vice versa
+        if (is_null($date_max)) {
+            $date_max = $date_min;
+        }
+        if (is_null($date_min)) {
+            $date_min = $date_max;
+        }
+
+        $person->setDateMin($date_min);
+        $person->setDateMax($date_max);
+
+        return $person;
     }
 
 };
