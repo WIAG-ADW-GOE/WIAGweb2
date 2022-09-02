@@ -14,6 +14,10 @@ class BishopFormModel {
     public $office = null;
     public $year = null;
     public $someid = null;
+    public $isOnline = null;
+    public $isDeleted = null;
+    public $editStatus = null;
+    public $commentDuplicate = null;
     public $facetDiocese = null;
     public $facetOffice = null;
 
@@ -33,7 +37,18 @@ class BishopFormModel {
     public static function newByArray($data) {
         $model = new self();
 
-        $keys = ['name', 'diocese', 'office', 'year', 'someid'];
+        // set defaults
+        if (!array_key_exists('isOnline', $data)) {
+            $data['isOnline'] = true;
+        }
+        if (!array_key_exists('isDeleted', $data)) {
+            $data['isDeleted'] = false;
+        }
+        if (!array_key_exists('commentDuplicate', $data)) {
+            $data['commentDuplicate'] = null;
+        }
+
+        $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate'];
         foreach($keys as $key) {
             $model->$key = $data[$key];
         }
@@ -45,6 +60,7 @@ class BishopFormModel {
 
     public function isEmpty() {
         $value = true;
+        // list only elements that are relevant in a regular query (not edit)
         $keys = ['name', 'diocese', 'office', 'year', 'someid'];
         foreach($keys as $key) {
             $value = $value && is_null($this->$key);

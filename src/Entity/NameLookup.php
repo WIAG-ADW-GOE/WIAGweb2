@@ -23,10 +23,10 @@ class NameLookup
     private $personId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="nameLookup")
+     * @ORM\ManyToOne(targetEntity="Person", inversedBy="nameLookup")
      * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
      */
-    private $item;
+    private $person;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -55,12 +55,20 @@ class NameLookup
         return $this;
     }
 
+    public function setPerson($person): self
+    {
+        $this->person = $person;
+
+        return $this;
+    }
+
+
     public function getGnFn(): ?string
     {
         return $this->gnFn;
     }
 
-    public function setGnFn(string $gnFn): self
+    public function setGnFn(?string $gnFn): self
     {
         $this->gnFn = $gnFn;
 
@@ -72,10 +80,11 @@ class NameLookup
         return $this->gnPrefixFn;
     }
 
-    public function setGnPrefixFn(string $gnPrefixFn): self
+    public function setGnPrefixFn(?string $gnPrefixFn): self
     {
         $this->gnPrefixFn = $gnPrefixFn;
 
         return $this;
     }
+
 }

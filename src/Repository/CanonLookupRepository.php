@@ -192,7 +192,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         if ($name) {
             $qb->join('App\Entity\canonLookup', 'canon_name', 'WITH', 'c.personIdName = canon_name.personIdName')
                ->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = canon_name.personIdRole')
-               ->andWhere('name_lookup.gnFn LIKE :q_name OR name_lookup.gnPrefixFn LIKE :q_name')
+               ->andWhere('name_lookup.gnPrefixFn LIKE :q_name OR name_lookup.gnFn LIKE :q_name')
                ->setParameter('q_name', '%'.$name.'%');
         }
 
@@ -687,12 +687,13 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function suggestCanonName($name, $hintSize) {
         // join name_lookup via personIdRole (all canons)
+        // show version with prefix if present!
         $qb = $this->createQueryBuilder('c')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
+                   ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
                    ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);

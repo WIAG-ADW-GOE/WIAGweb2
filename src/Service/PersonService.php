@@ -11,7 +11,11 @@ use App\Entity\ReferenceVolume;
 use App\Entity\Role;
 use App\Entity\Diocese;
 use App\Entity\Institution;
+use App\Entity\GivennameVariant;
+use App\Entity\FamilynameVariant;
 use App\Entity\InputError;
+
+use App\Service\UtilService;
 
 use Symfony\Component\HttpFoundation\Response;
 
@@ -61,11 +65,14 @@ class PersonService {
 
     private $router;
     private $entityManager;
+    private $utilService;
 
     public function __construct(UrlGeneratorInterface $router,
-                                EntityManagerInterface $entityManager) {
+                                EntityManagerInterface $entityManager,
+                                UtilService $utilService) {
         $this->entityManager = $entityManager;
         $this->router = $router;
+        $this->utilService = $utilService;
     }
 
     public function uriWiagId($id) {
@@ -935,18 +942,17 @@ class PersonService {
 
         $item->setChangedBy($user_id);
         $item->setDateChanged(new \DateTimeImmutable());
-        $editStatus = $data['item']['editStatus'];
-        if (trim($editStatus) == "") {
-            $editStatus = null;
-        }
-        $item->setEditStatus($editStatus);
 
-        // item, checkboxes
-        $key_list = ['isOnline', 'isDeleted'];
+        // item: checkboxes
+        $key_list = ['isOnline', 'isDeleted', 'formIsEdited'];
         foreach($key_list as $key) {
             $set_fnc = 'set'.ucfirst($key);
             $item->$set_fnc(isset($data['item'][$key]));
         }
+
+        // item: status values, editorial notes
+        $key_list = ['editStatus', 'commentDuplicate'];
+        $this->setByKeys($item, $data['item'], $key_list);
 
         // person
         $key_list = ['givenname',
@@ -959,27 +965,108 @@ class PersonService {
                      'notePerson'];
         $this->setByKeys($person, $data, $key_list);
 
+        // name variants
+        $this->mapNameVariants($person, $data);
 
+        // numerical values for dates
+        $date_birth = $person->getDateBirth();
+        if (!is_null($date_birth)) {
+            $year = $this->utilService->parseDate($date_birth, 'lower');
+            if (!is_null($year)) {
+                $person->setNumDateBirth($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
+                $person->getInputError()->add(new InputError('name', $msg));
+            }
+        }
 
-        // TODO date sortkey, numDateBirth, numDateDeath
-        // TODO name variants
-        // TODO table name_lookup
+        $date_death = $person->getDateDeath();
+        if (!is_null($date_death)) {
+            $year = $this->utilService->parseDate($date_death, 'upper');
+            if (!is_null($year)) {
+                $person->setNumDateDeath($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
+                $person->getInputError()->add(new InputError('name', $msg));
+            }
+        }
 
+        // roles
         foreach ($data['role'] as $role_data_loop) {
             $this->mapRole($person, $role_data_loop);
         }
 
+        // references
         foreach ($data['ref'] as $ref_data_loop) {
              $this->mapReference($person, $ref_data_loop);
         }
 
         // validation
-        if (is_null($person->getItem()->getEditStatus())) {
+        if ($item->getIsOnline() && $item->getIsDeleted()) {
+            $msg = "Der Eintrag kann nicht gleichzeitig online und gelöscht sein.";
+            $person->getInputError()->add(new InputError('status', $msg));
+        }
+        if (is_null($item->getEditStatus())) {
             $msg = "Das Feld 'Status' darf nicht leer sein.";
             $person->getInputError()->add(new InputError('status', $msg));
         }
 
         return $person;
+    }
+
+    private function mapNameVariants($person, $data) {
+        // givenname
+        $gnv_data = trim($data['givennameVariants']);
+        $person->setFormGivennameVariants($gnv_data);
+
+        // - remove entries
+        $person_gnv = $person->getGivennameVariants();
+        foreach ($person_gnv as $gnv_remove) {
+            $person_gnv->removeElement($gnv_remove);
+            $gnv_remove->setPerson(null);
+            $this->entityManager->remove($gnv_remove);
+        }
+
+        // - set new entries
+        $gnv_list = explode(',', $gnv_data);
+        foreach ($gnv_list as $gnv) {
+            if (trim($gnv) != "") {
+                $gnv_new = new GivenNameVariant();
+                $person_gnv->add($gnv_new);
+                $gnv_new->setPerson($person);
+                $this->entityManager->persist($gnv_new);
+
+                $gnv_new->setName(trim($gnv));
+                $gnv_new->setLang('de');
+            }
+        }
+
+        // familyname
+        $fnv_data = trim($data['familynameVariants']);
+        $person->setFormFamilynameVariants($fnv_data);
+
+        // - remove entries
+        $person_fnv = $person->getFamilynameVariants();
+        foreach ($person_fnv as $fnv_remove) {
+            $person_fnv->removeElement($fnv_remove);
+            $fnv_remove->setPerson(null);
+            $this->entityManager->remove($fnv_remove);
+        }
+
+        // - set new entries
+        $fnv_list = explode(',', $fnv_data);
+        foreach ($fnv_list as $fnv) {
+            if (trim($fnv) != "") {
+                $fnv_new = new FamilyNameVariant();
+                $person_fnv->add($fnv_new);
+                $fnv_new->setPerson($person);
+                $this->entityManager->persist($fnv_new);
+
+                $fnv_new->setName(trim($fnv));
+                $fnv_new->setLang('de');
+            }
+        }
+
     }
 
     private function mapRole($person, $data) {
@@ -1032,8 +1119,55 @@ class PersonService {
         $role->setInstitutionName($institution_name);
 
         // other fields
-        $this->setByKeys($role, $data, ['dateBegin', 'dateEnd', 'comment', 'note']);
+        $this->setByKeys($role, $data, ['comment', 'note']);
+
+
+        // numerical values for dates
+        $date_begin = $role->getDateBegin();
+        if (!$this->emptyDate($date_begin)) {
+            $year = $this->utilService->parseDate($date_begin, 'lower');
+            if (!is_null($year)) {
+                $this->setByKeys($role, $data, ['dateBegin']);
+                $role->setNumDateBegin($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
+                $person->getInputError()->add(new InputError('role', $msg));
+            }
+        }
+
+        $date_end = $role->getDateEnd();
+        if (!$this->emptyDate($date_end)) {
+            $year = $this->utilService->parseDate($date_end, 'upper');
+            if (!is_null($year)) {
+                $this->setByKeys($role, $data, ['dateEnd']);
+                $role->setNumDateEnd($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
+                $person->getInputError()->add(new InputError('role', $msg));
+            }
+        }
+
+        $sort_key = UtilService::SORT_KEY_MAX;
+        if (!$this->emptyDate($date_begin)) {
+            $sort_key = $this->utilService->sortKeyVal($date_begin);
+        } elseif (!$this->emptyDate($date_end)) {
+            $sort_key = $this->utilService->sortKeyVal($date_end);
+        }
+
+        if (is_null($sort_key)) {
+            $msg = "Keine gültige Datumsangabe für Sortierschlüssel in '".$date_begin."' gefunden.";
+            $person->getInputError()->add(new InputError('role', $msg));
+        } else {
+            # we got a parse result or both $date_begin and $date_end are empty
+            $role->setDateSortKey($sort_key);
+        }
+
         return $role;
+
+    }
+
+    private function emptyDate($s) {
+        return (is_null($s) || $s == '?' || $s == 'unbekannt');
     }
 
     /**
@@ -1085,6 +1219,8 @@ class PersonService {
     }
 
     /**
+     * setByKeys($obj, $data, $key_list)
+     *
      * set elements of $obj
      */
     private function setByKeys($obj, $data, $key_list) {

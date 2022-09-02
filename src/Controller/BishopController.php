@@ -44,6 +44,10 @@ class BishopController extends AbstractController {
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
         $model = new BishopFormModel;
 
+        // set defaults for the search
+        $model->isOnline = true;
+        $model->isDeleted = false;
+
         $flagInit = count($request->request->all()) == 0;
 
         $form = $this->createForm(BishopFormType::class, $model, [

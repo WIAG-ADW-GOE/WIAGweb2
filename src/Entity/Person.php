@@ -47,6 +47,13 @@ class Person {
     private $familynameVariants;
 
     /**
+     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
+     */
+    private $nameLookup;
+
+
+    /**
      * @ORM\OneToMany(targetEntity="PersonBirthplace", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      * @ORM\OrderBy({"weight" = "DESC"})
@@ -144,6 +151,18 @@ class Person {
     private ?Person $sibling = null;
 
     private $inputError;
+
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formGivennameVariants;
+
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formFamilynameVariants;
 
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
@@ -367,6 +386,10 @@ class Person {
         return $this->familynameVariants;
     }
 
+    public function getNameLookup() {
+        return $this->nameLookup;
+    }
+
     public function getBirthplace() {
         return $this->birthplace;
     }
@@ -413,6 +436,36 @@ class Person {
     public function setUrlByType(?array $urlByType): self {
         $this->urlByType = $urlByType;
         return $this;
+    }
+
+    public function setFormGivennameVariants($variants): self {
+        $this->formGivennameVariants = $variants;
+        return $this;
+    }
+
+        public function getFormGivenNameVariants(): ?string {
+        if ($this->formGivennameVariants) {
+            return $this->formGivennameVariants;
+        }
+        if ($this->givennameVariants) {
+            return implode(', ', $this->givennameVariants->toArray());
+        }
+        return null;
+    }
+
+    public function setFormFamilynameVariants($variants): self {
+        $this->formFamilynameVariants = $variants;
+        return $this;
+    }
+
+    public function getFormFamilyNameVariants(): ?string {
+        if ($this->formFamilynameVariants) {
+            return $this->formFamilynameVariants;
+        }
+        if ($this->familynameVariants) {
+            return implode(', ', $this->familynameVariants->toArray());
+        }
+        return null;
     }
 
     static private function combineData($a, $b) {
@@ -559,5 +612,6 @@ class Person {
         }
         return $birth_info;
     }
+
 
 }

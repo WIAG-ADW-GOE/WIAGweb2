@@ -1,7 +1,7 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = ['checkbox', 'insertPoint'];
+    static targets = ['checkbox', 'insertPoint', 'collapseButton'];
 
     connect() {
 	// console.log('connect new-element');
@@ -9,7 +9,6 @@ export default class extends Controller {
 
     async insert(event) {
 	const obj_type = event.currentTarget.dataset.objType;
-	console.log(obj_type);
 
 	// find insert position
 	var current_insert = this.insertPointTargets.filter((el) => {
@@ -21,7 +20,6 @@ export default class extends Controller {
 	    const insert_class_name = current_insert[0].className;
 
 	    // build id and name for the new elements
-	    console.log(insert_dataset.nextIdx);
 	    const base_id = insert_dataset.idSansIdx + '_' + insert_dataset.nextIdx;
 	    const base_input_name = insert_dataset.inputNameSansIdx + '[' + insert_dataset.nextIdx + ']';
 
@@ -36,7 +34,6 @@ export default class extends Controller {
 	    const url = event.currentTarget.dataset.url;
 	    const paramString = url + '?' + params.toString();
 
-	    console.log(paramString);
 	    const response = await fetch(paramString);
 	    const form_section = await response.text();
 	    new_element.innerHTML = form_section;
@@ -45,6 +42,14 @@ export default class extends Controller {
 	    // increment index
 	    insert_dataset.nextIdx = parseInt(insert_dataset.nextIdx) + 1;
 	}
+
+	// open entry
+	// 2022-08-31: obsolete: show button only in the unfolded entry
+	// const cps_button = this.collapseButtonTarget;
+	// if (!cps_button.getAttribute("aria-expanded")) {
+	//     cps_button.click();
+	// }
+
     }
 
 

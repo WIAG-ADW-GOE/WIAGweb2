@@ -2,7 +2,7 @@
 namespace App\Entity;
 
 class InputError {
-    private $section;
+    private $section; // 2022-08-30: one of: 'status', 'name', 'person', 'role', 'reference'
     private $msg;
 
     public function __construct(string $section, $msg = null) {

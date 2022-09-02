@@ -75,12 +75,6 @@ class Item {
     private $institution;
 
     /**
-     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
-    private $nameLookup;
-
-    /**
      * @ORM\OneToOne(targetEntity="UserWiag")
      * @ORM\JoinColumn(name="changed_by", referencedColumnName="id")
      */
@@ -160,6 +154,18 @@ class Item {
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $isOnline;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $commentDuplicate;
+
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsEdited = false;
+
 
     public function getId(): ?int
     {
@@ -392,6 +398,15 @@ class Item {
         return $this;
     }
 
+    public function setFormIsEdited($value): self {
+        $this->formIsEdited = $value;
+        return $this;
+    }
+
+    public function getFormIsEdited() {
+        return $this->formIsEdited;
+    }
+
     /**
      *
      */
@@ -481,6 +496,18 @@ class Item {
 
     public function setUserWiagChange($userChange) {
         $this->userWiagChange = $userChange;
+        return $this;
+    }
+
+    public function getCommentDuplicate(): ?string
+    {
+        return $this->commentDuplicate;
+    }
+
+    public function setCommentDuplicate(?string $commentDuplicate): self
+    {
+        $this->commentDuplicate = $commentDuplicate;
+
         return $this;
     }
 

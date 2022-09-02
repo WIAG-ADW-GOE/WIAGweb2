@@ -45,16 +45,16 @@
 	       aria-label="Sterbedatum">
 	<span class="input-group-text ms-2">Vornamenvarianten</span>
 	<input type="text" id="{{ base_id }}_givennamevariants"
-	       name="{{ base_input_name}}[givennamevariants]"
+	       name="{{ base_input_name}}[givennameVariants]"
 	       class="form-control"
-	       value="{{ person.givennamevariants|join(', ') }}"
+	       value="{{ person.formgivennamevariants }}"
 	       spellcheck="false"
 	       aria-label="Vornamenvarianten">
 	<span class="input-group-text ms-2">Familiennamenvarianten</span>
 	<input type="text" id="{{ base_id }}_familynamevariants"
-	       name="{{ base_input_name}}[familynamevariants]"
+	       name="{{ base_input_name}}[familynameVariants]"
 	       class="form-control"
-	       value="{{ person.familynamevariants|join(', ') }}"
+	       value="{{ person.formfamilynamevariants }}"
 	       spellcheck="false"
 	       aria-label="Familiennamenvarianten">
 	{% if person.comment or person.noteperson or person.notename %}

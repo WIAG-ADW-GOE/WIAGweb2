@@ -6,9 +6,10 @@ use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Authority;
+use App\Entity\NameLookup;
 use App\Entity\UserWiag;
 use App\Form\EditBishopFormType;
-use App\Form\Model\EditBishopFormModel;
+use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
@@ -39,12 +40,15 @@ class EditBishopController extends AbstractController {
                           EntityManagerInterface $entityManager) {
 
 
-        // we need to pass an instance of BishopFormModel, because facets depend on it's data
-        $model = new EditBishopFormModel;
+        $model = new BishopFormModel;
+        // set defaults
+        $model->editStatus = 'fertig';
+        $model->isOnline = true;
 
         $flagInit = count($request->request->all()) == 0;
 
         $form = $this->createForm(EditBishopFormType::class, $model);
+        // $form = $this->createForm(EditBishopFormType::class);
 
         $offset = 0;
 
@@ -115,7 +119,7 @@ class EditBishopController extends AbstractController {
         foreach($form_data as $data) {
             // dump($data);
             $person_id = $data['item']['id'];
-            if (isset($data['edited'])) {
+            if (isset($data['item']['formIsEdited'])) {
                 $person = $personRepository->find($person_id);
                 $personService->mapPerson($person, $data, $current_user_id);
                 if (!$person->getInputError()->isEmpty()) {
@@ -132,7 +136,21 @@ class EditBishopController extends AbstractController {
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
 
+            // update table name_lookup
+            $nameLookupRepository = $entityManager->getRepository(NameLookup::class);
+            foreach ($person_list as $person) {
+                if ($person->getItem()->getFormIsEdited()) {
+                    $nameLookupRepository->update($person);
+                }
+            }
+
             $entityManager->flush();
+
+            // unset edit flag
+            foreach ($person_list as $person) {
+                $person->getItem()->setFormIsEdited(false);
+            }
+
             // get data from the database
             $id_list = array_map(function($el) {
                 return $el['item']['id'];
@@ -193,7 +211,10 @@ class EditBishopController extends AbstractController {
 
     }
 
-    private function personList($ids,
+    /**
+     * 2022-09-01 obsolete?
+     */
+    private function personList_hide($ids,
                                 EntityManagerInterface $entityManager,
                                 $service) {
         # easy way to get all persons in the right order

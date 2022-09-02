@@ -4,7 +4,7 @@ namespace App\Form;
 use App\Entity\Item;
 use App\Entity\FacetChoice;
 
-use App\Form\Model\EditBishopFormModel;
+use App\Form\Model\BishopFormModel;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -30,7 +30,7 @@ class EditBishopFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
-            'data_class' => EditBishopFormModel::class,
+            'data_class' => BishopFormModel::class,
         ]);
 
     }
@@ -75,10 +75,22 @@ class EditBishopFormType extends AbstractType
                     'placeholder' => 'GSN, GND, Wikidata, VIAF',
                     'size' => '25',
                 ],
+            ])
+            ->add('isOnline', CheckboxType::class, [
+                'label' => 'online',
+                'required' => false,
+            ])
+            ->add('isDeleted', CheckboxType::class, [
+                'label' => 'gelöscht',
+                'required' => false,
+            ])
+            ->add('editStatus', TextType::class, [
+                'label' => 'Status',
+                'required' => false,
+            ])
+            ->add('commentDuplicate', TextType::class, [
+                'label' => 'Kommentar Dublette',
+                'required' => false,
             ]);
-
-
     }
-
-
 }

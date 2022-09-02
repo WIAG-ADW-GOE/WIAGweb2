@@ -137,7 +137,6 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
                    ->join('i.person', 'p')
                    ->andWhere('i.itemTypeId = :itemTypeBishop')
-                   ->andWhere('i.isOnline = 1')
                    ->setParameter(':itemTypeBishop', $itemTypeBishop);
 
         $qb = $this->addBishopConditions($qb, $model);
@@ -207,7 +206,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('i.nameLookup', 'nlu')
+            $qb->join('p.nameLookup', 'nlu')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
@@ -219,6 +218,35 @@ class ItemRepository extends ServiceEntityRepository
                           "OR ixt.value LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
         }
+
+
+        $isOnline = $model->isOnline;
+        if ($isOnline) {
+            $qb->andWhere("i.isOnline = 1");
+        } else {
+            $qb->andWhere("i.isOnline = 0");
+        }
+
+        $isDeleted = $model->isDeleted;
+        if ($isDeleted) {
+            $qb->andWhere("i.isDeleted = 1");
+        } else {
+            $qb->andWhere("i.isDeleted = 0");
+        }
+
+        $editStatus = $model->editStatus;
+        if ($editStatus) {
+            $qb->andWhere("i.editStatus = :q_status")
+               ->setParameter('q_status', $editStatus);
+        }
+
+        $commentDuplicate = $model->commentDuplicate;
+        if ($commentDuplicate) {
+            $qb->andWhere("i.commentDuplicate = :q_commentDuplicate")
+               ->setParameter('q_commentDuplicate', $commentDuplicate);
+        }
+
+
         return $qb;
     }
 
@@ -233,7 +261,6 @@ class ItemRepository extends ServiceEntityRepository
             $valFctDioc = array_column($facetDiocese, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
                ->andWhere("i.itemTypeId = ${itemTypeId}")
-               ->andWhere('i.isOnline = 1')
                ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
                ->setParameter('valFctDioc', $valFctDioc);
         }
@@ -243,7 +270,6 @@ class ItemRepository extends ServiceEntityRepository
             $valFctOfc = array_column($facetOffice, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')
                ->andWhere("i.itemTypeId = ${itemTypeId}")
-               ->andWhere('i.isOnline = 1')
                ->andWhere("prfctofc.roleName IN (:valFctOfc)")
                ->setParameter('valFctOfc', $valFctOfc);
         }
@@ -372,7 +398,8 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('i.nameLookup', 'n')
+                   ->join('i.person', 'p')
+                   ->join('p.nameLookup', 'n')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
@@ -423,6 +450,25 @@ class ItemRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $suggestions = $query->getResult();
         // dd($suggestions);
+
+        return $suggestions;
+    }
+
+    /**
+     * JavaScript call
+     */
+    public function suggestBishopCommentDuplicate($name, $hintSize) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT i.commentDuplicate AS suggestion")
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->andWhere('i.commentDuplicate like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
 
         return $suggestions;
     }

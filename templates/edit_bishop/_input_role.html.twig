@@ -16,7 +16,7 @@
 	{# role name #}
 	<span class="w-25"
     	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'role'}),
+		  url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
 	      }) }}>
 	    <input type="text" id="{{ base_id_role }}_role"
 		   name="{{ base_input_name_role }}[role]"
@@ -32,7 +32,7 @@
 	{# diocese #}
 	<span class="w-10"
 	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'diocese'}),
+		  url: path('person_suggest', {itemTypeId: '0', field: 'diocese'}),
 	      }) }}>
 	    <input type="text" id="{{ base_id_role }}_diocese"
 		   name="{{ base_input_name_role }}[diocese]"
@@ -48,7 +48,7 @@
 	{# monastery/domstift #}
 	<span class="w-15"
 	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'institution'}),
+		  url: path('person_suggest', {itemTypeId: '0', field: 'institution'}),
 	      }) }} >
 	    <input type="text" id="{{ base_id_role }}_institution"
 		   name="{{ base_input_name_role }}[institution]"

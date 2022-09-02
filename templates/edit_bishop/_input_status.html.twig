@@ -19,8 +19,7 @@
 	    <label class="form-check-label ms-1" for="{{ base_id }}_item_isDeleted">gelöscht</label>
 	</div>
 	<span class="input-group-text ms-2">Status</span>
-	<span class="w-15"
-	      {{ stimulus_controller('autocomplete', {
+	<span {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'editStatus'}),
 	      }) }} >
 	    <input type="text" id="{{ base_id }}_item_editstatus"
@@ -32,18 +31,35 @@
 		   aria-label="Status"
 		   data-autocomplete-target="input">
 	    <ul class="list-group autocomplete-target"
-		       data-autocomplete-target="results"
-		       style="max-width: 20rem;"></ul>
+		data-autocomplete-target="results"
+		style="max-width: 20rem;"></ul>
 	</span>
-	{% if false %} {# select version #}
-	    {% set field_id=base_id~"_item_editstatus" %}
-	    {% set input_name=base_input_name~"[item][editStatus]" %}
-	    <label class="input-group-text" for="{{ field_id }}">Status</label>
-	    <select class="form-select" style ="max-width: 10em" id="{{ field_id }}" name="{{ input_name }}">
-		{% for value in ['importiert', 'in Arbeit', 'fertig'] %}
-		    <option value="{{ value }}" {% if value == person.item.editstatus %}selected{% endif %}>{{ value }}</option>
-		{% endfor %}
-	    </select>
-	{% endif %}
+	<span class="input-group-text ms-2">Kommentar Dublette</span>
+	<input type="text" id="{{ base_id }}_item_commentduplicate"
+	       name="{{ base_input_name}}[item][commentDuplicate]"
+	       class="form-control form-control-sm"
+	       style="max-width: 16em"
+	       value="{{ person.item.commentduplicate }}"
+	       aria-label="Kommentar Dublette">
+	<div class="dropdown ms-auto">
+	    <button class="btn btn-sm btn-secondary dropdown-toggle"
+			   type="button"
+			   data-bs-toggle="dropdown"
+			   aria-expanded="false">Aktion</button>
+	    <ul class="dropdown-menu">
+		<li><button class="dropdown-item"
+				   type="button"
+				   data-new-input-target="button"
+				   data-action="insert#insert"
+				   data-obj-type="role"
+				   data-url="{{ path('edit_bishop_new_role') }}">Neues Amt</button></li>
+		<li><button class="dropdown-item"
+				   type="button"
+				   data-new-input-target="button"
+				   data-action="insert#insert"
+				   data-obj-type="reference"
+				   data-url="{{ path('edit_bishop_new_reference') }}">Neue Referenz</button></li>
+	    </ul>
+	</div>
     </div>
 </div>

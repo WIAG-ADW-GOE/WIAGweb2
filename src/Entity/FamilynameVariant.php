@@ -75,7 +75,11 @@ class FamilynameVariant
     public function setLang(string $lang): self
     {
         $this->lang = $lang;
+        return $this;
+    }
 
+    public function setPerson(?Person $person): self {
+        $this->person = $person;
         return $this;
     }
 

@@ -14,6 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class NameLookupRepository extends ServiceEntityRepository
 {
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, NameLookup::class);
@@ -47,5 +48,107 @@ class NameLookupRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * update entries for $person
+     * do not flush
+     */
+    public function update($person) {
+        // remove entries
+        $person_nl = $person->getNameLookup();
+        foreach ($person_nl as $nl_remove) {
+            $person_nl->removeElement($nl_remove);
+            $nl_remove->setPerson(null);
+            $this->getEntityManager()->remove($nl_remove);
+        }
+
+        // insert new entries
+        $variant_list = $this->makeVariantList($person);
+        foreach ($variant_list as $variant) {
+            $nl_new = new NameLookup();
+            $person_nl->add($nl_new);
+            $nl_new->setPerson($person);
+            $this->getEntityManager()->persist($nl_new);
+
+            $nl_new->setGnFn($variant[0]);
+            $nl_new->setgnPrefixFn($variant[1]);
+        }
+    }
+
+    /**
+     * makeVariantList($person);
+     *
+     * return array of combinations of name elements
+     */
+    private function makeVariantList($person) {
+        $givenname = $person->getGivenname();
+        $prefix = $person->getPrefixName();
+        $familyname = $person->getFamilyname();
+        $givenname_variants = $person->getGivennameVariants();
+        $familyname_variants = $person->getFamilynameVariants();
+
+        $lookup_list = array();
+        // rare case of missing givenname
+        if (is_null($givenname) || trim($givenname) == "") {
+            if (!is_null($prefix) && $prefix != "") {
+                $lookup_list[] = array($familyname, implode(' ', [$prefix, $familyname]));
+            } else {
+                $lookup_list[] =  array($familyname, null);
+            }
+            foreach ($familyname_variants as $fn_loop) {
+                if (!is_null($prefix) && $prefix != "") {
+                    $lookup_list[] = array($fn_loop, implode(' ', [$prefix, $fn_loop]));
+                } else {
+                    $lookup_list[] =  array($fn_loop, null);
+                }
+            }
+            return $lookup_list;
+        }
+
+        // make entry with $givenname
+        $lookup_list[] = $this->makeVariant($givenname, $prefix, $familyname);
+        // - make an entry with the first of several givennames
+        $gn_list = explode(' ', $givenname);
+        if (count($gn_list) > 1) {
+            $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $familyname);
+        }
+        foreach ($familyname_variants as $fn_loop) {
+            $lookup_list[] = $this->makeVariant($givenname, $prefix, $fn_loop);
+            if (count($gn_list) > 1) {
+                $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $fn_loop);
+            }
+        }
+
+        // make entries with variants of $givenname
+        foreach ($givenname_variants as $gn_loop) {
+            $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $familyname);
+            $gnv_list = explode(' ', $gn_loop);
+            if (count($gnv_list) > 1) {
+                $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $familyname);
+            }
+            foreach ($familyname_variants as $fn_loop) {
+                $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $fn_loop);
+                // - make an entry with the first of several givennames
+                if (count($gnv_list) > 1) {
+                    $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $fn_loop);
+                }
+            }
+        }
+
+        return $lookup_list;
+    }
+
+    private function makeVariant($givenname, $prefix, $familyname) {
+        if (!is_null($familyname) && $familyname != "") {
+            if (!is_null($prefix) && $prefix != "") {
+                return array(implode(' ', [$givenname, $familyname]), implode(' ', [$givenname, $prefix, $familyname]));
+            } else {
+                return array(implode(' ', [$givenname, $familyname]), null);
+            }
+        } else {
+            return array($givenname, null);
+        }
+    }
+
 
 }

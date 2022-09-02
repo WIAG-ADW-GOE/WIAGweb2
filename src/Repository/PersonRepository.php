@@ -196,7 +196,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * $item_type is not used here (needed for uniform signature)
+     * $item_type_id is not used here (needed for uniform signature)
      */
     public function suggestRole($item_type_id, $name, $hint_size) {
         $repository = $this->getEntityManager()->getRepository(Role::class);

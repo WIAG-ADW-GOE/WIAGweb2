@@ -79,6 +79,11 @@ class GivennameVariant
         return $this;
     }
 
+    public function setPerson(?Person $person): self {
+        $this->person = $person;
+        return $this;
+    }
+
     public function __toString(): ?string {
         return $this->getName();
     }
