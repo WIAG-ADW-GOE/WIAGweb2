@@ -1256,12 +1256,15 @@ class PersonService {
         $date_max = null;
 
         foreach ($person->getRole() as $role) {
-            if (is_null($date_min) || $date_min > $role->getNumDateBegin()) {
-                $date_min = $role->getNumDateBegin();
+            $date_begin = $role->getNumDateBegin();
+            if (!is_null($date_begin) && (is_null($date_min) || $date_min > $date_begin)) {
+                $date_min = $date_begin;
             }
-            if (is_null($date_max) || $date_max < $role->getNumDateEnd()) {
-                $date_max = $role->getNumDateEnd();
+            $date_end = $role->getNumDateEnd();
+            if (!is_null($date_end) && (is_null($date_max) || $date_max < $date_end)) {
+                $date_max = $date_end;
             }
+
         }
 
         // birth and death restrict date range

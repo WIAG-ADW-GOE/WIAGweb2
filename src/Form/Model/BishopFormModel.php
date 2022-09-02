@@ -20,6 +20,7 @@ class BishopFormModel {
     public $commentDuplicate = null;
     public $facetDiocese = null;
     public $facetOffice = null;
+    public $listSize = null;
 
     static public function makeChoices($data, $key) {
         $choices = [];
@@ -47,6 +48,11 @@ class BishopFormModel {
         if (!array_key_exists('commentDuplicate', $data)) {
             $data['commentDuplicate'] = null;
         }
+        if (!array_key_exists('listSize', $data)) {
+            $data['listSize'] = 5;
+        }
+
+
 
         $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate'];
         foreach($keys as $key) {

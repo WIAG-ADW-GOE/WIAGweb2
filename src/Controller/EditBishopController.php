@@ -26,8 +26,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class EditBishopController extends AbstractController {
-    /** number of items per page */
-    const PAGE_SIZE = 5;
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
@@ -44,6 +42,7 @@ class EditBishopController extends AbstractController {
         // set defaults
         $model->editStatus = 'fertig';
         $model->isOnline = true;
+        $model->listSize = 5;
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -66,16 +65,16 @@ class EditBishopController extends AbstractController {
 
             // set offset to page begin
             if (!is_null($offset)) {
-                $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
+                $offset = intdiv($offset, $model->listSize) * $model->listSize;
             } elseif (!is_null($page_number) && $page_number > 0) {
-                $page_number = min($page_number, intdiv($count, self::PAGE_SIZE) + 1);
-                $offset = ($page_number - 1) * self::PAGE_SIZE;
+                $page_number = min($page_number, intdiv($count, $model->listSize) + 1);
+                $offset = ($page_number - 1) * $model->listSize;
             } else {
                 $offset = 0;
             }
 
             $personRepository = $entityManager->getRepository(Person::class);
-            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
+            $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 
             $edit_form_id = 'edit_bishop_edit_form';
@@ -87,7 +86,7 @@ class EditBishopController extends AbstractController {
                 'count' => $count,
                 'personlist' => $person_list,
                 'offset' => $offset,
-                'pageSize' => self::PAGE_SIZE,
+                'pageSize' => $model->listSize,
             ]);
         }
 

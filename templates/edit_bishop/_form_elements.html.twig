@@ -96,6 +96,11 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 12em;"></ul>
 	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.listSize) }}
+		{{ form_errors(form.listSize) }}
+		{{ form_widget(form.listSize) }}
+	    </div>
 	    <div class="me-2 ms-3 mt-1">
 		{{ form_label(form.isOnline) }}
 		{{ form_errors(form.isOnline) }}
