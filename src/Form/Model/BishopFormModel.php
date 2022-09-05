@@ -14,8 +14,8 @@ class BishopFormModel {
     public $office = null;
     public $year = null;
     public $someid = null;
-    public $isOnline = null;
-    public $isDeleted = null;
+    public $isOnline = true;
+    public $isDeleted = false;
     public $editStatus = null;
     public $commentDuplicate = null;
     public $facetDiocese = null;

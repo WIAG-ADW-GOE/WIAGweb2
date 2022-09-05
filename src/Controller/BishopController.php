@@ -19,6 +19,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -37,16 +39,13 @@ class BishopController extends AbstractController {
      * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
-                          EntityManagerInterface $entityManager) {
+                          EntityManagerInterface $entityManager,
+                          RouterInterface $router) {
 
         $personRepository = $entityManager->getRepository(Person::class);
 
         // we need to pass an instance of BishopFormModel, because facets depend on it's data
         $model = new BishopFormModel;
-
-        // set defaults for the search
-        $model->isOnline = true;
-        $model->isDeleted = false;
 
         $flagInit = count($request->request->all()) == 0;
 

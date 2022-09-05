@@ -22,10 +22,10 @@ use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 
 /**
  * custom authenticator see https://symfonycasts.com/screencast/symfony-security/abstract-login-form-authenticator
- * 2022-06-24 replaced by built-in form-login authenticator see security.yaml
  */
 class LoginFormAuthenticator extends AbstractLoginFormAuthenticator implements AuthenticationEntryPointInterface
 {
@@ -33,11 +33,14 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator implements A
 
     private UserWiagRepository $userRepository;
     private RouterInterface $router;
+    private ContainerBagInterface $params;
 
     public function __construct(UserWiagRepository $userRepository,
-                                RouterInterface $router) {
+                                RouterInterface $router,
+                                ContainerBagInterface $params) {
         $this->userRepository = $userRepository;
         $this->router = $router;
+        $this->params = $params;
     }
 
     public function authenticate(Request $request): Passport
@@ -66,17 +69,31 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator implements A
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        if ($target = $this->getTargetPath($request->getSession(), $firewallName)) {
+        $target = $this->getTargetPath($request->getSession(), $firewallName);
+        if ($target) {
+            // the server (GWDG-hosting) fails to inform Symfony about the current scheme
+            if ($this->params->get('app.env') == 'prod') {
+                $target = str_replace('http://', 'https://', $target);
+            }
             return new RedirectResponse($target);
         }
 
-        return new RedirectResponse(
-            $this->router->generate('home')
-        );
+        // $target = $this->router->generate('home');
+        // the server (GWDG-hosting) fails to inform Symfony about the current scheme
+        $target = $request->getSchemeAndHttpHost().$this->router->generate('home');
+        if ($this->params->get('app.env') == 'prod') {
+            $target = str_replace('http://', 'https://', $target);
+        }
+        return new RedirectResponse($target);
     }
 
     protected function getLoginUrl(Request $request): string
     {
-        return $this->router->generate('login');
+        // the server (GWDG-hosting) fails to inform Symfony about the current scheme
+        $target = $request->getSchemeAndHttpHost().$this->router->generate('login');
+        if ($this->params->get('app.env') == 'prod') {
+            $target = str_replace('http://', 'https://', $target);
+        }
+        return $target;
     }
 }
