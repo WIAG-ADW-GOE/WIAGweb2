@@ -32,7 +32,7 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticator: App\Security\LoginFormAuthenticator
-            entry_point: App\Security\LoginFormAuthenticator
+            # entry_point: App\Security\LoginFormAuthenticator
             # we use custom LoginFormAuthenticater but Symfony's form_login once in use can not be removed
             form_login:
               login_path: login
@@ -40,7 +40,9 @@ security:
               username_parameter: email
               password_parameter: password
               enable_csrf: true
-              # entry_point: form_login
+              # use explicit target to force HTTPS
+              default_target_path: '%env(APP_HOME)%'
+            entry_point: form_login
             logout:
               # use explicit target to force HTTPS
               target: '%env(APP_HOME)%'
