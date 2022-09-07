@@ -89,7 +89,7 @@ class EditBishopFormType extends AbstractType
                 'required' => false,
             ])
             ->add('commentDuplicate', TextType::class, [
-                'label' => 'Kommentar Dublette',
+                'label' => 'Identisch mit',
                 'required' => false,
             ])
             ->add('listSize', NumberType::class, [

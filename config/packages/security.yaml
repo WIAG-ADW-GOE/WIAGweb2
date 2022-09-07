@@ -63,4 +63,4 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
-        - { path: ^/edit, roles: ROLE_DB_EDIT }
+        - { path: ^/edit, roles: ROLE_EDIT }

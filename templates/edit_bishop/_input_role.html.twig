@@ -20,7 +20,7 @@
 	      }) }}>
 	    <input type="text" id="{{ base_id_role }}_role"
 		   name="{{ base_input_name_role }}[role]"
-		   class="form-control form-control-sm rounded-0"
+		   class="form-control form-control-sm rounded-0 wiag-input"
 		   value="{{ role.roleDisplayName }}"
 		   spellcheck="false"
 		   aria-label="Amt"
@@ -36,7 +36,7 @@
 	      }) }}>
 	    <input type="text" id="{{ base_id_role }}_diocese"
 		   name="{{ base_input_name_role }}[diocese]"
-		   class="form-control form-control-sm rounded-0"
+		   class="form-control form-control-sm rounded-0 wiag-input"
 		   value="{{ role.dioceseDisplayName }}"
 		   spellcheck="false"
 		   aria-label="Bistum"
@@ -52,7 +52,7 @@
 	      }) }} >
 	    <input type="text" id="{{ base_id_role }}_institution"
 		   name="{{ base_input_name_role }}[institution]"
-		   class="form-control form-control-sm rounded-0"
+		   class="form-control form-control-sm rounded-0 wiag-input"
 		   value="{{ role.institutionDisplayName }}"
 		   spellcheck="false"
 		   aria-label="Kloster"
@@ -64,14 +64,14 @@
 	<span class="input-group-text">von, bis</span>
 	<input type="text" id="{{ base_id_role }}_dateBegin"
 	       name="{{ base_input_name_role }}[dateBegin]"
-	       class="form-control"
+	       class="form-control form-control-sm wiag-input"
 	       value="{{ role.dateBegin }}"
 	       style="max-width: 10em"
 	       spellcheck="false"
 	       aria-label="Beginn">
 	<input type="text" id="{{ base_id_role }}_dateEnd"
 	       name="{{ base_input_name_role }}[dateEnd]"
-	       class="form-control"
+	       class="form-control form-control-sm wiag-input"
 	       value="{{ role.dateEnd }}"
 	       style="max-width: 10em"
 	       spellcheck="false"
@@ -100,20 +100,12 @@
 	</div>
     </div>
     <div class="ms-4 mt-1 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{role.id}" }}">
-	<div class="input-group input-group-sm">
-	    <span class="input-group-text">Kommentar (red.)</span>
-	    <input type="text"
-		   id="{{ base_id_role }}_comment"
-		   name="{{ base_input_name_role }}[comment]"
-		   class="form-control form-control-sm"
-		   value="{{ role.comment }}">
-	</div>
 	<div class="input-group input-group-sm mt-1">
 	    <span class="input-group-text">Bemerkung</span>
 	    <input type="text"
 		   id="{{ base_id_role }}_note"
 		   name="{{ base_input_name_role }}[note]"
-		   class="form-control form-control-sm"
+		   class="form-control form-control-sm wiag-input"
 		   value="{{ role.note }}">
 	</div>
     </div>

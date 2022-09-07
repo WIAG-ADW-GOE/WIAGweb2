@@ -18,7 +18,9 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "@fontsource/nunito-sans": "^4.5.1",
+        "@fontsource/lato": "^4.5.9",
+        "@fontsource/lora": "^4.5.11",
+        "@fontsource/nunito-sans": "^4.5.9",
         "@hotwired/stimulus": "^3.0.1",
         "@hotwired/stimulus-webpack-helpers": "^1.0.1",
         "@popperjs/core": "^2.10.2",

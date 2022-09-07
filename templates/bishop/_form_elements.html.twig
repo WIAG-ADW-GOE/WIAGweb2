@@ -13,6 +13,7 @@
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 31,
+			'class': 'wiag-input'
 		    },
 		}) }}
 		<ul class="list-group autocomplete-target"
@@ -30,6 +31,7 @@
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 15,
+			'class': 'wiag-input',
 		    },
 		}) }}
 		<ul class="list-group autocomplete-target"
@@ -47,14 +49,21 @@
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 18,
+			'class': 'wiag-input',
 		    },
 		}) }}
 		<ul class="list-group autocomplete-target"
 		    data-autocomplete-target="results"
 		    style="max-width: 12em;"></ul>
 	    </div>
-	    {{  form_row(form.year, { row_attr: {class: 'me-2 mt-1'}}) }}
-	    {{  form_row(form.someid, {row_attr: {class: 'mt-1'}}) }}
+	    {{  form_row(form.year, {
+		row_attr: {class: 'me-2 mt-1'},
+		attr: {class: 'wiag-input'}
+	    }) }}
+	    {{  form_row(form.someid, {
+		row_attr: {class: 'mt-1'},
+		attr: {class: 'wiag-input'}
+	    }) }}
 	</div>
     </div>
 </div>

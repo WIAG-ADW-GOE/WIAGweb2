@@ -873,10 +873,20 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.5.tgz#9283c9ce5b289a3c4f61c12757469e59377f81f3"
   integrity sha512-6nFkfkmSeV/rqSaS4oWHgmpnYw194f6hmWF5is6b0J1naJZoiD0NTc9AiUwPHvWsowkjuHErCZT1wa0jg+BLIA==
 
-"@fontsource/nunito-sans@^4.5.1":
-  version "4.5.1"
-  resolved "https://registry.yarnpkg.com/@fontsource/nunito-sans/-/nunito-sans-4.5.1.tgz#ef625d7615112c96306c805323ef32b9ae9f7cb5"
-  integrity sha512-sOqaGHmT9dQ8sQ95uLjZecmhtw7ivZNOb7Nd6khT1x0pKcgHQa93kzzg+UI3/0HjO80Dn+/87kgwaU2IIZDZuA==
+"@fontsource/lato@^4.5.9":
+  version "4.5.9"
+  resolved "https://registry.yarnpkg.com/@fontsource/lato/-/lato-4.5.9.tgz#7c819b412581591f9abc1c04ea07d67af1e501cd"
+  integrity sha512-VkDnHBbPee/KMAUuBwe3rEKRDECo1MsA+I+ucZNU6FYdHrsv+SKpYgNr7nk/OhoaGrn9PrpXcmcd9eoD4J3Y6Q==
+
+"@fontsource/lora@^4.5.11":
+  version "4.5.11"
+  resolved "https://registry.yarnpkg.com/@fontsource/lora/-/lora-4.5.11.tgz#c8316d4d813e06b090b7284223f69a4fd92b55e5"
+  integrity sha512-Ah4hfKAmB0hlOKe1w+x0GIrFSJ1Ea84lBfzEkMS7G2uk8+iv+yqYmvylDDU5gbGkZB89Zo2XUURN/PdTX79EoA==
+
+"@fontsource/nunito-sans@^4.5.9":
+  version "4.5.9"
+  resolved "https://registry.yarnpkg.com/@fontsource/nunito-sans/-/nunito-sans-4.5.9.tgz#106d57e67fa7a3cfcb9f3ac6d9001cdbd72e8170"
+  integrity sha512-HNKNZKhvcFVOJCmd6RoIYoV1Y4OWFiRlYezDDRYU3kSm+KC8GNYENKJ18vOeHLU4lSDi+ywM8wOy+0XDL1BC1Q==
 
 "@hotwired/stimulus-webpack-helpers@^1.0.1":
   version "1.0.1"

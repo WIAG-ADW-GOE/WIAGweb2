@@ -96,6 +96,13 @@
 		<div class="ms-2 my-1 text-danger">{{ error_obj.msg }}</div>
 	    {% endfor %}
 	    {{ include('edit_bishop/_input_external_id.html.twig') }}
+	    <div class="input-group input-group-sm mt-1 pe-1">
+		<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
+		<textarea id="{{ base_id }}_comment"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[comment]"
+			  class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
+	    </div>
 	    <div class="hstack">
 		<span class="ms-1">{{ person.item.idPublic }}</span>
 		<span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}, {{ person.item.userwiagchange.email }}</span>

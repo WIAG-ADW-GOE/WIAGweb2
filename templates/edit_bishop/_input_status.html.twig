@@ -24,7 +24,7 @@
 	      }) }} >
 	    <input type="text" id="{{ base_id }}_item_editstatus"
 		   name="{{ base_input_name}}[item][editStatus]"
-		   class="form-control form-control-sm"
+		   class="form-control form-control-sm wiag-input"
 		   value="{{ person.item.editstatus }}"
 		   style="max-width: 10em"
 		   spellcheck="false"
@@ -34,10 +34,10 @@
 		data-autocomplete-target="results"
 		style="max-width: 20rem;"></ul>
 	</span>
-	<span class="input-group-text ms-2">Kommentar Dublette</span>
+	<span class="input-group-text ms-2">Identisch mit</span>
 	<input type="text" id="{{ base_id }}_item_commentduplicate"
 	       name="{{ base_input_name}}[item][commentDuplicate]"
-	       class="form-control form-control-sm"
+	       class="form-control form-control-sm wiag-input"
 	       style="max-width: 16em"
 	       value="{{ person.item.commentduplicate }}"
 	       aria-label="Kommentar Dublette">

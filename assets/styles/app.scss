@@ -1,4 +1,6 @@
 @import '@fontsource/nunito-sans';
+@import '@fontsource/lora';
+@import '@fontsource/lato';
 
 @import '_variables.scss';
 @import '~bootstrap';
@@ -47,6 +49,21 @@
 
 .gs {
     color: #a33;
+}
+
+.wiag-input {
+    // font-family: 'Lora', serif;
+    // color: #a04040;
+    color: #438833; // green
+    font-weight: 600;
+}
+
+.wiag-input::placeholder {
+    font-weight: 300;
+}
+
+.wiag-bg-internal {
+    background: #cce8cf
 }
 
 // remove the standard caret after the dropdown menu entry

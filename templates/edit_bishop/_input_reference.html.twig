@@ -14,7 +14,7 @@
 	      }) }}>
  	    <input type="text" id="{{ base_id_ref }}_volume"
 		   name="{{ base_input_name_ref}}[volume]"
-		   class="form-control form-control-sm"
+		   class="form-control form-control-sm wiag-input"
 		   value="{% if ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% elseif ref.volumetitleshort %}{{ ref.volumetitleshort }}{% endif %}"
 		   spellcheck="false"
 		   aria-label="Band"
@@ -27,14 +27,14 @@
 	<span class="input-group-text">Seite</span>
  	<input type="text" id="{{ base_id_ref }}_page"
 	       name="{{ base_input_name_ref}}[page]"
-	       class="form-control form-control-sm"
+	       class="form-control form-control-sm wiag-input"
 	       value="{{ ref.page }}"
 	       spellcheck="false"
 	       aria-label="Band">
 	<span class="input-group-text">ID/Nr.</span>
  	<input type="text" id="{{ base_id_ref }}_idInReference"
 	       name="{{ base_input_name_ref}}[idInReference]"
-	       class="form-control form-control-sm"
+	       class="form-control form-control-sm wiag-input"
 	       value="{{ ref.idinreference }}"
 	       spellcheck="false"
 	       aria-label="Id/Nummer">

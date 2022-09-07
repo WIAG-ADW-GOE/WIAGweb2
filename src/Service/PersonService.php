@@ -1126,8 +1126,7 @@ class PersonService {
         $role->setInstitutionName($institution_name);
 
         // other fields
-        $this->setByKeys($role, $data, ['comment', 'note', 'dateBegin', 'dateEnd']);
-
+        $this->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
 
         // numerical values for dates
         $date_begin = $role->getDateBegin();
