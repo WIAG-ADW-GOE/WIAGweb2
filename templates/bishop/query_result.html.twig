@@ -80,15 +80,30 @@
 				}) }}
 				{{ form_row(form.stateFctDioc) }}
 			    {% endif %}
-				{% if form.facetOffice is defined %}
-				    {{ include('bishop/_facet.html.twig', {
-					facet: form.facetOffice,
-					facetTitle: 'Filter Amt',
-					facetState: form.stateFctOfc.vars.value,
-					facetShort: 'Ofc'
-				    }) }}
-				    {{ form_row(form.stateFctOfc) }}
-				{% endif %}
+			    {% if form.facetOffice is defined %}
+				{{ include('bishop/_facet.html.twig', {
+				    facet: form.facetOffice,
+				    facetTitle: 'Filter Amt',
+				    facetState: form.stateFctOfc.vars.value,
+				    facetShort: 'Ofc'
+				}) }}
+				{{ form_row(form.stateFctOfc) }}
+			    {% endif %}
+			</div>
+		    </div>
+		{% endif %}
+		{% if count > pageSize %}
+		    <div class ="row col-12 mx-2">
+			<div class="d-inline-flex p-2">
+			    {{ include('person/_button_page_backward.html.twig', {
+				value: offset - pageSize,
+				disabled: offset < pageSize,
+				text: 'zurück'}) }}
+			    <input type="text" name="pageNumber" value={{ offset // pageSize + 1 }} class="mx-1" style="width:3em" autocomplete="off" data-hide-on-input-target="pageNumber">
+			    {{ include('person/_button_page_forward.html.twig', {
+				value: offset + pageSize,
+				disabled: offset + pageSize >= count,
+				text: 'vor'}) }}
 			</div>
 		    </div>
 		{% endif %}
