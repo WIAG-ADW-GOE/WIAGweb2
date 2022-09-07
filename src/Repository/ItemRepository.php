@@ -576,7 +576,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('i.nameLookup', 'nlu')
+            $qb->join('p.nameLookup', 'nlu')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
@@ -697,7 +697,8 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('i.nameLookup', 'n')
+                   ->join('i.person', 'p')
+                   ->join('p.nameLookup', 'n')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
