@@ -74,21 +74,14 @@
 	<div class="d-flex flex-wrap"
 	     data-action="input->hide-on-input#hideResults">
 	    <div class="me-2 mt-1"
-		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', {itemTypeId: itemTypeId, field: 'editStatus'}),
-		 }) }}>
 		{{ form_label(form.editStatus) }}
 		{{ form_errors(form.editStatus) }}
 		{{ form_widget(form.editStatus, {
 		    attr: {
-			'data-autocomplete-target': "input",
-			'size': 18,
-			'class': 'wiag-input',
+			'size': 3,
+			'class': 'mt-2 wiag-input',
 		    }
 		}) }}
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 12em;"></ul>
 	    </div>
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
@@ -99,7 +92,7 @@
 		{{ form_widget(form.commentDuplicate, {
 		    attr: {
 			'data-autocomplete-target': "input",
-			'size': 18,
+			'size': 7,
 			'class': 'wiag-input',
 		    }
 		}) }}
@@ -115,11 +108,6 @@
 			'class': 'wiag-input',
 		    }
 		}) }}
-	    </div>
-	    <div class="me-2 ms-3 mt-1">
-		{{ form_label(form.isOnline) }}
-		{{ form_errors(form.isOnline) }}
-		{{ form_widget(form.isOnline) }}
 	    </div>
 	    <div class="me-2 mt-1">
 		{{ form_label(form.isDeleted) }}

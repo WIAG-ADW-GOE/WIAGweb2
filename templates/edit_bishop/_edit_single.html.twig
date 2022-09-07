@@ -36,7 +36,7 @@
 	    </span>
 	    <span><strong>{{ person.describe }}</strong>{% if person.describerole(2) %}, {{ person.describerole(2) }}{% endif %}
 	    </span>
-	    <span>ID: {{ person.item.id }}</span>
+	    <span>ID: {{ person.item.idPublicNumber }}</span>
 	    {# insert internal id into the form (hidden) #}
 	    <span><input type="text"
 			 id="{{ base_id }}_item_id"

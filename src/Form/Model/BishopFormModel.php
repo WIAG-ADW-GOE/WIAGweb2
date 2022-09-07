@@ -16,7 +16,7 @@ class BishopFormModel {
     public $someid = null;
     public $isOnline = true;
     public $isDeleted = false;
-    public $editStatus = null;
+    public $editStatus = ['fertig'];
     public $commentDuplicate = null;
     public $facetDiocese = null;
     public $facetOffice = null;
@@ -51,7 +51,6 @@ class BishopFormModel {
         if (!array_key_exists('listSize', $data)) {
             $data['listSize'] = 5;
         }
-
 
 
         $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate'];

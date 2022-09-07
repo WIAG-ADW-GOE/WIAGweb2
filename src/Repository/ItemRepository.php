@@ -219,14 +219,6 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('q_id', '%'.$someid.'%');
         }
 
-
-        $isOnline = $model->isOnline;
-        if ($isOnline) {
-            $qb->andWhere("i.isOnline = 1");
-        } else {
-            $qb->andWhere("i.isOnline = 0");
-        }
-
         $isDeleted = $model->isDeleted;
         if ($isDeleted) {
             $qb->andWhere("i.isDeleted = 1");
@@ -234,9 +226,9 @@ class ItemRepository extends ServiceEntityRepository
             $qb->andWhere("i.isDeleted = 0");
         }
 
-        $editStatus = $model->editStatus;
+        $editStatus = array_filter(array_values($model->editStatus));
         if ($editStatus) {
-            $qb->andWhere("i.editStatus = :q_status")
+            $qb->andWhere("i.editStatus in (:q_status)")
                ->setParameter('q_status', $editStatus);
         }
 

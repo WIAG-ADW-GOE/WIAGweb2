@@ -40,23 +40,35 @@ class EditBishopController extends AbstractController {
 
         $model = new BishopFormModel;
         // set defaults
-        $model->editStatus = 'fertig';
+        // $model->editStatus = [null];
         $model->isOnline = true;
         $model->listSize = 5;
 
-        $flagInit = count($request->request->all()) == 0;
+        $personRepository = $entityManager->getRepository(Person::class);
 
-        $form = $this->createForm(EditBishopFormType::class, $model);
+        $suggestions = $personRepository->suggestEditStatus(Item::ITEM_TYPE_ID['Bischof'], null, 60);
+        $status_list = array_column($suggestions, 'suggestion');
+
+        // $status_choices = ['- alle -' => null];
+        // $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
+        $status_choices = array_combine($status_list, $status_list);
+
+        dump($status_choices);
+        $form = $this->createForm(EditBishopFormType::class, $model, [
+            'status_choices' => $status_choices,
+        ]);
         // $form = $this->createForm(EditBishopFormType::class);
 
         $offset = 0;
 
         $form->handleRequest($request);
         $model = $form->getData();
+        dump($model->editStatus);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
             $itemRepository = $entityManager->getRepository(Item::class);
+
             $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
 
@@ -73,7 +85,6 @@ class EditBishopController extends AbstractController {
                 $offset = 0;
             }
 
-            $personRepository = $entityManager->getRepository(Person::class);
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 

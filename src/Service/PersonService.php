@@ -944,7 +944,7 @@ class PersonService {
         $item->setDateChanged(new \DateTimeImmutable());
 
         // item: checkboxes
-        $key_list = ['isOnline', 'isDeleted', 'formIsEdited'];
+        $key_list = ['isDeleted', 'formIsEdited'];
         foreach($key_list as $key) {
             $set_fnc = 'set'.ucfirst($key);
             $item->$set_fnc(isset($data['item'][$key]));

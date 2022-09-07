@@ -259,6 +259,13 @@ class Item {
         return $this->idPublic;
     }
 
+    public function getIdPublicNumber(): ?string {
+        $rgx = '/-([0-9]{5})-/';
+        $matches = null;
+        preg_match($rgx, $this->idPublic, $matches);
+        return $matches ? $matches[1] : null;
+    }
+
     public function setIdPublic(?string $idPublic): self
     {
         $this->idPublic = $idPublic;

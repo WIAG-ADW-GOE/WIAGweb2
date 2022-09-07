@@ -31,6 +31,7 @@ class EditBishopFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => BishopFormModel::class,
+            'status_choices' => 'online',
         ]);
 
     }
@@ -76,17 +77,16 @@ class EditBishopFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('isOnline', CheckboxType::class, [
-                'label' => 'online',
-                'required' => false,
-            ])
             ->add('isDeleted', CheckboxType::class, [
                 'label' => 'gelöscht',
                 'required' => false,
             ])
-            ->add('editStatus', TextType::class, [
-                'label' => 'Status',
+            ->add('editStatus', ChoiceType::class, [
                 'required' => false,
+                'label' => 'Status',
+                'multiple' => true,
+                'expanded' => false,
+                'choices' => $options['status_choices'],
             ])
             ->add('commentDuplicate', TextType::class, [
                 'label' => 'Identisch mit',
