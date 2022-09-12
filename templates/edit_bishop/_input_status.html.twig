@@ -9,7 +9,7 @@
 		   {% if person.item.isonline %}checked="checked"{% endif %}>
 	    <label class="form-check-label" for="{{ base_id }}_item_isOnline">online</label>
 	</div>
-	<div class="form_check ms-2">
+	<div class="form_check ms-3">
 	    <input class="form-check-input"
 		   type="checkbox"
 		   value=""
@@ -48,17 +48,17 @@
 			   aria-expanded="false">Aktion</button>
 	    <ul class="dropdown-menu">
 		<li><button class="dropdown-item"
-				   type="button"
-				   data-new-input-target="button"
-				   data-action="insert#insert"
-				   data-obj-type="role"
-				   data-url="{{ path('edit_bishop_new_role') }}">Neues Amt</button></li>
+			    type="button"
+			    data-action="insert#insert"
+			    data-id-sans-idx="{{ base_id~'_role_' }}"
+			    data-obj-type="role"
+			    data-url="{{ path('edit_bishop_new_role') }}">Neues Amt</button></li>
 		<li><button class="dropdown-item"
-				   type="button"
-				   data-new-input-target="button"
-				   data-action="insert#insert"
-				   data-obj-type="reference"
-				   data-url="{{ path('edit_bishop_new_reference') }}">Neue Referenz</button></li>
+			    type="button"
+			    data-action="insert#insert"
+			    data-obj-type="reference"
+			    data-id-sans-idx="{{ base_id~'_ref_' }}"
+			    data-url="{{ path('edit_bishop_new_reference') }}">Neue Referenz</button></li>
 	    </ul>
 	</div>
     </div>

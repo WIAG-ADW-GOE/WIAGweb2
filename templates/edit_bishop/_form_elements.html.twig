@@ -73,13 +73,14 @@
     <div class="col-12">
 	<div class="d-flex flex-wrap"
 	     data-action="input->hide-on-input#hideResults">
-	    <div class="me-2 mt-1"
+	    <div class="me-2 mt-1">
 		{{ form_label(form.editStatus) }}
 		{{ form_errors(form.editStatus) }}
 		{{ form_widget(form.editStatus, {
 		    attr: {
 			'size': 3,
-			'class': 'mt-2 wiag-input',
+			'class': 'wiag-input',
+			'style': 'min-width: 9rem',
 		    }
 		}) }}
 	    </div>
@@ -99,6 +100,21 @@
 		<ul class="list-group autocomplete-target"
 		    data-autocomplete-target="results"
 		    style="max-width: 12em;"></ul>
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.comment) }}
+		{{ form_errors(form.comment) }}
+		{{ form_widget(form.comment) }}
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.dateCreated) }}
+		{{ form_errors(form.dateCreated) }}
+		{{ form_widget(form.dateCreated) }}
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.dateChanged) }}
+		{{ form_errors(form.dateChanged) }}
+		{{ form_widget(form.dateChanged) }}
 	    </div>
 	    <div class="me-2 mt-1">
 		{{ form_label(form.listSize) }}

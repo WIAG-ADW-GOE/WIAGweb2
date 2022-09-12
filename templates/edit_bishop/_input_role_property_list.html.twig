@@ -1,0 +1,28 @@
+{% set next_role_prop_idx=0 %}
+{% for role_prop in role.roleproperty %}
+    {% set base_id_role_prop=base_id_role~'_prop_'~loop.index0 %}
+    {% set base_input_name_role_prop=base_input_name_role~'[prop]['~loop.index0~']' %}
+    <div class="pe-1"> {# see template for new prop #}
+	{{ include('edit_bishop/_input_property.html.twig', {
+	    'prop': role_prop,
+	    'base_id_prop': base_id_role_prop,
+	    'base_input_name_prop': base_input_name_role_prop,
+	}) }}
+    </div>
+    {% set next_role_prop_idx = loop.index0 + 1 %}
+{% endfor %}
+{% set data_id_sans_idx=base_id_role~'_prop' %}
+<div class="pe-1"
+     data-insert-target="insertPoint"
+     data-obj-type="role_property"
+     data-id-sans-idx="{{ data_id_sans_idx }}"
+     data-input-name-sans-idx="{{ base_input_name_role~'[prop]' }}"
+     data-next-idx="{{ next_role_prop_idx }}"></div>
+<div class="input-group input-group-sm mt-1 ">
+    <button class="btn btn-sm btn-secondary"
+	    type="button"
+	    data-new-input-target="button"
+	    data-id-sans-idx="{{ data_id_sans_idx }}"
+	    data-action="insert#insert"
+	    data-url="{{ path('edit_bishop_new_role_property') }}">Weiteres Attribut</button>
+</div>

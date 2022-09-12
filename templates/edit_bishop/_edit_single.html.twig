@@ -60,17 +60,17 @@
 	    {% endfor %}
 	    {# using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
 	    {# roles #}
+	    {% set next_role_idx=0 %}
 	    {% for role in person.role %}
 		{% set base_id_role=base_id~'_role_'~loop.index0 %}
 		{% set base_input_name_role=base_input_name~'[role]['~loop.index0~']' %}
 		<div class="pe-1"> {# see template for new role #}
 	    	    {{ include('edit_bishop/_input_role.html.twig') }}
 		</div>
+		{% set next_role_idx=loop.index0 + 1 %}
 	    {% endfor %}
-	    {% set next_role_idx=person.role|length %}
 	    <div class="pe-1"
 		 data-insert-target="insertPoint"
-		 data-obj-type="role"
 		 data-id-sans-idx="{{ base_id~'_role_' }}"
 		 data-input-name-sans-idx="{{ base_input_name~'[role]' }}"
 		 data-next-idx="{{ next_role_idx }}"></div>
@@ -88,7 +88,6 @@
 	    {% set next_ref_idx=person.item.reference|length %}
 	    <div class="pe-1"
 		 data-insert-target="insertPoint"
-		 data-obj-type="reference"
 		 data-id-sans-idx="{{ base_id~'_ref_' }}"
 		 data-input-name-sans-idx="{{ base_input_name~'[ref]' }}"
 		 data-next-idx="{{ next_ref_idx }}"></div>
@@ -96,6 +95,7 @@
 		<div class="ms-2 my-1 text-danger">{{ error_obj.msg }}</div>
 	    {% endfor %}
 	    {{ include('edit_bishop/_input_external_id.html.twig') }}
+	    {# comment person #}
 	    <div class="input-group input-group-sm mt-1 pe-1">
 		<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
 		<textarea id="{{ base_id }}_comment"

@@ -1,0 +1,59 @@
+{# parameter prop, base_id_prop, base_input_name_prop #}
+<div class="my-1"
+     data-action="change->input-state#set">
+    <div class="input-group input-group-sm">
+	<span class="input-group-text">Attribut-Name</span>
+	{# id (hidden) #}
+	<input type="text"
+	       id="{{ base_id_prop }}_id"
+	       name="{{ base_input_name_prop }}[id]"
+	       class="form-control form-control-sm"
+	       hidden="hidden"
+	       value="{{ prop.id }}">
+	{# prop name #}
+	<span class="w-20"
+	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', { field: 'rolePropertyName', itemTypeId: itemTypeId }),
+	      }) }}>
+	    {# todo autocomplete #}
+	    <input type="text" id="{{ base_id_prop }}_name"
+		   name="{{ base_input_name_prop }}[name]"
+		   class="form-control form-control-sm rounded-0 wiag-input"
+		   value="{{ prop.name }}"
+		   spellcheck="false"
+		   aria-label="Name"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		       data-autocomplete-target="results"
+		       style="max-width: 12rem;"></ul>
+	</span>
+	{# prop value #}
+	<span class="input-group-text">Attribut-Wert</span>
+	<span class="w-20"
+	      {{ stimulus_controller('autocomplete', {
+		  url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
+	      }) }}>
+	    <input type="text" id="{{ base_id_prop }}_value"
+		   name="{{ base_input_name_prop }}[value]"
+		   class="form-control form-control-sm rounded-0 wiag-input"
+		   value="{{ prop.value }}"
+		   spellcheck="false"
+		   aria-label="Wert"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		       data-autocomplete-target="results"
+		       style="max-width: 12rem;"></ul>
+	</span>
+	{# delete #}
+	<div class="form_check ms-2 mt-1 align-middle">
+	    <input class="form-check-input"
+		   type="checkbox"
+		   value=""
+		   id="{{ base_id_prop }}_delete"
+		   name="{{ base_input_name_prop }}[delete]"
+		   data-input-state-target="checkbox">
+	    <label class="form-check-label ms-1" for="{{ base_id_prop }}_delete">löschen</label>
+	</div>
+
+    </div>
+</div>

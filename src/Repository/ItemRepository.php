@@ -12,6 +12,8 @@ use App\Entity\PersonBirthplace;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+use App\Service\UtilService;
+
 /**
  * @method Item|null find($id, $lockMode = null, $lockVersion = null)
  * @method Item|null findOneBy(array $criteria, array $orderBy = null)
@@ -236,6 +238,62 @@ class ItemRepository extends ServiceEntityRepository
         if ($commentDuplicate) {
             $qb->andWhere("i.commentDuplicate = :q_commentDuplicate")
                ->setParameter('q_commentDuplicate', $commentDuplicate);
+        }
+
+        $comment = $model->comment;
+        if ($comment) {
+            $qb->andWhere("p.comment LIKE :q_comment")
+               ->setParameter('q_comment', '%'.$comment.'%');
+        }
+
+        $dateCreated = UtilService::parseDateRange($model->dateCreated);
+        if ($dateCreated) {
+            if (count($dateCreated) > 1) {
+                if ($dateCreated[0] && $dateCreated[1]) {
+                    $qb->andWhere(":q_min <= i.dateCreated AND i.dateCreated <= :q_max")
+                       ->setParameter('q_min', $dateCreated[0])
+                       ->setParameter('q_max', $dateCreated[1]);
+                } elseif ($dateCreated[0]) {
+                    $qb->andWhere(":q_min <= i.dateCreated")
+                       ->setParameter('q_min', $dateCreated[0]);
+                } elseif ($dateCreated[1]) {
+                    $qb->andWhere("i.dateCreated <= :q_max")
+                       ->setParameter('q_max', $dateCreated[1]);
+                }
+            } else {
+                if ($dateCreated[0]) {
+                    $q_date_min = $dateCreated[0]->setTime(0, 0, 0);
+                    $q_date_max = $dateCreated[0]->setTime(24, 59, 59);
+                    $qb->andWhere(":q_min <= i.dateCreated AND i.dateCreated <= :q_max")
+                       ->setParameter('q_min', $q_date_min)
+                       ->setParameter('q_max', $q_date_max);
+                }
+            }
+        }
+
+        $dateChanged = UtilService::parseDateRange($model->dateChanged);
+        if ($dateChanged) {
+            if (count($dateChanged) > 1) {
+                if ($dateChanged[0] && $dateChanged[1]) {
+                    $qb->andWhere(":q_min <= i.dateChanged AND i.dateChanged <= :q_max")
+                       ->setParameter('q_min', $dateChanged[0])
+                       ->setParameter('q_max', $dateChanged[1]);
+                } elseif ($dateChanged[0]) {
+                    $qb->andWhere(":q_min <= i.dateChanged")
+                       ->setParameter('q_min', $dateChanged[0]);
+                } elseif ($dateChanged[1]) {
+                    $qb->andWhere("i.dateChanged <= :q_max")
+                       ->setParameter('q_max', $dateChanged[1]);
+                }
+            } else {
+                if ($dateChanged[0]) {
+                    $q_date_min = $dateChanged[0]->setTime(0, 0, 0);
+                    $q_date_max = $dateChanged[0]->setTime(24, 59, 59);
+                    $qb->andWhere(":q_min <= i.dateChanged AND i.dateChanged <= :q_max")
+                       ->setParameter('q_min', $q_date_min)
+                       ->setParameter('q_max', $q_date_max);
+                }
+            }
         }
 
 

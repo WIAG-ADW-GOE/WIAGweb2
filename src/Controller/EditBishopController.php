@@ -3,8 +3,10 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\ItemReference;
+use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
+use App\Entity\PersonRoleProperty;
 use App\Entity\Authority;
 use App\Entity\NameLookup;
 use App\Entity\UserWiag;
@@ -13,6 +15,7 @@ use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
+use App\Service\UtilService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,7 +43,7 @@ class EditBishopController extends AbstractController {
 
         $model = new BishopFormModel;
         // set defaults
-        // $model->editStatus = [null];
+        $model->editStatus = ['fertig'];
         $model->isOnline = true;
         $model->listSize = 5;
 
@@ -49,11 +52,10 @@ class EditBishopController extends AbstractController {
         $suggestions = $personRepository->suggestEditStatus(Item::ITEM_TYPE_ID['Bischof'], null, 60);
         $status_list = array_column($suggestions, 'suggestion');
 
-        // $status_choices = ['- alle -' => null];
-        // $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
-        $status_choices = array_combine($status_list, $status_list);
+        $status_choices = ['- alle -' => null];
+        $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
+        // $status_choices = array_combine($status_list, $status_list);
 
-        dump($status_choices);
         $form = $this->createForm(EditBishopFormType::class, $model, [
             'status_choices' => $status_choices,
         ]);
@@ -63,7 +65,6 @@ class EditBishopController extends AbstractController {
 
         $form->handleRequest($request);
         $model = $form->getData();
-        dump($model->editStatus);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
@@ -87,6 +88,16 @@ class EditBishopController extends AbstractController {
 
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
+
+            $date_range_l = [
+                "01.09.22 - 13.09.22",
+                "01.9.2022 - 13.9.2022",
+                "1.9.22 -",
+                "1.9.22",
+                "- 13.09.22"];
+            foreach ($date_range_l as $d_loop) {
+                dump(UtilService::parseDateRange($d_loop));
+            }
 
             $edit_form_id = 'edit_bishop_edit_form';
 
@@ -220,6 +231,45 @@ class EditBishopController extends AbstractController {
         ]);
 
     }
+
+    /**
+     * @return template for additional item property
+     *
+     * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
+     */
+    public function new_property(Request $request) {
+
+        $property = new ItemProperty;
+
+        return $this->render('edit_bishop/_input_property.html.twig', [
+            'base_id_prop' => $request->query->get('base_id'),
+            'base_input_name_prop' => $request->query->get('base_input_name'),
+            'prop' => $property,
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+        ]);
+
+    }
+
+    /**
+     * @return template for additional role property
+     *
+     * @Route("/edit/bischof/new-role-property", name="edit_bishop_new_role_property")
+     */
+    public function new_role_property(Request $request) {
+
+        $property = new PersonRoleProperty;
+        dump('new_role_property');
+
+        return $this->render('edit_bishop/_input_property.html.twig', [
+            'base_id_prop' => $request->query->get('base_id'),
+            'base_input_name_prop' => $request->query->get('base_input_name'),
+            'prop' => $property,
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+        ]);
+
+    }
+
+
 
     /**
      * 2022-09-01 obsolete?

@@ -557,4 +557,29 @@ class UtilService {
         return null;
     }
 
+
+    /**
+     * parse date or date range
+     *
+     * usually date of creation or date of last modification
+     */
+    static public function parseDateRange($s) {
+        if (is_null($s) || trim($s) == "") {
+            return null;
+        }
+        $s_list = explode('-', $s);
+        $d_list = array_map(function($se) {
+            $se = trim($se);
+            // 01.09.22
+            $d = \DateTimeImmutable::createFromFormat('d.m.y', $se);
+            // 01.09.2022
+            if (!$d) {
+                $d = \DateTimeImmutable::createFromFormat('d.m.Y', $se);
+            }
+            return $d;
+        }, $s_list);
+
+        return $d_list;
+    }
+
 }

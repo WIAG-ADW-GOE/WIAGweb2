@@ -53,6 +53,12 @@ class ItemProperty
         return $this->id;
     }
 
+    public function setItem($item): ?self {
+        $this->item = $item;
+
+        return $this;
+    }
+
     public function getItemId(): ?int
     {
         return $this->itemId;

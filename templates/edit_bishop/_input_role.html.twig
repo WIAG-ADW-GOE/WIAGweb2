@@ -76,7 +76,7 @@
 	       style="max-width: 10em"
 	       spellcheck="false"
 	       aria-label="Ende">
-	{% if role.comment or role.note %}
+	{% if role.comment or role.note or role.roleproperty|length > 0 %}
 	    {% set expanded = true %}
 	{% else %}
 	    {% set expanded = false %}
@@ -108,5 +108,6 @@
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ role.note }}">
 	</div>
+	{{ include('edit_bishop/_input_role_property_list.html.twig') }}
     </div>
 </div>

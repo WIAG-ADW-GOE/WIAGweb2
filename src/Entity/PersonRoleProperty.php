@@ -28,6 +28,12 @@ class PersonRoleProperty
     private $personRoleId;
 
     /**
+     * @ORM\Column(type="integer")
+     */
+    private $personId;
+
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
@@ -52,6 +58,11 @@ class PersonRoleProperty
         return $this->id;
     }
 
+    public function setPersonRole($role): self {
+        $this->personRole = $role;
+        return $this;
+    }
+
     public function getPersonRoleId(): ?int
     {
         return $this->personRoleId;
@@ -60,6 +71,18 @@ class PersonRoleProperty
     public function setPersonRoleId(int $personRoleId): self
     {
         $this->personRoleId = $personRoleId;
+
+        return $this;
+    }
+
+    public function getPersonId(): ?int
+    {
+        return $this->personId;
+    }
+
+    public function setPersonId(int $personId): self
+    {
+        $this->personId = $personId;
 
         return $this;
     }

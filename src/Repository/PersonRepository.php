@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Role;
@@ -273,6 +274,70 @@ class PersonRepository extends ServiceEntityRepository {
 
         return $suggestions;
     }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestPropertyName($item_type_id, $name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT prop.name AS suggestion")
+                         ->join('i.itemProperty', 'prop')
+                         ->andWhere('prop.name LIKE :name')
+                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id)
+                         ->setParameter('name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestPropertyValue($item_type_id, $name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT prop.value AS suggestion")
+                         ->join('i.itemProperty', 'prop')
+                         ->andWhere('prop.value LIKE :name')
+                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id)
+                         ->setParameter('name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+        /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT prop.name AS suggestion")
+                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
+                         ->andWhere('prop.name LIKE :name')
+                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id)
+                         ->setParameter('name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 
     /**
      * usually used for asynchronous JavaScript request

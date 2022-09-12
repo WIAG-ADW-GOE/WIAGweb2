@@ -4,8 +4,10 @@ namespace App\Service;
 
 
 use App\Entity\Item;
+use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
+use App\Entity\PersonRoleProperty;
 use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Role;
@@ -237,7 +239,6 @@ class PersonService {
         }
 
         // roles (offices)
-
         $nd = array();
         foreach ($personRole as $person_loop) {
             $role_list = $person_loop->getRole();
@@ -995,18 +996,23 @@ class PersonService {
             $person->setNumDateDeath(null);
         }
 
-        // roles
-        foreach ($data['role'] as $role_data_loop) {
-            $this->mapRole($person, $role_data_loop);
+        // roles, reference, free properties
+        $section_map = [
+            'role' => 'mapRole',
+            'ref'  => 'mapReference',
+            'prop' => 'mapItemProperty',
+        ];
+
+        foreach($section_map as $key => $mapFunction) {
+            if (array_key_exists($key, $data)) {
+                foreach($data[$key] as $data_loop) {
+                    $this->$mapFunction($person, $data_loop);
+                }
+            }
         }
 
         // date min/date max
         $this->updateDateRange($person);
-
-        // references
-        foreach ($data['ref'] as $ref_data_loop) {
-             $this->mapReference($person, $ref_data_loop);
-        }
 
         // validation
         if ($item->getIsOnline() && $item->getIsDeleted()) {
@@ -1084,18 +1090,26 @@ class PersonService {
 
         $id = $data['id'];
 
+        $role = null;
+        $key_list = ['role', 'diocese', 'institution', 'date_begin', 'date_end'];
+        $no_data = $this->no_data($data, $key_list);
+
         // new role?
         if ($data['id'] == 0) {
-            $role = new PersonRole();
-            $person->getRole()->add($role);
-            $role->setPerson($person);
-            $this->entityManager->persist($role);
+            if ($no_data) {
+                return null;
+            } else {
+                $role = new PersonRole();
+                $person->getRole()->add($role);
+                $role->setPerson($person);
+                $this->entityManager->persist($role);
+            }
         } else {
             $role = $roleRepository->find($id);
         }
 
         // delete? a new role can also be deleted this way
-        if (isset($data['delete'])) {
+        if (!is_null($role) && (isset($data['delete']) || $no_data)) {
             $person->getRole()->removeElement($role);
             $role->setPerson(null);
             $this->entityManager->remove($role);
@@ -1173,6 +1187,14 @@ class PersonService {
             $role->setDateSortKey($sort_key);
         }
 
+        // free role properties
+        $key = 'prop';
+        if (array_key_exists($key, $data)) {
+            foreach($data[$key] as $data_loop) {
+                $this->mapRoleProperty($role, $data_loop);
+            }
+        }
+
         return $role;
 
     }
@@ -1192,18 +1214,26 @@ class PersonService {
         $item = $person->getItem();
         $item_type_id = $item->getItemTypeId();
 
+        $key_list = ['volume', 'page', 'idInReference'];
+        $no_data = $this->no_data($data, $key_list);
+        $reference = null;
+
         // new reference
         if ($data['id'] == 0) {
-            $reference = new ItemReference();
-            $item->getReference()->add($reference);
-            $reference->setItem($item);
-            $this->entityManager->persist($reference);
+            if ($no_data) {
+                return null;
+            } else {
+                $reference = new ItemReference();
+                $item->getReference()->add($reference);
+                $reference->setItem($item);
+                $this->entityManager->persist($reference);
+            }
         } else {
             $reference = $referenceRepository->find($id);
         }
 
         // delete?
-        if (isset($data['delete'])) {
+        if (!is_null($reference) && (isset($data['delete']) || $no_data)) {
             $item->getReference()->removeElement($reference);
             $reference->setItem(null);
             $this->entityManager->remove($reference);
@@ -1213,13 +1243,19 @@ class PersonService {
         // set data
         $volume_name = trim($data['volume']);
         $reference->setVolumeTitleShort($volume_name); # save data for the form
-        $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
-        if ($volume_query_result) {
-            $volume = $volume_query_result[0];
-            $reference->setItemTypeId($item_type_id);
-            $reference->setReferenceId($volume->getReferenceId());
+
+        if ($volume_name != "") {
+            $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
+            if ($volume_query_result) {
+                $volume = $volume_query_result[0];
+                $reference->setItemTypeId($item_type_id);
+                $reference->setReferenceId($volume->getReferenceId());
+            } else {
+                $error_msg = "Kein Band für '".$volume_name."' gefunden.";
+                $person->getInputError()->add(new InputError('reference', $error_msg));
+            }
         } else {
-            $error_msg = "Kein Band für '".$volume_name."' gefunden.";
+            $error_msg = "Bandtitel darf nicht leer sein.";
             $person->getInputError()->add(new InputError('reference', $error_msg));
         }
 
@@ -1227,6 +1263,92 @@ class PersonService {
         $this->setByKeys($reference, $data, $key_list);
 
         return $reference;
+    }
+
+    /**
+     * fill item properties (free properties) with $data
+     */
+    private function mapItemProperty($person, $data) {
+        $itemPropertyRepository = $this->entityManager->getRepository(ItemProperty::class);
+
+        $id = $data['id'];
+        $item = $person->getItem();
+
+        $key_list = ['name', 'value'];
+        $no_data = $this->no_data($data, $key_list);
+        $itemProperty = null;
+
+        // new itemProperty
+        if ($data['id'] == 0) {
+            if ($no_data) {
+                return null;
+            } else {
+                $itemProperty = new ItemProperty();
+                $item->getItemProperty()->add($itemProperty);
+                $itemProperty->setItem($item);
+                $this->entityManager->persist($itemProperty);
+            }
+        } else {
+            $itemProperty = $itemPropertyRepository->find($id);
+        }
+
+        // delete?
+        if (!is_null($itemProperty) && (isset($data['delete']) || $no_data)) {
+            $item->getItemProperty()->removeElement($itemProperty);
+            $itemProperty->setItem(null);
+            $this->entityManager->remove($itemProperty);
+            return $itemProperty;
+        }
+
+        // set data
+        $key_list = ['name', 'value'];
+        $this->setByKeys($itemProperty, $data, $key_list);
+
+        return $itemProperty;
+    }
+
+    /**
+     * fill role properties (free properties) with $data
+     */
+    private function mapRoleProperty($role, $data) {
+        $rolePropertyRepository = $this->entityManager->getRepository(PersonRoleProperty::class);
+
+        $id = $data['id'];
+
+        $key_list = ['name', 'value'];
+        $no_data = $this->no_data($data, $key_list);
+        $roleProperty = null;
+
+        // new roleProperty
+        if ($data['id'] == 0) {
+            if ($no_data) {
+                return null;
+            } else {
+                $roleProperty = new PersonRoleProperty();
+                $role->getRoleProperty()->add($roleProperty);
+                $roleProperty->setPersonRole($role);
+                $this->entityManager->persist($roleProperty);
+            }
+        } else {
+            $roleProperty = $rolePropertyRepository->find($id);
+        }
+
+        // delete?
+        if (!is_null($roleProperty) && (isset($data['delete']) || $no_data)) {
+            $role->getRoleProperty()->removeElement($roleProperty);
+            $roleProperty->setPersonRole(null);
+            $this->entityManager->remove($roleProperty);
+            return $roleProperty;
+        }
+
+        // set data
+        $key_list = ['name', 'value'];
+        $this->setByKeys($roleProperty, $data, $key_list);
+
+        // set person_id
+        $roleProperty->setPersonId($role->getPersonId());
+
+        return $roleProperty;
     }
 
     /**
@@ -1290,6 +1412,15 @@ class PersonService {
         $person->setDateMax($date_max);
 
         return $person;
+    }
+
+    private function no_data($a, $key_list) {
+        foreach($key_list as $key) {
+            if (array_key_exists($key, $a) && trim($a[$key]) != "") {
+                return false;
+            }
+        }
+        return true;
     }
 
 };

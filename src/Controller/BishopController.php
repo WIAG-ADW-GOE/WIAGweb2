@@ -26,7 +26,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
-
 class BishopController extends AbstractController {
     /** number of items per page */
     const PAGE_SIZE = 20;

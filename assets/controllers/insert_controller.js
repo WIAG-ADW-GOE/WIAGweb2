@@ -2,24 +2,30 @@ import { Controller } from 'stimulus';
 
 export default class extends Controller {
     static targets = ['checkbox', 'insertPoint', 'collapseButton'];
+    static values = {
+	url: String
+    };
 
     connect() {
 	// console.log('connect new-element');
     }
 
     async insert(event) {
-	const obj_type = event.currentTarget.dataset.objType;
+	console.log('insert_controller');
+	const id_sans_idx = event.currentTarget.dataset.idSansIdx;
 
 	// find insert position
 	var current_insert = this.insertPointTargets.filter((el) => {
-	    return el.dataset.objType == obj_type;
+	    return el.dataset.idSansIdx == id_sans_idx;
 	});
 
 	if (current_insert.length > 0) {
 	    const insert_dataset = current_insert[0].dataset;
 	    const insert_class_name = current_insert[0].className;
 
-	    // build id and name for the new elements
+	    console.log(insert_dataset);
+
+	    // build form id and name for the new elements
 	    const base_id = insert_dataset.idSansIdx + '_' + insert_dataset.nextIdx;
 	    const base_input_name = insert_dataset.inputNameSansIdx + '[' + insert_dataset.nextIdx + ']';
 

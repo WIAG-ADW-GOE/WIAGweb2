@@ -18,9 +18,12 @@ class BishopFormModel {
     public $isDeleted = false;
     public $editStatus = ['fertig'];
     public $commentDuplicate = null;
+    public $comment = null;
+    public $dateCreated = null;
+    public $dateChanged = null;
+    public $listSize = null;
     public $facetDiocese = null;
     public $facetOffice = null;
-    public $listSize = null;
 
     static public function makeChoices($data, $key) {
         $choices = [];
@@ -53,7 +56,7 @@ class BishopFormModel {
         }
 
 
-        $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate'];
+        $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate', 'comment', 'dateCreated', 'dateChanged'];
         foreach($keys as $key) {
             $model->$key = $data[$key];
         }

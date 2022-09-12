@@ -58,7 +58,7 @@
 	       value="{{ person.formfamilynamevariants }}"
 	       spellcheck="false"
 	       aria-label="Familiennamenvarianten">
-	{% if person.comment or person.noteperson or person.notename %}
+	{% if person.comment or person.noteperson or person.notename or person.item.itemproperty|length > 0%}
 	    {% set expanded = true %}
 	{% else %}
 	    {% set expanded = false %}
@@ -88,7 +88,6 @@
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ person.noteName }}">
 	</div>
-
+	{{ include('edit_bishop/_input_property_list.html.twig') }}
     </div>
-
 </div>

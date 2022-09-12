@@ -92,6 +92,26 @@ class EditBishopFormType extends AbstractType
                 'label' => 'Identisch mit',
                 'required' => false,
             ])
+            ->add('comment', TextType::class, [
+                'label' => 'Kommentar Person',
+                'required' => false,
+            ])
+            ->add('dateCreated', TextType::class, [
+                'label' => 'angelegt',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'am/von-bis',
+                    'size' => 17,
+                ]
+            ])
+            ->add('dateChanged', TextType::class, [
+                'label' => 'geändert',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'am/von-bis',
+                    'size' => 17,
+                ]
+            ])
             ->add('listSize', NumberType::class, [
                 'label' => 'Anzahl',
                 'required' => false,
