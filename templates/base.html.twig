@@ -88,7 +88,7 @@
 				    <a class="nav-link fw-bold" type="button" href="{{ path('data_service') }}">Datenservice</a>
 				{% endif %}
 			    </li>
-			    {% if is_granted('ROLE_EDIT_MENU') %}
+			    {% if is_granted('ROLE_EDIT_MENU') and allow_edit == 'edit' %}
 				<li class="nav-item dropdown">
 				    {% if menuItem == 'edit' %}
 					<a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Edit</a>

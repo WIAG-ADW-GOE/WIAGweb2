@@ -10,6 +10,7 @@ twig:
         diocese_title: 'Die Erzbistümer und Bistümer des Alten Reiches'
         canon_title: 'Domherren des Alten Reiches'
         priest_ut_title: 'Priester des Bistums Utrecht'
+        allow_edit: '%env(APP_EDIT)%'
 
 when@test:
     twig:
