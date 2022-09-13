@@ -312,7 +312,11 @@ class CanonController extends AbstractController {
                 $personRole = array();
                 foreach($canon_personRole as $canon) {
                     $person = $canon->getPerson();
-                    $role_list = $person->getRole()->toArray();
+                    if (is_array($person->getRole())) {
+                        $role_list = $person->getRole();
+                    } else {
+                        $role_list = $person->getRole()->toArray();
+                    }
                     $role_list = $utilService->sortByFieldList($role_list, ['placeName', 'dateSortKey', 'id']);
                     if ($domstift) {
                         $role_list = $utilService->sortByDomstift($role_list, $domstift);
