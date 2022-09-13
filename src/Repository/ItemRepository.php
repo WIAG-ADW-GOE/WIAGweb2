@@ -147,13 +147,13 @@ class ItemRepository extends ServiceEntityRepository
         if ($office || $diocese) {
             // sort: if diocese is a query condition, this filters personRoles
             $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
-               ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
+               ->leftjoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
                ->addGroupBy('pr.personId')
                ->addOrderBy('pr.dioceseName')
                ->addOrderBy('dateSortKey');
         } elseif ($model->isEmpty() || $name || $someid || $year) {
             $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
-               ->join('p.role', 'role_srt')
+               ->leftjoin('p.role', 'role_srt')
                ->addGroupBy('personId');
             if ($year) {
                 $qb->addOrderBy('dateSortKey');

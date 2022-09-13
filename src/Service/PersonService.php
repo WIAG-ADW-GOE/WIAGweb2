@@ -942,7 +942,12 @@ class PersonService {
         $item = $person->getItem();
 
         $item->setChangedBy($user_id);
-        $item->setDateChanged(new \DateTimeImmutable());
+        $item->setDateChanged(new \DateTimeImmutable('now'));
+
+        if ($data['item']['id'] == "") {
+            $item->setCreatedBy($user_id);
+            $item->setDateCreated(new \DateTimeImmutable('now'));
+        }
 
         // item: checkboxes
         $key_list = ['isDeleted', 'formIsEdited'];
@@ -1245,13 +1250,14 @@ class PersonService {
         $reference->setVolumeTitleShort($volume_name); # save data for the form
 
         if ($volume_name != "") {
+
             $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
             if ($volume_query_result) {
                 $volume = $volume_query_result[0];
                 $reference->setItemTypeId($item_type_id);
                 $reference->setReferenceId($volume->getReferenceId());
             } else {
-                $error_msg = "Kein Band für '".$volume_name."' gefunden.";
+                $error_msg = "Keinen Band für '".$volume_name."' gefunden.";
                 $person->getInputError()->add(new InputError('reference', $error_msg));
             }
         } else {

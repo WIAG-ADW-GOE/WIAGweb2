@@ -97,6 +97,9 @@
 				    {% endif %}
 				    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="collections">
 					<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
+					{% if false %} {# TODO new entries #}
+					    <li><a class="dropdown-item" href="{{ path('edit_bishop_new') }}">Bischöfe anlegen</a></li>
+					{% endif %}
 					{% if is_granted('ROLE_USER_EDIT') %}
 					    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
 					    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>

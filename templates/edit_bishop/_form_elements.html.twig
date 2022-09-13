@@ -104,17 +104,29 @@
 	    <div class="me-2 mt-1">
 		{{ form_label(form.comment) }}
 		{{ form_errors(form.comment) }}
-		{{ form_widget(form.comment) }}
+		{{ form_widget(form.comment, {
+		    attr: {
+			'class': 'wiag-input',
+		    }
+		}) }}
 	    </div>
 	    <div class="me-2 mt-1">
 		{{ form_label(form.dateCreated) }}
 		{{ form_errors(form.dateCreated) }}
-		{{ form_widget(form.dateCreated) }}
+		{{ form_widget(form.dateCreated, {
+		    attr: {
+			'class': 'wiag-input',
+		    }
+		}) }}
 	    </div>
 	    <div class="me-2 mt-1">
 		{{ form_label(form.dateChanged) }}
 		{{ form_errors(form.dateChanged) }}
-		{{ form_widget(form.dateChanged) }}
+		{{ form_widget(form.dateChanged, {
+		    attr: {
+			'class': 'wiag-input',
+		    }
+		}) }}
 	    </div>
 	    <div class="me-2 mt-1">
 		{{ form_label(form.listSize) }}

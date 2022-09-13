@@ -10,11 +10,13 @@ class AppExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
+            // example
             new TwigFilter('price', [$this, 'formatPrice']),
             new TwigFilter('protectOrdinal', [$this, 'protectOrdinal']),
         ];
     }
 
+    // example
     public function formatPrice(float $number, int $decimals = 0, string $decPoint = '.', string $thousandsSep = ','): string
     {
         $price = number_format($number, $decimals, $decPoint, $thousandsSep);

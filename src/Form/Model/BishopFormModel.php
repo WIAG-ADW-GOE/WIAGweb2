@@ -42,19 +42,21 @@ class BishopFormModel {
         $model = new self();
 
         // set defaults
-        if (!array_key_exists('isOnline', $data)) {
-            $data['isOnline'] = true;
-        }
-        if (!array_key_exists('isDeleted', $data)) {
-            $data['isDeleted'] = false;
-        }
-        if (!array_key_exists('commentDuplicate', $data)) {
-            $data['commentDuplicate'] = null;
-        }
-        if (!array_key_exists('listSize', $data)) {
-            $data['listSize'] = 5;
-        }
+        $default_list = [
+            'isOnline' => true,
+            'isDeleted' => false,
+            'commentDuplicate' => null,
+            'comment' => null,
+            'dateCreated' => null,
+            'dateChanged' => null,
+            'listSize' => 5,
+        ];
 
+        foreach ($default_list as $key => $value) {
+            if (!array_key_exists($key, $data)) {
+                $data[$key] = $value;
+            }
+        }
 
         $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate', 'comment', 'dateCreated', 'dateChanged'];
         foreach($keys as $key) {

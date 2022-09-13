@@ -89,17 +89,8 @@ class EditBishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 
-            $date_range_l = [
-                "01.09.22 - 13.09.22",
-                "01.9.2022 - 13.9.2022",
-                "1.9.22 -",
-                "1.9.22",
-                "- 13.09.22"];
-            foreach ($date_range_l as $d_loop) {
-                dump(UtilService::parseDateRange($d_loop));
-            }
-
             $edit_form_id = 'edit_bishop_edit_form';
+            $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
             return $this->renderForm('edit_bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
@@ -107,6 +98,7 @@ class EditBishopController extends AbstractController {
                 'editFormId' => $edit_form_id,
                 'count' => $count,
                 'personlist' => $person_list,
+                'userWiagRepository' => $userWiagRepository,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
             ]);
@@ -137,11 +129,22 @@ class EditBishopController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
         $person_list = array();
         $flag_error = false;
+        $item_type_id = Item::ITEM_TYPE_ID['Bischof'];
         foreach($form_data as $data) {
-            // dump($data);
             $person_id = $data['item']['id'];
             if (isset($data['item']['formIsEdited'])) {
-                $person = $personRepository->find($person_id);
+
+                if ($person_id) {
+                    $person = $personRepository->find($person_id);
+                } else {
+                    $item = new Item();
+                    $item->setItemTypeId($item_type_id);
+                    $entityManager->persist($item);
+                    $person = new Person();
+                    $person->setItem($item);
+                    $person->setItemTypeId($item_type_id);
+                    $entityManager->persist($person);
+                }
                 $personService->mapPerson($person, $data, $current_user_id);
                 if (!$person->getInputError()->isEmpty()) {
                     $flag_error = true;
@@ -180,11 +183,14 @@ class EditBishopController extends AbstractController {
             $person_list = $personRepository->findList($id_list);
         }
 
+        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+
         if ($request->query->get('list_only')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
                 'editFormId' => $edit_form_id,
+                'userWiagRepository' => $userWiagRepository,
             ]);
         }
 
@@ -192,7 +198,45 @@ class EditBishopController extends AbstractController {
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
                 'editFormId' => $edit_form_id,
+                'userWiagRepository' => $userWiagRepository,
         ]);
+    }
+
+    /**
+     * display query form for bishops; handle query
+     *
+     * @Route("/edit/bischof/new", name="edit_bishop_new")
+     */
+    public function newBishop(Request $request,
+                              EntityManagerInterface $entityManager) {
+
+
+        $personRepository = $entityManager->getRepository(Person::class);
+        $itemRepository = $entityManager->getRepository(Item::class);
+
+        // generate an object of type person as container
+        $item = new Item();
+        $item->setItemTypeId(Item::ITEM_TYPE_ID['Bischof']);
+        $person = new Person();
+        $person->setItem($item);
+        $personRole = new PersonRole();
+        $person->getRole()->add($personRole);
+        $reference = new ItemReference();
+        $item->getReference()->add($reference);
+
+
+        $person_list = array($person);
+
+        $edit_form_id = 'edit_bishop_edit_form';
+
+        return $this->render('edit_bishop/new.html.twig', [
+            'menuItem' => 'collections',
+            'form' => null,
+            'editFormId' => $edit_form_id,
+            'count' => 1,
+            'personlist' => $person_list,
+        ]);
+
     }
 
 
@@ -258,7 +302,6 @@ class EditBishopController extends AbstractController {
     public function new_role_property(Request $request) {
 
         $property = new PersonRoleProperty;
-        dump('new_role_property');
 
         return $this->render('edit_bishop/_input_property.html.twig', [
             'base_id_prop' => $request->query->get('base_id'),

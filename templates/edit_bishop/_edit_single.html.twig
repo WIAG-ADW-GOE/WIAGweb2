@@ -1,4 +1,4 @@
-<div class="mx-2 my-2 border border-2 border-success rounded">
+<div class="mx-2 my-2 pb-2 border border-2 border-success rounded">
     {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof'] %}
     {% set base_id=editFormId~'_'~loop.index0 %}
     {% set base_input_name=editFormId~'['~loop.index0~']' %}
@@ -15,7 +15,7 @@
 	<div class="hstack gap-3 my-2">
 	    <span class="text-nowrap">
 		{% set expanded = false %}
-		{% if not person.inputError.isEmpty %}
+		{% if not person.inputError.isEmpty or person.id == "" %}
 		    {% set expanded = true %}
 		{% endif %}
 		<button class="btn btn-sm ms-1 pt-0 px-1 align-middle"
@@ -103,10 +103,13 @@
 			  name="{{ base_input_name }}[comment]"
 			  class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
 	    </div>
-	    <div class="hstack">
-		<span class="ms-1">{{ person.item.idPublic }}</span>
-		<span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}, {{ person.item.userwiagchange.email }}</span>
-	    </div>
+	    {% if person.item.idPublic %}
+		{% set user=userWiagRepository.find(person.item.changedby) %}
+		<div class="hstack">
+		    <span class="ms-1">{{ person.item.idPublic }}</span>
+		    <span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+		</div>
+	    {% endif %}
 	</div>
     </div>
 </div>

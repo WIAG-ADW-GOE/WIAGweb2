@@ -5,6 +5,10 @@ namespace App\Entity;
 use App\Repository\ItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
+
 /**
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
@@ -73,12 +77,6 @@ class Item {
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $institution;
-
-    /**
-     * @ORM\OneToOne(targetEntity="UserWiag")
-     * @ORM\JoinColumn(name="changed_by", referencedColumnName="id")
-     */
-    private $userWiagChange;
 
     /**
      * @ORM\Column(type="integer")
@@ -165,6 +163,12 @@ class Item {
      * hold form input data
      */
     private $formIsEdited = false;
+
+    public function __construct() {
+        $this->reference = new ArrayCollection();
+        $this->idExternal = new ArrayCollection();
+        $this->urlExternal = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -495,15 +499,6 @@ class Item {
             $value =  $itemPropertyList[$key];
         }
         return $value;
-    }
-
-    public function getUserWiagChange() {
-        return $this->userWiagChange;
-    }
-
-    public function setUserWiagChange($userChange) {
-        $this->userWiagChange = $userChange;
-        return $this;
     }
 
     public function getCommentDuplicate(): ?string

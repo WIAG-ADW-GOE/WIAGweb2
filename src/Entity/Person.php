@@ -167,8 +167,10 @@ class Person {
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
+        $this->nameLookup = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
         $this->inputError = new ArrayCollection();
+        $this->role = new ArrayCollection();
         # TODO $this-urlByType;
     }
 
@@ -176,6 +178,12 @@ class Person {
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+
+    public function setItem($item) {
+        $this->item = $item;
+        return $this;
     }
 
     public function getItem() {
@@ -554,7 +562,6 @@ class Person {
             $this->combine('noteName'),
             $this->combine('notePerson'),
         ];
-        // dump($eltCands);
 
         $lineElts = array();
         foreach ($eltCands as $elt) {
