@@ -32,6 +32,12 @@ class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
+    private $personService;
+
+    public function __construct(PersonService $personService) {
+        $this->personService = $personService;
+    }
+
     /**
      * display query form for bishops; handle query
      *
@@ -49,7 +55,7 @@ class EditBishopController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
 
-        $suggestions = $personRepository->suggestEditStatus(Item::ITEM_TYPE_ID['Bischof'], null, 60);
+        $suggestions = $personRepository->suggestEditStatus(Item::ITEM_TYPE_ID['Bischof']['id'], null, 60);
         $status_list = array_column($suggestions, 'suggestion');
 
         $status_choices = ['- alle -' => null];
@@ -100,6 +106,7 @@ class EditBishopController extends AbstractController {
                 'personlist' => $person_list,
                 'userWiagRepository' => $userWiagRepository,
                 'offset' => $offset,
+                'newEntry' => 0,
                 'pageSize' => $model->listSize,
             ]);
         }
@@ -117,11 +124,11 @@ class EditBishopController extends AbstractController {
      * @Route("/edit/bischof/save", name="edit_bishop_save")
      */
     public function save(Request $request,
-                         PersonService $personService,
                          EntityManagerInterface $entityManager) {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
+        $new_entry_param = $request->query->get('new_entry');
 
         /* save data */
         $current_user_id = $this->getUser()->getId();
@@ -129,30 +136,33 @@ class EditBishopController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
         $person_list = array();
         $flag_error = false;
-        $item_type_id = Item::ITEM_TYPE_ID['Bischof'];
+        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
         foreach($form_data as $data) {
             $person_id = $data['item']['id'];
             if (isset($data['item']['formIsEdited'])) {
 
-                if ($person_id) {
-                    $person = $personRepository->find($person_id);
-                } else {
-                    $item = new Item();
-                    $item->setItemTypeId($item_type_id);
+                if (trim($person_id) == "") {
+                    $item = Item::newItem($current_user_id, 'Bischof');
+                    $person = Person::newPerson($item);
                     $entityManager->persist($item);
-                    $person = new Person();
-                    $person->setItem($item);
-                    $person->setItemTypeId($item_type_id);
                     $entityManager->persist($person);
+                    $entityManager->flush();
+                    // only item receives the new id ?! (miracles of Doctrine)
+                    $person_id = $item->getId();
                 }
-                $personService->mapPerson($person, $data, $current_user_id);
+                $person = $personRepository->find($person_id);
+
+                $this->personService->mapPerson($person, $data, $current_user_id);
                 if (!$person->getInputError()->isEmpty()) {
                     $flag_error = true;
                 }
                 $person_list[] = $person;
             } else {
-                // get roles and references from the database
-                $person_list = array_merge($person_list, $personRepository->findList([$person_id]));
+                // if new entries are edited only add entries that changed
+                if (is_null($new_entry_param) || $new_entry_param < 1) {
+                    // get roles and references from the database
+                    $person_list = array_merge($person_list, $personRepository->findList([$person_id]));
+                }
             }
         }
 
@@ -162,6 +172,7 @@ class EditBishopController extends AbstractController {
 
             // update table name_lookup
             $nameLookupRepository = $entityManager->getRepository(NameLookup::class);
+            $itemRepository = $entityManager->getRepository(Item::class);
             foreach ($person_list as $person) {
                 if ($person->getItem()->getFormIsEdited()) {
                     $nameLookupRepository->update($person);
@@ -175,12 +186,20 @@ class EditBishopController extends AbstractController {
                 $person->getItem()->setFormIsEdited(false);
             }
 
-            // get data from the database
             $id_list = array_map(function($el) {
-                return $el['item']['id'];
-            }, $form_data);
+                return $el->getId();
+            }, $person_list);
 
             $person_list = $personRepository->findList($id_list);
+
+
+            if (!is_null($new_entry_param) && $new_entry_param > 0) {
+                $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
+                $person = $this->makePersonScheme($id_in_source);
+                $person_list[] = $person;
+            } else {
+                $new_entry_param = 0;
+            }
         }
 
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
@@ -189,6 +208,7 @@ class EditBishopController extends AbstractController {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
+                'newEntry' => $new_entry_param,
                 'editFormId' => $edit_form_id,
                 'userWiagRepository' => $userWiagRepository,
             ]);
@@ -198,6 +218,7 @@ class EditBishopController extends AbstractController {
                 'menuItem' => 'collections',
                 'personlist' => $person_list,
                 'editFormId' => $edit_form_id,
+                'newEntry' => $new_entry_param,
                 'userWiagRepository' => $userWiagRepository,
         ]);
     }
@@ -210,33 +231,55 @@ class EditBishopController extends AbstractController {
     public function newBishop(Request $request,
                               EntityManagerInterface $entityManager) {
 
-
-        $personRepository = $entityManager->getRepository(Person::class);
+        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
         $itemRepository = $entityManager->getRepository(Item::class);
+        $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
 
-        // generate an object of type person as container
-        $item = new Item();
-        $item->setItemTypeId(Item::ITEM_TYPE_ID['Bischof']);
-        $person = new Person();
-        $person->setItem($item);
-        $personRole = new PersonRole();
-        $person->getRole()->add($personRole);
-        $reference = new ItemReference();
-        $item->getReference()->add($reference);
-
+        $person = $this->makePersonScheme($id_in_source);
 
         $person_list = array($person);
 
         $edit_form_id = 'edit_bishop_edit_form';
 
-        return $this->render('edit_bishop/new.html.twig', [
+        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+
+        return $this->render('edit_bishop/new_bishop.html.twig', [
             'menuItem' => 'collections',
             'form' => null,
             'editFormId' => $edit_form_id,
             'count' => 1,
             'personlist' => $person_list,
+            'newEntry' => 1,
+            // find user WIAG for all elements of $person_list
+            'userWiagRepository' => $userWiagRepository,
         ]);
 
+    }
+
+    /**
+     * create person object
+     */
+    private function makePersonScheme($id_in_source) {
+
+        // generate an object of type person as scheme
+        $userWiagId = $this->getUser()->getId();
+
+        $item = Item::newItem($userWiagId, 'Bischof');
+        $person = Person::newPerson($item);
+
+        $item->setIdInSource($id_in_source);
+
+        // add role
+        $role = new PersonRole();
+        $person->getRole()->add($role);
+        $role->setPerson($person);
+
+        // add reference
+        $reference = new ItemReference();
+        $item->getReference()->add($reference);
+        $reference->setItem($item);
+
+        return $person;
     }
 
 
@@ -271,7 +314,7 @@ class EditBishopController extends AbstractController {
             'base_id_ref' => $request->query->get('base_id'),
             'base_input_name_ref' => $request->query->get('base_input_name'),
             'ref' => $reference,
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
         ]);
 
     }
@@ -289,7 +332,7 @@ class EditBishopController extends AbstractController {
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
         ]);
 
     }
@@ -307,7 +350,7 @@ class EditBishopController extends AbstractController {
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof'],
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
         ]);
 
     }

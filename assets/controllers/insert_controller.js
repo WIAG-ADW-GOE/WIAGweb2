@@ -11,7 +11,6 @@ export default class extends Controller {
     }
 
     async insert(event) {
-	console.log('insert_controller');
 	const id_sans_idx = event.currentTarget.dataset.idSansIdx;
 
 	// find insert position
@@ -23,7 +22,6 @@ export default class extends Controller {
 	    const insert_dataset = current_insert[0].dataset;
 	    const insert_class_name = current_insert[0].className;
 
-	    console.log(insert_dataset);
 
 	    // build form id and name for the new elements
 	    const base_id = insert_dataset.idSansIdx + '_' + insert_dataset.nextIdx;

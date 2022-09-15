@@ -1,22 +1,22 @@
-<div class="ms-2 my-1"> {# empty div to have the same structure for all sections #}
+<div class="ms-2 mt-2 mb-0"> {# empty div to have the same structure for all sections #}
     <div class="input-group input-group-sm">
-	<div class="form-check">
+	<div class="form-check form-check-inline">
 	    <input class="form-check-input"
-		   type="checkbox"
-		   value=""
-		   id="{{ base_id }}_item_isOnline"
-		   name="{{ base_input_name }}[item][isOnline]"
-		   {% if person.item.isonline %}checked="checked"{% endif %}>
-	    <label class="form-check-label" for="{{ base_id }}_item_isOnline">online</label>
-	</div>
-	<div class="form_check ms-3">
-	    <input class="form-check-input"
-		   type="checkbox"
-		   value=""
-		   id="{{ base_id }}_item_isDeleted"
+		   type="radio"
 		   name="{{ base_input_name }}[item][isDeleted]"
-		   {% if person.item.isdeleted %}checked="checked"{% endif %}>
-	    <label class="form-check-label ms-1" for="{{ base_id }}_item_isDeleted">gelöscht</label>
+		   id="{{ base_id }}_item_isDeleted_false"
+		   {% if not person.item.isdeleted %}checked="checked"{% endif %}
+		   value="">
+	    <label class="form-check-label" for="inlineRadio1">aktiv</label>
+	</div>
+	<div class="form-check form-check-inline">
+	    <input class="form-check-input"
+		   type="radio"
+		   name="{{ base_input_name }}[item][isDeleted]"
+		   id="{{ base_id }}_item_isDeleted_true"
+		   {% if person.item.isdeleted %}checked="checked"{% endif %}
+		   value="deleted">
+	    <label class="form-check-label" for="inlineRadio2">inaktiv (gelöscht) </label>
 	</div>
 	<span class="input-group-text ms-2">Status</span>
 	<span {{ stimulus_controller('autocomplete', {

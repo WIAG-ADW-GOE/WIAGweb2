@@ -1,6 +1,6 @@
 {# parameter prop, base_id_prop, base_input_name_prop #}
 <div class="my-1"
-     data-action="change->input-state#set">
+     data-controller="input-state">
     <div class="input-group input-group-sm">
 	<span class="input-group-text">Attribut-Name</span>
 	{# id (hidden) #}
@@ -51,6 +51,7 @@
 		   value=""
 		   id="{{ base_id_prop }}_delete"
 		   name="{{ base_input_name_prop }}[delete]"
+		   data-action="input-state#set"
 		   data-input-state-target="checkbox">
 	    <label class="form-check-label ms-1" for="{{ base_id_prop }}_delete">löschen</label>
 	</div>

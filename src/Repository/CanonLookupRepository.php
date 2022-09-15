@@ -69,8 +69,8 @@ class CanonLookupRepository extends ServiceEntityRepository
     public function canonIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Domherr'];
-        $itemTypeIdDomstift = Item::ITEM_TYPE_ID['Domstift'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Domherr']['id'];
+        $itemTypeIdDomstift = Item::ITEM_TYPE_ID['Domstift']['id'];
 
         $domstift = $model->domstift;
         $office = $model->office;
@@ -97,7 +97,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
             $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(d.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey')
                ->leftjoin('r.institution', 'd', 'WITH', 'd.itemTypeId = :type_domstift')
-               ->setParameter('type_domstift', ITEM::ITEM_TYPE_ID['Domstift']);
+               ->setParameter('type_domstift', ITEM::ITEM_TYPE_ID['Domstift']['id']);
         } elseif ($place) {
             $qb->select('c.personIdName, min(ip.placeName) as placeName, p.givenname, p.familyname, min(r.dateSortKey) as dateSortKey')
                ->groupBy('c.personIdName');
@@ -142,7 +142,7 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     public function addCanonConditions($qb, $model) {
-        $itemTypeDomstift = Item::ITEM_TYPE_ID['Domstift'];
+        $itemTypeDomstift = Item::ITEM_TYPE_ID['Domstift']['id'];
 
         $domstift = $model->domstift;
         $office = $model->office;
@@ -362,7 +362,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         // set sibling (only relevant for bishops)
         foreach($canon_list as $canon) {
             $person = $canon->getPersonName();
-            if ($person->getSource() == 'Bischof') {
+            if ($person->getItem()->getSource() == 'Bischof') {
                 $itemRepository->setSibling($person);
             }
         }
@@ -569,7 +569,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                   ->createQueryBuilder('i')
                   ->select('i.id AS id, i.nameShort AS name')
                   ->andWhere('i.itemTypeId = :itemTypeDomstift')
-                  ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID['Domstift'])
+                  ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID['Domstift']['id'])
                   ->addOrderBy('i.nameShort');
 
         $domstift_list = $qbi->getQuery()->getResult();

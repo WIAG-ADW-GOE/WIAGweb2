@@ -938,6 +938,7 @@ class PersonService {
      * map content of $data to $obj_list
      */
     public function mapPerson($person, $data, $user_id) {
+        //dd($data);
         // item
         $item = $person->getItem();
 
@@ -949,11 +950,27 @@ class PersonService {
             $item->setDateCreated(new \DateTimeImmutable('now'));
         }
 
+        // item: deleted
+        $deleted_status = $data['item']['isDeleted'] == "deleted" ? 1 : 0;
+        //dd($deleted_status, $data['item']['isDeleted']);
+        $item->setIsDeleted($deleted_status);
+
         // item: checkboxes
-        $key_list = ['isDeleted', 'formIsEdited'];
+        $key_list = ['formIsEdited'];
         foreach($key_list as $key) {
             $set_fnc = 'set'.ucfirst($key);
             $item->$set_fnc(isset($data['item'][$key]));
+        }
+
+        dump($deleted_status, $item);
+
+        // idInSource
+        if (array_key_exists('idInSource', $data['item'])) {
+            $id_in_source = $data['item']['idInSource'];
+            $id_public = $this->makeIdPublic('Bischof', $id_in_source);
+
+            $item->setIdInSource($id_in_source);
+            $item->setIdPublic($id_public);
         }
 
         // item: status values, editorial notes
@@ -1100,7 +1117,7 @@ class PersonService {
         $no_data = $this->no_data($data, $key_list);
 
         // new role?
-        if ($data['id'] == 0) {
+        if ($data['id'] == "0" || trim($data['id']) == "") {
             if ($no_data) {
                 return null;
             } else {
@@ -1115,6 +1132,12 @@ class PersonService {
 
         // delete? a new role can also be deleted this way
         if (!is_null($role) && (isset($data['delete']) || $no_data)) {
+            // remove properties
+            foreach ($role->getRoleProperty() as $prop) {
+                $role->getRoleProperty()->removeElement($prop);
+                $prop->setPersonRole(null);
+                $this->entityManager->remove($prop);
+            }
             $person->getRole()->removeElement($role);
             $role->setPerson(null);
             $this->entityManager->remove($role);
@@ -1352,7 +1375,7 @@ class PersonService {
         $this->setByKeys($roleProperty, $data, $key_list);
 
         // set person_id
-        $roleProperty->setPersonId($role->getPersonId());
+        $roleProperty->setPersonId($role->getPerson()->getId());
 
         return $roleProperty;
     }
@@ -1427,6 +1450,15 @@ class PersonService {
             }
         }
         return true;
+    }
+
+    public function makeIdPublic($item_type, $numeric_part)  {
+        $width = Item::ITEM_TYPE_ID[$item_type]['numeric_field_width'];
+        $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
+
+        $mask = Item::ITEM_TYPE_ID[$item_type]['id_public_mask'];
+        $id_public = str_replace("#", $numeric_field, $mask);
+        return $id_public;
     }
 
 };

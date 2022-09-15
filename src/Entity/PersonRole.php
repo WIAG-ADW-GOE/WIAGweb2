@@ -5,6 +5,10 @@ namespace App\Entity;
 use App\Repository\PersonRoleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
+
 /**
  * @ORM\Entity(repositoryClass=PersonRoleRepository::class)
  */
@@ -123,6 +127,10 @@ class PersonRole
      * @ORM\Column(type="integer", nullable=true)
      */
     private $dateSortKey;
+
+    public function __construct() {
+        $this->roleProperty = new ArrayCollection();
+    }
 
     public function getRoleProperty()
     {

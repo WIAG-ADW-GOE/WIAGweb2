@@ -6,6 +6,7 @@ use App\Entity\Item;
 use App\Entity\ItemReference;
 use App\Entity\Authority;
 use App\Entity\ItemProperty;
+use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\PersonBirthplace;
@@ -81,10 +82,10 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * 2022-01-08 obsolete?
      */
-    public function countBishop($model) {
+    public function countBishop_hide($model) {
         $result = array('n' => 0);
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         // diocese or office
         $diocese = $model->diocese;
@@ -128,7 +129,7 @@ class ItemRepository extends ServiceEntityRepository
     public function bishopIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
-        $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $diocese = $model->diocese;
         $office = $model->office;
@@ -137,7 +138,7 @@ class ItemRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         $qb = $this->createQueryBuilder('i')
-                   ->join('i.person', 'p')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->andWhere('i.itemTypeId = :itemTypeBishop')
                    ->setParameter(':itemTypeBishop', $itemTypeBishop);
 
@@ -304,7 +305,7 @@ class ItemRepository extends ServiceEntityRepository
      * add conditions set by facets
      */
     private function addBishopFacets($qb, $model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $facetDiocese = isset($model->facetDiocese) ? $model->facetDiocese : null;
         if ($facetDiocese) {
@@ -334,11 +335,12 @@ class ItemRepository extends ServiceEntityRepository
      * return array of dioceses related to a person's role (used for facet)
      */
     public function countBishopDiocese($model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $qb = $this->createQueryBuilder('i')
                    ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) AS n')
-                   ->join('i.person', 'p') # for form conditions
+            // ->join('i.person', 'p') # for form conditions
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
@@ -360,11 +362,12 @@ class ItemRepository extends ServiceEntityRepository
      * return array of offices related to a person's role (used for facet)
      */
     public function countBishopOffice($model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $qb = $this->createQueryBuilder('i')
                    ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
-                   ->join('i.person', 'p') # for form conditions
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+            // ->join('i.person', 'p') # for form conditions
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
@@ -392,11 +395,11 @@ class ItemRepository extends ServiceEntityRepository
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
             // If data are up to date at most one of these requests is successful.
-            $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS'];
+            $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
             $canonGs = $this->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
             $item = array_merge($item, $canonGs);
 
-            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS'];
+            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
             $bishopGs = $this->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $item = array_merge($item, $bishopGs);
 
@@ -406,19 +409,25 @@ class ItemRepository extends ServiceEntityRepository
         $authorityWIAG = Authority::ID['WIAG-ID'];
         $wiagid = $person->getItem()->getIdPublic();
         if (!is_null($wiagid)) {
-            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
             $canon = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             $item = array_merge($item, $canon);
         }
 
-        $personRole = array();
-        foreach($item as $item_loop) {
-            $personRole[] = $item_loop->getPerson();
-        }
-
+        // $personRole = array();
+        // dump($item);
+        // foreach($item as $item_loop) {
+        //     $personRole[] = $item_loop->getPerson();
+        // }
 
         // set places and references in one query
         $em = $this->getEntityManager();
+        $id_list = array_map(function ($i) {
+            return $i->getId();
+        }, $item);
+
+        $personRepository = $em->getRepository(Person::class);
+        $personRole = $personRepository->findByIdList($id_list);
 
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($personRole);
         $em->getRepository(ItemReference::class)->setReferenceVolume($personRole);
@@ -448,10 +457,11 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('i.person', 'p')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+            // ->join('i.person', 'p')
                    ->join('p.nameLookup', 'n')
                    ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -471,7 +481,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT pr.dioceseName AS suggestion")
                    ->join('App\Entity\PersonRole', 'pr', 'WITH', 'i.id = pr.personId')
                    ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('pr.dioceseName like :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -491,7 +501,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT pr.roleName AS suggestion")
                    ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
                    ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('pr.roleName like :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -511,7 +521,7 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT i.commentDuplicate AS suggestion")
                    ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('i.commentDuplicate like :name')
                    ->setParameter(':name', '%'.$name.'%');
 
@@ -523,7 +533,7 @@ class ItemRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
-    public function countPriestUt($model) {
+    public function countPriestUt_hide($model) {
         $result = array('n' => 0);
 
         $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
@@ -558,7 +568,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('i')
                    ->select('distinct(i.id) as personId, ip_ord_date.dateValue as sort')
-                   ->join('i.person', 'p')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('\App\Entity\ItemProperty',
                           'ip_ord_date',
                           'WITH',
@@ -664,10 +674,12 @@ class ItemRepository extends ServiceEntityRepository
         $wiagid = $person->getItem()->getIdPublic();
         $f_found = false;
         if (!is_null($wiagid)) {
-            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr'];
+            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
             $item = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             if ($item) {
-                $person->setSibling($item[0]->getPerson());
+                $personRepository = $this->getEntityManager()->getRepository(Person::class);
+                $sibling = $personRepository->find($item[0]->getId());
+                $person->setSibling($sibling);
                 $f_found = true;
             }
         }
@@ -803,6 +815,25 @@ class ItemRepository extends ServiceEntityRepository
         $suggestions = $query->getResult();
 
         return $suggestions;
+    }
+
+    public function findMaxIdInSource($itemTypeId) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("i.idInSource")
+                   ->andWhere('i.itemTypeId = :itemTypeId')
+                   ->setParameter('itemTypeId', $itemTypeId);
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        $max_id = 0;
+        foreach ($result as $el) {
+            $cand = intval($el['idInSource']);
+            if ($cand > $max_id) {
+                $max_id = $cand;
+            }
+        }
+        return $max_id;
+
     }
 
 }

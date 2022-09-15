@@ -77,9 +77,14 @@ class EditBishopFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('isDeleted', CheckboxType::class, [
-                'label' => 'gelöscht',
-                'required' => false,
+            ->add('isDeleted', ChoiceType::class, [
+                'label' => 'Anzeige',
+                'choices' => [
+                    'aktiv' => 0,
+                    'inaktiv (gelöscht)' => 1,
+                ],
+                'expanded' => true,
+                'multiple' => false,
             ])
             ->add('editStatus', ChoiceType::class, [
                 'required' => false,

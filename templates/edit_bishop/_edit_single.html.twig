@@ -1,9 +1,9 @@
-<div class="mx-2 my-2 pb-2 border border-2 border-success rounded">
-    {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof'] %}
+<div class="my-2 pb-2 border border-2 border-success rounded">
+    {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
     {% set base_id=editFormId~'_'~loop.index0 %}
     {% set base_input_name=editFormId~'['~loop.index0~']' %}
     {# header #}
-    {% set online_image = person.item.isonline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+    {% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
     <div class="row col-12 ps-0 mx-0"
 	 data-controller="toggle-arrow on-input insert"
 	 data-toggle-arrow-state-value="true"
@@ -12,19 +12,19 @@
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
 
 	{# headline #}
-	<div class="hstack gap-3 my-2">
+	<div class="input-group input-group-sm mt-1 mb-0">
 	    <span class="text-nowrap">
 		{% set expanded = false %}
 		{% if not person.inputError.isEmpty or person.id == "" %}
 		    {% set expanded = true %}
 		{% endif %}
-		<button class="btn btn-sm ms-1 pt-0 px-1 align-middle"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target={{ "#body#{person.item.id}" }}
-			aria-expanded="{{ expanded }}"
-			aria-controls={{ "body#{person.item.id}" }}
-			data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
+		<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+			       type="button"
+			       data-bs-toggle="collapse"
+			       data-bs-target={{ "#body#{person.item.id}" }}
+			       aria-expanded="{{ expanded }}"
+			       aria-controls={{ "body#{person.item.id}" }}
+			       data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
 		       type="checkbox"
 		       value=""
@@ -34,9 +34,28 @@
 		       {% if person.item.formisedited %}checked="checked"{% endif %}>
 		<img class="align-middle" src="{{ asset(online_image) }}"/>
 	    </span>
-	    <span><strong>{{ person.describe }}</strong>{% if person.describerole(2) %}, {{ person.describerole(2) }}{% endif %}
-	    </span>
-	    <span>ID: {{ person.item.idPublicNumber }}</span>
+	    {% if person.describerole(2) %}
+		{% set head_line %}
+		<strong>{{ person.describe }}</strong>, {{ person.describerole(2) }}
+		{% endset %}
+	    {% else %}
+		{% set head_line %}
+		<strong>{{ person.describe }}</strong>
+		{% endset %}
+	    {% endif %}
+	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
+	    {% if newEntry > 0%}
+		<span class="input-group-text ms-2">Id</span>
+		<input type="text" id="{{ base_id }}_item_id_in_source"
+		       name="{{ base_input_name}}[item][idInSource]"
+		       class="form-control form-control-sm wiag-input"
+		       style="max-width: 5em"
+		       value="{{ person.item.idinsource }}"
+		       aria-label="Kommentar Dublette">
+
+	    {% else %}
+		<span class="ms-2">ID: {{ person.item.idinsource }}</span>
+	    {% endif %}
 	    {# insert internal id into the form (hidden) #}
 	    <span><input type="text"
 			 id="{{ base_id }}_item_id"
@@ -45,7 +64,7 @@
 			 value="{{ person.item.id }}"
 			 hidden="hidden"></span>
 	    <div class="vr ms-auto"></div>
-	    <div class="bg-light">{{ person.item.editstatus }}</div>
+	    <div class="bg-light ms-1 px-2">{{ person.item.editstatus }}</div>
 	</div>
 	<div class="row col-12 collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
 	     id={{ "body#{person.item.id}" }}>

@@ -33,14 +33,17 @@
 			] %}
 			    <button type="submit" form="form" formaction={{ path('canon_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
 			{% endfor %}
-			<button type="submit" form="form" formaction={{ path('canon_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste chron.</button>
-			<button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 6}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
-			<button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 5}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
+			{% if is_granted('ROLE_DB_EDIT') %}
+			    <button type="submit" form="form" formaction={{ path('canon_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste chron.</button>
+			    <button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 6}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
+			    <button type="submit" form="form" formaction={{ path('canon_onepage_references', {itemType: 5}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
+			{% endif %}
 		    {% endif %}
 		    <a href="{{ path('canon_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
 		</div>
 	    </div>
-	    <div data-hide-on-input-target="result">
+	    <div data-hide-on-input-target="result"
+		 data-controller="sync-input">
 		<div class="row mt-2 mx-2">
  		    <div class="col-12">
 			{% if count == 0 %}
@@ -50,17 +53,8 @@
 			{% else %}
 			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
 			    {% if count > pageSize %}
-				<div class="d-inline-flex p-2">
-				    {{ include('person/_button_page_backward.html.twig', {
-					value: offset - pageSize,
-					disabled: offset < pageSize,
-					text: 'zurück'}) }}
-				    <input type="text" name="pageNumber" value={{ offset // pageSize + 1 }} class="mx-1" style="width:3em" autocomplete="off" data-hide-on-input-target="pageNumber">
-				    {{ include('person/_button_page_forward.html.twig', {
-					value: offset + pageSize,
-					disabled: offset + pageSize >= count,
-					text: 'vor'}) }}
-				</div>
+				{# forward/backward buttons #}
+				{{ include('person/_page_browse.html.twig') }}
 			    {% endif %}
 			{% endif %}
 		    </div>
@@ -116,17 +110,8 @@
 		{% endif %}
 		{% if count > pageSize %}
 		    <div class="row col-12 mx-2">
-			<div class="d-inline-flex p-2">
-			    {{ include('person/_button_page_backward.html.twig', {
-				value: offset - pageSize,
-				disabled: offset < pageSize,
-				text: 'zurück'}) }}
-			    <input type="text" name="pageNumber" value={{ offset // pageSize + 1 }} class="mx-1" style="width:3em" autocomplete="off" data-hide-on-input-target="pageNumber">
-			    {{ include('person/_button_page_forward.html.twig', {
-				value: offset + pageSize,
-				disabled: offset + pageSize >= count,
-				text: 'vor'}) }}
-			</div>
+			{# forward/backward buttons #}
+			{{ include('person/_page_browse.html.twig') }}
 		    </div>
 		{% endif %}
 	    </div>

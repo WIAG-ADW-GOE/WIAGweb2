@@ -4,16 +4,17 @@ export default class extends Controller {
     static targets = ['result', 'pageNumber'];
 
     connect() {
-	// console.log('this is hide-on-input');
+	// console.log('this is hide-on-input')
     }
 
     /**
      * hide results of a previous search and reset page number
      */
     hideResults(event) {
-	if (this.hasPageNumberTarget) {
-	    // console.log(this.pageNumberTarget);
-	    this.pageNumberTarget.value = null;
+
+	// start a new search on page 1
+	for (let pnt of this.pageNumberTargets) {
+	    pnt.value = null;
 	}
 
 	for (let element of this.resultTargets) {

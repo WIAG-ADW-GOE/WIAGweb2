@@ -174,6 +174,13 @@ class Person {
         # TODO $this-urlByType;
     }
 
+    static public function newPerson($item) {
+        $person = new Person();
+        $person->setItem($item);
+        $person->setItemTypeId($item->getItemTypeId());
+        return $person;
+    }
+
 
     public function getId(): ?int
     {
@@ -429,11 +436,6 @@ class Person {
         $this->itemTypeId = $itemTypeId;
 
         return $this;
-    }
-
-    public function getSource() {
-        $typeId = $this->itemTypeId;
-        return $typeId ? array_flip(Item::ITEM_TYPE_ID)[$typeId] : null;
     }
 
     public function getUrlByType(): ?array

@@ -15,13 +15,21 @@ use Doctrine\Common\Collections\Collection;
 class Item {
     // redundant to table item_type (simpler, faster than a query)
     const ITEM_TYPE_ID = [
-        'Kloster' => 2,
-        'Domstift' => 3,
-        'Bischof' => 4,
-        'Domherr' => 5,
-        'Domherr GS' => 6,
-        'Bischof GS' => 9,
-        'Priester Utrecht' => 10,
+        'Kloster' => ['id' => 2],
+        'Domstift' => ['id' => 3],
+        'Bischof' => [
+            'id' => 4,
+            'id_public_mask' => 'WIAG-Pers-EPISCGatz-#-001',
+            'numeric_field_width' => 5,
+        ],
+        'Domherr' => [
+            'id' => 5,
+            'id_public_mask' => 'WIAG-Pers-CANON-#-001',
+            'numeric_field_width' => 5,
+        ],
+        'Domherr GS' => ['id' => 5, 'id_public_mask' => 'WIAG-Pers-CANON-#-001'],
+        'Bischof GS' => ['id' => 9],
+        'Priester Utrecht' => ['id' => 10],
     ];
 
     // map authority name
@@ -65,12 +73,6 @@ class Item {
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $reference;
-
-    /**
-     * @ORM\OneToOne(targetEntity="Person", fetch="EAGER")
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
-    private $person;
 
     /**
      * @ORM\OneToOne(targetEntity="Institution")
@@ -170,6 +172,21 @@ class Item {
         $this->urlExternal = new ArrayCollection();
     }
 
+    static public function newItem($userWiagId, $itemType) {
+        $item = new Item();
+        $item->setItemTypeId(self::ITEM_TYPE_ID[$itemType]['id']);
+        $item->setCreatedBy($userWiagId);
+        $item->setDateCreated(new \DateTimeImmutable('now'));
+        $item->setChangedBy($userWiagId);
+        $item->setDateChanged(new \DateTimeImmutable('now'));
+        return $item;
+    }
+
+    public function setId($id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
 
     public function getId(): ?int
     {
@@ -216,10 +233,6 @@ class Item {
         });
 
         return $ref_list;
-    }
-
-    public function getPerson() {
-        return $this->person;
     }
 
     public function getItemTypeId(): ?int
@@ -472,9 +485,19 @@ class Item {
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
 
+    /**
+     * return name for $typeId
+     */
     public function getSource() {
         $typeId = $this->itemTypeId;
-        return $typeId ? array_flip(self::ITEM_TYPE_ID)[$typeId] : null;
+        if (!is_null($typeId)) {
+            foreach(Item::ITEM_TYPE_ID as $key => $i) {
+                if ($i['id'] == $typeId) {
+                    return $key;
+                }
+            }
+        }
+        return null;
     }
 
     /**

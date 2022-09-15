@@ -49,10 +49,12 @@
 	    </div>
 	{{ form_end(form) }}
 	{% if count > 0 %}
-	    <div class="ms-2 p-1"
-		 data-controller="submit-form"
+	    <div data-controller="submit-form"
+		 data-submit-form-new-entry-value="0"
 		 data-hide-on-input-target="result">
-		{{ include('edit_bishop/_list.html.twig') }}
+		{{ include('edit_bishop/_list.html.twig', {
+		    new_entry: newEntry,
+		}) }}
 	    </div>
 	{% endif %}
     </div>

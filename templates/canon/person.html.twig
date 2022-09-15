@@ -65,12 +65,12 @@
 	    {# offices and references#}
 	    {% for person in personRole %}
 		{% set office_title = '' %}
-		{% if person.getsource == 'Domherr' %}
+		{% if person.item.getsource == 'Domherr' %}
 		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
-		{% elseif person.getsource == 'Bischof GS' or person.getsource == 'Domherr GS' %}
+		{% elseif person.item.getsource == 'Bischof GS' or person.item.getsource == 'Domherr GS' %}
 		    {% set gsnid = person.item.getidexternalobj('GS') %}
 		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
-		{% elseif person.getsource == 'Bischof' %}
+		{% elseif person.item.getsource == 'Bischof' %}
 		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
 		    {% set office_title %}<a href="{{ path('id', {id: id_public}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ id_public }}</strong></a>{% endset %}
 		{% endif %}

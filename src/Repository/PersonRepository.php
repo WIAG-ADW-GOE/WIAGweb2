@@ -67,6 +67,16 @@ class PersonRepository extends ServiceEntityRepository {
     }
     */
 
+    public function findByIdList($id_list) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p')
+                   ->andWhere('p.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
     /**
      * see PriestUtController
      */

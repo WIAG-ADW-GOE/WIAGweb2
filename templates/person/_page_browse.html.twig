@@ -1,0 +1,19 @@
+<div class="d-inline-flex p-2">
+    {{ include('person/_button_page_backward.html.twig', {
+	value: offset - pageSize,
+	disabled: offset < pageSize,
+	text: 'zurück'}) }}
+    <input type="text"
+	   name="pageNumber"
+	   value={{ offset // pageSize + 1 }}
+	   class="mx-1 text-center"
+	   style="width:3em"
+	   autocomplete="off"
+	   data-hide-on-input-target="pageNumber"
+	   data-sync-input-target="member"
+	   data-action="change->sync-input#sync">
+    {{ include('person/_button_page_forward.html.twig', {
+	value: offset + pageSize,
+	disabled: offset + pageSize >= count,
+	text: 'vor'}) }}
+</div>

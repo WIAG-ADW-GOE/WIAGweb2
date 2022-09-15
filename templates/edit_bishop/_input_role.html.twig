@@ -3,7 +3,7 @@
      data-controller="toggle-arrow input-state"
      data-toggle-arrow-img-open-value="down"
      data-toggle-arrow-img-closed-value="right"
-     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden change->input-state#set">
+     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
     <div class="input-group input-group-sm">
 	<span class="input-group-text">Amt, Bistum, Kloster/Stift</span>
 	{# id (hidden) #}
@@ -95,7 +95,8 @@
 		   value=""
 		   id="{{ base_id_role }}_delete"
 		   name="{{ base_input_name_role }}[delete]"
-		   data-input-state-target="checkbox">
+		   data-input-state-target="checkbox"
+		   data-action="input-state#set">
 	    <label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
 	</div>
     </div>
