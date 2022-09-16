@@ -224,7 +224,7 @@ class PersonRole
         return $this->role;
     }
 
-    public function setRole(Role $role): self {
+    public function setRole(?Role $role): self {
         $this->role = $role;
         return $this;
     }

@@ -1148,6 +1148,10 @@ class PersonService {
         $role_role = $roleRoleRepository->findOneByName($role_name);
         if ($role_role) {
             $role->setRole($role_role);
+        } else {
+            $role->setRole(null);
+            $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
+            $person->getInputError()->add(new InputError('role', $msg));
         }
         $role->setRoleName($role_name);
 
