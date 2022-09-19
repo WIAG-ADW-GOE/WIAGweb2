@@ -13,6 +13,11 @@ use Doctrine\Common\Collections\Collection;
  * @ORM\Entity(repositoryClass=PersonRepository::class)
  */
 class Person {
+    const ERROR_LEVEL = [
+        'info'    => ['info', 'warning', 'error'],
+        'warning' => ['warning', 'error'],
+        'error'   => ['error'],
+    ];
 
     /**
      * @ORM\Id
@@ -620,6 +625,21 @@ class Person {
             $birth_info = '† '.$this->dateDeath;
         }
         return $birth_info;
+    }
+
+    public function hasError($min_level): bool {
+        // the database is not aware of inputError and it's type
+        if (is_null($this->inputError)) {
+            return false;
+        }
+
+        foreach($this->inputError as $e_loop) {
+            $level = $e_loop->getLevel();
+            if (in_array($level, self::ERROR_LEVEL[$min_level])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

@@ -153,7 +153,8 @@ class EditBishopController extends AbstractController {
                 $person = $personRepository->find($person_id);
 
                 $this->personService->mapPerson($person, $data, $current_user_id);
-                if (!$person->getInputError()->isEmpty()) {
+
+                if ($person->hasError('error')) {
                     $flag_error = true;
                 }
                 $person_list[] = $person;

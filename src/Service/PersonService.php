@@ -978,7 +978,6 @@ class PersonService {
 
         }
 
-        // dump($data);
         // item: status values, editorial notes
         $key_list = ['editStatus', 'commentDuplicate'];
         $this->setByKeys($item, $data['item'], $key_list);
@@ -1159,7 +1158,7 @@ class PersonService {
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
-            $person->getInputError()->add(new InputError('role', $msg));
+            $person->getInputError()->add(new InputError('role', $msg, 'warning'));
         }
         $role->setRoleName($role_name);
 

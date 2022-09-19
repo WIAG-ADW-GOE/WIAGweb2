@@ -15,7 +15,7 @@
 	<div class="input-group input-group-sm mt-1 mb-0">
 	    <span class="text-nowrap">
 		{% set expanded = false %}
-		{% if not person.inputError.isEmpty or person.id == "" %}
+		{% if person.hasError('info') or person.id == "" %}
 		    {% set expanded = true %}
 		{% endif %}
 		<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
@@ -86,7 +86,7 @@
 		 data-input-name-sans-idx="{{ base_input_name~'[role]' }}"
 		 data-next-idx="{{ next_role_idx }}"></div>
 	    {% for error_obj in person.inputError|filter(v => v.section == 'role') %}
-		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
+		<div class="my-1 {% if error_obj.level == 'error' %}text-danger{% else %}text-warning{% endif %}">{{ error_obj.msg }}</div>
 	    {% endfor %}
 	    {# references #}
 	    {% for ref in person.item.reference %}
