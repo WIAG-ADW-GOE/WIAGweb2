@@ -6,8 +6,9 @@
 		   name="{{ base_input_name }}[item][isDeleted]"
 		   id="{{ base_id }}_item_isDeleted_false"
 		   {% if not person.item.isdeleted %}checked="checked"{% endif %}
-		   value="">
-	    <label class="form-check-label" for="inlineRadio1">aktiv</label>
+		   data-action="input-state#enable"
+		   value="0">
+	    <label class="form-check-label" for="{{ base_input_name }}[item][isDeleted]_0">aktiv</label>
 	</div>
 	<div class="form-check form-check-inline">
 	    <input class="form-check-input"
@@ -15,9 +16,21 @@
 		   name="{{ base_input_name }}[item][isDeleted]"
 		   id="{{ base_id }}_item_isDeleted_true"
 		   {% if person.item.isdeleted %}checked="checked"{% endif %}
-		   value="deleted">
-	    <label class="form-check-label" for="inlineRadio2">inaktiv (gelöscht) </label>
+		   data-input-state-target="globalTrigger" {# used when page is reloaded after save #}
+		   data-action="input-state#disable"
+		   value="1">
+	    <label class="form-check-label" for="{{ base_input_name }}[item][isDeleted]_1">inaktiv (gelöscht) </label>
 	</div>
+	{% if newEntry > 0%}
+	    <span class="input-group-text ms-2">Id</span>
+	    <input type="text" id="{{ base_id }}_item_id_in_source"
+		   name="{{ base_input_name}}[item][idInSource]"
+		   class="form-control form-control-sm wiag-input"
+		   style="max-width: 5em"
+		   value="{{ person.item.idinsource }}"
+		   aria-label="Kommentar Dublette">
+
+	{% endif %}
 	<span class="input-group-text ms-2">Status</span>
 	<span {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', {itemTypeId: itemTypeId, field: 'editStatus'}),

@@ -170,6 +170,7 @@ class Item {
         $this->reference = new ArrayCollection();
         $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
+        $this->itemProperty = new ArrayCollection();
     }
 
     static public function newItem($userWiagId, $itemType) {

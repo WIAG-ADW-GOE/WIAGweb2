@@ -7,10 +7,6 @@ use App\Entity\ParseDate;
 
 class UtilService {
 
-    public function __construct() {
-
-    }
-
     /**
      * merge sort array
      * obsolete 2022-07-14

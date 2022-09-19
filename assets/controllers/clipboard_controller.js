@@ -2,7 +2,7 @@ import { Controller } from 'stimulus';
 
 export default class extends Controller {
     connect() {
-	console.log('this is clipboard');
+	//console.log('this is clipboard');
     }
 
     copyTitle(event) {

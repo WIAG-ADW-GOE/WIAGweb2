@@ -58,7 +58,7 @@
 	       value="{{ person.formfamilynamevariants }}"
 	       spellcheck="false"
 	       aria-label="Familiennamenvarianten">
-	{% if person.comment or person.noteperson or person.notename or person.item.itemproperty|length > 0%}
+	{% if person.noteperson or person.notename or person.item.itemproperty|length > 0%}
 	    {% set expanded = true %}
 	{% else %}
 	    {% set expanded = false %}

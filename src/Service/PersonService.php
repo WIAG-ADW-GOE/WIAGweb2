@@ -951,9 +951,15 @@ class PersonService {
         }
 
         // item: deleted
-        $deleted_status = $data['item']['isDeleted'] == "deleted" ? 1 : 0;
-        //dd($deleted_status, $data['item']['isDeleted']);
+        $deleted_status = $data['item']['isDeleted'];
         $item->setIsDeleted($deleted_status);
+
+        if ($deleted_status == 1) {
+            $this->setByKeys($person, $data, ['comment']);
+            // other elements are not accessible
+            return $person;
+        }
+
 
         // item: checkboxes
         $key_list = ['formIsEdited'];
@@ -962,8 +968,6 @@ class PersonService {
             $item->$set_fnc(isset($data['item'][$key]));
         }
 
-        dump($deleted_status, $item);
-
         // idInSource
         if (array_key_exists('idInSource', $data['item'])) {
             $id_in_source = $data['item']['idInSource'];
@@ -971,8 +975,10 @@ class PersonService {
 
             $item->setIdInSource($id_in_source);
             $item->setIdPublic($id_public);
+
         }
 
+        dump($data);
         // item: status values, editorial notes
         $key_list = ['editStatus', 'commentDuplicate'];
         $this->setByKeys($item, $data['item'], $key_list);
@@ -1063,6 +1069,8 @@ class PersonService {
         }
 
         // - set new entries
+        // -- ';' is an alternative separator
+        $gnv_data = str_replace(';', ',', $gnv_data);
         $gnv_list = explode(',', $gnv_data);
         foreach ($gnv_list as $gnv) {
             if (trim($gnv) != "") {

@@ -96,11 +96,11 @@
 		   id="{{ base_id_role }}_delete"
 		   name="{{ base_input_name_role }}[delete]"
 		   data-input-state-target="checkbox"
-		   data-action="input-state#set">
+		   data-action="input-state#toggle">
 	    <label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
 	</div>
     </div>
-    <div class="ms-4 mt-1 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{role.id}" }}">
+    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{role.id}" }}">
 	<div class="input-group input-group-sm mt-1">
 	    <span class="input-group-text">Bemerkung</span>
 	    <input type="text"

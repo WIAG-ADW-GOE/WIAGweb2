@@ -44,18 +44,7 @@
 		{% endset %}
 	    {% endif %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
-	    {% if newEntry > 0%}
-		<span class="input-group-text ms-2">Id</span>
-		<input type="text" id="{{ base_id }}_item_id_in_source"
-		       name="{{ base_input_name}}[item][idInSource]"
-		       class="form-control form-control-sm wiag-input"
-		       style="max-width: 5em"
-		       value="{{ person.item.idinsource }}"
-		       aria-label="Kommentar Dublette">
-
-	    {% else %}
-		<span class="ms-2">ID: {{ person.item.idinsource }}</span>
-	    {% endif %}
+	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
 	    {# insert internal id into the form (hidden) #}
 	    <span><input type="text"
 			 id="{{ base_id }}_item_id"
@@ -66,7 +55,10 @@
 	    <div class="vr ms-auto"></div>
 	    <div class="bg-light ms-1 px-2">{{ person.item.editstatus }}</div>
 	</div>
+	{# body #}
 	<div class="row col-12 collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
+	     data-controller="input-state"
+	     data-action="shown.bs.collapse->input-state#disable"
 	     id={{ "body#{person.item.id}" }}>
 	    {# status and name #}
 	    {{ include('edit_bishop/_input_status.html.twig') }}
