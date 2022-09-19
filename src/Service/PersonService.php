@@ -978,7 +978,7 @@ class PersonService {
 
         }
 
-        dump($data);
+        // dump($data);
         // item: status values, editorial notes
         $key_list = ['editStatus', 'commentDuplicate'];
         $this->setByKeys($item, $data['item'], $key_list);
