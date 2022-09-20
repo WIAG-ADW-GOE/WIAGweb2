@@ -9,6 +9,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\InstitutionPlace;
 use App\Entity\Institution;
+use App\Entity\Authority;
 use App\Entity\UrlExternal;
 use App\Service\UtilService;
 
@@ -324,11 +325,11 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function findList($id_list, $prio_role = null) {
         $qb = $this->createQueryBuilder('c')
-                   ->select('c, p, i, ref, id_ex, i_prop, role, role_type, institution')
+                   ->select('c, p, i, ref, idext, i_prop, role, role_type, institution')
                    ->join('c.person', 'p')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.reference', 'ref')
-                   ->leftjoin('i.idExternal', 'id_ex')
+                   ->leftjoin('i.idExternal', 'idext')
                    ->leftjoin('i.itemProperty', 'i_prop')
                    ->join('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
@@ -370,6 +371,9 @@ class CanonLookupRepository extends ServiceEntityRepository
         // set reference volumes
         $person_list = $this->getPersonList($canon_list);
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($person_list);
+
+        // set authorities
+        $em->getRepository(Authority::class)->setAuthority($person_list);
 
         // set place names
         $role_list = $this->getRoleList($canon_list);

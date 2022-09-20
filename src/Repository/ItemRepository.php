@@ -390,7 +390,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $item = array($person->getItem());
         // get item from Germania Sacra
-        $authorityGs = Authority::ID['Germania Sacra'];
+        $authorityGs = Authority::ID['GS'];
         $gsn = $person->getIdExternal($authorityGs);
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
@@ -414,13 +414,8 @@ class ItemRepository extends ServiceEntityRepository
             $item = array_merge($item, $canon);
         }
 
-        // $personRole = array();
-        // dump($item);
-        // foreach($item as $item_loop) {
-        //     $personRole[] = $item_loop->getPerson();
-        // }
 
-        // set places and references in one query
+        // set places and references and authorities in one query
         $em = $this->getEntityManager();
         $id_list = array_map(function ($i) {
             return $i->getId();
@@ -431,6 +426,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($personRole);
         $em->getRepository(ItemReference::class)->setReferenceVolume($personRole);
+        $em->getRepository(Authority::class)->setAuthority($personRole);
 
         return $personRole;
 

@@ -39,8 +39,7 @@ class IdExternal
     private $authorityId;
 
     /**
-     * @ORM\OneToOne(targetEntity="Authority")
-     * @ORM\JoinColumn(name="authority_id", referencedColumnName="id")
+     * set this manually join column: authority_id
      */
     private $authority;
 
@@ -53,6 +52,17 @@ class IdExternal
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $note;
+
+    public function setItem($item): self {
+        $this->item = $item;
+        return $this;
+    }
+
+    public function setAuthority($authority): self {
+        $this->authority = $authority;
+        return $this;
+    }
+
 
     public function getId(): ?int
     {

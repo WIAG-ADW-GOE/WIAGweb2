@@ -74,6 +74,7 @@
 		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
 		    {% set office_title %}<a href="{{ path('id', {id: id_public}) }}" target="_blank" rel="noopener"><strong>Amtsangaben aus der Datenbank Bischöfe des Alten Reiches (WIAG) — {{ id_public }}</strong></a>{% endset %}
 		{% endif %}
+		<span>Item Source: {{ person.item.getsource }}</span>
 		{{ include('person/_person_role_group.html.twig', {
 		    person: person,
 		    title: office_title,

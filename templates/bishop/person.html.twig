@@ -57,7 +57,7 @@
 		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
 		{% elseif person_loop.item.getsource == 'Domherr' %}
 		    {% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
-		{% elseif person_loop.item.getsource == 'Bischof GS' or person_loop.getsource == 'Domherr GS' %}
+		{% elseif person_loop.item.getsource == 'Bischof GS' or person_loop.item.getsource == 'Domherr GS' %}
 		    {% set gsnid = person_loop.item.getidexternalobj('GS') %}
 		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 		{% endif %}

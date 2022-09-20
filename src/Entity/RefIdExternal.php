@@ -39,7 +39,7 @@ class RefIdExternal
     private $authorityId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Authority", inversedBy="idsExternal")
+     * @ORM\ManyToOne(targetEntity="Authority", inversedBy="refIdExternal")
      * @ORM\JoinColumn(name="authority_id", referencedColumnName="id")
      */
     private $authority;

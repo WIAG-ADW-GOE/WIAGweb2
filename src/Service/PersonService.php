@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Entity\Item;
 use App\Entity\ItemProperty;
+use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
@@ -13,6 +14,7 @@ use App\Entity\ReferenceVolume;
 use App\Entity\Role;
 use App\Entity\Diocese;
 use App\Entity\Institution;
+use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
 use App\Entity\InputError;
@@ -1038,6 +1040,10 @@ class PersonService {
             }
         }
 
+        // external IDs
+        $this->mapIdExternal($person, $data['idext']);
+
+
         // date min/date max
         $this->updateDateRange($person);
 
@@ -1346,6 +1352,47 @@ class PersonService {
 
         return $itemProperty;
     }
+
+    /**
+     * fill id external with $data
+     */
+    private function mapIdExternal($person, $data) {
+        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+
+        $item = $person->getItem();
+        $item_id = $item->getId();
+
+        $item_id_external_list = $item->getIdExternal();
+        // replace all existing entries
+        $id_external_list = $idExternalRepository->findByItemId($item_id);
+        foreach($id_external_list as $id_loop) {
+            $item->getIdExternal()->removeElement($id_loop);
+            //$id_loop->setItem(null); not necessary
+            $this->entityManager->remove($id_loop);
+        }
+
+
+        foreach($data as $key => $value) {
+            if (!is_null($value) && trim($value) != "") {
+                $authority_id = Authority::ID[$key];
+
+                $id_external = new IdExternal();
+                $id_external->setItem($item);
+                $item_id_external_list->add($id_external);
+                $id_external->setAuthorityId($authority_id);
+                if ($key == 'Wikipedia') {
+                    $val_list = explode('/', trim($value));
+                    $value = array_slice($val_list, -1)[0];
+                }
+                $id_external->setValue($value);
+                $this->entityManager->persist($id_external);
+            }
+        }
+
+        return null;
+
+    }
+
 
     /**
      * fill role properties (free properties) with $data

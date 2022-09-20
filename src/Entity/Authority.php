@@ -12,8 +12,11 @@ class Authority
 {
     const ID = [
         'GND' => 1,
+        'Wikidata' => 2,
+        'Wikipedia' => 3,
+        'VIAF' => 4,
         'WIAG-ID' => 5,
-        'Germania Sacra' => 200,
+        'GS' => 200,
         'World Historical Gazetteer' => 54,
     ];
 
@@ -28,7 +31,7 @@ class Authority
      * @ORM\OneToMany(targetEntity="RefIdExternal", mappedBy="authority")
      * @ORM\JoinColumn(name="id", referencedColumnName="authority_id")
      */
-    private $idsExternal;
+    private $refIdExternal;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)

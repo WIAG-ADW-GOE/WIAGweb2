@@ -27,7 +27,7 @@ class Item {
             'id_public_mask' => 'WIAG-Pers-CANON-#-001',
             'numeric_field_width' => 5,
         ],
-        'Domherr GS' => ['id' => 5, 'id_public_mask' => 'WIAG-Pers-CANON-#-001'],
+        'Domherr GS' => ['id' => 6, 'id_public_mask' => 'WIAG-Pers-CANON-#-001'],
         'Bischof GS' => ['id' => 9],
         'Priester Utrecht' => ['id' => 10],
     ];
@@ -498,7 +498,7 @@ class Item {
                 }
             }
         }
-        return null;
+        return $typeId;
     }
 
     /**

@@ -105,7 +105,7 @@
 	    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
 		<div class="ms-2 my-1 text-danger">{{ error_obj.msg }}</div>
 	    {% endfor %}
-	    {{ include('edit_bishop/_input_external_id.html.twig') }}
+	    {{ include('edit_bishop/_input_id_external.html.twig') }}
 	    {# comment person #}
 	    <div class="input-group input-group-sm mt-1 pe-1">
 		<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>

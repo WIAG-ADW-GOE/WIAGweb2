@@ -108,9 +108,10 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findList($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, bp, role, role_type, institution')
+                   ->select('p, i, bp, role, role_type, institution, idext')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.itemProperty', 'ip')
+                   ->leftjoin('i.idExternal', 'idext')
                    ->leftjoin('p.birthplace', 'bp')
                    ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
@@ -142,6 +143,9 @@ class PersonRepository extends ServiceEntityRepository {
 
          // set reference volumes
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($person_list);
+
+        // set authorities
+        $em->getRepository(Authority::class)->setAuthority($person_list);
 
         return $person_list;
     }

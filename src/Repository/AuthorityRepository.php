@@ -47,4 +47,48 @@ class AuthorityRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * set authority for external IDs in $person_list
+     */
+    public function setAuthority($person_list) {
+        // an entry in id_external belongs to one item at most
+        $id_external_list_meta = array();
+        foreach ($person_list as $p) {
+            $id_external_list_meta[] = $p->getItem()->getIdExternal()->toArray();
+        }
+        $id_external_list = array_merge(...$id_external_list_meta);
+
+        $auth_id_list = array();
+        foreach ($id_external_list as $id_loop) {
+            $auth_id_list[] = $id_loop->getAuthorityId();
+        }
+        $auth_id_list = array_unique($auth_id_list);
+
+        // get all relevant authorities
+        $qb = $this->createQueryBuilder('a')
+                   ->select('a')
+                   ->andWhere('a.id in (:auth_id_list)')
+                   ->setParameter('auth_id_list', $auth_id_list);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+
+        // match authorities by id
+        // the result list is not large so the filter is no performance problem
+        $id_loop = null;
+        foreach ($id_external_list as $id_loop) {
+            $auth_id = $id_loop->getAuthorityId();
+            $auth = array_filter($result, function($el) use ($auth_id) {
+                return ($el->getId() == $auth_id);
+            });
+            $auth_obj = !is_null($auth) ? array_values($auth)[0] : null;
+            $id_loop->setAuthority($auth_obj);
+        }
+
+        return null;
+
+    }
+
 }
