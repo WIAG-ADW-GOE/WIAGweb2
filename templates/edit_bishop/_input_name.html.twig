@@ -64,14 +64,14 @@
 	    {% set expanded = false %}
 	{% endif %}
 	<button class="btn btn-sm ms-1 pt-0 align-middle"
-		type="button"
-		data-bs-toggle="collapse"
-		data-bs-target={{ "#comment#{person.id}" }}
-		aria-expanded="{{ expanded }}"
-		aria-controls={{ "comment#{person.id}" }}
-		data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
+		       type="button"
+		       data-bs-toggle="collapse"
+		       data-bs-target={{ "#comment_person#{person.id}" }}
+		       aria-expanded="{{ expanded }}"
+		       aria-controls={{ "comment_person#{person.id}" }}
+		       data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
     </div>
-    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{person.id}" }}">
+    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment_person#{person.id}" }}">
 	<div class="input-group input-group-sm mt-1 ">
 	    <span class="input-group-text" style="min-width: 15rem">Bemerkung zur Person (sichtbar)</span>
 	    <input type="text"

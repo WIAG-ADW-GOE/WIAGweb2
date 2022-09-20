@@ -36,7 +36,7 @@
     {# submit #}
     <div class="row mx-2 mb-2">
 	<div class="col">
-	    {% set submit_debug=true %} {# submit directly for debugging#}
+	    {% set submit_debug=false %} {# submit directly for debugging#}
 	    {% if submit_debug %}
 		<button type="submit"
 			formaction="{{ path('edit_bishop_save') }}"

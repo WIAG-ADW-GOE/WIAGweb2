@@ -81,12 +81,13 @@
 	{% else %}
 	    {% set expanded = false %}
 	{% endif %}
+
 	<button class="btn btn-sm ms-1 pt-0 align-middle"
 		type="button"
 		data-bs-toggle="collapse"
-		data-bs-target={{ "#comment#{role.id}" }}
+		data-bs-target={{ "#comment_role#{role.id}" }}
 		aria-expanded="{{ expanded }}"
-		aria-controls={{ "comment#{role.id}" }}
+		aria-controls={{ "comment_role#{role.id}" }}
 		data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 	{# delete #}
 	<div class="form_check ms-1 mt-1 align-middle">
@@ -100,7 +101,7 @@
 	    <label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
 	</div>
     </div>
-    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment#{role.id}" }}">
+    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment_role#{role.id}" }}">
 	<div class="input-group input-group-sm mt-1">
 	    <span class="input-group-text">Bemerkung</span>
 	    <input type="text"
