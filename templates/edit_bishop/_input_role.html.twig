@@ -14,7 +14,7 @@
 	       value="{{ role.id }}"
 	       hidden="hidden>">
 	{# role name #}
-	<span class="w-25"
+	<span class="w-15"
     	      {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
 	      }) }}>
@@ -46,7 +46,7 @@
 		style="max-width: 12rem;"></ul>
 	</span>
 	{# monastery/domstift #}
-	<span class="w-15"
+	<span class="w-25"
 	      {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', {itemTypeId: '0', field: 'institution'}),
 	      }) }} >
@@ -56,6 +56,8 @@
 		   value="{{ role.institutionDisplayName }}"
 		   spellcheck="false"
 		   aria-label="Kloster"
+		   data-controller="move-cursor"
+		   data-action="blur->move-cursor#moveStart"
 		   data-autocomplete-target="input">
 	    <ul class="list-group autocomplete-target"
 		data-autocomplete-target="results"
@@ -76,19 +78,22 @@
 	       style="max-width: 10em"
 	       spellcheck="false"
 	       aria-label="Ende">
-	{% if role.comment or role.note or role.roleproperty|length > 0 %}
-	    {% set expanded = true %}
+	{% if intern_collapsable %}
+	    {% if role.comment or role.note or role.roleproperty|length > 0 %}
+		{% set expanded = true %}
+	    {% else %}
+		{% set expanded = false %}
+	    {% endif %}
+	    <button class="btn btn-sm ms-1 pt-0 align-middle"
+		    type="button"
+		    data-bs-toggle="collapse"
+		    data-bs-target={{ "#comment_role#{role.id}" }}
+		    aria-expanded="{{ expanded }}"
+		    aria-controls={{ "comment_role#{role.id}" }}
+		    data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 	{% else %}
-	    {% set expanded = false %}
+	    {% set expanded = true %}
 	{% endif %}
-
-	<button class="btn btn-sm ms-1 pt-0 align-middle"
-		type="button"
-		data-bs-toggle="collapse"
-		data-bs-target={{ "#comment_role#{role.id}" }}
-		aria-expanded="{{ expanded }}"
-		aria-controls={{ "comment_role#{role.id}" }}
-		data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 	{# delete #}
 	<div class="form_check ms-1 mt-1 align-middle">
 	    <input class="form-check-input"

@@ -58,20 +58,25 @@
 	       value="{{ person.formfamilynamevariants }}"
 	       spellcheck="false"
 	       aria-label="Familiennamenvarianten">
-	{% if person.noteperson or person.notename or person.item.itemproperty|length > 0%}
-	    {% set expanded = true %}
+	{% if  intern_collapsable %}
+	    {% if person.noteperson or person.notename or person.item.itemproperty|length > 0%}
+		{% set expanded = true %}
+	    {% else %}
+		{% set expanded = false %}
+	    {% endif %}
+	    <button class="btn btn-sm ms-1 pt-0 align-middle"
+		    type="button"
+		    data-bs-toggle="collapse"
+		    data-bs-target={{ "#comment_person#{person.id}" }}
+		    aria-expanded="{{ expanded }}"
+		    aria-controls={{ "comment_person#{person.id}" }}
+		    data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 	{% else %}
-	    {% set expanded = false %}
+	    {% set expanded = true %}
 	{% endif %}
-	<button class="btn btn-sm ms-1 pt-0 align-middle"
-		       type="button"
-		       data-bs-toggle="collapse"
-		       data-bs-target={{ "#comment_person#{person.id}" }}
-		       aria-expanded="{{ expanded }}"
-		       aria-controls={{ "comment_person#{person.id}" }}
-		       data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
     </div>
     <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="{{ "comment_person#{person.id}" }}">
+	{% if false %}
 	<div class="input-group input-group-sm mt-1 ">
 	    <span class="input-group-text" style="min-width: 15rem">Bemerkung zur Person (sichtbar)</span>
 	    <input type="text"
@@ -80,13 +85,21 @@
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ person.noteperson }}">
 	</div>
+	{% endif %}
 	<div class="input-group input-group-sm mt-1 ">
-	    <span class="input-group-text" style="min-width: 15rem">Bemerkung zum Namen (sichtbar)</span>
+	    <span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
 	    <input type="text"
 		   id="{{ base_id }}_noteName"
 		   name="{{ base_input_name }}[noteName]"
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ person.noteName }}">
+	</div>
+	<div class="input-group input-group-sm mt-1">
+	    <span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
+	    <textarea id="{{ base_id }}_notePerson"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[notePerson]"
+		      class="form-control form-control-sm wiag-input">{{ person.noteperson }}</textarea>
 	</div>
 	{{ include('edit_bishop/_input_property_list.html.twig') }}
     </div>

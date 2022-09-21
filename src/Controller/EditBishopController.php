@@ -31,6 +31,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
+    const EDIT_STATUS_DEFAULT = 'angelegt';
+
 
     private $personService;
 
@@ -97,17 +99,20 @@ class EditBishopController extends AbstractController {
 
             $edit_form_id = 'edit_bishop_edit_form';
             $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+            $authorityRepository = $entityManager->getRepository(Authority::class);
+            $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
             return $this->renderForm('edit_bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'editFormId' => $edit_form_id,
                 'count' => $count,
-                'personlist' => $person_list,
+                'personList' => $person_list,
                 'userWiagRepository' => $userWiagRepository,
                 'offset' => $offset,
                 'newEntry' => 0,
                 'pageSize' => $model->listSize,
+                'authBaseUrlList' => $auth_base_url_list,
             ]);
         }
 
@@ -204,23 +209,28 @@ class EditBishopController extends AbstractController {
         }
 
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+
+        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
         if ($request->query->get('list_only')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
-                'personlist' => $person_list,
+                'personList' => $person_list,
                 'newEntry' => $new_entry_param,
                 'editFormId' => $edit_form_id,
                 'userWiagRepository' => $userWiagRepository,
+                'authBaseUrlList' => $auth_base_url_list,
             ]);
         }
 
         return $this->render('edit_bishop/edit_result.html.twig', [
                 'menuItem' => 'collections',
-                'personlist' => $person_list,
+                'personList' => $person_list,
                 'editFormId' => $edit_form_id,
                 'newEntry' => $new_entry_param,
                 'userWiagRepository' => $userWiagRepository,
+                'authBaseUrlList' => $auth_base_url_list,
         ]);
     }
 
@@ -243,16 +253,19 @@ class EditBishopController extends AbstractController {
         $edit_form_id = 'edit_bishop_edit_form';
 
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
         return $this->render('edit_bishop/new_bishop.html.twig', [
             'menuItem' => 'collections',
             'form' => null,
             'editFormId' => $edit_form_id,
             'count' => 1,
-            'personlist' => $person_list,
+            'personList' => $person_list,
             'newEntry' => 1,
             // find user WIAG for all elements of $person_list
             'userWiagRepository' => $userWiagRepository,
+            'authBaseUrlList' => $auth_base_url_list,
         ]);
 
     }
@@ -267,6 +280,7 @@ class EditBishopController extends AbstractController {
 
         $item = Item::newItem($userWiagId, 'Bischof');
         $person = Person::newPerson($item);
+        $item->setEditStatus(self::EDIT_STATUS_DEFAULT);
 
         $item->setIdInSource($id_in_source);
 
@@ -289,7 +303,7 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new-role", name="edit_bishop_new_role")
      */
-    public function new_role(Request $request) {
+    public function newRole(Request $request) {
 
         $role = new PersonRole;
         $role->setId(0);
@@ -297,6 +311,7 @@ class EditBishopController extends AbstractController {
         return $this->render('edit_bishop/_input_role.html.twig', [
             'base_id_role' => $request->query->get('base_id'),
             'base_input_name_role' => $request->query->get('base_input_name'),
+            'intern_collapsable' => false,
             'role' => $role,
         ]);
 
@@ -307,7 +322,7 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new-reference", name="edit_bishop_new_reference")
      */
-    public function new_reference(Request $request) {
+    public function newReference(Request $request) {
 
         $reference = new ItemReference(0);
 
@@ -325,7 +340,7 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
      */
-    public function new_property(Request $request) {
+    public function newProperty(Request $request) {
 
         $property = new ItemProperty;
 
@@ -356,23 +371,5 @@ class EditBishopController extends AbstractController {
 
     }
 
-
-
-    /**
-     * 2022-09-01 obsolete?
-     */
-    private function personList_hide($ids,
-                                EntityManagerInterface $entityManager,
-                                $service) {
-        # easy way to get all persons in the right order
-        $personRepository = $entityManager->getRepository(Person::class);
-        $person_list = array();
-        foreach($ids as $id) {
-            $person = $personRepository->findWithOffice($id);
-            $person->setSibling($service->getSibling($person));
-            $person_list[] = $person;
-        }
-        return $person_list;
-    }
 
 }

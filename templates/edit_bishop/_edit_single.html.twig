@@ -1,11 +1,12 @@
 <div class="my-2 pb-2 border border-2 border-success rounded">
+    {% set intern_collapsable=false %}
     {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
     {% set base_id=editFormId~'_'~loop.index0 %}
     {% set base_input_name=editFormId~'['~loop.index0~']' %}
     {# header #}
     {% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
     <div class="row col-12 ps-0 mx-0"
-	 data-controller="toggle-arrow on-input insert"
+	 data-controller="toggle-arrow on-input insert auth-search"
 	 data-toggle-arrow-state-value="true"
 	 data-toggle-arrow-img-open-value="down"
 	 data-toggle-arrow-img-closed-value="right"

@@ -91,4 +91,26 @@ class AuthorityRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     *
+     */
+    public function baseUrlList($id_list) {
+        $qb = $this->createQueryBuilder('a')
+                   ->select('a.id, a.url')
+                   ->andWhere('a.id in (:auth_id_list)')
+                   ->setParameter('auth_id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $query_result = $query->getResult();
+
+        $id_short = array_flip(Authority::ID);
+        $result = [];
+        foreach($query_result as $url_loop) {
+            $result[$id_short[$url_loop['id']]] = $url_loop['url'];
+        }
+
+        return $result;
+
+    }
+
 }

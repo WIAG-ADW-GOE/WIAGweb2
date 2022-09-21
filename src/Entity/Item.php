@@ -475,13 +475,13 @@ class Item {
         return $id ? $id->getValue() : null;
     }
 
-    public function getUriExternalByAuthority($authorityIdOrName) {
+    public function getUriExtByAuth($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
         $id = $this->getIdExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
 
-    public function getUriExternalByAuthorityId($authorityId) {
+    public function getUriExtByAuthId($authorityId) {
         $id = $this->getIdExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
