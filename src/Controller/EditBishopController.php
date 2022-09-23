@@ -133,7 +133,7 @@ class EditBishopController extends AbstractController {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
-        $new_entry_param = $request->query->get('new_entry');
+        $new_entry_param = $request->query->get('newEntry');
 
         /* save data */
         $current_user_id = $this->getUser()->getId();
@@ -162,16 +162,27 @@ class EditBishopController extends AbstractController {
                 if ($person->hasError('error')) {
                     $flag_error = true;
                 }
+                // set form collapse state
+                if (isset($data['item']['formIsExpanded'])) {
+                    $person->getItem()->setFormIsExpanded(1);
+                }
                 $person_list[] = $person;
+
             } else {
                 // if new entries are edited only add entries that changed
                 if (is_null($new_entry_param) || $new_entry_param < 1) {
                     // get roles and references from the database
-                    $person_list = array_merge($person_list, $personRepository->findList([$person_id]));
+                    $person = $personRepository->findList([$person_id])[0];
+                    // set form collapse state
+                    if (isset($data['item']['formIsExpanded'])) {
+                        $person->getItem()->setFormIsExpanded(1);
+                    }
+                    $person_list[] = $person;
                 }
             }
         }
 
+        // save data
         if (!$flag_error) {
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
@@ -182,23 +193,14 @@ class EditBishopController extends AbstractController {
             foreach ($person_list as $person) {
                 if ($person->getItem()->getFormIsEdited()) {
                     $nameLookupRepository->update($person);
+                    // reset edit flag
+                    $person->getItem()->setFormIsEdited(0);
                 }
             }
 
             $entityManager->flush();
 
-            // unset edit flag
-            foreach ($person_list as $person) {
-                $person->getItem()->setFormIsEdited(false);
-            }
-
-            $id_list = array_map(function($el) {
-                return $el->getId();
-            }, $person_list);
-
-            $person_list = $personRepository->findList($id_list);
-
-
+            // add empty form for new person
             if (!is_null($new_entry_param) && $new_entry_param > 0) {
                 $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
                 $person = $this->makePersonScheme($id_in_source);
@@ -213,7 +215,7 @@ class EditBishopController extends AbstractController {
 
         $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
-        if ($request->query->get('list_only')) {
+        if ($request->query->get('listOnly')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personList' => $person_list,
@@ -283,6 +285,7 @@ class EditBishopController extends AbstractController {
         $item->setEditStatus(self::EDIT_STATUS_DEFAULT);
 
         $item->setIdInSource($id_in_source);
+        $item->setFormIsExpanded(1);
 
         // add role
         $role = new PersonRole();

@@ -137,13 +137,7 @@
 		    }
 		}) }}
 	    </div>
-	    <div class="ms-1 me-2 mt-1">
-		{% if true %}
-		    <div class="mb-1">{{ form.isDeleted.vars.label }}</div>
-		    {{ form_errors(form.isDeleted) }}
-		    {{ form_widget(form.isDeleted) }}
-		{% endif %}
-	    </div>
+	    {{ form_rest(form) }}
 	</div>
     </div>
 </div>

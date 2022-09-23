@@ -236,9 +236,10 @@ class PersonRepository extends ServiceEntityRepository {
     public function suggestDiocese($item_type_id, $name, $hint_size) {
         $repository = $this->getEntityManager()->getRepository(Diocese::class);
         $qb = $repository->createQueryBuilder('d')
-                             ->select("DISTINCT d.name AS suggestion")
-                             ->andWhere('d.name LIKE :name')
-                             ->setParameter('name', '%'.$name.'%');
+                         ->select("DISTINCT d.name AS suggestion")
+                         ->andWhere('d.name LIKE :name')
+                         ->orderBy('d.name')
+                         ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hint_size);
 
@@ -258,6 +259,7 @@ class PersonRepository extends ServiceEntityRepository {
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.name AS suggestion")
                          ->andWhere('i.name LIKE :name')
+                         ->addOrderBy('i.name')
                          ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hint_size);
@@ -270,6 +272,8 @@ class PersonRepository extends ServiceEntityRepository {
 
 
     /**
+     * autocomplete for references
+     *
      * usually used for asynchronous JavaScript request
      */
     public function suggestTitleShort($item_type_id, $name, $hintSize) {
@@ -278,6 +282,7 @@ class PersonRepository extends ServiceEntityRepository {
                          ->select("DISTINCT v.titleShort AS suggestion")
                          ->andWhere('v.titleShort LIKE :name')
                          ->andWhere('v.itemTypeId = :item_type_id')
+                         ->addOrderBy('v.titleShort')
                          ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 

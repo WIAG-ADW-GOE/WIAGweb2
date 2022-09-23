@@ -39,7 +39,9 @@
 	    {% set submit_debug=false %} {# submit directly for debugging#}
 	    {% if submit_debug %}
 		<button type="submit"
-			formaction="{{ path('edit_bishop_save') }}"
+			formaction="{{ path('edit_bishop_save', {
+				    'newEntry': newEntry,
+				    }) }}"
 			class="btn btn-primary float-end">Speichern</button>
 	    {% else %} {# submit via Stimulus controller #}
 		<button type="button"

@@ -4,7 +4,7 @@ export default class extends Controller {
     static targets = ['globalTrigger'];
 
     connect() {
-	// console.log(this.element);
+	// console.log('input-state connected');
 	// set display state (disabled or not) independent from user action
 	// document.addEventListener('DOMContentLoaded', (event) => {
 	//     // console.log('DOM fully loaded and parsed');
@@ -50,7 +50,7 @@ export default class extends Controller {
     disable(event) {
 	// relevant if entry is reloaded
 	if (event.target.tagName == 'DIV') {
-	    if (this.globalTriggerTarget.checked) {
+	    if (this.hasGlobalTriggerTarget && this.globalTriggerTarget.checked) {
 		return this.disableByElement(this.globalTriggerTarget);
 	    }
 	} else {

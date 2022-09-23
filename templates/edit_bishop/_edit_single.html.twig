@@ -16,16 +16,16 @@
 	<div class="input-group input-group-sm mt-1 mb-0">
 	    <span class="text-nowrap">
 		{% set expanded = false %}
-		{% if person.hasError('info') or person.id == "" %}
+		{% if person.hasError('info') or person.item.formIsExpanded%}
 		    {% set expanded = true %}
 		{% endif %}
 		<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
-			       type="button"
-			       data-bs-toggle="collapse"
-			       data-bs-target={{ "#body#{person.item.id}" }}
-			       aria-expanded="{{ expanded }}"
-			       aria-controls={{ "body#{person.item.id}" }}
-			       data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
+			type="button"
+			data-bs-toggle="collapse"
+			data-bs-target={{ "#body#{person.item.id}" }}
+			aria-expanded="{{ expanded }}"
+			aria-controls={{ "body#{person.item.id}" }}
+			data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
 		       type="checkbox"
 		       value=""
@@ -58,8 +58,8 @@
 	</div>
 	{# body #}
 	<div class="row col-12 collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
-	     data-controller="input-state"
-	     data-action="shown.bs.collapse->input-state#disable"
+	     data-controller="input-state save-collapse"
+	     data-action="shown.bs.collapse->save-collapse#set hidden.bs.collapse->save-collapse#set"
 	     id={{ "body#{person.item.id}" }}>
 	    {# status and name #}
 	    {{ include('edit_bishop/_input_status.html.twig') }}
@@ -104,7 +104,7 @@
 		 data-input-name-sans-idx="{{ base_input_name~'[ref]' }}"
 		 data-next-idx="{{ next_ref_idx }}"></div>
 	    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
-		<div class="ms-2 my-1 text-danger">{{ error_obj.msg }}</div>
+		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
 	    {% endfor %}
 	    {{ include('edit_bishop/_input_id_external.html.twig') }}
 	    {# comment person #}

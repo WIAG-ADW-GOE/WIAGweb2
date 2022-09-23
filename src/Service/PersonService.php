@@ -947,20 +947,22 @@ class PersonService {
         $item->setChangedBy($user_id);
         $item->setDateChanged(new \DateTimeImmutable('now'));
 
+
+
         if ($data['item']['id'] == "") {
             $item->setCreatedBy($user_id);
             $item->setDateCreated(new \DateTimeImmutable('now'));
         }
 
-        // item: deleted
-        $deleted_status = $data['item']['isDeleted'];
-        $item->setIsDeleted($deleted_status);
+        // item: deleted TODO 2022-09-22 turned off for the moment
+        // $deleted_status = $data['item']['isDeleted'];
+        // $item->setIsDeleted($deleted_status);
 
-        if ($deleted_status == 1) {
-            $this->setByKeys($person, $data, ['comment']);
-            // other elements are not accessible
-            return $person;
-        }
+        // if ($deleted_status == 1) {
+        //     $this->setByKeys($person, $data, ['comment']);
+        //     // other elements are not accessible
+        //     return $person;
+        // }
 
 
         // item: checkboxes
@@ -1042,7 +1044,6 @@ class PersonService {
 
         // external IDs
         $this->mapIdExternal($person, $data['idext']);
-
 
         // date min/date max
         $this->updateDateRange($person);
@@ -1168,21 +1169,28 @@ class PersonService {
         }
         $role->setRoleName($role_name);
 
-        // diocese
-        $diocese_name = trim($data['diocese']);
-        $diocese = $dioceseRepository->findOneByName($diocese_name);
-        if ($diocese) {
-            $role->setDiocese($diocese);
-        }
-        $role->setDioceseName($diocese_name);
-
         // institution
         $institution_name = trim($data['institution']);
-        $institution = $institutionRepository->findOneByName($institution_name);
-        if ($institution) {
-            $role->setInstitution($institution);
+        if ($institution_name != "") {
+            $institution = $institutionRepository->findOneByName($institution_name);
+            // institution takes precedence
+            $diocese = null;
+            $diocese_name = null;
+        } else {
+            $institution = null;
+            $institution_name = null;
+            $diocese_name = trim($data['diocese']);
+            if ($diocese_name != "") {
+                $diocese = $dioceseRepository->findOneByName($diocese_name);
+            } else {
+                $diocese = null;
+                $diocese_name = null;
+            }
         }
+        $role->setInstitution($institution);
         $role->setInstitutionName($institution_name);
+        $role->setDiocese($diocese);
+        $role->setDioceseName($diocese_name);
 
         // other fields
         $this->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
@@ -1290,7 +1298,6 @@ class PersonService {
         $reference->setVolumeTitleShort($volume_name); # save data for the form
 
         if ($volume_name != "") {
-
             $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
             if ($volume_query_result) {
                 $volume = $volume_query_result[0];
@@ -1358,6 +1365,7 @@ class PersonService {
      */
     private function mapIdExternal($person, $data) {
         $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         $item = $person->getItem();
         $item_id = $item->getId();
@@ -1380,6 +1388,8 @@ class PersonService {
                 $id_external->setItem($item);
                 $item_id_external_list->add($id_external);
                 $id_external->setAuthorityId($authority_id);
+                $authority = $authorityRepository->find($authority_id);
+                $id_external->setAuthority($authority);
                 if ($key == 'Wikipedia') {
                     $val_list = explode('/', trim($value));
                     $value = array_slice($val_list, -1)[0];

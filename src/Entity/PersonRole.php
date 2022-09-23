@@ -170,7 +170,7 @@ class PersonRole
         return $this->institution;
     }
 
-    public function setInstitution(Institution $institution): self {
+    public function setInstitution(?Institution $institution): self {
         $this->institution = $institution;
         return $this;
     }
@@ -257,7 +257,7 @@ class PersonRole
         return $this->diocese;
     }
 
-    public function setDiocese(Diocese $diocese): self {
+    public function setDiocese(?Diocese $diocese): self {
         $this->diocese = $diocese;
         return $this;
     }

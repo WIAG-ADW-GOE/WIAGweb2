@@ -13,8 +13,8 @@ export default class extends Controller {
 	// console.log('newEntry: ', this.newEntryValue);
 	var form_element = this.element.getElementsByTagName('form')[0];
 	var get_params = new URLSearchParams({
-	    new_entry: this.newEntryValue,
-	    list_only: true,
+	    newEntry: this.newEntryValue,
+	    listOnly: true,
 	});
 	var url = form_element.action + '?' + get_params.toString();
         const response = await fetch(url, {

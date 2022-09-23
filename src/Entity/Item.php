@@ -166,7 +166,14 @@ class Item {
      */
     private $formIsEdited = false;
 
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsExpanded = false;
+
     public function __construct() {
+        $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
         $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
@@ -432,6 +439,16 @@ class Item {
         return $this->formIsEdited;
     }
 
+    public function setFormIsExpanded($value): self {
+        $this->formIsExpanded = $value;
+        return $this;
+    }
+
+    public function getFormIsExpanded() {
+        return $this->formIsExpanded;
+    }
+
+
     /**
      *
      */
@@ -462,6 +479,7 @@ class Item {
                 break;
             }
         }
+
         return $result;
     }
 

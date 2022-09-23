@@ -2,7 +2,7 @@ import { Controller } from 'stimulus';
 
 export default class extends Controller {
     connect() {
-	console.log('this is auth-search');
+	// console.log('this is auth-search');
     }
 
     // TODO build for GS, GND, ...
