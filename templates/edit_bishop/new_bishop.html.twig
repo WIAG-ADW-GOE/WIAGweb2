@@ -14,10 +14,9 @@
 	    <span class="topic-title">Neue Einträge</span>
 	</div>
 	{% if count > 0 %}
-	    <div data-controller="submit-form"
-		 data-submit-form-new-entry-value="{{ newEntry }}"
-		 data-hide-on-input-target="result">
-		{{ include('edit_bishop/_list.html.twig') }}
+	    {{ include('edit_bishop/_list.html.twig', {
+		newEntry: 1,
+	    }) }}
 	    </div>
 	{% endif %}
     </div>

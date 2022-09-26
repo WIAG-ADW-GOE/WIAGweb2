@@ -1,53 +1,58 @@
-
-<form id ="{{ editFormId }}"
-      name="{{ editFormId }}"
-      action="{{ path('edit_bishop_save') }}"
-      method="post">
-    <div class="row mx-2">
-	<div class="col">
-	    {% if true %}
-		{# disable submit via enter-key #}
-		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
-	    {% endif %}
-	    <button class="btn btn-sm btn-secondary float-start"
-			   type="button"
-			   data-bs-toggle="collapse"
-			   data-bs-target=".multi-collapse"
-			   aria-expanded="false"
-			   aria-controls="all"
-			   {{ stimulus_controller('toggle-arrow', {
-			       state: true,
-			       imgOpen: 'down',
-			       imgClosed: 'right'
-			   }) }}
-			   data-action="toggle-arrow#toggle"
-		    data-value="down">öffnen/schließen</button>
+<div data-controller="submit-form"
+     data-submit-form-new-entry-value="{{ newEntry }}"
+     data-hide-on-input-target="result"
+     data-action="keydown->submit-form#submitByKey">
+    <form id ="{{ editFormId }}"
+	  name="{{ editFormId }}"
+	  action="{{ path('edit_bishop_save') }}"
+	  method="post">
+	<div class="row mx-2">
+	    <div class="col">
+		{% if true %}
+		    {# disable submit via enter-key #}
+		    <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+		{% endif %}
+		<button class="btn btn-sm btn-secondary float-start"
+			type="button"
+			data-bs-toggle="collapse"
+			data-bs-target=".multi-collapse"
+			aria-expanded="false"
+			aria-controls="all"
+			{{ stimulus_controller('toggle-arrow', {
+			    state: true,
+			    imgOpen: 'down',
+			    imgClosed: 'right'
+			}) }}
+			data-action="toggle-arrow#toggle"
+			data-value="down">öffnen/schließen</button>
+	    </div>
 	</div>
-    </div>
-    <div class="row mx-2">
-	<div class="col">
-	    {% for person in personList %}
-		{{ include('edit_bishop/_edit_single.html.twig', {
-		    person: person,
-		}) }}
-	    {% endfor %}
+	<div class="row mx-2">
+	    <div class="col">
+		{% for person in personList %}
+		    {{ include('edit_bishop/_edit_single.html.twig', {
+			person: person,
+		    }) }}
+		{% endfor %}
+	    </div>
 	</div>
-    </div>
-    {# submit #}
-    <div class="row mx-2 mb-2">
-	<div class="col">
-	    {% set submit_debug=false %} {# submit directly for debugging#}
-	    {% if submit_debug %}
-		<button type="submit"
-			formaction="{{ path('edit_bishop_save', {
-				    'newEntry': newEntry,
-				    }) }}"
-			class="btn btn-primary float-end">Speichern</button>
-	    {% else %} {# submit via Stimulus controller #}
-		<button type="button"
-			data-action="submit-form#submit"
-			class="btn btn-primary float-end">Speichern</button>
-	    {% endif %}
+	{# submit #}
+	<div class="row mx-2 mb-2">
+	    <div class="col">
+		{% set submit_debug=false %} {# submit directly for debugging#}
+		{% if submit_debug %}
+		    <button type="submit"
+				  formaction="{{ path('edit_bishop_save', {
+					      'newEntry': newEntry,
+					      }) }}"
+				  class="btn btn-primary float-end">Speichern</button>
+		{% else %} {# submit via Stimulus controller #}
+		    <button type="button"
+				  data-action="submit-form#submit"
+				  data-submit-form-target="submit" {# listen to Ctrl-S #}
+				  class="btn btn-primary float-end">Speichern</button>
+		{% endif %}
+	    </div>
 	</div>
-    </div>
-</form>
+    </form>
+</div>

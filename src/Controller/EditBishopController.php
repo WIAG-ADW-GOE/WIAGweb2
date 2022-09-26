@@ -110,7 +110,6 @@ class EditBishopController extends AbstractController {
                 'personList' => $person_list,
                 'userWiagRepository' => $userWiagRepository,
                 'offset' => $offset,
-                'newEntry' => 0,
                 'pageSize' => $model->listSize,
                 'authBaseUrlList' => $auth_base_url_list,
             ]);
@@ -264,7 +263,6 @@ class EditBishopController extends AbstractController {
             'editFormId' => $edit_form_id,
             'count' => 1,
             'personList' => $person_list,
-            'newEntry' => 1,
             // find user WIAG for all elements of $person_list
             'userWiagRepository' => $userWiagRepository,
             'authBaseUrlList' => $auth_base_url_list,

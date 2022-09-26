@@ -1,6 +1,8 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
+    static targets = [ "submit" ];
+
     static values = {
 	newEntry: String,
     };
@@ -26,5 +28,15 @@ export default class extends Controller {
         //     response,
         // })
 	this.element.innerHTML = await response.text();
+    }
+
+    submitByKey() {
+	// console.log(event.keyCode);
+	if (event.ctrlKey && event.code === "KeyS"){
+            // alert('CTRL + S is pressed!');
+	    this.submitTarget.click();
+           event.preventDefault();
+       }
+
     }
 }
