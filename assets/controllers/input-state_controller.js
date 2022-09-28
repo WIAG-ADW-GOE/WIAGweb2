@@ -81,8 +81,8 @@ export default class extends Controller {
     }
 
     shown() {
-	console.log('shown');
-	console.log(event.target.id);
+	// console.log('shown');
+	// console.log(event.target.id);
     }
 
     enable(event) {

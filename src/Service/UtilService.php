@@ -515,8 +515,6 @@ class UtilService {
      * parse year in $s and return a sort key
      */
     public function sortKeyVal($s): ?int {
-        $year = 9000;
-        $sort = 900;
 
         // between
         $matches = null;

@@ -142,6 +142,10 @@ class PersonRoleRepository extends ServiceEntityRepository
             $id_role_map[$role->getId()] = $role;
         }
 
+        if (count($id_role_map) == 0) {
+            return null;
+        }
+
         // hopefully we get an entry in $result for each role, even if roles
         // belong to the same place
         $qb = $this->createQueryBuilder('r')

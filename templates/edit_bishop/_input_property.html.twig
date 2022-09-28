@@ -1,4 +1,4 @@
-{# parameter prop, base_id_prop, base_input_name_prop #}
+{# parameter prop, base_id_prop, base_input_name_prop suggest_field #}
 <div class="my-1"
      data-controller="input-state">
     <div class="input-group input-group-sm">
@@ -13,7 +13,7 @@
 	{# prop name #}
 	<span class="w-20"
 	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', { field: 'rolePropertyName', itemTypeId: itemTypeId }),
+		  url: path('person_suggest', { field: suggest_field_name, itemTypeId: itemTypeId }),
 	      }) }}>
 	    {# todo autocomplete #}
 	    <input type="text" id="{{ base_id_prop }}_name"
@@ -31,13 +31,12 @@
 	<span class="input-group-text wiag-input-text-blue">Attribut-Wert</span>
 	<span class="w-20"
 	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
+		  url: path('person_suggest', { field: suggest_field_value, itemTypeId: itemTypeId }),
 	      }) }}>
 	    <input type="text" id="{{ base_id_prop }}_value"
 		   name="{{ base_input_name_prop }}[value]"
 		   class="form-control form-control-sm rounded-0 wiag-input"
 		   value="{{ prop.value }}"
-		   required="required"
 		   spellcheck="false"
 		   aria-label="Wert"
 		   data-autocomplete-target="input">

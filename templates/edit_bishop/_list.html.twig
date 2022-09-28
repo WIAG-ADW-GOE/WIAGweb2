@@ -1,7 +1,6 @@
 <div data-controller="submit-form"
      data-submit-form-new-entry-value="{{ newEntry }}"
-     data-hide-on-input-target="result"
-     data-action="keydown->submit-form#submitByKey">
+     data-hide-on-input-target="result">
     <form id ="{{ editFormId }}"
 	  name="{{ editFormId }}"
 	  action="{{ path('edit_bishop_save') }}"
@@ -42,15 +41,16 @@
 		{% set submit_debug=false %} {# submit directly for debugging#}
 		{% if submit_debug %}
 		    <button type="submit"
-				  formaction="{{ path('edit_bishop_save', {
+			    id="submit_edit_form" {# submit-form_controller #}
+			    formaction="{{ path('edit_bishop_save', {
 					      'newEntry': newEntry,
-					      }) }}"
-				  class="btn btn-primary float-end">Speichern</button>
+					}) }}"
+			    class="btn btn-primary float-end">Speichern</button>
 		{% else %} {# submit via Stimulus controller #}
 		    <button type="button"
-				  data-action="submit-form#submit"
-				  data-submit-form-target="submit" {# listen to Ctrl-S #}
-				  class="btn btn-primary float-end">Speichern</button>
+			    id="submit_edit_form" {# submit-form_controller #}
+			    data-action="submit-form#submit"
+			    class="btn btn-primary float-end">Speichern</button>
 		{% endif %}
 	    </div>
 	</div>

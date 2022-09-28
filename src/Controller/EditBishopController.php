@@ -31,8 +31,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
-    const EDIT_STATUS_DEFAULT = 'angelegt';
-
 
     private $personService;
 
@@ -122,7 +120,6 @@ class EditBishopController extends AbstractController {
 
     }
 
-
     /**
      * map data to objects and save them to the database
      * @Route("/edit/bischof/save", name="edit_bishop_save")
@@ -132,65 +129,86 @@ class EditBishopController extends AbstractController {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
-        $new_entry_param = $request->query->get('newEntry');
 
-        /* save data */
+
+        /* map/validate form */
         $current_user_id = $this->getUser()->getId();
 
         $personRepository = $entityManager->getRepository(Person::class);
         $person_list = array();
         $flag_error = false;
-        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
         foreach($form_data as $data) {
             $person_id = $data['item']['id'];
+            if ($person_id > 0) {
+                // get complete Person
+                $person = $personRepository->findList([$person_id])[0];
+                $person_list[] = $person;
+            } else {
+                // new entry
+                $item = Item::newItem($current_user_id, 'Bischof');
+                $person = Person::newPerson($item);
+                // map id and keep form open
+                $item->setIdInSource($data['item']['idInSource']);
+                $item->setFormIsExpanded(1);
+                $person_list[] = $person;
+            }
+
             if (isset($data['item']['formIsEdited'])) {
-
-                if (trim($person_id) == "") {
-                    $item = Item::newItem($current_user_id, 'Bischof');
-                    $person = Person::newPerson($item);
-                    $entityManager->persist($item);
-                    $entityManager->persist($person);
-                    $entityManager->flush();
-                    // only item receives the new id ?! (miracles of Doctrine)
-                    $person_id = $item->getId();
-                }
-                $person = $personRepository->find($person_id);
-
                 $this->personService->mapPerson($person, $data, $current_user_id);
 
                 if ($person->hasError('error')) {
                     $flag_error = true;
                 }
-                // set form collapse state
-                if (isset($data['item']['formIsExpanded'])) {
-                    $person->getItem()->setFormIsExpanded(1);
-                }
-                $person_list[] = $person;
-
-            } else {
-                // if new entries are edited only add entries that changed
-                if (is_null($new_entry_param) || $new_entry_param < 1) {
-                    // get roles and references from the database
-                    $person = $personRepository->findList([$person_id])[0];
-                    // set form collapse state
-                    if (isset($data['item']['formIsExpanded'])) {
-                        $person->getItem()->setFormIsExpanded(1);
-                    }
-                    $person_list[] = $person;
-                }
             }
+
+            // set form collapse state
+            $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
+            $person->getItem()->setFormIsExpanded($expanded_param);
         }
+
+        $new_entry = $request->query->get('newEntry');
 
         // save data
         if (!$flag_error) {
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
 
-            // update table name_lookup
             $nameLookupRepository = $entityManager->getRepository(NameLookup::class);
             $itemRepository = $entityManager->getRepository(Item::class);
+
+            // rebuild $person_list with persistent new entries
+            $person_list = array();
+            foreach($form_data as $data) {
+                $person_id = $data['item']['id'];
+                $edited_flag = isset($data['item']['formIsEdited']);
+                $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
+                $person = null;
+                if ($edited_flag) {
+                    if (!$person_id > 0) { // new entry
+                        $item = Item::newItem($current_user_id, 'Bischof');
+                        $person = Person::newPerson($item);
+                        $entityManager->persist($person);
+                        $entityManager->flush();
+                        $person_id = $item->getId();
+                        $person = $personRepository->find($person_id);
+                        $person_list[] = $person;
+                        $this->personService->mapPerson($person, $data, $current_user_id);
+                        $person->getItem()->setFormIsExpanded($expanded_flag);
+                    } elseif ($person_id > 0) { // edited, no errors: use data from first mapping
+                        $person = $personRepository->findList([$person_id])[0];
+                        $person_list[] = $person;
+                        $person->getItem()->setFormIsExpanded($expanded_flag);
+                    }
+                } elseif(!$new_entry) { // in edit/change-mode restore complete list
+                    $person = $personRepository->findList([$person_id])[0];
+                    $person_list[] = $person;
+                }
+                // do nothing for new elements that were not edited
+            }
+
             foreach ($person_list as $person) {
                 if ($person->getItem()->getFormIsEdited()) {
+                    // update table name_lookup
                     $nameLookupRepository->update($person);
                     // reset edit flag
                     $person->getItem()->setFormIsEdited(0);
@@ -199,37 +217,42 @@ class EditBishopController extends AbstractController {
 
             $entityManager->flush();
 
-            // add empty form for new person
-            if (!is_null($new_entry_param) && $new_entry_param > 0) {
+            if ($new_entry) {
+                $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
+                $itemRepository = $entityManager->getRepository(Item::class);
                 $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
-                $person = $this->makePersonScheme($id_in_source);
+
+                $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
                 $person_list[] = $person;
-            } else {
-                $new_entry_param = 0;
             }
+
+
         }
+
 
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
         $authorityRepository = $entityManager->getRepository(Authority::class);
 
         $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
+
         if ($request->query->get('listOnly')) {
             return $this->render('edit_bishop/_list.html.twig', [
                 'menuItem' => 'collections',
                 'personList' => $person_list,
-                'newEntry' => $new_entry_param,
+                'newEntry' => $new_entry,
                 'editFormId' => $edit_form_id,
                 'userWiagRepository' => $userWiagRepository,
                 'authBaseUrlList' => $auth_base_url_list,
             ]);
         }
 
+        // useful for debugging: dump output is accessible
         return $this->render('edit_bishop/edit_result.html.twig', [
                 'menuItem' => 'collections',
                 'personList' => $person_list,
                 'editFormId' => $edit_form_id,
-                'newEntry' => $new_entry_param,
+                'newEntry' => $new_entry,
                 'userWiagRepository' => $userWiagRepository,
                 'authBaseUrlList' => $auth_base_url_list,
         ]);
@@ -247,7 +270,7 @@ class EditBishopController extends AbstractController {
         $itemRepository = $entityManager->getRepository(Item::class);
         $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
 
-        $person = $this->makePersonScheme($id_in_source);
+        $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
 
         $person_list = array($person);
 
@@ -268,34 +291,6 @@ class EditBishopController extends AbstractController {
             'authBaseUrlList' => $auth_base_url_list,
         ]);
 
-    }
-
-    /**
-     * create person object
-     */
-    private function makePersonScheme($id_in_source) {
-
-        // generate an object of type person as scheme
-        $userWiagId = $this->getUser()->getId();
-
-        $item = Item::newItem($userWiagId, 'Bischof');
-        $person = Person::newPerson($item);
-        $item->setEditStatus(self::EDIT_STATUS_DEFAULT);
-
-        $item->setIdInSource($id_in_source);
-        $item->setFormIsExpanded(1);
-
-        // add role
-        $role = new PersonRole();
-        $person->getRole()->add($role);
-        $role->setPerson($person);
-
-        // add reference
-        $reference = new ItemReference();
-        $item->getReference()->add($reference);
-        $reference->setItem($item);
-
-        return $person;
     }
 
 
@@ -349,6 +344,8 @@ class EditBishopController extends AbstractController {
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
+            'suggest_field_name' => 'propertyName',
+            'suggest_field_value' => 'propertyValue',
             'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
         ]);
 
@@ -367,6 +364,8 @@ class EditBishopController extends AbstractController {
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
+            'suggest_field_name' => 'rolePropertyName',
+            'suggest_field_value' => 'rolePropertyValue',
             'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
         ]);
 

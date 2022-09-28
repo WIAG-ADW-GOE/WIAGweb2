@@ -69,12 +69,14 @@ class PersonRepository extends ServiceEntityRepository {
 
     public function findByIdList($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p')
+                   ->select('p', 'r')
+                   ->leftjoin('p.role', 'r')
                    ->andWhere('p.id in (:id_list)')
                    ->setParameter('id_list', $id_list);
 
         $query = $qb->getQuery();
-        return $query->getResult();
+        $result = $query->getResult();
+        return $result;
     }
 
     /**
@@ -356,6 +358,29 @@ class PersonRepository extends ServiceEntityRepository {
 
         return $suggestions;
     }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestRolePropertyValue($item_type_id, $name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT prop.value AS suggestion")
+                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
+                         ->andWhere('prop.value LIKE :name')
+                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id)
+                         ->setParameter('name', '%'.$name.'%');
+
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 
 
     /**

@@ -1,5 +1,17 @@
 {# parameter: role, base_id_role, base_input_name_role #}
 {% set input_institution_width=25 %}
+{% if role is not defined %}
+    {% set role = {
+	id: null,
+	roleDisplayName: "",
+	institutionDisplayName: "",
+	dioceseDisplayName: "",
+	dateBegin: "",
+	dateEnd: "",
+	note: "",
+	roleproperty: [],
+    } %}
+{% endif %}
 <div class="my-1"
      data-controller="toggle-arrow input-state select-institution"
      data-select-institution-base-width-value="{{ input_institution_width }}%"
@@ -13,7 +25,7 @@
 	       id="{{ base_id_role }}_id"
 	       name="{{ base_input_name_role }}[id]"
 	       class="form-control form-control-sm"
-	       value="{{ role.id }}"
+	       value="{{ role.id ?? null }}"
 	       hidden="hidden>">
 	{# role name #}
 	<span class="w-15"
@@ -144,6 +156,7 @@
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ role.note }}">
 	</div>
+	{% set suggest_field_name, suggest_field_value = 'rolePropertyName', 'rolePropertyValue' %}
 	{{ include('edit_bishop/_input_role_property_list.html.twig') }}
     </div>
 </div>

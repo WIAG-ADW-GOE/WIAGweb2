@@ -89,6 +89,9 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         }
         $item_type_list = array_unique($item_type_list);
 
+        if (count($item_type_list) == 0) {
+            return null;
+        }
 
         // get all volumes for relevant item_types
         $qb = $this->createQueryBuilder('r')

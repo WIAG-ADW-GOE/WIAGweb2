@@ -73,13 +73,19 @@
 	    {# using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
 	    {# roles #}
 	    {% set next_role_idx=0 %}
-	    {% for role in person.role %}
+	    {% for role in person.role|sort((a, b) => a.datesortkey <=> b.datesortkey) %}
 		{% set base_id_role=base_id~'_role_'~loop.index0 %}
 		{% set base_input_name_role=base_input_name~'[role]['~loop.index0~']' %}
 		<div class="pe-1"> {# see template for new role #}
 	    	    {{ include('edit_bishop/_input_role.html.twig') }}
 		</div>
 		{% set next_role_idx=loop.index0 + 1 %}
+	    {% else %}
+		{% set base_id_role=base_id~'_role_0' %}
+		{% set base_input_name_role=base_input_name~'[role][0]' %}
+		<div class="pe-1"> {# see template for new role #}
+	    	    {{ include('edit_bishop/_input_role.html.twig') }}
+		</div>
 	    {% endfor %}
 	    <div class="pe-1"
 		 data-insert-target="insertPoint"
@@ -93,6 +99,12 @@
 	    {% for ref in person.item.reference %}
 		{% set base_id_ref=base_id~'_ref_'~loop.index0 %}
 		{% set base_input_name_ref=base_input_name~'[ref]['~loop.index0~']' %}
+		<div class="pe-1">
+	    	    {{ include('edit_bishop/_input_reference.html.twig') }}
+		</div>
+     	    {% else %}
+		{% set base_id_ref=base_id~'_ref_0' %}
+		{% set base_input_name_ref=base_input_name~'[ref][0]' %}
 		<div class="pe-1">
 	    	    {{ include('edit_bishop/_input_reference.html.twig') }}
 		</div>

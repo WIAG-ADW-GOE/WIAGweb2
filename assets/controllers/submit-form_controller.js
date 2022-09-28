@@ -1,14 +1,13 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = [ "submit" ];
-
     static values = {
 	newEntry: String,
     };
 
     connect() {
 	// console.log('this is submit-form');
+	window.addEventListener("keydown", this.submitByKey);
     }
 
     async submit() {
@@ -30,12 +29,13 @@ export default class extends Controller {
 	this.element.innerHTML = await response.text();
     }
 
-    submitByKey() {
+    submitByKey(event) {
 	// console.log(event.keyCode);
 	if (event.ctrlKey && event.code === "KeyS"){
-            // alert('CTRL + S is pressed!');
-	    this.submitTarget.click();
-           event.preventDefault();
+	    const submit_elmt = document.getElementById('submit_edit_form')
+            //alert('CTRL + S is pressed!');
+	    submit_elmt.click();
+            event.preventDefault();
        }
 
     }

@@ -14,5 +14,6 @@ export default class extends Controller {
 	} else {
 	    this.carrierTarget.removeAttribute('checked');
 	}
+	// console.log(this.carrierTarget.getAttribute('checked'));
     }
 }

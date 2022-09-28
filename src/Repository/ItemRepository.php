@@ -386,12 +386,12 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * collect office data from different sources
      */
-    public function getBishopOfficeData($person) {
+    public function getBishopOfficeData($person_id) {
 
-        $item = array($person->getItem());
+        $item = array($this->find($person_id));
         // get item from Germania Sacra
         $authorityGs = Authority::ID['GS'];
-        $gsn = $person->getIdExternal($authorityGs);
+        $gsn = $item[0]->getIdExternalByAuthorityId($authorityGs);
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
             // If data are up to date at most one of these requests is successful.
@@ -407,7 +407,7 @@ class ItemRepository extends ServiceEntityRepository
 
         // get item from Domherrendatenbank
         $authorityWIAG = Authority::ID['WIAG-ID'];
-        $wiagid = $person->getItem()->getIdPublic();
+        $wiagid = $item[0]->getIdPublic();
         if (!is_null($wiagid)) {
             $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
             $canon = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
@@ -669,7 +669,7 @@ class ItemRepository extends ServiceEntityRepository
         $authorityWIAG = Authority::ID['WIAG-ID'];
         $wiagid = $person->getItem()->getIdPublic();
         $f_found = false;
-        if (!is_null($wiagid)) {
+        if (!is_null($wiagid) && $wiagid != "") {
             $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
             $item = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             if ($item) {

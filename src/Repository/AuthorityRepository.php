@@ -65,6 +65,10 @@ class AuthorityRepository extends ServiceEntityRepository
         }
         $auth_id_list = array_unique($auth_id_list);
 
+        if (count($auth_id_list) == 0) {
+            return null;
+        }
+
         // get all relevant authorities
         $qb = $this->createQueryBuilder('a')
                    ->select('a')

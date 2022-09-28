@@ -15,19 +15,19 @@ export default class extends Controller {
     };
 
     connect() {
-	console.log('this is refresh-list: ', this.countValue);
+	// console.log('this is refresh-list: ', this.countValue);
 
     }
 
     async update(event) {
 	if (event.target.id == 'forward') {
-	    console.log('forward');
+	    // console.log('forward');
 	    this.offsetValue += this.pageSizeValue;
-	    console.log(event.target);
+	    // console.log(event.target);
 	} else if (event.target.id == 'backward') {
-	    console.log('backward');
+	    // console.log('backward');
 	    this.offsetValue -= this.pageSizeValue;
-	    console.log(event.target);
+	    // console.log(event.target);
 	}
 
 	var params = new URLSearchParams(new FormData(this.element));

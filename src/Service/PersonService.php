@@ -40,6 +40,10 @@ class PersonService {
         'Wikipedia' => 3,
     ];
 
+    const EDIT_STATUS_DEFAULT = [
+        'Bischof' => 'angelegt',
+    ];
+
     const URL_KLOSTERDATENBANK = 'https://klosterdatenbank.adw-goe.de/gsn/';
 
     const CONTENT_TYPE = [
@@ -948,7 +952,6 @@ class PersonService {
         $item->setDateChanged(new \DateTimeImmutable('now'));
 
 
-
         if ($data['item']['id'] == "") {
             $item->setCreatedBy($user_id);
             $item->setDateCreated(new \DateTimeImmutable('now'));
@@ -996,6 +999,11 @@ class PersonService {
                      'noteName',
                      'notePerson'];
         $this->setByKeys($person, $data, $key_list);
+
+        if (is_null($person->getGivenname())) {
+            $msg = "Das Feld 'Vorname' kann nicht leer sein.";
+            $person->getInputError()->add(new InputError('name', $msg));
+        }
 
         // name variants
         $this->mapNameVariants($person, $data);
@@ -1065,6 +1073,7 @@ class PersonService {
         // givenname
         $gnv_data = trim($data['givennameVariants']);
         $person->setFormGivennameVariants($gnv_data);
+        $person_id = $person->getId();
 
         // - remove entries
         $person_gnv = $person->getGivennameVariants();
@@ -1082,11 +1091,12 @@ class PersonService {
             if (trim($gnv) != "") {
                 $gnv_new = new GivenNameVariant();
                 $person_gnv->add($gnv_new);
-                $gnv_new->setPerson($person);
-                $this->entityManager->persist($gnv_new);
-
                 $gnv_new->setName(trim($gnv));
                 $gnv_new->setLang('de');
+                if ($person_id > 0) {
+                    $gnv_new->setPerson($person);
+                    $this->entityManager->persist($gnv_new);
+                }
             }
         }
 
@@ -1108,11 +1118,12 @@ class PersonService {
             if (trim($fnv) != "") {
                 $fnv_new = new FamilyNameVariant();
                 $person_fnv->add($fnv_new);
-                $fnv_new->setPerson($person);
-                $this->entityManager->persist($fnv_new);
-
                 $fnv_new->setName(trim($fnv));
                 $fnv_new->setLang('de');
+                if ($person_id > 0) {
+                    $fnv_new->setPerson($person);
+                    $this->entityManager->persist($fnv_new);
+                }
             }
         }
 
@@ -1137,8 +1148,10 @@ class PersonService {
             } else {
                 $role = new PersonRole();
                 $person->getRole()->add($role);
-                $role->setPerson($person);
-                $this->entityManager->persist($role);
+                if ($person->getId() > 0) {
+                    $role->setPerson($person);
+                    $this->entityManager->persist($role);
+                }
             }
         } else {
             $role = $roleRepository->find($id);
@@ -1232,19 +1245,14 @@ class PersonService {
             $sort_key = $this->utilService->sortKeyVal($date_end);
         }
 
-        if (is_null($sort_key)) {
-            $msg = "Keine gültige Datumsangabe für Sortierschlüssel in '".$date_begin."' gefunden.";
-            $person->getInputError()->add(new InputError('role', $msg));
-        } else {
-            # we got a parse result or both $date_begin and $date_end are empty
-            $role->setDateSortKey($sort_key);
-        }
+        # we got a parse result or both, $date_begin and $date_end are empty
+        $role->setDateSortKey($sort_key);
 
         // free role properties
         $key = 'prop';
         if (array_key_exists($key, $data)) {
             foreach($data[$key] as $data_loop) {
-                $this->mapRoleProperty($role, $data_loop);
+                $this->mapRoleProperty($person, $role, $data_loop);
             }
         }
 
@@ -1274,12 +1282,15 @@ class PersonService {
         // new reference
         if ($data['id'] == 0) {
             if ($no_data) {
+                // TODO add error message?
                 return null;
             } else {
                 $reference = new ItemReference();
                 $item->getReference()->add($reference);
-                $reference->setItem($item);
-                $this->entityManager->persist($reference);
+                if ($item->getId() > 0) {
+                    $reference->setItem($item);
+                    $this->entityManager->persist($reference);
+                }
             }
         } else {
             $reference = $referenceRepository->find($id);
@@ -1308,7 +1319,7 @@ class PersonService {
                 $person->getInputError()->add(new InputError('reference', $error_msg));
             }
         } else {
-            $error_msg = "Bandtitel darf nicht leer sein.";
+            $error_msg = "Das Feld 'Bandtitel' darf nicht leer sein.";
             $person->getInputError()->add(new InputError('reference', $error_msg));
         }
 
@@ -1338,8 +1349,10 @@ class PersonService {
             } else {
                 $itemProperty = new ItemProperty();
                 $item->getItemProperty()->add($itemProperty);
-                $itemProperty->setItem($item);
-                $this->entityManager->persist($itemProperty);
+                if ($person->getId() > 0) {
+                    $itemProperty->setItem($item);
+                    $this->entityManager->persist($itemProperty);
+                }
             }
         } else {
             $itemProperty = $itemPropertyRepository->find($id);
@@ -1354,8 +1367,18 @@ class PersonService {
         }
 
         // set data
-        $key_list = ['name', 'value'];
-        $this->setByKeys($itemProperty, $data, $key_list);
+        // case of completely missing data see above
+        if (trim($data['name']) == "") {
+            $msg = "Das Feld 'Attribut-Name' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('name', $msg));
+        }
+        $itemProperty->setName($data['name']);
+
+        if (trim($data['value']) == "") {
+            $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('name', $msg));
+        }
+        $itemProperty->setValue($data['value']);
 
         return $itemProperty;
     }
@@ -1385,17 +1408,20 @@ class PersonService {
                 $authority_id = Authority::ID[$key];
 
                 $id_external = new IdExternal();
-                $id_external->setItem($item);
                 $item_id_external_list->add($id_external);
                 $id_external->setAuthorityId($authority_id);
                 $authority = $authorityRepository->find($authority_id);
                 $id_external->setAuthority($authority);
+                // do not save the base URL
                 if ($key == 'Wikipedia') {
                     $val_list = explode('/', trim($value));
                     $value = array_slice($val_list, -1)[0];
                 }
                 $id_external->setValue($value);
-                $this->entityManager->persist($id_external);
+                if ($item->getId() > 0) {
+                    $id_external->setItem($item);
+                    $this->entityManager->persist($id_external);
+                }
             }
         }
 
@@ -1407,7 +1433,7 @@ class PersonService {
     /**
      * fill role properties (free properties) with $data
      */
-    private function mapRoleProperty($role, $data) {
+    private function mapRoleProperty($person, $role, $data) {
         $rolePropertyRepository = $this->entityManager->getRepository(PersonRoleProperty::class);
 
         $id = $data['id'];
@@ -1423,8 +1449,11 @@ class PersonService {
             } else {
                 $roleProperty = new PersonRoleProperty();
                 $role->getRoleProperty()->add($roleProperty);
-                $roleProperty->setPersonRole($role);
-                $this->entityManager->persist($roleProperty);
+                if ($person->getId() > 0) {
+                    $roleProperty->setPersonRole($role);
+                    $roleProperty->setPersonId($person->getId());
+                    $this->entityManager->persist($roleProperty);
+                }
             }
         } else {
             $roleProperty = $rolePropertyRepository->find($id);
@@ -1439,11 +1468,19 @@ class PersonService {
         }
 
         // set data
-        $key_list = ['name', 'value'];
-        $this->setByKeys($roleProperty, $data, $key_list);
-
-        // set person_id
-        $roleProperty->setPersonId($role->getPerson()->getId());
+        // case of completely missing data see above
+        if (trim($data['name']) == "") {
+            $msg = "Das Feld 'Attribut-Name' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('role', $msg));
+        } else {
+            $roleProperty->setName($data['name']);
+        }
+        if (trim($data['value']) == "") {
+            $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('role', $msg));
+        } else {
+            $roleProperty->setValue($data['value']);
+        }
 
         return $roleProperty;
     }
@@ -1528,5 +1565,39 @@ class PersonService {
         $id_public = str_replace("#", $numeric_field, $mask);
         return $id_public;
     }
+
+    /**
+     * create person object
+     */
+    public function makePersonScheme($id_in_source, $userWiagId) {
+
+        $item = Item::newItem($userWiagId, 'Bischof');
+        $person = Person::newPerson($item);
+        $item->setEditStatus(self::EDIT_STATUS_DEFAULT['Bischof']);
+
+        $item->setIdInSource($id_in_source);
+        $item->setFormIsExpanded(1);
+
+        return $person;
+    }
+
+    // 2022-09-26
+    // public function addRoleMaybe($person) {
+    //     if ($person->getRole()->isEmpty()) {
+    //         $role = new PersonRole();
+    //         $person->getRole()->add($role);
+    //         $role->setPerson($person);
+    //     }
+    //     return $person;
+    // }
+
+    // public function addReferenceMaybe($item) {
+    //     if ($item->getReference()->isEmpty()) {
+    //         $reference = new ItemReference();
+    //         $item->getReference()->add($reference);
+    //         $reference->setItem($item);
+    //     }
+    //     return $item;
+    // }
 
 };

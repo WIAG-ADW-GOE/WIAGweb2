@@ -134,10 +134,16 @@ class BishopController extends AbstractController {
         }
 
         $person_id = $ids[$idx];
-        $person = $personRepository->find($person_id);
 
         // collect office data in Person[]
-        $personRole = $itemRepository->getBishopOfficeData($person);
+        $personRole = $itemRepository->getBishopOfficeData($person_id);
+        $person = null;
+        foreach($personRole as $person_loop) {
+            if ($person_loop->getId() == $person_id) {
+                $person = $person_loop;
+                break;
+            }
+        }
 
         $itemRepository->setSibling($person);
 

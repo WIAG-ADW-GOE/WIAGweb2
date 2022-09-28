@@ -27,13 +27,13 @@ class Person {
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="Item")
+     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $item;
 
     /**
-     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person", fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person", fetch="EAGER", cascade={"persist"})
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      * @ORM\OrderBy({"dateSortKey" = "ASC"})
      */
@@ -186,7 +186,6 @@ class Person {
         return $person;
     }
 
-
     public function getId(): ?int
     {
         return $this->id;
@@ -240,7 +239,7 @@ class Person {
         return $this->givenname;
     }
 
-    public function setGivenname(string $givenname): self
+    public function setGivenname(?string $givenname): self
     {
         $this->givenname = $givenname;
 
@@ -417,19 +416,20 @@ class Person {
     /**
      * get external id for `authority_id`
      */
-    public function getIdExternal(int $authorityId) {
-        $item = $this->getItem();
-        if (is_null($item)) return null;
-        $idExternal = $item->getIdExternal();
-        if (is_null($idExternal) || count($idExternal) == 0) return null;
+    // 2022-09-26 obsolete ? see $item->getIdExternalByAuthorityId
+    // public function getIdExternal(int $authorityId) {
+    //     $item = $this->getItem();
+    //     if (is_null($item)) return null;
+    //     $idExternal = $item->getIdExternal();
+    //     if (is_null($idExternal) || count($idExternal) == 0) return null;
 
-        foreach ($idExternal as $id) {
-            if ($id->getAuthorityId() == $authorityId) {
-                return $id->getValue();
-            }
-        }
-        return null;
-    }
+    //     foreach ($idExternal as $id) {
+    //         if ($id->getAuthorityId() == $authorityId) {
+    //             return $id->getValue();
+    //         }
+    //     }
+    //     return null;
+    // }
 
     public function getItemTypeId(): ?int
     {
