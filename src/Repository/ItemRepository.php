@@ -101,11 +101,11 @@ class ItemRepository extends ServiceEntityRepository
                        ->andWhere("i.itemTypeId = ${itemTypeId}")
                        ->andWhere('i.isOnline = 1');
             if($year) {
-                $qb->join('i.person', 'p');
+                $qb->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id');
             }
         } elseif ($year) {
             $qb = $this->createQueryBuilder('i')
-                       ->join('i.person', 'p')
+                       ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                        ->select('COUNT(DISTINCT i.id) as n')
                        ->andWhere("i.itemTypeId = ${itemTypeId}")
                        ->andWhere('i.isOnline = 1');
@@ -367,7 +367,6 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
                    ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-            // ->join('i.person', 'p') # for form conditions
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
@@ -454,7 +453,6 @@ class ItemRepository extends ServiceEntityRepository
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-            // ->join('i.person', 'p')
                    ->join('p.nameLookup', 'n')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
@@ -564,7 +562,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('i')
                    ->select('distinct(i.id) as personId, ip_ord_date.dateValue as sort')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('\App\Entity\ItemProperty',
                           'ip_ord_date',
                           'WITH',
@@ -655,7 +653,7 @@ class ItemRepository extends ServiceEntityRepository
         $facetReligiousOrder = $model->facetReligiousOrder;
         if ($facetReligiousOrder) {
             $valFctRo = array_column($facetReligiousOrder, 'name');
-            $qb->join('i.person', 'pfctro')
+            $qb->join('\App\Entity\Person', 'pfctro', 'WITH', 'i.id = pfctro.id')
                ->join('pfctro.religiousOrder', 'rofct')
                ->andWhere("rofct.abbreviation IN (:valFctRo)")
                ->setParameter('valFctRo', $valFctRo);
@@ -725,11 +723,11 @@ class ItemRepository extends ServiceEntityRepository
      * return array of religious orders
      */
     public function countPriestUtOrder($model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht']['id'];
 
         $qb = $this->createQueryBuilder('i')
                    ->select('ro.abbreviation AS name, COUNT(DISTINCT(p.id)) AS n')
-                   ->join('i.person', 'p')
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('p.religiousOrder', 'ro')
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
                    ->andWhere("ro.abbreviation IS NOT NULL");
@@ -755,7 +753,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('i.person', 'p')
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('p.nameLookup', 'n')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
@@ -798,7 +796,7 @@ class ItemRepository extends ServiceEntityRepository
     public function suggestPriestUtReligiousOrder($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT r.abbreviation as suggestion")
-                   ->join('i.person', 'p')
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('p.religiousOrder', 'r')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->andWhere('r.abbreviation LIKE :value')

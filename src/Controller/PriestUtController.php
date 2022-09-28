@@ -62,8 +62,11 @@ class PriestUtController extends AbstractController {
                     'form' => $form,
             ]);
         } else {
-            $count_result = $itemRepository->countPriestUt($model);
-            $count = $count_result["n"];
+            // $count_result = $itemRepository->countPriestUt($model);
+
+            $id_all = $itemRepository->priestUtIds($model);
+            $count = count($id_all);
+            // $count = $count_result["n"];
 
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
@@ -79,8 +82,6 @@ class PriestUtController extends AbstractController {
             }
 
             $personRepository = $entityManager->getRepository(Person::class);
-
-            $id_all = $itemRepository->priestUtIds($model);
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
