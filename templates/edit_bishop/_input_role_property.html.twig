@@ -3,7 +3,7 @@
      data-controller="input-state">
     <div class="input-group input-group-sm">
 	{# property name label #}
-	<label class="input-group-text" for="{{ base_id_prop }}_type">Attribut-Name</label>
+	<label class="input-group-text wiag-input-text-blue" for="{{ base_id_prop }}_type">Attribut-Name</label>
 	{# - id (hidden) #}
 	<input type="text"
 	       id="{{ base_id_prop }}_id"
@@ -16,16 +16,16 @@
 	    <select class="form-select form-select-sm wiag-input"
 		    id="{{ base_id_prop }}_type"
 		    name="{{ base_input_name_prop }}[type]">
-		{% for type in itemPropertyTypeList %}
+		{% for type in rolePropertyTypeList %}
 		    <option {% if prop.type.id == type.id %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.label }}</option>
 		{% endfor %}
 	    </select>
 	</span>
 	{# prop value #}
-	<span class="input-group-text">Attribut-Wert</span>
+	<span class="input-group-text wiag-input-text-blue">Attribut-Wert</span>
 	<span class="w-20"
 	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
+		  url: path('person_suggest', { field: 'rolePropertyValue', itemTypeId: itemTypeId }),
 	      }) }}>
 	    <input type="text" id="{{ base_id_prop }}_value"
 		   name="{{ base_input_name_prop }}[value]"

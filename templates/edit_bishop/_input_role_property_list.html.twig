@@ -3,7 +3,7 @@
     {% set base_id_role_prop=base_id_role~'_prop_'~loop.index0 %}
     {% set base_input_name_role_prop=base_input_name_role~'[prop]['~loop.index0~']' %}
     <div class="pe-1"> {# see template for new prop #}
-	{{ include('edit_bishop/_input_property.html.twig', {
+	{{ include('edit_bishop/_input_role_property.html.twig', {
 	    'prop': role_prop,
 	    'base_id_prop': base_id_role_prop,
 	    'base_input_name_prop': base_input_name_role_prop,

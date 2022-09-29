@@ -4,9 +4,11 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
+use App\Entity\ItemPropertyType;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
+use App\Entity\RolePropertyType;
 use App\Entity\Authority;
 use App\Entity\NameLookup;
 use App\Entity\UserWiag;
@@ -33,9 +35,11 @@ class EditBishopController extends AbstractController {
     const HINT_SIZE = 8;
 
     private $personService;
+    private $itemTypeId;
 
     public function __construct(PersonService $personService) {
         $this->personService = $personService;
+        $this->itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
     }
 
     /**
@@ -55,7 +59,7 @@ class EditBishopController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
 
-        $suggestions = $personRepository->suggestEditStatus(Item::ITEM_TYPE_ID['Bischof']['id'], null, 60);
+        $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
         $status_list = array_column($suggestions, 'suggestion');
 
         $status_choices = ['- alle -' => null];
@@ -100,6 +104,12 @@ class EditBishopController extends AbstractController {
             $authorityRepository = $entityManager->getRepository(Authority::class);
             $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
+            // property types
+            $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
+            $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+            $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
+            $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
             return $this->renderForm('edit_bishop/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
@@ -110,6 +120,8 @@ class EditBishopController extends AbstractController {
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
                 'authBaseUrlList' => $auth_base_url_list,
+                'itemPropertyTypeList' => $item_property_type_list,
+                'rolePropertyTypeList' => $role_property_type_list,
             ]);
         }
 
@@ -218,9 +230,9 @@ class EditBishopController extends AbstractController {
             $entityManager->flush();
 
             if ($new_entry) {
-                $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
+                $item_type_id = $this->itemTypeId;
                 $itemRepository = $entityManager->getRepository(Item::class);
-                $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
+                $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
 
                 $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
                 $person_list[] = $person;
@@ -235,26 +247,28 @@ class EditBishopController extends AbstractController {
 
         $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
+        // property types
+        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
+        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
 
+        $template = "";
         if ($request->query->get('listOnly')) {
-            return $this->render('edit_bishop/_list.html.twig', [
-                'menuItem' => 'collections',
-                'personList' => $person_list,
-                'newEntry' => $new_entry,
-                'editFormId' => $edit_form_id,
-                'userWiagRepository' => $userWiagRepository,
-                'authBaseUrlList' => $auth_base_url_list,
-            ]);
+            $template = 'edit_bishop/_list.html.twig';
+        } else { // useful for debugging: dump output is accessible
+            $template = 'edit_bishop/edit_result.html.twig';
         }
 
-        // useful for debugging: dump output is accessible
-        return $this->render('edit_bishop/edit_result.html.twig', [
-                'menuItem' => 'collections',
-                'personList' => $person_list,
-                'editFormId' => $edit_form_id,
-                'newEntry' => $new_entry,
-                'userWiagRepository' => $userWiagRepository,
-                'authBaseUrlList' => $auth_base_url_list,
+        return $this->render($template, [
+            'menuItem' => 'collections',
+            'personList' => $person_list,
+            'newEntry' => $new_entry,
+            'editFormId' => $edit_form_id,
+            'userWiagRepository' => $userWiagRepository,
+            'authBaseUrlList' => $auth_base_url_list,
+            'itemPropertyTypeList' => $item_property_type_list,
+            'rolePropertyTypeList' => $role_property_type_list,
         ]);
     }
 
@@ -266,9 +280,8 @@ class EditBishopController extends AbstractController {
     public function newBishop(Request $request,
                               EntityManagerInterface $entityManager) {
 
-        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
         $itemRepository = $entityManager->getRepository(Item::class);
-        $id_in_source = $itemRepository->findMaxIdInSource($item_type_id) + 1;
+        $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
 
         $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
 
@@ -280,6 +293,13 @@ class EditBishopController extends AbstractController {
         $authorityRepository = $entityManager->getRepository(Authority::class);
         $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
 
+        // property types
+        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
+        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
+
         return $this->render('edit_bishop/new_bishop.html.twig', [
             'menuItem' => 'collections',
             'form' => null,
@@ -289,6 +309,8 @@ class EditBishopController extends AbstractController {
             // find user WIAG for all elements of $person_list
             'userWiagRepository' => $userWiagRepository,
             'authBaseUrlList' => $auth_base_url_list,
+            'itemPropertyTypeList' => $item_property_type_list,
+            'rolePropertyTypeList' => $role_property_type_list,
         ]);
 
     }
@@ -326,7 +348,7 @@ class EditBishopController extends AbstractController {
             'base_id_ref' => $request->query->get('base_id'),
             'base_input_name_ref' => $request->query->get('base_input_name'),
             'ref' => $reference,
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
+            'itemTypeId' => $this->itemTypeId,
         ]);
 
     }
@@ -336,17 +358,22 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
      */
-    public function newProperty(Request $request) {
+    public function newProperty(Request $request,
+                                EntityManagerInterface $entityManager) {
 
         $property = new ItemProperty;
+
+        // property types
+        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
+        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+        $property->setType($item_property_type_list[0]);
 
         return $this->render('edit_bishop/_input_property.html.twig', [
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
-            'suggest_field_name' => 'propertyName',
-            'suggest_field_value' => 'propertyValue',
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
+            'itemTypeId' => $this->itemTypeId,
+            'itemPropertyTypeList' => $item_property_type_list,
         ]);
 
     }
@@ -356,17 +383,21 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new-role-property", name="edit_bishop_new_role_property")
      */
-    public function new_role_property(Request $request) {
+    public function new_role_property(Request $request,
+                                      EntityManagerInterface $entityManager) {
 
         $property = new PersonRoleProperty;
+        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+        $property->setType($role_property_type_list[0]);
 
-        return $this->render('edit_bishop/_input_property.html.twig', [
+
+        return $this->render('edit_bishop/_input_role_property.html.twig', [
             'base_id_prop' => $request->query->get('base_id'),
             'base_input_name_prop' => $request->query->get('base_input_name'),
             'prop' => $property,
-            'suggest_field_name' => 'rolePropertyName',
-            'suggest_field_value' => 'rolePropertyValue',
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
+            'itemTypeId' => $this->itemTypeId,
+            'rolePropertyTypeList' => $role_property_type_list,
         ]);
 
     }

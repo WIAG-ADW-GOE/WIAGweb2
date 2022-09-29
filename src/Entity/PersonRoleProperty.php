@@ -23,6 +23,12 @@ class PersonRoleProperty
     private $id;
 
     /**
+     * @ORM\OneToOne(targetEntity="RolePropertyType", fetch="EAGER")
+     * @ORM\JoinColumn(name="property_type_id", referencedColumnName="id")
+     */
+    private $type;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $personRoleId;
@@ -53,9 +59,23 @@ class PersonRoleProperty
      */
     private $note;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $propertyTypeId;
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getType() {
+        return $this->type;
+    }
+
+    public function setType($type): self {
+        $this->type = $type;
+        return $this;
     }
 
     public function setPersonRole($role): self {
@@ -131,6 +151,18 @@ class PersonRoleProperty
     public function setNote(?string $note): self
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getPropertyTypeId(): ?int
+    {
+        return $this->propertyTypeId;
+    }
+
+    public function setPropertyTypeId(?int $propertyTypeId): self
+    {
+        $this->propertyTypeId = $propertyTypeId;
 
         return $this;
     }

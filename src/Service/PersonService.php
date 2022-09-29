@@ -5,10 +5,12 @@ namespace App\Service;
 
 use App\Entity\Item;
 use App\Entity\ItemProperty;
+use App\Entity\ItemPropertyType;
 use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
+use App\Entity\RolePropertyType;
 use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Role;
@@ -1338,7 +1340,7 @@ class PersonService {
         $id = $data['id'];
         $item = $person->getItem();
 
-        $key_list = ['name', 'value'];
+        $key_list = ['type', 'value'];
         $no_data = $this->no_data($data, $key_list);
         $itemProperty = null;
 
@@ -1367,13 +1369,12 @@ class PersonService {
         }
 
         // set data
-        // case of completely missing data see above
-        if (trim($data['name']) == "") {
-            $msg = "Das Feld 'Attribut-Name' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('name', $msg));
-        }
-        $itemProperty->setName($data['name']);
+        $property_type = $this->entityManager->getRepository(ItemPropertyType::class)
+                                             ->find($data['type']);
+        $itemProperty->setPropertyTypeId($property_type->getId());
+        $itemProperty->setType($property_type);
 
+        // case of completely missing data see above
         if (trim($data['value']) == "") {
             $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
             $person->getInputError()->add(new InputError('name', $msg));
@@ -1468,13 +1469,12 @@ class PersonService {
         }
 
         // set data
+        $property_type = $this->entityManager->getRepository(RolePropertyType::class)
+                                             ->find($data['type']);
+        $roleProperty->setPropertyTypeId($property_type->getId());
+        $roleProperty->setType($property_type);
+
         // case of completely missing data see above
-        if (trim($data['name']) == "") {
-            $msg = "Das Feld 'Attribut-Name' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('role', $msg));
-        } else {
-            $roleProperty->setName($data['name']);
-        }
         if (trim($data['value']) == "") {
             $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
             $person->getInputError()->add(new InputError('role', $msg));

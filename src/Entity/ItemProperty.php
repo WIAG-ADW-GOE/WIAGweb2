@@ -24,6 +24,12 @@ class ItemProperty
     private $item;
 
     /**
+     * @ORM\OneToOne(targetEntity="ItemPropertyType", fetch="EAGER")
+     * @ORM\JoinColumn(name="property_type_id", referencedColumnName="id")
+     */
+    private $type;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $itemId;
@@ -48,14 +54,28 @@ class ItemProperty
      */
     private $dateValue;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $propertyTypeId;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setItem($item): ?self {
+    public function setItem($item): self {
         $this->item = $item;
 
+        return $this;
+    }
+
+    public function getType() {
+        return $this->type;
+    }
+
+    public function setType($type): self {
+        $this->type = $type;
         return $this;
     }
 
@@ -115,6 +135,18 @@ class ItemProperty
     public function setDateValue(?\DateTimeInterface $date_value): self
     {
         $this->dateValue = $date_value;
+
+        return $this;
+    }
+
+    public function getPropertyTypeId(): ?int
+    {
+        return $this->propertyTypeId;
+    }
+
+    public function setPropertyTypeId(?int $propertyTypeId): self
+    {
+        $this->propertyTypeId = $propertyTypeId;
 
         return $this;
     }
