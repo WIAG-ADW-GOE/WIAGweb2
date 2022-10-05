@@ -15,10 +15,9 @@
 	<input type="text"
 	       id="{{ base_id_ref }}_id"
 	       name="{{ base_input_name_ref }}[id]"
-	       class="form-control form-control-sm"
-	       value="{{ ref.id }}"
-	       hidden="hidden>">
-	<span class="w-25"
+	       class="form-control form-control-sm d-none"
+	       value="{{ ref.id }}">
+	<div class="w-25"
     	      {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),
 	      }) }}>
@@ -32,7 +31,7 @@
 	    <ul class="list-group autocomplete-target"
 		data-autocomplete-target="results"
 		style="max-width: 18rem;"></ul>
-	</span>
+	</div>
 	<span class="input-group-text">Seite</span>
  	<input type="text" id="{{ base_id_ref }}_page"
 	       name="{{ base_input_name_ref}}[page]"

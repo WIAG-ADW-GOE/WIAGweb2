@@ -1,29 +1,34 @@
-<div data-controller="submit-form"
-     data-submit-form-new-entry-value="{{ newEntry }}"
-     data-hide-on-input-target="result">
+<div data-hide-on-input-target="result">
     <form id ="{{ editFormId }}"
 	  name="{{ editFormId }}"
 	  action="{{ path('edit_bishop_save') }}"
-	  method="post">
+	  method="post"
+	  data-controller="submit-form"
+	  data-submit-form-new-entry-value="{{ newEntry }}">
+	{% set body_id_list = personList|map(p => 'body'~attribute(p, "id"))|join(' ') %}
 	<div class="row mx-2">
 	    <div class="col">
-		{% if true %}
-		    {# disable submit via enter-key #}
-		    <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-		{% endif %}
+		{# disable submit via enter-key #}
+		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
+		{# toggle collapse button #}
 		<button class="btn btn-sm btn-secondary float-start"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target=".multi-collapse"
-			aria-expanded="false"
-			aria-controls="all"
-			{{ stimulus_controller('toggle-arrow', {
-			    state: true,
-			    imgOpen: 'down',
-			    imgClosed: 'right'
-			}) }}
-			data-action="toggle-arrow#toggle"
-			data-value="down">öffnen/schließen</button>
+			       type="button"
+			       data-bs-toggle="collapse"
+			       data-bs-target=".multi-collapse"
+			       aria-expanded="false"
+			       aria-controls="{{ body_id_list }}"
+			       {{ stimulus_controller('toggle-arrow', {
+				   state: true,
+				   imgOpen: 'down',
+				   imgClosed: 'right'
+			       }) }}
+			       data-action="toggle-arrow#toggle"
+			       data-value="down">öffnen/schließen</button>
+	    </div>
+	    <div class="col">
+		<button type="button"
+			data-action="submit-form#submit"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
 	<div class="row mx-2">
@@ -41,16 +46,14 @@
 		{% set submit_debug=false %} {# submit directly for debugging#}
 		{% if submit_debug %}
 		    <button type="submit"
-			    id="submit_edit_form" {# submit-form_controller #}
-			    formaction="{{ path('edit_bishop_save', {
-					      'newEntry': newEntry,
-					}) }}"
+			    formaction="{{ path('edit_bishop_save', {'newEntry': newEntry}) }}"
+			    data-controller="submit-by-key"
 			    class="btn btn-primary float-end">Speichern</button>
 		{% else %} {# submit via Stimulus controller #}
 		    <button type="button"
-			    id="submit_edit_form" {# submit-form_controller #}
 			    data-action="submit-form#submit"
-			    class="btn btn-primary float-end">Speichern</button>
+			    data-controller="submit-by-key"
+			    class="btn btn-primary btn-sm float-end">Speichern</button>
 		{% endif %}
 	    </div>
 	</div>

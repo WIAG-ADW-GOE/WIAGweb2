@@ -576,4 +576,29 @@ class UtilService {
         return $d_list;
     }
 
+    public function no_data($a, $key_list) {
+        foreach($key_list as $key) {
+            if (array_key_exists($key, $a) && trim($a[$key]) != "") {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * setByKeys($obj, $data, $key_list)
+     *
+     * set elements of $obj
+     */
+    public function setByKeys($obj, $data, $key_list) {
+        foreach($key_list as $key) {
+            $value = trim($data[$key]);
+            if (strlen($value) == 0) {
+                $value = null;
+            }
+            $set_fnc = 'set'.ucfirst($key);
+            $obj->$set_fnc($value);
+        }
+    }
+
 }

@@ -1,0 +1,42 @@
+<form id ="{{ editFormId }}"
+      name="{{ editFormId }}"
+      action="{{ path('edit_prop_save') }}"
+      data-controller="submit-form"
+      method="post">
+    {# disable submit via enter-key #}
+    <button type="submit" disabled class="d-none" aria-hidden="true"></button>
+    <input type="text"
+	   class="d-none"
+	   id="{{ editFormId }}_itemTypeId"
+	   name="{{ editFormId }}[itemTypeId]"
+	   value="{{ itemTypeId }}">
+    <div class="row col-12 mt-2"><h2>Gegenstands-/Personen-Attribute</h2></div>
+    {{ include('edit_base/_property_list.html.twig', {
+	innerTypeList: itemPropertyTypeList,
+	base_id: editFormId~'_itemProp',
+	base_input_name: editFormId~'[itemProp]'
+    }) }}
+
+    <div class="row col-12"><h2>Rollen-Attribute</h2></div>
+    {{ include('edit_base/_property_list.html.twig', {
+	innerTypeList: rolePropertyTypeList,
+	base_id: editFormId~'_roleProp',
+	base_input_name: editFormId~'[roleProp]'
+    }) }}
+    <div class="row mx-2 mb-2">
+	<div class="col">
+	    {% set submit_debug=false %} {# submit directly for debugging#}
+	    {% if submit_debug %}
+		<button type="submit"
+			formaction="{{ path('edit_prop_save') }}"
+			data-controller="submit-by-key"
+			class="btn btn-primary float-end">Speichern</button>
+	    {% else %} {# submit via Stimulus controller #}
+		<button type="button"
+			data-action="submit-form#submit"
+			data-controller="submit-by-key"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
+	    {% endif %}
+	</div>
+    </div>
+</form>

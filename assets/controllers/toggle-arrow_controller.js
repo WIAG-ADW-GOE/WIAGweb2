@@ -39,7 +39,7 @@ export default class extends Controller {
     }
 
 
-    // controller mey be attached to an element containing the button
+    // controller may be attached to an element containing the button
     // event: hidden.bs.collapse
     hidden() {
 	var html = this.buttonTarget.innerHTML;

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Atttributliste{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+	<div class="row ms-2 col-12">
+	    <h1>Basisdaten: Attribute</h1>
+	    {{ form_start(form, {
+		'attr': {
+		    'data-controller': 'submit-form',
+		    'data-action': 'change->submit-form#onChange',
+		}
+	    }) }}
+		<div class="w-20 mb-2">{{ form_widget(form.itemType) }}</div>
+	    {{ form_end(form) }}
+	    {{ include('edit_base/_edit_prop_form.html.twig') }}
+	</div>
+    </div>
+{% endblock %}

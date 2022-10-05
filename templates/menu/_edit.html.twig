@@ -1,0 +1,22 @@
+<li class="nav-item dropdown">
+    {% if menuItem == 'edit-menu' %}
+	<a class="nav-link dropdown-toggle fw-bold active" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Edit</a>
+    {% else %}
+	<a class="nav-link dropdown-toggle fw-bold" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
+    {% endif %}
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
+	<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_bishop_new') }}">Bischöfe anlegen</a></li>
+	<li><hr class="dropdown-divider"></li>
+	<li><span class="dropdown-header">Basisdaten</span></li>
+	<li><a class="dropdown-item" href="{{ path('edit_prop') }}">Attribute</a></li>
+	{% if is_granted('ROLE_USER_EDIT') %}
+	    <li><hr class="dropdown-divider"></li>
+	    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
+	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>
+	{% endif  %}
+	{% if false and is_granted('ROLE_DATA_ADMIN') %}
+	    <li><a class="dropdown-item" href="#">Datenexport</a></li>
+	{% endif %}
+    </ul>
+</li>

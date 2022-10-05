@@ -1,0 +1,79 @@
+
+<div class="row">
+    <div class="col-12">
+	<div class="table-responsive">
+	    <table class="table table-borderless w-75">
+		<thead class="thead-light">
+		    <tr>
+			<th scope="col"></th> {# checkbox edit status #}
+			<th scope="col" class="d-none">Id</th>
+			<th scope="col">Name</th>
+			<th scope="col">Anzeige (Label)</th>
+			<th scope="col">Bemerkung</th>
+		    </tr>
+		</thead>
+		<tbody>
+		    {% for prop_type in innerTypeList %}
+			{% set field_key = 'getName' %}
+			<tr data-controller="on-input"
+			    data-action="input->on-input#mark">
+			    <td><input class="form-check-input"
+				       type="checkbox"
+				       {% if prop_type.formisedited is defined and prop_type.formIsEdited > 0 %}
+				       checked="checked"
+				       {% endif %}
+				       id="{{ base_id }}_{{ loop.index0 }}_formIsEdited"
+				       name="{{ base_input_name }}[{{ loop.index0 }}][formIsEdited]"
+				       data-on-input-target="checkbox">
+			    </td>
+			    <td class ="d-none"><input type="text"
+				       class="form-control form-control-sm"
+				       id="{{ base_id }}_{{ loop.index0 }}_id"
+				       name="{{ base_input_name }}[{{ loop.index0 }}][id]"
+				       value="{{ prop_type.id }}">
+			    </td>
+			    {% for field_name in ['name', 'label', 'comment'] %}
+				<td><input type="text"
+					   class="form-control form-control-sm"
+					   id="{{ base_id }}_{{ loop.parent.loop.index0 }}_{{ field_name }}"
+					   name="{{ base_input_name }}[{{ loop.parent.loop.index0 }}][{{ field_name }}]"
+					   value="{{ attribute(prop_type, field_name) }}">
+				</td>
+			    {% endfor %}
+			</tr>
+			{% if prop_type.inputError is defined %}
+			    {% for error in prop_type.inputError %}
+				<tr>
+				    <td></td>
+				    <td colspan="3" class="text-danger">{{ error.msg }}</td>
+				</tr>
+			    {% endfor %}
+			{% endif %}
+		    {% endfor %}
+		    {% set next_idx = innerTypeList|length %}
+		    <tr data-controller="on-input"
+			data-action="input->on-input#mark">
+			<td><input class="form-check-input"
+				   type="checkbox"
+				   id="{{ base_id }}_{{ next_idx }}_formIsEdited"
+				   name="{{ base_input_name }}[{{ next_idx }}][formIsEdited]"
+				   data-on-input-target="checkbox">
+			</td>
+			<td class="d-none"><input type="text"
+						  class="form-control form-control-sm"
+						  id="{{ base_id }}_{{ next_idx }}_id"
+						  name="{{ base_input_name }}[{{ next_idx }}][id]">
+			</td>
+			{% for field_name in ['name', 'label', 'comment'] %}
+			    <td><input type="text"
+				       class="form-control form-control-sm"
+				       id="{{ base_id }}_{{ next_idx }}_{{ field_name }}"
+				       name="{{ base_input_name }}[{{ next_idx }}][{{ field_name }}]">
+			    </td>
+			{% endfor %}
+		    </tr>
+		</tbody>
+	    </table>
+	</div>
+    </div>
+</div>

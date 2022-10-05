@@ -2,8 +2,11 @@
 
 namespace App\Entity;
 
+use App\Entity\InputError;
 use App\Repository\ItemPropertyTypeRepository;
+
 use Doctrine\ORM\Mapping as ORM;
+
 
 /**
  * @ORM\Entity(repositoryClass=ItemPropertyTypeRepository::class)
@@ -89,4 +92,5 @@ class ItemPropertyType
 
         return $this;
     }
+
 }

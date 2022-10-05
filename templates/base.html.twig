@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html class="h-100">
+<html class="h-100" lang="de">
     <head>
         <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}WIAG{% endblock %}</title>
         {# Run `composer require symfony/webpack-encore-bundle`
         and uncomment the following Encore helpers to start using Symfony UX #}
@@ -21,8 +22,8 @@
 	<main class="flex-shrink-0">
 	    <div class="container-fluid">
 		<div class="row mt-3 mx-2">
-		    <div class="col-12">
-			<a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80"></a>
+		    <div class="col-12" style="min-height: 6rem">
+			<a href="{{ path('home') }}"><img class="float-start me-2" src="{{ asset('images/WIAG-logo.png') }}" width="80" alt="WIAG-Logo"></a>
 			<a class="home-title text-reset text-decoration-none"
 			   href="{{ path('home') }}">Wissensaggregator Mittelalter und Frühe Neuzeit</a> {% if false %}<span class="version ms-1">Version: Beta</span>{% endif %}
 			<p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
@@ -32,7 +33,6 @@
 	    <nav class="navbar navbar-expand-lg navbar-light bg-white">
 		<div class="container-fluid mx-3">
 		    <button class="navbar-toggler"
-			    type="button"
 			    data-bs-toggle="collapse"
 			    data-bs-target="#navbarSupportedContent"
 			    aria-controls="navbarSupportedContent"
@@ -44,15 +44,15 @@
 			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 			    <li class="nav-item">
 				{% if menuItem == 'home' %}
-				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('home') }}">Start</a>
+				    <a class="nav-link fw-bold active" role="button" aria-current="page" href="{{ path('home') }}">Start</a>
 				{% else %}
-				    <a class="nav-link fw-bold" type="button" href="{{ path('home') }}">Start</a>
+				    <a class="nav-link fw-bold" role="button" href="{{ path('home') }}">Start</a>
 				{% endif %}
 			    </li>
 
 			    <li class="nav-item dropdown">
 				{% if menuItem == 'about' %}
-				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Über WIAG</a>
+				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Über WIAG</a>
 				{% else %}
 				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="about-wiag" data-bs-toggle="dropdown" aria-expanded="false">Über WIAG</a>
 				{% endif %}
@@ -67,9 +67,9 @@
 			    </li>
 			    <li class="nav-item dropdown">
 				{% if menuItem == 'collections' %}
-				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Datensammlungen</a>
+				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Datensammlungen</a>
 				{% else %}
-				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
+				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" role="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
 				{% endif %}
 				<ul class="dropdown-menu" aria-labelledby="collections">
 				    <li><a class="dropdown-item" href="{{ path('bishop_query') }}">Bischöfe des Alten Reiches</a></li>
@@ -83,43 +83,25 @@
 			    </li>
 			    <li class="nav-item">
 				{% if menuItem == 'service' %}
-				    <a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('data_service') }}">Datenservice</a>
+				    <a class="nav-link fw-bold active" role="button" aria-current="page" href="{{ path('data_service') }}">Datenservice</a>
 				{% else %}
-				    <a class="nav-link fw-bold" type="button" href="{{ path('data_service') }}">Datenservice</a>
+				    <a class="nav-link fw-bold" role="button" href="{{ path('data_service') }}">Datenservice</a>
 				{% endif %}
 			    </li>
+			    {# edit #}
 			    {% if is_granted('ROLE_EDIT_MENU') and allow_edit == 'edit' %}
-				<li class="nav-item dropdown">
-				    {% if menuItem == 'edit' %}
-					<a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="aria-current">Edit</a>
-				    {% else %}
-					<a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" type="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
-				    {% endif %}
-				    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="collections">
-					<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
-					<li><a class="dropdown-item" href="{{ path('edit_bishop_new') }}">Bischöfe anlegen</a></li>
-
-					{% if is_granted('ROLE_USER_EDIT') %}
-					    <li><hr class="dropdown-divider"></li>
-					    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
-					    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>
-					{% endif  %}
-					{% if false and is_granted('ROLE_DATA_ADMIN') %}
-					    <li><a class="dropdown-item" href="#">Datenexport</a></li>
-					{% endif %}
-				    </ul>
-				</li>
+				{{ include('menu/_edit.html.twig') }}
 			    {% endif %}
 			    {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
 				<li class="nav-item">
-				    <a class="nav-link fw-bold" type="button" href="{{ path('logout') }}">Logout</a>
+				    <a class="nav-link fw-bold" role="button" href="{{ path('logout') }}">Logout</a>
 				</li>
 			    {% else %}
 				<li class="nav-item">
 				    {% if menuItem == 'login' %}
-					<a class="nav-link fw-bold active" type="button" aria-current="aria-current" href="{{ path('login') }}">Login</a>
+					<a class="nav-link fw-bold active" role="button" aria-current="page" href="{{ path('login') }}">Login</a>
 				    {% else %}
-					<a class="nav-link fw-bold" type="button" href="{{ path('login') }}">Login</a>
+					<a class="nav-link fw-bold" role="button" href="{{ path('login') }}">Login</a>
 				    {% endif %}
 				</li>
 			    {% endif %}
@@ -134,15 +116,15 @@
 	    <div class="container-fluid">
 		<div class="row justify-content-sm-center">
 		    <div class="col-sm-10 text-left">
-			<a href="https://adw-goe.de" class="mr-3" target="_blank" rel="noopener"><img src="{{ asset('images/ADWGoe-logo-fit.png') }}" height="60"></a>
-			<a href="http://www.inschriften.net" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/DI-logo-fit.png') }}" height="60"></a>
-			<a href="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/GS-logo.png') }}" height="52"></a>
+			<a href="https://adw-goe.de" class="mr-3" target="_blank" rel="noopener"><img src="{{ asset('images/ADWGoe-logo-fit.png') }}" height="60" alt="Akademie der Wissenschaften zu Göttingen"></a>
+			<a href="http://www.inschriften.net" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/DI-logo-fit.png') }}" height="60" alt="Deutsche Inschriften"></a>
+			<a href="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/" class="mx-3" target="_blank" rel="noopener"><img src="{{ asset('images/GS-logo.png') }}" alt="Germania Sacra" height="52"></a>
 		    </div>
 		</div>
 		<div class="row justify-content-sm-center mt-2">
 		    <div class="col-sm-10 text-left">
 			<a href="https://adw-goe.de/impressum" class="wiag-impress" target="_blank" rel="noopener">Impressum</a>
-			<a href="#" class="wiag-impress ms-2">Kontakt</a>
+			<a href="https://adw-goe.de/germania-sacra/mitarbeiter/-innen/" class="wiag-impress ms-2">Kontakt</a>
 		    </div>
 		</div>
 	    </div>

@@ -989,7 +989,7 @@ class PersonService {
 
         // item: status values, editorial notes
         $key_list = ['editStatus', 'commentDuplicate'];
-        $this->setByKeys($item, $data['item'], $key_list);
+        $this->utilService->setByKeys($item, $data['item'], $key_list);
 
         // person
         $key_list = ['givenname',
@@ -1000,7 +1000,7 @@ class PersonService {
                      'comment',
                      'noteName',
                      'notePerson'];
-        $this->setByKeys($person, $data, $key_list);
+        $this->utilService->setByKeys($person, $data, $key_list);
 
         if (is_null($person->getGivenname())) {
             $msg = "Das Feld 'Vorname' kann nicht leer sein.";
@@ -1141,7 +1141,7 @@ class PersonService {
 
         $role = null;
         $key_list = ['role', 'diocese', 'institution', 'date_begin', 'date_end'];
-        $no_data = $this->no_data($data, $key_list);
+        $no_data = $this->utilService->no_data($data, $key_list);
 
         // new role?
         if ($data['id'] == "0" || trim($data['id']) == "") {
@@ -1208,14 +1208,14 @@ class PersonService {
         $role->setDioceseName($diocese_name);
 
         // other fields
-        $this->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
+        $this->utilService->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
 
         // numerical values for dates
         $date_begin = $role->getDateBegin();
         if (!$this->emptyDate($date_begin)) {
             $year = $this->utilService->parseDate($date_begin, 'lower');
             if (!is_null($year)) {
-                $this->setByKeys($role, $data, ['dateBegin']);
+                $this->utilService->setByKeys($role, $data, ['dateBegin']);
                 $role->setNumDateBegin($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
@@ -1230,7 +1230,7 @@ class PersonService {
         if (!$this->emptyDate($date_end)) {
             $year = $this->utilService->parseDate($date_end, 'upper');
             if (!is_null($year)) {
-                $this->setByKeys($role, $data, ['dateEnd']);
+                $this->utilService->setByKeys($role, $data, ['dateEnd']);
                 $role->setNumDateEnd($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
@@ -1278,7 +1278,7 @@ class PersonService {
         $item_type_id = $item->getItemTypeId();
 
         $key_list = ['volume', 'page', 'idInReference'];
-        $no_data = $this->no_data($data, $key_list);
+        $no_data = $this->utilService->no_data($data, $key_list);
         $reference = null;
 
         // new reference
@@ -1326,7 +1326,7 @@ class PersonService {
         }
 
         $key_list = ['page','idInReference'];
-        $this->setByKeys($reference, $data, $key_list);
+        $this->utilService->setByKeys($reference, $data, $key_list);
 
         return $reference;
     }
@@ -1341,7 +1341,7 @@ class PersonService {
         $item = $person->getItem();
 
         $key_list = ['type', 'value'];
-        $no_data = $this->no_data($data, $key_list);
+        $no_data = $this->utilService->no_data($data, $key_list);
         $itemProperty = null;
 
         // new itemProperty
@@ -1440,7 +1440,7 @@ class PersonService {
         $id = $data['id'];
 
         $key_list = ['name', 'value'];
-        $no_data = $this->no_data($data, $key_list);
+        $no_data = $this->utilService->no_data($data, $key_list);
         $roleProperty = null;
 
         // new roleProperty
@@ -1485,21 +1485,6 @@ class PersonService {
         return $roleProperty;
     }
 
-    /**
-     * setByKeys($obj, $data, $key_list)
-     *
-     * set elements of $obj
-     */
-    private function setByKeys($obj, $data, $key_list) {
-        foreach($key_list as $key) {
-            $value = trim($data[$key]);
-            if (strlen($value) == 0) {
-                $value = null;
-            }
-            $set_fnc = 'set'.ucfirst($key);
-            $obj->$set_fnc($value);
-        }
-    }
 
     /**
      * updateDateRange($person)
@@ -1548,14 +1533,6 @@ class PersonService {
         return $person;
     }
 
-    private function no_data($a, $key_list) {
-        foreach($key_list as $key) {
-            if (array_key_exists($key, $a) && trim($a[$key]) != "") {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public function makeIdPublic($item_type, $numeric_part)  {
         $width = Item::ITEM_TYPE_ID[$item_type]['numeric_field_width'];

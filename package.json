@@ -25,6 +25,8 @@
         "@hotwired/stimulus-webpack-helpers": "^1.0.1",
         "@popperjs/core": "^2.10.2",
         "bootstrap": "^5.1.3",
-        "stimulus-autocomplete": "^3.0.0-rc.4"
+        "hotkeys-js": "^3.10.0",
+        "stimulus-autocomplete": "^3.0.0-rc.4",
+        "stimulus-use": "^0.50.0"
     }
 }

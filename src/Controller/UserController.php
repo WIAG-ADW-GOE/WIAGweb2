@@ -37,7 +37,6 @@ class UserController extends AbstractController
         $message = $request->query->get('message');
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // TODO get the user object as active_user
             $active_user = $this->getUser();
             $active_user_id = $active_user ? $active_user->getId() : 1;
 

@@ -4,7 +4,7 @@ export default class extends Controller {
     static targets = ['checkbox'];
 
     connect() {
-	// console.log('this on-input_controller i');
+	// console.log('this is on-input_controller');
     }
 
     /**

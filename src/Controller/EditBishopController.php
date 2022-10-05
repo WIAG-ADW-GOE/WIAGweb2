@@ -111,7 +111,7 @@ class EditBishopController extends AbstractController {
             $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
 
             return $this->renderForm('edit_bishop/query_result.html.twig', [
-                'menuItem' => 'collections',
+                'menuItem' => 'edit-menu',
                 'form' => $form,
                 'editFormId' => $edit_form_id,
                 'count' => $count,
@@ -126,7 +126,7 @@ class EditBishopController extends AbstractController {
         }
 
         return $this->renderForm('edit_bishop/query.html.twig', [
-            'menuItem' => 'collections',
+            'menuItem' => 'edit-menu',
             'form' => $form,
         ]);
 
@@ -148,7 +148,7 @@ class EditBishopController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
         $person_list = array();
-        $flag_error = false;
+        $error_flag = false;
         foreach($form_data as $data) {
             $person_id = $data['item']['id'];
             if ($person_id > 0) {
@@ -169,7 +169,7 @@ class EditBishopController extends AbstractController {
                 $this->personService->mapPerson($person, $data, $current_user_id);
 
                 if ($person->hasError('error')) {
-                    $flag_error = true;
+                    $error_flag = true;
                 }
             }
 
@@ -181,7 +181,7 @@ class EditBishopController extends AbstractController {
         $new_entry = $request->query->get('newEntry');
 
         // save data
-        if (!$flag_error) {
+        if (!$error_flag) {
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
 
@@ -206,7 +206,9 @@ class EditBishopController extends AbstractController {
                         $person_list[] = $person;
                         $this->personService->mapPerson($person, $data, $current_user_id);
                         $person->getItem()->setFormIsExpanded($expanded_flag);
-                    } elseif ($person_id > 0) { // edited, no errors: use data from first mapping
+                    } elseif ($person_id > 0) {
+                        // edited, no errors
+                        // use data from first mapping, as Doctrine reuses the object.
                         $person = $personRepository->findList([$person_id])[0];
                         $person_list[] = $person;
                         $person->getItem()->setFormIsExpanded($expanded_flag);
@@ -237,10 +239,7 @@ class EditBishopController extends AbstractController {
                 $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
                 $person_list[] = $person;
             }
-
-
         }
-
 
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
         $authorityRepository = $entityManager->getRepository(Authority::class);
@@ -261,7 +260,7 @@ class EditBishopController extends AbstractController {
         }
 
         return $this->render($template, [
-            'menuItem' => 'collections',
+            'menuItem' => 'edit-menu',
             'personList' => $person_list,
             'newEntry' => $new_entry,
             'editFormId' => $edit_form_id,
@@ -301,7 +300,7 @@ class EditBishopController extends AbstractController {
 
 
         return $this->render('edit_bishop/new_bishop.html.twig', [
-            'menuItem' => 'collections',
+            'menuItem' => 'edit-menu',
             'form' => null,
             'editFormId' => $edit_form_id,
             'count' => 1,

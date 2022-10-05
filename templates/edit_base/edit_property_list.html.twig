@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <div class="row mx-2 col-12">
+	{{ include('edit_base/_edit_prop_form.html.twig') }}
+    </div>
+{% endblock %}

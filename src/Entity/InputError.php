@@ -2,6 +2,12 @@
 namespace App\Entity;
 
 class InputError {
+    const ERROR_LEVEL = [
+        'info'    => ['info', 'warning', 'error'],
+        'warning' => ['warning', 'error'],
+        'error'   => ['error'],
+    ];
+
     private $section; // 2022-08-30: one of: 'status', 'name', 'person', 'role', 'reference'
     private $msg;
     private $level;

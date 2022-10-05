@@ -15,17 +15,26 @@
 	{# headline #}
 	<div class="input-group input-group-sm mt-1 mb-0">
 	    <span class="text-nowrap">
-		{% set expanded = false %}
 		{% if person.hasError('info') or person.item.formIsExpanded%}
 		    {% set expanded = true %}
+		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target={{ "#body#{person.item.id}" }}
+			    aria-expanded="true"
+			    aria-controls={{ "body#{person.item.id}" }}
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+		{% else	%}
+		    {% set expanded = false %}
+		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target={{ "#body#{person.item.id}" }}
+			    aria-expanded="false"
+			    aria-controls={{ "body#{person.item.id}" }}
+
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
 		{% endif %}
-		<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target={{ "#body#{person.item.id}" }}
-			aria-expanded="{{ expanded }}"
-			aria-controls={{ "body#{person.item.id}" }}
-			data-toggle-arrow-target="button">{% if expanded %}<img src="{{ asset('images/symbols/caret-down-square.svg') }}"/>{% else %}<img src="{{ asset('images/symbols/caret-right-square.svg') }}"/>{% endif %}</button>
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
 		       type="checkbox"
 		       value=""
@@ -33,7 +42,7 @@
 		       name="{{ base_input_name }}[item][formIsEdited]"
 		       data-on-input-target="checkbox"
 		       {% if person.item.formisedited %}checked="checked"{% endif %}>
-		<img class="align-middle" src="{{ asset(online_image) }}"/>
+		<img class="align-middle" src="{{ asset(online_image) }}" alt="Farbsymbol online">
 	    </span>
 	    {% if person.describerole(2) %}
 		{% set head_line %}
@@ -47,12 +56,11 @@
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
 	    {# insert internal id into the form (hidden) #}
-	    <span><input type="text"
+	    <input type="text"
 			 id="{{ base_id }}_item_id"
 			 name="{{ base_input_name }}[item][id]"
-			 class="form-control form-control-sm"
-			 value="{{ person.item.id }}"
-			 hidden="hidden"></span>
+			 class="form-control form-control-sm d-none"
+			 value="{{ person.item.id }}">
 	    <div class="vr ms-auto"></div>
 	    <div class="bg-light ms-1 px-2">{{ person.item.editstatus }}</div>
 	</div>

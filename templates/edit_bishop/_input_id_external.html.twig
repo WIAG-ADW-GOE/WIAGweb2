@@ -14,7 +14,7 @@
 	    <span class="input-group-text">{% if  auth_url %}<a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth.short }}</a>{% else %}{{ auth.short }}{% endif %}
 		<a href="{{ authBaseUrlList[auth.short] }}"
 		   target="blank"
-		   rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" /></a></span>
+		   rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
 	    <input type="text" id="{{ base_id_idext }}_{{ auth.id }}"
 		   name="{{ base_input_name_idext}}[{{ auth.id }}]"
 		   data-paramfx="{{ auth.paramfx }}"

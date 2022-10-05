@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Entity\Item;
-
 use App\Repository\PersonRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -13,12 +12,6 @@ use Doctrine\Common\Collections\Collection;
  * @ORM\Entity(repositoryClass=PersonRepository::class)
  */
 class Person {
-    const ERROR_LEVEL = [
-        'info'    => ['info', 'warning', 'error'],
-        'warning' => ['warning', 'error'],
-        'error'   => ['error'],
-    ];
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -179,7 +172,7 @@ class Person {
         # TODO $this-urlByType;
     }
 
-    static public function newPerson($item) {
+    static public function newPerson(Item $item) {
         $person = new Person();
         $person->setItem($item);
         $person->setItemTypeId($item->getItemTypeId());
@@ -635,7 +628,7 @@ class Person {
 
         foreach($this->inputError as $e_loop) {
             $level = $e_loop->getLevel();
-            if (in_array($level, self::ERROR_LEVEL[$min_level])) {
+            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
                 return true;
             }
         }

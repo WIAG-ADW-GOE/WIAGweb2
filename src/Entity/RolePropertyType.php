@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RolePropertyTypeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * @ORM\Entity(repositoryClass=RolePropertyTypeRepository::class)
  */
@@ -89,4 +90,5 @@ class RolePropertyType
 
         return $this;
     }
+
 }
