@@ -75,11 +75,11 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     /**
      * set reference volume for references in $person_list
      */
-    public function setReferenceVolume($person_list) {
+    public function setReferenceVolume($item_list) {
         // an entry in item_reference belongs to one item at most
         $item_ref_list_meta = array();
-        foreach ($person_list as $p) {
-            $item_ref_list_meta[] = $p->getItem()->getReference()->toArray();
+        foreach ($item_list as $item_loop) {
+            $item_ref_list_meta[] = $item_loop->getReference()->toArray();
         }
         $item_ref_list = array_merge(...$item_ref_list_meta);
 

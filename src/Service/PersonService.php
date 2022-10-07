@@ -427,7 +427,7 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExternalByAuthorityId(self::AUTH_ID['Wikipedia']);
+        $fv = $person->getItem()->getUriExtByAuthId(self::AUTH_ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
@@ -741,7 +741,7 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExternalByAuthorityId(self::AUTH_ID['Wikipedia']);
+        $fv = $person->getItem()->getUriExtByAuthId(self::AUTH_ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
@@ -1138,28 +1138,15 @@ class PersonService {
 
         $id = $data['id'];
 
-        $role = null;
         $key_list = ['role', 'institution', 'date_begin', 'date_end'];
         $no_data = $this->utilService->no_data($data, $key_list);
+        $delete_flag = isset($data['delete']);
 
-        // new role?
-        if ($data['id'] == "0" || trim($data['id']) == "") {
-            if ($no_data) {
-                return null;
-            } else {
-                $role = new PersonRole();
-                $person->getRole()->add($role);
-                if ($person->getId() > 0) {
-                    $role->setPerson($person);
-                    $this->entityManager->persist($role);
-                }
-            }
-        } else {
-            $role = $roleRepository->find($id);
-        }
 
-        // delete? a new role can also be deleted this way
-        if (!is_null($role) && (isset($data['delete']) || $no_data)) {
+        // Doctrine does not reliably update diocese or institution,
+        // therefore delete role
+        $role = $roleRepository->find($id);
+        if (!is_null($role)) {
             // remove properties
             foreach ($role->getRoleProperty() as $prop) {
                 $role->getRoleProperty()->removeElement($prop);
@@ -1169,7 +1156,18 @@ class PersonService {
             $person->getRole()->removeElement($role);
             $role->setPerson(null);
             $this->entityManager->remove($role);
-            return $role;
+        }
+
+        if ($delete_flag || $no_data) {
+            return null;
+        }
+
+
+        $role = new PersonRole();
+        $person->getRole()->add($role);
+        if ($person->getId() > 0) {
+            $role->setPerson($person);
+            $this->entityManager->persist($role);
         }
 
         $role_name = trim($data['role']);
@@ -1182,16 +1180,6 @@ class PersonService {
             $person->getInputError()->add(new InputError('role', $msg, 'warning'));
         }
         $role->setRoleName($role_name);
-
-        // diocese, institution, domstift
-        // clear
-        $role->setDioceseId(null);
-        $role->setDiocese(null);
-        $role->setDioceseName("");
-        $role->setInstitutionId(null);
-        $role->setInstitution(null);
-        $role->setInstitutionName("");
-        $role->setInstitutionTypeId(null);
 
         $inst_name = trim($data['institution']);
         $inst_type_id = $data['instTypeId'];

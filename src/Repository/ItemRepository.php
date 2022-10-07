@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Item;
-use App\Entity\ItemReference;
 use App\Entity\Authority;
 use App\Entity\ItemProperty;
 use App\Entity\Person;
@@ -424,8 +423,10 @@ class ItemRepository extends ServiceEntityRepository
         $personRole = $personRepository->findByIdList($id_list);
 
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($personRole);
-        $em->getRepository(ItemReference::class)->setReferenceVolume($personRole);
-        $em->getRepository(Authority::class)->setAuthority($personRole);
+
+        $item_role = array_map(function($p) {return $p->getItem();}, $personRole);
+        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role);
+        $em->getRepository(Authority::class)->setAuthority($item_role);
 
         return $personRole;
 

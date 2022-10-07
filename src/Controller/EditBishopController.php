@@ -181,8 +181,8 @@ class EditBishopController extends AbstractController {
         $new_entry = $request->query->get('newEntry');
 
         // save data
-        $person_list = array();
         if (!$error_flag) {
+            $person_list = array();
             // otherwise previous data for roles show still up 2022-10-06
             $entityManager->clear();
             // save changes to database

@@ -44,7 +44,7 @@ class DioceseController extends AbstractController {
             $offset = $request->request->get('offset') ?? 0;
             $offset = floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $result = $repository->dioceseWithBishopricSeatByName($name, self::PAGE_SIZE, $offset);
+            $result = $repository->dioceseWithBishopricSeat($name, self::PAGE_SIZE, $offset);
 
             return $this->render('diocese/query_result.html.twig', [
                 'menuItem' => 'collections',
@@ -59,7 +59,7 @@ class DioceseController extends AbstractController {
         // show all dioceses as a default
         $count = $repository->countByName(null);
         $offset = 0;
-        $result = $repository->dioceseWithBishopricSeatByName(null, self::PAGE_SIZE, $offset);
+        $result = $repository->dioceseWithBishopricSeat(null, self::PAGE_SIZE, $offset);
 
         return $this->render('diocese/query_result.html.twig', [
             'menuItem' => 'collections',
@@ -93,10 +93,10 @@ class DioceseController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $result = $repository->dioceseWithBishopricSeatByName($name, 2, $offset);
+            $result = $repository->dioceseWithBishopricSeat($name, 2, $offset);
             if(count($result) == 2) $hassuccessor = true;
         } else {
-            $result = $repository->dioceseWithBishopricSeatByName($name, 3, $offset - 1);
+            $result = $repository->dioceseWithBishopricSeat($name, 3, $offset - 1);
             if(count($result) == 3) $hassuccessor = true;
             $idx += 1;
         }
@@ -135,7 +135,7 @@ class DioceseController extends AbstractController {
         }
 
         $name = $data['name'];
-        $diocese_list = $repository->dioceseWithBishopricSeatByName($name);
+        $diocese_list = $repository->dioceseWithBishopricSeat($name);
 
 
         $format = ucfirst(strtolower($format));

@@ -51,11 +51,11 @@ class AuthorityRepository extends ServiceEntityRepository
     /**
      * set authority for external IDs in $person_list
      */
-    public function setAuthority($person_list) {
+    public function setAuthority($item_list) {
         // an entry in id_external belongs to one item at most
         $id_external_list_meta = array();
-        foreach ($person_list as $p) {
-            $id_external_list_meta[] = $p->getItem()->getIdExternal()->toArray();
+        foreach ($item_list as $item_loop) {
+            $id_external_list_meta[] = $item_loop->getIdExternal()->toArray();
         }
         $id_external_list = array_merge(...$id_external_list_meta);
 

@@ -81,28 +81,29 @@ class PersonRepository extends ServiceEntityRepository {
 
     /**
      * see PriestUtController
+     * 2022-10-07 obsolete? use findList instead
      */
-    public function findWithOffice($id) {
-        $qb = $this->createQueryBuilder('p')
-                   ->addSelect('bp')
-                   ->join('p.item', 'i')
-                   ->leftjoin('i.itemProperty', 'ip')
-                   ->leftjoin('p.birthplace', 'bp')
-                   ->andWhere('p.id = :id')
-                   ->setParameter('id', $id);
+    // public function findWithOffice($id) {
+    //     $qb = $this->createQueryBuilder('p')
+    //                ->addSelect('bp')
+    //                ->join('p.item', 'i')
+    //                ->leftjoin('i.itemProperty', 'ip')
+    //                ->leftjoin('p.birthplace', 'bp')
+    //                ->andWhere('p.id = :id')
+    //                ->setParameter('id', $id);
 
-        // sorting of birthplaces see annotation
+    //     // sorting of birthplaces see annotation
 
-        $query = $qb->getQuery();
-        $person = $query->getOneOrNullResult();
+    //     $query = $qb->getQuery();
+    //     $person = $query->getOneOrNullResult();
 
-        $personRoleRepository = $this->getEntityManager()
-                                     ->getRepository(PersonRole::class);
+    //     $personRoleRepository = $this->getEntityManager()
+    //                                  ->getRepository(PersonRole::class);
 
-        $person->setRole($personRoleRepository->findRoleWithPlace($id));
+    //     $person->setRole($personRoleRepository->findRoleWithPlace($id));
 
-        return $person;
-    }
+    //     return $person;
+    // }
 
 
     /**
@@ -143,11 +144,12 @@ class PersonRepository extends ServiceEntityRepository {
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-         // set reference volumes
-        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($person_list);
+        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+        // set reference volumes
+        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
 
         // set authorities
-        $em->getRepository(Authority::class)->setAuthority($person_list);
+        $em->getRepository(Authority::class)->setAuthority($item_list);
 
         return $person_list;
     }

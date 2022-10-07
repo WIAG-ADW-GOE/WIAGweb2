@@ -133,9 +133,18 @@ class PriestUtController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
         $person_id = $ids[$idx];
-        $person = $personRepository->findWithOffice($person_id);
 
-        $entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
+        // old version 2022-10-07
+        // $person = $personRepository->findWithOffice($person_id);
+        // $entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
+
+        $person_list = $personRepository->findList([$person_id]);
+        if (!is_null($person_list) && count($person_list) > 0) {
+            $person = $person_list[0];
+        } else {
+            throw $this->createNotFoundException('Priester nicht gefunden');
+            $person = null;
+        }
 
         $birthplace = $person->getBirthplace();
         if ($birthplace) {

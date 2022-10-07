@@ -368,12 +368,14 @@ class CanonLookupRepository extends ServiceEntityRepository
             }
         }
 
-        // set reference volumes
         $person_list = $this->getPersonList($canon_list);
-        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($person_list);
+
+        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+        // set reference volumes
+        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
 
         // set authorities
-        $em->getRepository(Authority::class)->setAuthority($person_list);
+        $em->getRepository(Authority::class)->setAuthority($item_list);
 
         // set place names
         $role_list = $this->getRoleList($canon_list);

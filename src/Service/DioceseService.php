@@ -213,7 +213,7 @@ class DioceseService {
 
         foreach (self::AUTH_ID as $key => $auth) {
             if ($key == 'Wikipedia') {
-                $fv = $item->getUriExternalByAuthorityId($auth);
+                $fv = $item->getUriExtByAuthId($auth);
             } else {
                 $fv = $item->getIdExternalByAuthorityId($auth);
             }

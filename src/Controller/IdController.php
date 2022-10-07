@@ -112,7 +112,13 @@ class IdController extends AbstractController {
     public function diocese($id, $format) {
         $repository = $this->entityManager->getRepository(Diocese::class);
 
-        $diocese = $repository->dioceseWithBishopricSeatById($id);
+        $result = $repository->dioceseWithBishopricSeat($id);
+        if (!is_null($result) && count($result) > 0) {
+            $diocese = $result[0];
+        } else {
+            throw $this->createNotFoundException('Bistum nicht gefunden');
+            $diocese = null;
+        }
 
         if ($format == 'html') {
             return $this->render('diocese/diocese.html.twig', [
@@ -151,14 +157,6 @@ class IdController extends AbstractController {
             return $el->getPerson();
         }, $canon_list);
 
-        $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
-        $itemReferenceRepository->setReferenceVolume($personRole);
-
-        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
-        $urlByType = $urlExternalRepository->groupByType($personName->getId());
-        $personName->setUrlByType($urlByType);
-
-
         if ($format == 'html') {
 
             return $this->render('canon/person.html.twig', [
@@ -182,8 +180,19 @@ class IdController extends AbstractController {
     public function priest_ut($id, $format) {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
-        $person = $personRepository->findWithOffice($id);
-        $this->entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
+        // old version 2022-10-07
+        // $person = $personRepository->findWithOffice($id);
+        // $this->entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
+
+        $person_list = $personRepository->findList([$id]);
+        if (!is_null($person_list) && count($person_list) > 0) {
+            $person = $person_list[0];
+        } else {
+            throw $this->createNotFoundException('Priester nicht gefunden');
+            $person = null;
+        }
+
+
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
             $pieRepository = $this->entityManager->getRepository(PlaceIdExternal::class);

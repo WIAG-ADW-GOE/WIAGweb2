@@ -52,39 +52,40 @@ class ItemReferenceRepository extends ServiceEntityRepository
      * set references for items in $person_list
      *
      * (usually the elements of $person_list are all related to one canon)
+     * 2022-10-07 obsolete?
      */
-    public function setReferenceVolume($person_list) {
-        // an entry in item_reference belongs to one item at most
-        $item_ref_list_meta = array();
-        foreach($person_list as $p) {
-            $item_ref_list_meta[] = $p->getItem()->getReference()->toArray();
-        }
-        $item_ref_list = array_merge(...$item_ref_list_meta);
+    // public function setReferenceVolume($person_list) {
+    //     // an entry in item_reference belongs to one item at most
+    //     $item_ref_list_meta = array();
+    //     foreach($person_list as $p) {
+    //         $item_ref_list_meta[] = $p->getItem()->getReference()->toArray();
+    //     }
+    //     $item_ref_list = array_merge(...$item_ref_list_meta);
 
-        $id_iref_map = array();
-        foreach($item_ref_list as $item_ref) {
-            $id_iref_map[$item_ref->getId()] = $item_ref;
-        }
+    //     $id_iref_map = array();
+    //     foreach($item_ref_list as $item_ref) {
+    //         $id_iref_map[$item_ref->getId()] = $item_ref;
+    //     }
 
-        $qb = $this->createQueryBuilder('r')
-                   ->select('r.id, ref_volume')
-                   ->join('\App\Entity\ReferenceVolume',
-                          'ref_volume',
-                          'WITH',
-                          'ref_volume.itemTypeId = r.itemTypeId and ref_volume.referenceId = r.referenceId')
-                   ->andWhere('r.id in (:id_list)')
-                   ->setParameter('id_list', array_keys($id_iref_map));
+    //     $qb = $this->createQueryBuilder('r')
+    //                ->select('r.id, ref_volume')
+    //                ->join('\App\Entity\ReferenceVolume',
+    //                       'ref_volume',
+    //                       'WITH',
+    //                       'ref_volume.itemTypeId = r.itemTypeId and ref_volume.referenceId = r.referenceId')
+    //                ->andWhere('r.id in (:id_list)')
+    //                ->setParameter('id_list', array_keys($id_iref_map));
 
-        $query = $qb->getQuery();
-        $result = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $result = $query->getResult();
 
-        foreach ($result as $r_loop) {
-            $ref = $id_iref_map[$r_loop['id']];
-            $ref->setReferenceVolume($r_loop[0]);
-        }
+    //     foreach ($result as $r_loop) {
+    //         $ref = $id_iref_map[$r_loop['id']];
+    //         $ref->setReferenceVolume($r_loop[0]);
+    //     }
 
-        return null;
+    //     return null;
 
-    }
+    // }
 
 }
