@@ -23,12 +23,6 @@ class NameLookup
     private $personId;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="nameLookup")
-     * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
-     */
-    private $person;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $gnFn;

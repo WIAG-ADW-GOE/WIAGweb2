@@ -34,6 +34,12 @@ export default class extends Controller {
 		    || elmt.dataset.bsToggle) {
 		    continue;
 		}
+		// do not disable 'ID' fields.
+		// console.log(elmt.id);
+		let id_part_list = elmt.id.split('_');
+		if (id_part_list.length > 0 && id_part_list.slice(-1) == 'id') {
+		    continue;
+		}
 		elmt.setAttribute('disabled', 'disabled');
 	    }
 	} else {

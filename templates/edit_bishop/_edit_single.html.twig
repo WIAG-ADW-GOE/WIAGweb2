@@ -95,9 +95,10 @@
 	    	    {{ include('edit_bishop/_input_role.html.twig') }}
 		</div>
 	    {% endfor %}
+	    {% set next_role_idx=max(next_role_idx, 1) %} {# we add always one empty form #}
 	    <div class="pe-1"
 		 data-insert-target="insertPoint"
-		 data-id-sans-idx="{{ base_id~'_role_' }}"
+		 data-id-sans-idx="{{ base_id~'_role' }}"
 		 data-input-name-sans-idx="{{ base_input_name~'[role]' }}"
 		 data-next-idx="{{ next_role_idx }}"></div>
 	    {% for error_obj in person.inputError|filter(v => v.section == 'role') %}
@@ -117,10 +118,10 @@
 	    	    {{ include('edit_bishop/_input_reference.html.twig') }}
 		</div>
 	    {% endfor %}
-	    {% set next_ref_idx=person.item.reference|length %}
-	    <div class="pe-1"
+	    {% set next_ref_idx=max(person.item.reference|length, 1) %} {# we add always one empty form TODO #}
+ 	    <div class="pe-1"
 		 data-insert-target="insertPoint"
-		 data-id-sans-idx="{{ base_id~'_ref_' }}"
+		 data-id-sans-idx="{{ base_id~'_ref' }}"
 		 data-input-name-sans-idx="{{ base_input_name~'[ref]' }}"
 		 data-next-idx="{{ next_ref_idx }}"></div>
 	    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}

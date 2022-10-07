@@ -101,6 +101,11 @@ class Diocese
      */
     private $isDioceseGs;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $itemTypeId;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -282,6 +287,18 @@ class Diocese
         }
 
         return implode("; ", $cLabel);
+    }
+
+    public function getItemTypeId(): ?int
+    {
+        return $this->itemTypeId;
+    }
+
+    public function setItemTypeId(?int $itemTypeId): self
+    {
+        $this->itemTypeId = $itemTypeId;
+
+        return $this;
     }
 
 }

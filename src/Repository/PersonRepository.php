@@ -253,16 +253,16 @@ class PersonRepository extends ServiceEntityRepository {
 
     /**
      * usually used for asynchronous JavaScript request
-     *
-     * $item_type is not used here (needed for uniform signature)
      */
     public function suggestInstitution($item_type_id, $name, $hint_size) {
         $repository = $this->getEntityManager()->getRepository(Institution::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.name AS suggestion")
                          ->andWhere('i.name LIKE :name')
+                         ->andWhere('i.itemTypeId = :item_type_id')
                          ->addOrderBy('i.name')
-                         ->setParameter('name', '%'.$name.'%');
+                         ->setParameter('name', '%'.$name.'%')
+                         ->setParameter('item_type_id', $item_type_id);
 
         $qb->setMaxResults($hint_size);
 

@@ -1,8 +1,11 @@
 {# parameter: role, base_id_role, base_input_name_role #}
-{% set input_institution_width=25 %}
+{% set input_institution_width=35 %}
 {% if role is not defined %}
     {% set role = {
 	id: null,
+	source: "template",
+	diocese: null,
+	institution: null,
 	roleDisplayName: "",
 	institutionDisplayName: "",
 	dioceseDisplayName: "",
@@ -14,7 +17,6 @@
 {% endif %}
 <div class="my-1"
      data-controller="toggle-arrow input-state select-institution"
-     data-select-institution-base-width-value="{{ input_institution_width }}%"
      data-toggle-arrow-img-open-value="down"
      data-toggle-arrow-img-closed-value="right"
      data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
@@ -42,89 +44,23 @@
 		data-autocomplete-target="results"
 		style="max-width: 18rem;"></ul>
 	</div>
-	{% if false %}
-	<select class="form-select form-select-sm wiag-input"
-		id="{{ base_id_role }}_instType"
-		name="{{ base_input_name_role }}[instType]">
-	    <option value="1">Bistum</option>
-	    <option value="2">Kloster</option>
-	    <option value="3">Domstift</option>
-	</select>
-	{% endif %}
-	{# diocese/monastery #}
-	{# - choose one of the input elements #}
-	{% set hasInstitution=(role.institutionDisplayName|length > 0)  %}
-	<div class="form-check form-check-inline ms-2 mt-1 align-middle">
-	    <input class="form-check-input"
-		   type="radio"
-		   name="{{ base_input_name_role }}[optInstitution]"
-		   id="{{ base_id_role }}_optInstitution_1"
-		   value="0"
-		   {% if not hasInstitution %}checked="checked"{% endif %}
-		   data-action="select-institution#toggle">
-	    <label class="form-check-label" for="{{ base_id_role }}_optInstitution_1">Bistum</label>
-	</div>
-	<div class="form-check form-check-inline mt-1 align-middle">
-	    <input class="form-check-input"
-		   type="radio"
-		   name="{{ base_input_name_role }}[optInstitution]"
-		   id="{{ base_id_role }}_optInstitution_2"
-		   value="1"
-		   {% if hasInstitution %}checked="checked"{% endif %}
-		   data-action="select-institution#toggle">
-	    <label class="form-check-label" for="{{ base_id_role }}_optInstitution_2">Kloster/Stift</label>
-	</div>
-	<div style="width: {{ input_institution_width * (not hasInstitution) }}%"
-	     {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: '0', field: 'diocese'}),
-	     }) }}
-	     data-select-institution-target="carrier"
-	     data-action="change->select-institution#clear">
-	    <input type="text"
-		   id="{{ base_id_role }}_diocese"
-		   name="{{ base_input_name_role }}[diocese]"
-		   class="form-control form-control-sm rounded-0 wiag-input"
-		   value="{{ role.dioceseDisplayName }}"
-		   spellcheck="false"
-		   aria-label="Institution"
-		   data-autocomplete-target="input">
-	    <ul class="list-group autocomplete-target"
-		data-autocomplete-target="results"
-		style="max-width: 12rem;"></ul>
-	</div>
-	{# monastery/domstift #}
-	<div style="width: {{ input_institution_width * hasInstitution }}%"
-	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: '0', field: 'institution'}),
-	      }) }}
-	      data-select-institution-target="carrier"
-	      data-action="change->select-institution#clear">
-	    <input type="text" id="{{ base_id_role }}_institution"
-		   name="{{ base_input_name_role }}[institution]"
-		   class="form-control form-control-sm rounded-0 wiag-input"
-		   value="{{ role.institutionDisplayName }}"
-		   spellcheck="false"
-		   aria-label="Kloster"
-		   data-controller="move-cursor"
-		   data-action="blur->move-cursor#moveStart"
-		   data-autocomplete-target="input">
-	    <ul class="list-group autocomplete-target"
-		data-autocomplete-target="results"
-		style="max-width: 20rem;"></ul>
-	</div>
+	{# default for inst_type_id is '1' (diocese) #}
+	{{ include('edit_bishop/_input_institution.html.twig', {
+	    inst_type_id: role.getInstitutionTypeId ?? 1,
+	})  }}
 	<span class="input-group-text wiag-input-text-blue">von, bis</span>
 	<input type="text" id="{{ base_id_role }}_dateBegin"
 	       name="{{ base_input_name_role }}[dateBegin]"
 	       class="form-control form-control-sm wiag-input"
 	       value="{{ role.dateBegin }}"
-	       style="max-width: 6rem"
+	       style="min-width: 4rem; max-width: 7rem"
 	       spellcheck="false"
 	       aria-label="Beginn">
 	<input type="text" id="{{ base_id_role }}_dateEnd"
 	       name="{{ base_input_name_role }}[dateEnd]"
 	       class="form-control form-control-sm wiag-input"
 	       value="{{ role.dateEnd }}"
-	       style="max-width: 6rem"
+	       style="min-width: 4rem; max-width: 7rem"
 	       spellcheck="false"
 	       aria-label="Ende">
 	{% if intern_collapsable %}

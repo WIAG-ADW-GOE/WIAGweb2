@@ -45,13 +45,6 @@ class Person {
     private $familynameVariants;
 
     /**
-     * @ORM\OneToMany(targetEntity="NameLookup", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
-    private $nameLookup;
-
-
-    /**
      * @ORM\OneToMany(targetEntity="PersonBirthplace", mappedBy="person")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      * @ORM\OrderBy({"weight" = "DESC"})
@@ -396,10 +389,6 @@ class Person {
 
     public function getFamilynameVariants() {
         return $this->familynameVariants;
-    }
-
-    public function getNameLookup() {
-        return $this->nameLookup;
     }
 
     public function getBirthplace() {

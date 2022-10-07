@@ -181,7 +181,10 @@ class EditBishopController extends AbstractController {
         $new_entry = $request->query->get('newEntry');
 
         // save data
+        $person_list = array();
         if (!$error_flag) {
+            // otherwise previous data for roles show still up 2022-10-06
+            $entityManager->clear();
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
 
@@ -189,7 +192,6 @@ class EditBishopController extends AbstractController {
             $itemRepository = $entityManager->getRepository(Item::class);
 
             // rebuild $person_list with persistent new entries
-            $person_list = array();
             foreach($form_data as $data) {
                 $person_id = $data['item']['id'];
                 $edited_flag = isset($data['item']['formIsEdited']);
@@ -208,8 +210,8 @@ class EditBishopController extends AbstractController {
                         $person->getItem()->setFormIsExpanded($expanded_flag);
                     } elseif ($person_id > 0) {
                         // edited, no errors
-                        // use data from first mapping, as Doctrine reuses the object.
                         $person = $personRepository->findList([$person_id])[0];
+                        $this->personService->mapPerson($person, $data, $current_user_id);
                         $person_list[] = $person;
                         $person->getItem()->setFormIsExpanded($expanded_flag);
                     }

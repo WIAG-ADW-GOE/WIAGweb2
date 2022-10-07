@@ -55,20 +55,18 @@ class NameLookupRepository extends ServiceEntityRepository
      */
     public function update($person) {
         // remove entries
-        $person_nl = $person->getNameLookup();
-        foreach ($person_nl as $nl_remove) {
-            $person_nl->removeElement($nl_remove);
-            $nl_remove->setPerson(null);
-            $this->getEntityManager()->remove($nl_remove);
+        $entityManager = $this->getEntityManager();
+        $nl_list = $this->findBy(['personId' => $person->getId()]);
+        foreach ($nl_list as $nl) {
+            $entityManager->remove($nl);
         }
 
         // insert new entries
         $variant_list = $this->makeVariantList($person);
         foreach ($variant_list as $variant) {
             $nl_new = new NameLookup();
-            $person_nl->add($nl_new);
-            $nl_new->setPerson($person);
-            $this->getEntityManager()->persist($nl_new);
+            $nl_new->setPersonId($person->getId());
+            $entityManager->persist($nl_new);
 
             $nl_new->setGnFn($variant[0]);
             $nl_new->setgnPrefixFn($variant[1]);

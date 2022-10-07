@@ -209,7 +209,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('p.nameLookup', 'nlu')
+            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
@@ -453,7 +453,7 @@ class ItemRepository extends ServiceEntityRepository
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->join('p.nameLookup', 'n')
+                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
@@ -630,7 +630,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('p.nameLookup', 'nlu')
+            $qb->join('\App\Entity\Namelookup', 'nlu', 'WITH', 'p.id = nlu.personId')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
@@ -754,7 +754,7 @@ class ItemRepository extends ServiceEntityRepository
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->join('p.nameLookup', 'n')
+                   ->join('\App\Entity\Namelookup', 'n', 'WITH', 'i.id = n.personId')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')

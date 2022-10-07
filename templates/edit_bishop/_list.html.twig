@@ -48,7 +48,7 @@
 		    <button type="submit"
 			    formaction="{{ path('edit_bishop_save', {'newEntry': newEntry}) }}"
 			    data-controller="submit-by-key"
-			    class="btn btn-primary float-end">Speichern</button>
+			    class="btn btn-primary btn-sm float-end">Speichern</button>
 		{% else %} {# submit via Stimulus controller #}
 		    <button type="button"
 			    data-action="submit-form#submit"

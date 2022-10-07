@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
@@ -946,7 +945,7 @@ class PersonService {
      * map content of $data to $obj_list
      */
     public function mapPerson($person, $data, $user_id) {
-        //dd($data);
+        // dd($data);
         // item
         $item = $person->getItem();
 
@@ -1140,7 +1139,7 @@ class PersonService {
         $id = $data['id'];
 
         $role = null;
-        $key_list = ['role', 'diocese', 'institution', 'date_begin', 'date_end'];
+        $key_list = ['role', 'institution', 'date_begin', 'date_end'];
         $no_data = $this->utilService->no_data($data, $key_list);
 
         // new role?
@@ -1184,28 +1183,48 @@ class PersonService {
         }
         $role->setRoleName($role_name);
 
-        // institution
-        $institution_name = trim($data['institution']);
-        if ($institution_name != "") {
-            $institution = $institutionRepository->findOneByName($institution_name);
-            // institution takes precedence
-            $diocese = null;
-            $diocese_name = null;
-        } else {
-            $institution = null;
-            $institution_name = null;
-            $diocese_name = trim($data['diocese']);
-            if ($diocese_name != "") {
-                $diocese = $dioceseRepository->findOneByName($diocese_name);
+        // diocese, institution, domstift
+        // clear
+        $role->setDioceseId(null);
+        $role->setDiocese(null);
+        $role->setDioceseName("");
+        $role->setInstitutionId(null);
+        $role->setInstitution(null);
+        $role->setInstitutionName("");
+        $role->setInstitutionTypeId(null);
+
+        $inst_name = trim($data['institution']);
+        $inst_type_id = $data['instTypeId'];
+        $institution = null;
+        $diocese = null;
+        if ($inst_name != "") {
+            $role->setInstitutionTypeId($inst_type_id);
+            if ($inst_type_id == 1) {
+                $diocese = $dioceseRepository->findOneByName($inst_name);
+                if (is_null($diocese)) {
+                    $msg = "Das Bistum '{$inst_name}' ist nicht in der Liste der Bistümer eingetragen.";
+                    $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $role->setDioceseName($inst_name);
+                } else {
+                    $role->setDiocese($diocese);
+                    $role->setDioceseName($diocese->getName());
+                }
             } else {
-                $diocese = null;
-                $diocese_name = null;
+                $query_result = $institutionRepository->findBy([
+                    'name' => $inst_name,
+                    'itemTypeId' => $inst_type_id
+                ]);
+                if (count($query_result) < 1) {
+                    $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
+                    $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $role->setInstitutionName($inst_name);
+                } else {
+                    $institution = $query_result[0];
+                    $role->setInstitution($institution);
+                    $role->setInstitutionName($institution->getName());
+                }
             }
         }
-        $role->setInstitution($institution);
-        $role->setInstitutionName($institution_name);
-        $role->setDiocese($diocese);
-        $role->setDioceseName($diocese_name);
 
         // other fields
         $this->utilService->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);

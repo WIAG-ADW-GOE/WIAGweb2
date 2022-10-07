@@ -74,6 +74,12 @@ class PersonRole
     private $diocese;
 
     /**
+     * fallback if dioceseId is NULL and institutionId is NULL
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $institutionTypeId;
+
+    /**
      * @ORM\Column(type="string", length=63, nullable=true)
      */
     private $dioceseName;
@@ -334,6 +340,24 @@ class PersonRole
         return $this;
     }
 
+    public function getInstitutionTypeId(): ?int
+    {
+        if ($this->institution) {
+            return $this->institution->getItemTypeId();
+        } elseif ($this->diocese) {
+            return $this->diocese->getItemTypeId();
+        }
+
+        return $this->institutionTypeId;
+    }
+
+    public function setInstitutionTypeId(?int $institutionTypeId): self
+    {
+        $this->institutionTypeId = $institutionTypeId;
+
+        return $this;
+    }
+
     public function getDisplayOrder(): ?int
     {
         return $this->displayOrder;
@@ -413,9 +437,12 @@ class PersonRole
         return $name;
     }
 
+    /**
+     * @return institution name
+     */
     public function institutionDisplayName(): ?string {
         $name = null;
-        if($this->institution && $this->institution->getName()) {
+        if ($this->institution && $this->institution->getName()) {
             $name = $this->institution->getName();
         } else {
             $name = $this->institutionName;

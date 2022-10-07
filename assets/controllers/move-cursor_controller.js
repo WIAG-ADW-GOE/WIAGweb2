@@ -5,7 +5,8 @@ export default class extends Controller {
 	//console.log('move-cursor');
     }
 
-    moveStart (event) {
+    // e.g. for blur-events
+    moveStart(event) {
 	event.target.setSelectionRange(0, 0);
     }
 }
