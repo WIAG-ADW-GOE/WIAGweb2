@@ -208,7 +208,11 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId')
+            $qb->join('\App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
+               ->join('\App\Entity\NameLookup',
+                      'nlu',
+                      'WITH',
+                      'clu.personIdRole = nlu.personId OR p.id = nlu.personId')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
@@ -454,7 +458,8 @@ class ItemRepository extends ServiceEntityRepository
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
+                   ->join('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
+                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId OR clu.personIdRole = n.personId')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
