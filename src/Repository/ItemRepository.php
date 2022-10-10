@@ -636,7 +636,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('\App\Entity\Namelookup', 'nlu', 'WITH', 'p.id = nlu.personId')
+            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId')
                ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
                ->setParameter('q_name', '%'.$name.'%');
         }
