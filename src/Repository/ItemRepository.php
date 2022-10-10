@@ -199,7 +199,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('\App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = i.id')
+            $qb->leftjoin('\App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = i.id')
                ->join('\App\Entity\NameLookup',
                       'nlu',
                       'WITH',
@@ -308,7 +308,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = i.id')
+                   ->leftjoin('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = i.id')
                    ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId OR clu.personIdRole = n.personId')
                    ->andWhere('i.itemTypeId = :itemType')
                    ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof'])
