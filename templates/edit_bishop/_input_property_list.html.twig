@@ -1,24 +1,21 @@
-{% set next_prop_idx=0 %}
-{% for prop in person.item.itemproperty %}
-    {% set base_id_prop=base_id~'_prop_'~loop.index0 %}
-    {% set base_input_name_prop=base_input_name~'[prop]['~loop.index0~']' %}
-    <div class="pe-1"> {# see template for new prop #}
-	{{ include('edit_bishop/_input_property.html.twig') }}
+<div data-controller="insert"
+     data-insert-base-id-value="{{ base_id }}"
+     data-insert-base-input-name-value="{{ base_input_name }}">
+    {% for prop in person.item.itemproperty %}
+	<div class="pe-1"> {# see template for new prop #}
+	    {{ include('edit_bishop/_input_property.html.twig', {
+		base_id: base_id,
+		base_input_name: base_input_name,
+		current_idx: loop.index0,
+	    }) }}
+	</div>
+    {% endfor %}
+    <div class="pe-1"
+	 data-insert-target="insertPoint"></div>
+    <div class="input-group input-group-sm mt-1 ">
+	<button class="btn btn-sm btn-outline-secondary"
+		type="button"
+		data-action="insert#insertLocal"
+		data-url="{{ path('edit_bishop_new_property') }}">Neues Attribut</button>
     </div>
-    {% set next_prop_idx = loop.index0 + 1 %}
-{% endfor %}
-{% set base_id_sans_idx=base_id~'_prop_' %}
-<div class="pe-1"
-     data-insert-target="insertPoint"
-     data-obj-type="item_property"
-     data-id-sans-idx="{{ base_id_sans_idx }}"
-     data-input-name-sans-idx="{{ base_input_name~'[prop]' }}"
-     data-next-idx="{{ next_prop_idx }}"></div>
-<div class="input-group input-group-sm mt-1 ">
-    <button class="btn btn-sm btn-secondary"
-	    type="button"
-	    data-new-input-target="button"
-	    data-action="insert#insert"
-	    data-id-sans-idx="{{ base_id_sans_idx }}"
-	    data-url="{{ path('edit_bishop_new_property') }}">Weiteres Attribut</button>
 </div>

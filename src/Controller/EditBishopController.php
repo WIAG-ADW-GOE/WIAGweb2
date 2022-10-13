@@ -345,9 +345,10 @@ class EditBishopController extends AbstractController {
 
         $reference = new ItemReference(0);
 
-        return $this->render('edit_bishop/_input_reference.html.twig', [
-            'base_id_ref' => $request->query->get('base_id'),
-            'base_input_name_ref' => $request->query->get('base_input_name'),
+        return $this->render('edit_bishop/_input_reference_core.html.twig', [
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
             'ref' => $reference,
             'itemTypeId' => $this->itemTypeId,
         ]);
@@ -370,8 +371,9 @@ class EditBishopController extends AbstractController {
         $property->setType($item_property_type_list[0]);
 
         return $this->render('edit_bishop/_input_property.html.twig', [
-            'base_id_prop' => $request->query->get('base_id'),
-            'base_input_name_prop' => $request->query->get('base_input_name'),
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
             'prop' => $property,
             'itemTypeId' => $this->itemTypeId,
             'itemPropertyTypeList' => $item_property_type_list,
@@ -394,8 +396,9 @@ class EditBishopController extends AbstractController {
 
 
         return $this->render('edit_bishop/_input_role_property.html.twig', [
-            'base_id_prop' => $request->query->get('base_id'),
-            'base_input_name_prop' => $request->query->get('base_input_name'),
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
             'prop' => $property,
             'itemTypeId' => $this->itemTypeId,
             'rolePropertyTypeList' => $role_property_type_list,

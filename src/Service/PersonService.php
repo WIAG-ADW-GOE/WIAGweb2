@@ -1142,13 +1142,43 @@ class PersonService {
         $no_data = $this->utilService->no_data($data, $key_list);
         $delete_flag = isset($data['delete']);
 
+        $role = null;
 
+        // new role
+        if ($data['id'] == 0) {
+            if ($no_data) {
+                // TODO add error message?
+                return null;
+            } else {
+                $role = new PersonRole();
+                $person->getRole()->add($role);
+                if ($person->getId() > 0) {
+                    $role->setPerson($person);
+                    $this->entityManager->persist($role);
+                }
+            }
+        } else {
+            $role = $roleRepository->find($id);
+        }
+
+        // delete?
+        if (!is_null($role) && (isset($data['delete']) || $no_data)) {
+            $person->getRole()->removeElement($role);
+            $role->setPerson(null);
+            $this->entityManager->remove($role);
+            return $role;
+        }
+
+        if (false) {
         // Doctrine does not reliably update diocese or institution,
         // therefore delete role
         $role = $roleRepository->find($id);
+
+        $prop_list = array();
         if (!is_null($role)) {
             // remove properties
             foreach ($role->getRoleProperty() as $prop) {
+                $prop_list[] = $prop;
                 $role->getRoleProperty()->removeElement($prop);
                 $prop->setPersonRole(null);
                 $this->entityManager->remove($prop);
@@ -1162,13 +1192,21 @@ class PersonService {
             return null;
         }
 
-
         $role = new PersonRole();
         $person->getRole()->add($role);
         if ($person->getId() > 0) {
             $role->setPerson($person);
             $this->entityManager->persist($role);
         }
+        // restore properties
+        foreach ($prop_list as $prop) {
+            $new_prop = new PersonRoleProperty();
+            $new_prop = $prop;
+            $role->getRoleProperty()->add($new_prop);
+            $new_prop->setPersonRole($role);
+            $this->entityManager->persist($new_prop);
+        }
+        } // if debug
 
         $role_name = trim($data['role']);
         $role_role = $roleRoleRepository->findOneByName($role_name);
@@ -1192,6 +1230,7 @@ class PersonService {
                 if (is_null($diocese)) {
                     $msg = "Das Bistum '{$inst_name}' ist nicht in der Liste der Bistümer eingetragen.";
                     $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $role->setDiocese(null);
                     $role->setDioceseName($inst_name);
                 } else {
                     $role->setDiocese($diocese);
@@ -1205,6 +1244,7 @@ class PersonService {
                 if (count($query_result) < 1) {
                     $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
                     $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $role->setInstitution(null);
                     $role->setInstitutionName($inst_name);
                 } else {
                     $institution = $query_result[0];
@@ -1343,6 +1383,7 @@ class PersonService {
      */
     private function mapItemProperty($person, $data) {
         $itemPropertyRepository = $this->entityManager->getRepository(ItemProperty::class);
+        dump($data);
 
         $id = $data['id'];
         $item = $person->getItem();
@@ -1443,7 +1484,6 @@ class PersonService {
      */
     private function mapRoleProperty($person, $role, $data) {
         $rolePropertyRepository = $this->entityManager->getRepository(PersonRoleProperty::class);
-
         $id = $data['id'];
 
         $key_list = ['name', 'value'];

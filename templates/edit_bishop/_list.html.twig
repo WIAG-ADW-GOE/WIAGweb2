@@ -32,18 +32,18 @@
 	    </div>
 	</div>
 	<div class="row mx-2">
-	    <div class="col">
+	    <div class="col-12">
 		{% for person in personList %}
-		    {{ include('edit_bishop/_edit_single.html.twig', {
+		    {{ include('edit_bishop/_item.html.twig', {
 			person: person,
 		    }) }}
 		{% endfor %}
 	    </div>
 	</div>
 	{# submit #}
-	<div class="row mx-2 mb-2">
-	    <div class="col">
-		{% set submit_debug=false %} {# submit directly for debugging#}
+	<div class="row">
+	    <div class="col-12">
+		{% set submit_debug=true %} {# submit directly for debugging#}
 		{% if submit_debug %}
 		    <button type="submit"
 			    formaction="{{ path('edit_bishop_save', {'newEntry': newEntry}) }}"

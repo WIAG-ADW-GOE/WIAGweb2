@@ -1,11 +1,12 @@
-<div class="my-2 pb-2 border border-2 border-success rounded">
+<div class="container-fluid my-2 p-1 border border-2 border-success rounded">
     {% set intern_collapsable=false %}
     {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
     {% set base_id=editFormId~'_'~loop.index0 %}
     {% set base_input_name=editFormId~'['~loop.index0~']' %}
     {# header #}
     {% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
-    <div class="row col-12 ps-0 mx-0"
+    {# TODO drop controller insert; update Aktion-Menu #}
+    <div class="row ps-0 mx-0"
 	 data-controller="toggle-arrow on-input insert auth-search"
 	 data-toggle-arrow-state-value="true"
 	 data-toggle-arrow-img-open-value="down"
@@ -13,136 +14,156 @@
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
 
 	{# headline #}
-	<div class="input-group input-group-sm mt-1 mb-0">
-	    <span class="text-nowrap">
-		{% if person.hasError('info') or person.item.formIsExpanded%}
-		    {% set expanded = true %}
-		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
-			    type="button"
-			    data-bs-toggle="collapse"
-			    data-bs-target={{ "#body#{person.item.id}" }}
-			    aria-expanded="true"
-			    aria-controls={{ "body#{person.item.id}" }}
-			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
-		{% else	%}
-		    {% set expanded = false %}
-		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
-			    type="button"
-			    data-bs-toggle="collapse"
-			    data-bs-target={{ "#body#{person.item.id}" }}
-			    aria-expanded="false"
-			    aria-controls={{ "body#{person.item.id}" }}
+	<div class="col-12">
+	    <div class="input-group input-group-sm mt-1 mb-0">
+		{{ include('edit_bishop/_item_headline.html.twig) }}
+		<span class="text-nowrap">
+		    {% if person.hasError('info') or person.item.formIsExpanded%}
+			{% set expanded = true %}
+			<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+				       type="button"
+				       data-bs-toggle="collapse"
+				       data-bs-target={{ "#body#{person.item.id}" }}
+				       aria-expanded="true"
+				       aria-controls={{ "body#{person.item.id}" }}
+				       data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+		    {% else	%}
+			{% set expanded = false %}
+			<button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+				       type="button"
+				       data-bs-toggle="collapse"
+				       data-bs-target={{ "#body#{person.item.id}" }}
+				       aria-expanded="false"
+				       aria-controls={{ "body#{person.item.id}" }}
 
-			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
-		{% endif %}
-		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
-		       type="checkbox"
-		       value=""
-		       id="{{ base_id }}_item_formisedited"
-		       name="{{ base_input_name }}[item][formIsEdited]"
-		       data-on-input-target="checkbox"
-		       {% if person.item.formisedited %}checked="checked"{% endif %}>
-		<img class="align-middle" src="{{ asset(online_image) }}" alt="Farbsymbol online">
-	    </span>
-	    {% if person.describerole(2) %}
-		{% set head_line %}
-		<strong>{{ person.describe }}</strong>, {{ person.describerole(2) }}
+				       data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
+		    {% endif %}
+		    <input class="form-check-input ms-0 pt-0 mt-0 align-middle"
+			   type="checkbox"
+			   value=""
+			   id="{{ base_id }}_item_formisedited"
+			   name="{{ base_input_name }}[item][formIsEdited]"
+			   data-on-input-target="checkbox"
+			   {% if person.item.formisedited %}checked="checked"{% endif %}>
+		    <img class="align-middle" src="{{ asset(online_image) }}" alt="Farbsymbol online">
+		</span>
+		{% if person.describerole(2) %}
+		    {% set head_line %}
+		    <strong>{{ person.describe }}</strong>, {{ person.describerole(2) }}
 		{% endset %}
-	    {% else %}
+		{% else %}
 		{% set head_line %}
 		<strong>{{ person.describe }}</strong>
 		{% endset %}
-	    {% endif %}
-	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
-	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
-	    {# insert internal id into the form (hidden) #}
-	    <input type="text"
-			 id="{{ base_id }}_item_id"
-			 name="{{ base_input_name }}[item][id]"
-			 class="form-control form-control-sm d-none"
-			 value="{{ person.item.id }}">
-	    <div class="vr ms-auto"></div>
-	    <div class="bg-light ms-1 px-2">{{ person.item.editstatus }}</div>
+		{% endif %}
+		<span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
+		<span class="ms-2">ID: {{ person.item.idinsource }}</span>
+		{# insert internal id into the form (hidden) #}
+		<input type="text"
+		       id="{{ base_id }}_item_id"
+		       name="{{ base_input_name }}[item][id]"
+		       class="form-control form-control-sm d-none"
+		       value="{{ person.item.id }}">
+		<div class="vr ms-auto"></div>
+		<div class="bg-light ms-1 px-2">{{ person.item.editstatus }}</div>
+	    </div>
 	</div>
 	{# body #}
-	<div class="row col-12 collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
-	     data-controller="input-state save-collapse"
+	<div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
+	     data-controller="save-collapse"
 	     data-action="shown.bs.collapse->save-collapse#set hidden.bs.collapse->save-collapse#set"
 	     id={{ "body#{person.item.id}" }}>
 	    {# status and name #}
-	    {{ include('edit_bishop/_input_status.html.twig') }}
-	    {% for error_obj in person.inputError|filter(v => v.section == 'status') %}
-		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
-	    {% endfor %}
-	    {{ include('edit_bishop/_input_name.html.twig') }}
-	    {% for error_obj in person.inputError|filter(v => v.section == 'name') %}
-		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
-	    {% endfor %}
-	    {# using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
-	    {# roles #}
-	    {% set next_role_idx=0 %}
-	    {% for role in person.role|sort((a, b) => a.datesortkey <=> b.datesortkey) %}
-		{% set base_id_role=base_id~'_role_'~loop.index0 %}
-		{% set base_input_name_role=base_input_name~'[role]['~loop.index0~']' %}
-		<div class="pe-1"> {# see template for new role #}
-	    	    {{ include('edit_bishop/_input_role.html.twig') }}
+	    <div class="row">
+		<div class="col-1"></div>
+		<div class="col-11">
+		    {{ include('edit_bishop/_input_status.html.twig') }}
+		    {% for error_obj in person.inputError|filter(v => v.section == 'status') %}
+			<div class="my-1 text-danger">{{ error_obj.msg }}</div>
+		    {% endfor %}
 		</div>
-		{% set next_role_idx=loop.index0 + 1 %}
-	    {% else %}
-		{% set base_id_role=base_id~'_role_0' %}
-		{% set base_input_name_role=base_input_name~'[role][0]' %}
-		<div class="pe-1"> {# see template for new role #}
-	    	    {{ include('edit_bishop/_input_role.html.twig') }}
-		</div>
-	    {% endfor %}
-	    {% set next_role_idx=max(next_role_idx, 1) %} {# we add always one empty form #}
-	    <div class="pe-1"
-		 data-insert-target="insertPoint"
-		 data-id-sans-idx="{{ base_id~'_role' }}"
-		 data-input-name-sans-idx="{{ base_input_name~'[role]' }}"
-		 data-next-idx="{{ next_role_idx }}"></div>
-	    {% for error_obj in person.inputError|filter(v => v.section == 'role') %}
-		<div class="my-1 {% if error_obj.level == 'error' %}text-danger{% else %}text-warning{% endif %}">{{ error_obj.msg }}</div>
-	    {% endfor %}
-	    {# references #}
-	    {% for ref in person.item.reference %}
-		{% set base_id_ref=base_id~'_ref_'~loop.index0 %}
-		{% set base_input_name_ref=base_input_name~'[ref]['~loop.index0~']' %}
-		<div class="pe-1">
-	    	    {{ include('edit_bishop/_input_reference.html.twig') }}
-		</div>
-     	    {% else %}
-		{% set base_id_ref=base_id~'_ref_0' %}
-		{% set base_input_name_ref=base_input_name~'[ref][0]' %}
-		<div class="pe-1">
-	    	    {{ include('edit_bishop/_input_reference.html.twig') }}
-		</div>
-	    {% endfor %}
-	    {% set next_ref_idx=max(person.item.reference|length, 1) %} {# we add always one empty form TODO #}
- 	    <div class="pe-1"
-		 data-insert-target="insertPoint"
-		 data-id-sans-idx="{{ base_id~'_ref' }}"
-		 data-input-name-sans-idx="{{ base_input_name~'[ref]' }}"
-		 data-next-idx="{{ next_ref_idx }}"></div>
-	    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
-		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
-	    {% endfor %}
-	    {{ include('edit_bishop/_input_id_external.html.twig') }}
-	    {# comment person #}
-	    <div class="input-group input-group-sm mt-1 pe-1">
-		<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
-		<textarea id="{{ base_id }}_comment"
-			  style="height: 3rem"
-			  name="{{ base_input_name }}[comment]"
-			  class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
 	    </div>
-	    {% if person.item.idPublic %}
-		{% set user=userWiagRepository.find(person.item.changedby) %}
-		<div class="hstack">
-		    <span class="ms-1">{{ person.item.idPublic }}</span>
-		    <span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+	    <div class="row">
+		<div class="col-1"></div>
+		<div class="col-11">
+		    {{ include('edit_bishop/_input_name.html.twig') }}
+		    {% for error_obj in person.inputError|filter(v => v.section == 'name') %}
+			<div class="my-1 text-danger">{{ error_obj.msg }}</div>
+		    {% endfor %}
+		    {# using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
+		    {# roles #}
+		    {% set next_role_idx=0 %}
+		    <div data-controller="insert"
+			 data-insert-base-id-value="{{ base_id }}"
+			 data-insert-base-input-name-value="{{ base_input_name }}">
+
+			{% for role in person.role|sort((a, b) => a.datesortkey <=> b.datesortkey) %}
+			    {% set base_id_role=base_id~'_role_'~loop.index0 %}
+			    {% set base_input_name_role=base_input_name~'[role]['~loop.index0~']' %}
+			    <div class="pe-1"> {# see template for new role #}
+	    			{{ include('edit_bishop/_input_role.html.twig') }}
+			    </div>
+			    {% set next_role_idx=loop.index0 + 1 %}
+	    {% else %}
+			    {% set base_id_role=base_id~'_role_0' %}
+			    {% set base_input_name_role=base_input_name~'[role][0]' %}
+			    <div class="pe-1"> {# see template for new role #}
+	    			{{ include('edit_bishop/_input_role.html.twig') }}
+			    </div>
+			{% endfor %}
+			{% set next_role_idx=max(next_role_idx, 1) %} {# we add always one empty form #}
+			<div class="pe-1"
+			     data-insert-target="insertPoint"
+			     data-id-sans-idx="{{ base_id~'_role' }}"
+			     data-input-name-sans-idx="{{ base_input_name~'[role]' }}"
+			     data-next-idx="{{ next_role_idx }}"></div>
+		    </div>
+		    {% for error_obj in person.inputError|filter(v => v.section == 'role') %}
+			<div class="my-1 {% if error_obj.level == 'error' %}text-danger{% else %}text-warning{% endif %}">{{ error_obj.msg }}</div>
+		    {% endfor %}
+		    {# references #}
+		    <div data-controller="insert"
+			 data-insert-base-id-value="{{ base_id }}"
+			 data-insert-base-input-name-value="{{ base_input_name }}">
+			{% for ref in person.item.reference %}
+			    <div class="my-1"
+				 data-controller="input-state">
+	    			{{ include('edit_bishop/_input_reference.html.twig', {
+				    current_idx: loop.index0,
+				    is_last: loop.last
+				}) }}
+			    </div>
+                {% else %}
+			    <div class="my-1"
+				 data-controller="input-state">
+	    			{{ include('edit_bishop/_input_reference.html.twig', { current_idx: 0, is_last: true }) }}
+			    </div>
+			{% endfor %}
+			<div class="my-1"
+			     data-controller="input-state"
+			     data-insert-target="insertPoint"></div>
+		    </div>
+		    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
+			<div class="my-1 text-danger">{{ error_obj.msg }}</div>
+		    {% endfor %}
+		    {{ include('edit_bishop/_input_id_external.html.twig') }}
+		    {# comment person #}
+		    <div class="input-group input-group-sm mt-1 pe-1">
+			<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
+			<textarea id="{{ base_id }}_comment"
+				  style="height: 3rem"
+				  name="{{ base_input_name }}[comment]"
+				  class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
+		    </div>
+		    {% if person.item.idPublic %}
+			{% set user=userWiagRepository.find(person.item.changedby) %}
+			<div class="hstack">
+			    <span class="ms-1">{{ person.item.idPublic }}</span>
+			    <span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+			</div>
+		    {% endif %}
 		</div>
-	    {% endif %}
+	    </div>
 	</div>
     </div>
 </div>

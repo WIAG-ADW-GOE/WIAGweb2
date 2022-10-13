@@ -1,7 +1,7 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = ['globalTrigger'];
+    static targets = ['globalTrigger', 'disable'];
 
     connect() {
 	// console.log('input-state connected');
@@ -22,9 +22,10 @@ export default class extends Controller {
      * disable or enable inputs and buttons with checkbuttons
      */
     toggle(event) {
+	var disable_root = this.hasDisableTarget ? this.disableTarget : this.element;
+	var toggle_list = Array.from(disable_root.getElementsByTagName('input'));
+	var toggle_list_btn = Array.from(disable_root.getElementsByTagName('button'));
 
-	var toggle_list = Array.from(this.element.getElementsByTagName('input'));
-	var toggle_list_btn = Array.from(this.element.getElementsByTagName('button'));
 	toggle_list = toggle_list.concat(toggle_list_btn);
 
 	if (event.target.checked) {
@@ -35,7 +36,6 @@ export default class extends Controller {
 		    continue;
 		}
 		// do not disable 'ID' fields.
-		// console.log(elmt.id);
 		let id_part_list = elmt.id.split('_');
 		if (id_part_list.length > 0 && id_part_list.slice(-1) == 'id') {
 		    continue;
@@ -46,7 +46,7 @@ export default class extends Controller {
 	    for (let elmt of toggle_list) {
 		elmt.removeAttribute('disabled');
 	    }
-	    this.restore();
+	    this.restore(toggle_list);
 	}
     }
 
@@ -64,6 +64,9 @@ export default class extends Controller {
 	}
     }
 
+    /**
+     * 2022-10-12 obsolete; used for a pair of radio buttons
+     */
     disableByElement(element) {
 	var toggle_list = Array.from(this.element.getElementsByTagName('input'));
 	var toggle_list_btn = Array.from(this.element.getElementsByTagName('button'));
@@ -107,11 +110,8 @@ export default class extends Controller {
     /**
      * restore the state (enabled/disabled) of elements in the tree
      */
-    restore() {
-	// get nested triggers
-	var trigger_list = this.element.getElementsByClassName('form-check-input');
-
-	for (let elmt of trigger_list) {
+    restore(disabled_list) {
+	for (let elmt of disabled_list) {
 	    if (elmt.getAttribute('type') == 'checkbox') {
 		let elmt_id_tail = elmt.id.split('_').slice(-1);
 		// the content of tail is hardcoded, could be parametrised in `values`.

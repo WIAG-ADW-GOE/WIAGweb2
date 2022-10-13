@@ -1,4 +1,6 @@
-{# parameter: role, base_id_role, base_input_name_role #}
+{# parameter: role, base_id, base_input_name #}
+{% set base_id_role=base_id~'_role_'~current_idx %}
+{% set base_input_name_role=base_input_name~'[role]['~current_idx~']' %}
 {% set input_institution_width=35 %}
 {% if role is not defined %}
     {% set role = {
@@ -15,98 +17,137 @@
 	roleproperty: [],
     } %}
 {% endif %}
-<div class="my-1"
-     data-controller="toggle-arrow input-state select-institution"
-     data-toggle-arrow-img-open-value="down"
-     data-toggle-arrow-img-closed-value="right"
-     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
-    <div class="input-group input-group-sm">
-	<span class="input-group-text wiag-input-text-blue">Amt, Institution</span>
-	{# id (hidden) #}
-	<input type="text"
-	       id="{{ base_id_role }}_id"
-	       name="{{ base_input_name_role }}[id]"
-	       class="form-control form-control-sm d-none"
-	       value="{{ role.id ?? null }}">
-	{# role name #}
-	<div class="w-15"
-    	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
-	      }) }}>
-	    <input type="text" id="{{ base_id_role }}_role"
-		   name="{{ base_input_name_role }}[role]"
-		   class="form-control form-control-sm rounded-0 wiag-input"
-		   value="{{ role.roleDisplayName }}"
-		   spellcheck="false"
-		   aria-label="Amt"
-		   data-autocomplete-target="input">
-	    <ul class="list-group autocomplete-target"
-		data-autocomplete-target="results"
-		style="max-width: 18rem;"></ul>
-	</div>
-	{# default for inst_type_id is '1' (diocese) #}
-	{{ include('edit_bishop/_input_institution.html.twig', {
-	    inst_type_id: role.getInstitutionTypeId ?? 1,
-	})  }}
-	<span class="input-group-text wiag-input-text-blue">von, bis</span>
-	<input type="text" id="{{ base_id_role }}_dateBegin"
-	       name="{{ base_input_name_role }}[dateBegin]"
-	       class="form-control form-control-sm wiag-input"
-	       value="{{ role.dateBegin }}"
-	       style="min-width: 4rem; max-width: 7rem"
-	       spellcheck="false"
-	       aria-label="Beginn">
-	<input type="text" id="{{ base_id_role }}_dateEnd"
-	       name="{{ base_input_name_role }}[dateEnd]"
-	       class="form-control form-control-sm wiag-input"
-	       value="{{ role.dateEnd }}"
-	       style="min-width: 4rem; max-width: 7rem"
-	       spellcheck="false"
-	       aria-label="Ende">
-	{% if intern_collapsable %}
-	    {% if role.note or role.roleproperty|length > 0 %}
-		{% set expanded = true %}
-		<button class="btn btn-sm ms-1 pt-0 align-middle"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target="#div_{{ base_id_role }}_note"
-			aria-expanded="true"
-			aria-controls="div_{{ base_id_role }}_note"
-			data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
-	    {% else %}
-		{% set expanded = false %}
-		<button class="btn btn-sm ms-1 pt-0 align-middle"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target="#div_{{ base_id_role }}_note"
-			aria-expanded="false"
-			aria-controls="div_{{ base_id_role }}_note"
-			data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
-	    {% endif %}
-	{% else %}
-	    {% set expanded = true %}
+{% if is_last is not defined %}
+    {% set is_last = true %}
+{% endif %}
+<div class="col-1 text-end pe-0"
+     data-controller="on-input">
+    {# insert button #}
+    <span class="text-nowrap">
+	{% if is_last %}
+	    <button class="btn btn-light btn-sm"
+		    type="button"
+		    data-action="insert#insertTemplate"
+		    data-url="{{ path('edit_bishop_new_role') }}"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
+
 	{% endif %}
-	{# delete #}
-	<div class="form_check ms-1 mt-1 align-middle">
-	    <input class="form-check-input"
-		   type="checkbox"
-		   value=""
-		   id="{{ base_id_role }}_delete"
-		   name="{{ base_input_name_role }}[delete]"
-		   data-input-state-target="checkbox"
-		   data-action="input-state#toggle">
-	    <label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
-	</div>
-    </div>
-    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id_role }}_note">
-	<div class="input-group input-group-sm mt-1">
-	    <span class="input-group-text wiag-input-text-blue">Bemerkung</span>
+	{# delete checkbox #}
+	<input class="form-check-input"
+	       type="checkbox"
+	       value=""
+	       hidden="hidden"
+	       id="{{ base_id_role }}_delete"
+	       name="{{ base_input_name_role }}[delete]"
+	       data-input-state-target="checkbox"
+	       data-on-input-target="checkbox"
+	       data-action="click->input-state#toggle">
+	{# delete button #}
+	<button class="btn btn-light btn-sm"
+		type="button"
+		data-value="up"
+		data-controller="toggle-arrow"
+		data-toggle-arrow-target="button"
+		data-toggle-arrow-img-closed-value="3-fill"
+		data-toggle-arrow-img-open-value="3"
+		       data-action="toggle-arrow#toggle click->on-input#toggle"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
+    </span>
+</div>
+<div class="col-11">
+    <div data-controller="toggle-arrow"
+	 data-toggle-arrow-img-open-value="down"
+	 data-toggle-arrow-img-closed-value="right"
+	 data-input-state-target="disable"
+	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
+	<div class="input-group input-group-sm">
+	    <span class="input-group-text wiag-input-text-blue">Amt, Institution</span>
+	    {# id (hidden) #}
 	    <input type="text"
-		   id="{{ base_id_role }}_note"
-		   name="{{ base_input_name_role }}[note]"
+		   id="{{ base_id_role }}_id"
+		   name="{{ base_input_name_role }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ role.id ?? null }}">
+	    {# role name #}
+	    <div class="w-15"
+    		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
+		 }) }}>
+		<input type="text" id="{{ base_id_role }}_role"
+		       name="{{ base_input_name_role }}[role]"
+		       class="form-control form-control-sm rounded-0 wiag-input"
+		       value="{{ role.roleDisplayName }}"
+		       spellcheck="false"
+		       aria-label="Amt"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+			   data-autocomplete-target="results"
+			   style="max-width: 18rem;"></ul>
+	    </div>
+	    {# default for inst_type_id is '1' (diocese) #}
+	    {{ include('edit_bishop/_input_institution.html.twig', {
+		inst_type_id: role.getInstitutionTypeId ?? 1,
+	    })  }}
+	    <span class="input-group-text wiag-input-text-blue">von, bis</span>
+	    <input type="text" id="{{ base_id_role }}_dateBegin"
+		   name="{{ base_input_name_role }}[dateBegin]"
 		   class="form-control form-control-sm wiag-input"
-		   value="{{ role.note }}">
+		   value="{{ role.dateBegin }}"
+		   style="min-width: 4rem; max-width: 7rem"
+		   spellcheck="false"
+		   aria-label="Beginn">
+	    <input type="text" id="{{ base_id_role }}_dateEnd"
+		   name="{{ base_input_name_role }}[dateEnd]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ role.dateEnd }}"
+		   style="min-width: 4rem; max-width: 7rem"
+		   spellcheck="false"
+		   aria-label="Ende">
+	    {% if intern_collapsable %}
+		{% if role.note or role.roleproperty|length > 0 %}
+		    {% set expanded = true %}
+		    <button class="btn btn-sm ms-1 pt-0 align-middle"
+				   type="button"
+				   data-bs-toggle="collapse"
+				   data-bs-target="#div_{{ base_id_role }}_note"
+				   aria-expanded="true"
+				   aria-controls="div_{{ base_id_role }}_note"
+				   data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+		{% else %}
+		    {% set expanded = false %}
+		    <button class="btn btn-sm ms-1 pt-0 align-middle"
+				   type="button"
+				   data-bs-toggle="collapse"
+				   data-bs-target="#div_{{ base_id_role }}_note"
+				   aria-expanded="false"
+				   aria-controls="div_{{ base_id_role }}_note"
+				   data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
+		{% endif %}
+	    {% else %}
+		{% set expanded = true %}
+	    {% endif %}
+	    {# delete #}
+	    {% if false %}
+	    <div class="form_check ms-1 mt-1 align-middle">
+		<input class="form-check-input"
+		       type="checkbox"
+		       value=""
+		       id="{{ base_id_role }}_delete"
+		       name="{{ base_input_name_role }}[delete]"
+		       data-input-state-target="checkbox"
+		       data-action="click->input-state#toggle">
+		<label class="form-check-label ms-1" for="{{ base_id_role }}_delete">löschen</label>
+	    </div>
+	    {% endif %}
 	</div>
-	{{ include('edit_bishop/_input_role_property_list.html.twig') }}
+	<div class="ms-5 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id_role }}_note">
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text wiag-input-text-blue">Bemerkung</span>
+		<input type="text"
+		       id="{{ base_id_role }}_note"
+		       name="{{ base_input_name_role }}[note]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ role.note }}">
+	    </div>
+	    {{ include('edit_bishop/_input_role_property_list.html.twig') }}
+	</div>
     </div>
 </div>

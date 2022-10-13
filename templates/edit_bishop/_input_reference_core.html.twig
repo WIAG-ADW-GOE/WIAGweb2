@@ -1,8 +1,5 @@
 {% set base_id_ref=base_id~'_ref_'~current_idx %}
 {% set base_input_name_ref=base_input_name~'[ref]['~current_idx~']' %}
-{% if is_last is not defined %}
-    {% set is_last = true %}
-{% endif %}
 {% if ref is not defined %}
     {% set ref = {
 	id: "",
@@ -13,9 +10,9 @@
     } %}
 {% endif %}
 <div class="input-group input-group-sm">
-    <button class="btn btn-outline-secondary btn-sm {% if not is_last %}invisible{% endif %}"
+    <button class="btn btn-outline-secondary btn-sm"
 	    type="button"
-	    data-add-class="invisible"
+	    data-insert-id="{{ base_id_ref }}_insertPoint"
 	    data-action="insert#insertLocal"
 	    data-url="{{ path('edit_bishop_new_reference') }}"><img src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
     <span class="input-group-text">Band</span>

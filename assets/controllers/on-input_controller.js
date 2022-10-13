@@ -16,4 +16,11 @@ export default class extends Controller {
 	    this.checkboxTarget.checked = true;
 	}
     }
+
+    /**
+     * toggle checkbox
+     */
+    toggle(event) {
+	this.checkboxTarget.click();
+    }
 }

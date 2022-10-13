@@ -26,7 +26,7 @@ class Person {
     private $item;
 
     /**
-     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person", fetch="EAGER", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person", fetch="EAGER")
      * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
      * @ORM\OrderBy({"dateSortKey" = "ASC"})
      */

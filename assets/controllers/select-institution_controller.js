@@ -1,5 +1,6 @@
 import { Controller } from 'stimulus';
 
+// 2022-12-10 obsolete: only one institution is allowed; selection is evaluated on server side
 export default class extends Controller {
     static targets = ['carrier'];
 

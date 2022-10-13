@@ -1,0 +1,98 @@
+<div class="container-fluid p-2 my-2 border border-2 border-success rounded">
+    {% set intern_collapsable=false %}
+    {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
+    {% set base_id=editFormId~'_'~loop.index0 %}
+    {% set base_input_name=editFormId~'['~loop.index0~']' %}
+    {# header #}
+    {% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+    {# TODO drop controller insert; update Aktion-Menu #}
+    <div data-controller="toggle-arrow on-input insert auth-search"
+	 data-toggle-arrow-state-value="true"
+	 data-toggle-arrow-img-open-value="down"
+	 data-toggle-arrow-img-closed-value="right"
+	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
+	{% set expanded = person.hasError('info') or person.item.formIsExpanded %}
+	{# headline with collapse button#}
+	<div class="row">
+	    <div class="col-12">
+		<div class="input-group input-group-sm mt-1 mb-0">
+		    {{ include('edit_bishop/_item_headline.html.twig') }}
+		</div>
+	    </div>
+	</div>
+	{# body #}
+	<div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
+	     data-controller="save-collapse"
+	     data-action="shown.bs.collapse->save-collapse#set hidden.bs.collapse->save-collapse#set"
+	     id={{ "body#{person.item.id}" }}>
+	    {# status and name #}
+	    <div class="row">
+		<div class="col-12">
+		    {{ include('edit_bishop/_input_status.html.twig') }}
+		</div>
+	    </div>
+	    {% for error_obj in person.inputError|filter(v => v.section == 'status') %}
+		<div class="row">
+		    <div class="col-12 text-danger">{{ error_obj.msg }}</div>
+		</div>
+	    {% endfor %}
+
+	    <div class="row">
+		<div class="col-12">
+		    {{ include('edit_bishop/_input_name.html.twig') }}
+		</div>
+	    </div>
+	    {% for error_obj in person.inputError|filter(v => v.section == 'name') %}
+		<div class="row">
+		    <div class="col-12 text-danger">{{ error_obj.msg }}</div>
+		</div>
+	    {% endfor %}
+	    <hr class="my-2">
+	    {# roles #}
+	    {# - using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
+	    {{ include('edit_bishop/_input_role_list.html.twig') }}
+	    <hr class="mt-1 mb-2">
+	    {# references #}
+	    <div data-controller="insert"
+		 data-insert-base-id-value="{{ base_id }}"
+		 data-insert-base-input-name-value="{{ base_input_name }}">
+		{% for ref in person.item.reference %}
+		    <div class="my-1"
+			 data-controller="input-state">
+	    		{{ include('edit_bishop/_input_reference.html.twig', {
+			    current_idx: loop.index0,
+			    is_last: loop.last
+			}) }}
+		    </div>
+                {% else %}
+		    <div class="my-1"
+			 data-controller="input-state">
+	    		{{ include('edit_bishop/_input_reference.html.twig', { current_idx: 0, is_last: true }) }}
+		    </div>
+		{% endfor %}
+		<div class="my-1"
+		     data-controller="input-state"
+		     data-insert-target="insertPoint"></div>
+	    </div>
+	    {% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
+		<div class="my-1 text-danger">{{ error_obj.msg }}</div>
+	    {% endfor %}
+	    {{ include('edit_bishop/_input_id_external.html.twig') }}
+	    {# comment person #}
+	    <div class="input-group input-group-sm mt-1 pe-1">
+		<span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
+		<textarea id="{{ base_id }}_comment"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[comment]"
+			  class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
+	    </div>
+	    {% if person.item.idPublic %}
+		{% set user=userWiagRepository.find(person.item.changedby) %}
+		<div class="hstack">
+		    <span class="ms-1">{{ person.item.idPublic }}</span>
+		    <span class="wiag-log text-nowrap ms-auto">geändert: {{ person.item.datechanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+		</div>
+	    {% endif %}
+	</div>
+    </div>
+</div>

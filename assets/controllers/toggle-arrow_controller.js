@@ -17,14 +17,15 @@ export default class extends Controller {
     }
 
     toggle(event) {
-	const dataValue = this.element.getAttribute('data-value');
+	// console.log(this.element);
+	const dataValue = this.element.dataset.value;
 	var html = this.element.innerHTML;
 	if (dataValue == 'down') {
-	    this.element.setAttribute('data-value', 'up');
+	    this.element.dataset.value = 'up';
 	    var newHTML = html.replace(this.imgClosedValue, this.imgOpenValue);
 	    this.element.innerHTML = newHTML;
 	} else {
-	    this.element.setAttribute('data-value', 'down');
+	    this.element.dataset.value = 'down';
 	    var newHTML = html.replace(this.imgOpenValue, this.imgClosedValue);
 	    this.element.innerHTML = newHTML;
 	}

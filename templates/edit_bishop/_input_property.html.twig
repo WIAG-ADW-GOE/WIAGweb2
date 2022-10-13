@@ -1,4 +1,6 @@
-{# parameter prop, base_id_prop, base_input_name_prop suggest_field #}
+{# parameter prop, base_id, base_input_name #}
+{% set base_id_prop=base_id~'_prop_'~current_idx %}
+{% set base_input_name_prop=base_input_name~'[prop]['~current_idx~']' %}
 <div class="my-1"
      data-controller="input-state">
     <div class="input-group input-group-sm">
@@ -27,7 +29,7 @@
 	</span>
 	{# prop value #}
 	<span class="input-group-text">Attribut-Wert</span>
-	<span class="w-20"
+	<div class="w-20"
 	      {{ stimulus_controller('autocomplete', {
 		  url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
 	      }) }}>
@@ -41,7 +43,7 @@
 	    <ul class="list-group autocomplete-target"
 		       data-autocomplete-target="results"
 		       style="max-width: 12rem;"></ul>
-	</span>
+	</div>
 	{# delete #}
 	<div class="form_check ms-2 mt-1 align-middle">
 	    <input class="form-check-input"
