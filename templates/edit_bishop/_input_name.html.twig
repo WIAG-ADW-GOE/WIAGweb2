@@ -1,112 +1,122 @@
-<div {{ stimulus_controller('toggle-arrow', {
-     state: 0,
-     imgOpen: 'down',
-     imgClosed: 'right'
-     }) }}
+
+<div class="row">
+    <div class="col-12">
+	<div {{ stimulus_controller('toggle-arrow', {
+	     state: 0,
+	     imgOpen: 'down',
+	     imgClosed: 'right'
+	     }) }}
      data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
-    <div class="input-group input-group-sm mt-1">
-	<span class="input-group-text">Vorname, Präfix, Nachname</span>
-	<input type="text" id="{{ base_id }}_givenname"
-	       name="{{ base_input_name}}[givenname]"
-	       class="form-control wiag-input"
-	       value="{{ person.givenname }}"
-	       spellcheck="false"
-	       aria-label="Vorname">
-	<input type="text" id="{{ base_id }}_prefix"
-	       name="{{ base_input_name}}[prefixname]"
-	       class="form-control wiag-input"
-	       value="{{ person.prefixname }}"
-	       style="max-width: 10em"
-	       spellcheck="false"
-	       aria-label="Präfix">
-	<input type="text" id="{{ base_id }}_familyname"
-	       name="{{ base_input_name}}[familyname]"
-	       class="form-control wiag-input"
-	       value="{{ person.familyname }}"
-	       spellcheck="false"
-	       aria-label="Vorname">
-    </div>
-    <div class="input-group input-group-sm mt-1">
-	<span class="input-group-text">geboren</span>
-	<input type="text" id="{{ base_id }}_datebirth"
-	       name="{{ base_input_name}}[dateBirth]"
-	       class="form-control wiag-input"
-	       value="{{ person.dateBirth }}"
-	       style="max-width: 10em"
-	       spellcheck="false"
-	       aria-label="Geburtsdatum">
-	<span class="input-group-text">gestorben</span>
-	<input type="text" id="{{ base_id }}_datedeath"
-	       name="{{ base_input_name}}[dateDeath]"
-	       class="form-control wiag-input"
-	       value="{{ person.dateDeath }}"
-	       style="max-width: 10em"
-	       spellcheck="false"
-	       aria-label="Sterbedatum">
-	<span class="input-group-text ms-2">Vornamenvarianten</span>
-	<input type="text" id="{{ base_id }}_givennamevariants"
-	       name="{{ base_input_name}}[givennameVariants]"
-	       class="form-control wiag-input"
-	       value="{{ person.formgivennamevariants }}"
-	       spellcheck="false"
-	       aria-label="Vornamenvarianten">
-	<span class="input-group-text ms-2">Familiennamenvarianten</span>
-	<input type="text" id="{{ base_id }}_familynamevariants"
-	       name="{{ base_input_name}}[familynameVariants]"
-	       class="form-control wiag-input"
-	       value="{{ person.formfamilynamevariants }}"
-	       spellcheck="false"
-	       aria-label="Familiennamenvarianten">
-	{% if  intern_collapsable %}
-	    {% if person.noteperson or person.notename or person.item.itemproperty|length > 0%}
-		{% set expanded = true %}
-		<button class="btn btn-sm ms-1 pt-0 align-middle"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target="#div_{{ base_id }}_notePerson"
-			aria-expanded="true"
-			aria-controls="div_{{ base_id }}_notePerson"
-			data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
-	    {% else %}
-		{% set expanded = false %}
-		<button class="btn btn-sm ms-1 pt-0 align-middle"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target="#div_{{ base_id }}_notePerson"
-			aria-expanded="false"
-			aria-controls="div_{{ base_id }}_notePerson"
-			data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
-	    {% endif %}
-	{% else %}
-	    {% set expanded = true %}
-	{% endif %}
-    </div>
-    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id }}_notePerson">
-	{% if false %}
-	    <div class="input-group input-group-sm mt-1 ">
-		<span class="input-group-text" style="min-width: 15rem">Bemerkung zur Person (sichtbar)</span>
-		<input type="text"
-		       id="{{ base_id }}_notePerson"
-		       name="{{ base_input_name }}[notePerson]"
-		       class="form-control form-control-sm wiag-input"
-		       value="{{ person.noteperson }}">
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text">Vorname, Präfix, Nachname</span>
+		<input type="text" id="{{ base_id }}_givenname"
+		       name="{{ base_input_name}}[givenname]"
+		       class="form-control wiag-input"
+		       value="{{ person.givenname }}"
+		       spellcheck="false"
+		       aria-label="Vorname">
+		<input type="text" id="{{ base_id }}_prefix"
+		       name="{{ base_input_name}}[prefixname]"
+		       class="form-control wiag-input"
+		       value="{{ person.prefixname }}"
+		       style="max-width: 10em"
+		       spellcheck="false"
+		       aria-label="Präfix">
+		<input type="text" id="{{ base_id }}_familyname"
+		       name="{{ base_input_name}}[familyname]"
+		       class="form-control wiag-input"
+		       value="{{ person.familyname }}"
+		       spellcheck="false"
+		       aria-label="Vorname">
 	    </div>
-	{% endif %}
-	<div class="input-group input-group-sm mt-1 ">
-	    <span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
-	    <input type="text"
-		   id="{{ base_id }}_noteName"
-		   name="{{ base_input_name }}[noteName]"
-		   class="form-control form-control-sm wiag-input"
-		   value="{{ person.noteName }}">
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text">geboren</span>
+		<input type="text" id="{{ base_id }}_datebirth"
+		       name="{{ base_input_name}}[dateBirth]"
+		       class="form-control wiag-input"
+		       value="{{ person.dateBirth }}"
+		       style="max-width: 10em"
+		       spellcheck="false"
+		       aria-label="Geburtsdatum">
+		<span class="input-group-text">gestorben</span>
+		<input type="text" id="{{ base_id }}_datedeath"
+		       name="{{ base_input_name}}[dateDeath]"
+		       class="form-control wiag-input"
+		       value="{{ person.dateDeath }}"
+		       style="max-width: 10em"
+		       spellcheck="false"
+		       aria-label="Sterbedatum">
+		<span class="input-group-text ms-2">Vornamenvarianten</span>
+		<input type="text" id="{{ base_id }}_givennamevariants"
+		       name="{{ base_input_name}}[givennameVariants]"
+		       class="form-control wiag-input"
+		       value="{{ person.formgivennamevariants }}"
+		       spellcheck="false"
+		       aria-label="Vornamenvarianten">
+		<span class="input-group-text ms-2">Familiennamenvarianten</span>
+		<input type="text" id="{{ base_id }}_familynamevariants"
+		       name="{{ base_input_name}}[familynameVariants]"
+		       class="form-control wiag-input"
+		       value="{{ person.formfamilynamevariants }}"
+		       spellcheck="false"
+		       aria-label="Familiennamenvarianten">
+		{% if  intern_collapsable %}
+		    {% if person.noteperson or person.notename or person.item.itemproperty|length > 0%}
+			{% set expanded = true %}
+			<button class="btn btn-sm ms-1 pt-0 align-middle"
+				type="button"
+				data-bs-toggle="collapse"
+				data-bs-target="#div_{{ base_id }}_notePerson"
+				aria-expanded="true"
+				aria-controls="div_{{ base_id }}_notePerson"
+				data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+		    {% else %}
+			{% set expanded = false %}
+			<button class="btn btn-sm ms-1 pt-0 align-middle"
+				type="button"
+				data-bs-toggle="collapse"
+				data-bs-target="#div_{{ base_id }}_notePerson"
+				aria-expanded="false"
+				aria-controls="div_{{ base_id }}_notePerson"
+				data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
+		    {% endif %}
+		{% else %}
+		    {% set expanded = true %}
+		{% endif %}
+	    </div>
+	    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id }}_notePerson">
+		{% if false %}
+		    <div class="input-group input-group-sm mt-1 ">
+			<span class="input-group-text" style="min-width: 15rem">Bemerkung zur Person (sichtbar)</span>
+			<input type="text"
+			       id="{{ base_id }}_notePerson"
+			       name="{{ base_input_name }}[notePerson]"
+			       class="form-control form-control-sm wiag-input"
+			       value="{{ person.noteperson }}">
+		    </div>
+		{% endif %}
+		<div class="input-group input-group-sm mt-1 ">
+		    <span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
+		    <input type="text"
+			   id="{{ base_id }}_noteName"
+			   name="{{ base_input_name }}[noteName]"
+			   class="form-control form-control-sm wiag-input"
+			   value="{{ person.noteName }}">
+		</div>
+		<div class="input-group input-group-sm mt-1">
+		    <span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
+		    <textarea id="{{ base_id }}_notePerson"
+			      style="height: 3rem"
+			      name="{{ base_input_name }}[notePerson]"
+			      class="form-control form-control-sm wiag-input">{{ person.noteperson }}</textarea>
+		</div>
+		{{ include('edit_bishop/_input_property_list.html.twig') }}
+	    </div>
 	</div>
-	<div class="input-group input-group-sm mt-1">
-	    <span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
-	    <textarea id="{{ base_id }}_notePerson"
-		      style="height: 3rem"
-		      name="{{ base_input_name }}[notePerson]"
-		      class="form-control form-control-sm wiag-input">{{ person.noteperson }}</textarea>
-	</div>
-	{{ include('edit_bishop/_input_property_list.html.twig') }}
     </div>
 </div>
+{% for error_obj in person.inputError|filter(v => v.section == 'name') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

@@ -1,27 +1,29 @@
-<div class="mt-1 pe-1"> {# empty div to copy the structure of the other sections #}
-    {% set base_id_idext=base_id~'_idext' %}
-    {% set base_input_name_idext=base_input_name~'[idext]' %}
-    {% set auth_list = [
-	{ id: 'GS', short: 'GS', aria: 'GSN', paramfx: 'index?name', width: 'w-10' },
-	{ id: 'GND', short: 'GND', aria: 'GSN', paramfx: '', width: 'w-10' },
-	{ id: 'Wikidata', short: 'Wikidata', aria: 'Wikidata-ID', paramfx: '', width: 'w-10' },
-	{ id: 'VIAF', short: 'VIAF', aria: 'VIAF-ID', paramfx: '', width: 'w-10' },
-	{ id: 'Wikipedia', short: 'Wikipedia', aria: 'Wikipedia', paramfx: '', width:'w-20' },
-    ] %}
-    <div class="input-group input-group-sm">
-	{% for auth in auth_list %}
-	    {% set auth_url=person.item.geturiextbyauth(auth.short) %}
-	    <span class="input-group-text">{% if  auth_url %}<a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth.short }}</a>{% else %}{{ auth.short }}{% endif %}
-		<a href="{{ authBaseUrlList[auth.short] }}"
-		   target="blank"
-		   rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
-	    <input type="text" id="{{ base_id_idext }}_{{ auth.id }}"
-		   name="{{ base_input_name_idext}}[{{ auth.id }}]"
-		   data-paramfx="{{ auth.paramfx }}"
-		   class="form-control form-control-sm wiag-input {{ auth.width }}"
-		   value="{{ person.item.getidexternalbyauthority(auth.short) }}"
-		   spellcheck="false"
-		   aria-label="{{ auth.aria }}">
-	{% endfor %}
+<div class="row"> {# empty div to copy the structure of the other sections #}
+    <div class="col-12">
+	{% set base_id_idext=base_id~'_idext' %}
+	{% set base_input_name_idext=base_input_name~'[idext]' %}
+	{% set auth_list = [
+	    { id: 'GS', short: 'GS', aria: 'GSN', paramfx: 'index?name', width: 'w-10' },
+	    { id: 'GND', short: 'GND', aria: 'GSN', paramfx: '', width: 'w-10' },
+	    { id: 'Wikidata', short: 'Wikidata', aria: 'Wikidata-ID', paramfx: '', width: 'w-10' },
+	    { id: 'VIAF', short: 'VIAF', aria: 'VIAF-ID', paramfx: '', width: 'w-10' },
+	    { id: 'Wikipedia', short: 'Wikipedia', aria: 'Wikipedia', paramfx: '', width:'w-20' },
+	] %}
+	<div class="input-group input-group-sm mb-1">
+	    {% for auth in auth_list %}
+		{% set auth_url=person.item.geturiextbyauth(auth.short) %}
+		<span class="input-group-text">{% if  auth_url %}<a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth.short }}</a>{% else %}{{ auth.short }}{% endif %}
+		    <a href="{{ authBaseUrlList[auth.short] }}"
+		       target="blank"
+		       rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
+		<input type="text" id="{{ base_id_idext }}_{{ auth.id }}"
+		       name="{{ base_input_name_idext}}[{{ auth.id }}]"
+		       data-paramfx="{{ auth.paramfx }}"
+		       class="form-control form-control-sm wiag-input {{ auth.width }}"
+		       value="{{ person.item.getidexternalbyauthority(auth.short) }}"
+		       spellcheck="false"
+		       aria-label="{{ auth.aria }}">
+	    {% endfor %}
+	</div>
     </div>
 </div>

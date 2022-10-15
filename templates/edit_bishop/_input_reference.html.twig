@@ -12,57 +12,77 @@
 	idinreference: "",
     } %}
 {% endif %}
-<div class="input-group input-group-sm">
-    <button class="btn btn-outline-secondary btn-sm {% if not is_last %}invisible{% endif %}"
-	    type="button"
-	    data-add-class="invisible"
-	    data-action="insert#insertLocal"
-	    data-url="{{ path('edit_bishop_new_reference') }}"><img src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
-    <span class="input-group-text">Band</span>
-    {# id (hidden) #}
-    <input type="text"
-	   id="{{ base_id_ref }}_id"
-	   name="{{ base_input_name_ref }}[id]"
-	   class="form-control form-control-sm d-none"
-	   value="{{ ref.id }}">
-    <div class="w-25"
-    	 {{ stimulus_controller('autocomplete', {
-	     url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),
-	 }) }}>
- 	<input type="text" id="{{ base_id_ref }}_volume"
-	       name="{{ base_input_name_ref}}[volume]"
+<div class="col-1 text-end pe-0"
+     data-controller="on-input">
+    {# insert button #}
+    <span class="text-nowrap">
+	{% if is_last %}
+	    <button class="btn btn-light btn-sm"
+		    type="button"
+		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
+	{% endif %}
+	{% if delete_by_button %}
+	    {# delete checkbox #}
+	    <input class="form-check-input"
+		   type="checkbox"
+		   value=""
+		   hidden="hidden"
+		   id="{{ base_id_ref }}_delete"
+		   name="{{ base_input_name_ref }}[delete]"
+		   data-input-state-target="checkbox"
+		   data-on-input-target="checkbox"
+		   data-action="click->input-state#toggle">
+	    {# delete button #}
+	    <button class="btn btn-light btn-sm"
+		    type="button"
+		    data-value="up"
+		    data-controller="toggle-arrow"
+		    data-toggle-arrow-target="button"
+		    data-toggle-arrow-img-closed-value="3-fill"
+		    data-toggle-arrow-img-open-value="3"
+		    data-action="toggle-arrow#toggle click->on-input#toggle"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
+	{% endif %}
+    </span>
+</div>
+<div class="col-11">
+    <div class="input-group input-group-sm mb-1">
+	<span class="input-group-text">Band</span>
+	{# id (hidden) #}
+	<input type="text"
+	       id="{{ base_id_ref }}_id"
+	       name="{{ base_input_name_ref }}[id]"
+	       class="form-control form-control-sm d-none"
+	       value="{{ ref.id }}">
+	<div class="w-50"
+	     {{ stimulus_controller('autocomplete', {
+		 url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),
+	     }) }}>
+ 	    <input type="text" id="{{ base_id_ref }}_volume"
+		   name="{{ base_input_name_ref}}[volume]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{% if ref.volumetitleshort %}{{ ref.volumetitleshort }}{% elseif ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% endif %}"
+		   spellcheck="false"
+		   aria-label="Band"
+		   data-autocomplete-target="input">
+	    <ul class="list-group autocomplete-target"
+		data-autocomplete-target="results"
+		style="max-width: 30rem;"></ul>
+	</div>
+	<span class="input-group-text">Seite</span>
+	<input type="text" id="{{ base_id_ref }}_page"
+	       name="{{ base_input_name_ref}}[page]"
 	       class="form-control form-control-sm wiag-input"
-	       value="{% if ref.volumetitleshort %}{{ ref.volumetitleshort }}{% elseif ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% endif %}"
+	       value="{{ ref.page }}"
+	       style="min-width: 6rem; max-width: 12%"
 	       spellcheck="false"
-	       aria-label="Band"
-	       data-autocomplete-target="input">
-	<ul class="list-group autocomplete-target"
-	    data-autocomplete-target="results"
-	    style="max-width: 18rem;"></ul>
-    </div>
-    <span class="input-group-text">Seite</span>
-    <input type="text" id="{{ base_id_ref }}_page"
-	   name="{{ base_input_name_ref}}[page]"
-	   class="form-control form-control-sm wiag-input"
-	   value="{{ ref.page }}"
-	   spellcheck="false"
-	   aria-label="Band">
-    <span class="input-group-text">ID/Nr.</span>
-    <input type="text" id="{{ base_id_ref }}_idInReference"
-	   name="{{ base_input_name_ref}}[idInReference]"
-	   class="form-control form-control-sm wiag-input"
-	   value="{{ ref.idinreference }}"
-	   spellcheck="false"
-	   aria-label="Id/Nummer">
-    {# delete #}
-    <div class="form_check ms-1 mt-1 align-middle">
-	<input class="form-check-input"
-	       type="checkbox"
-	       value=""
-	       id="{{ base_id_ref }}_delete"
-	       name="{{ base_input_name_ref }}[delete]"
-	       data-action="input-state#toggle"
-	       data-input-state-target="checkbox">
-	<label class="form-check-label ms-1" for="{{ base_id_ref }}_delete">löschen</label>
+	       aria-label="Band">
+	<span class="input-group-text">ID/Nr.</span>
+	<input type="text" id="{{ base_id_ref }}_idInReference"
+	       name="{{ base_input_name_ref}}[idInReference]"
+	       class="form-control form-control-sm wiag-input"
+	       value="{{ ref.idinreference }}"
+	       style="min-width: 6rem; max-width: 12%"
+	       spellcheck="false"
+	       aria-label="Id/Nummer">
     </div>
 </div>

@@ -1,6 +1,8 @@
 <div data-controller="insert input-state"
      data-insert-base-id-value="{{ base_id_role }}"
-     data-insert-base-input-name-value="{{ base_input_name_role }}">
+     data-insert-base-input-name-value="{{ base_input_name_role }}"
+     data-insert-placeholder-value="~~~"
+>
     {% for role_prop in role.roleproperty %}
 	<div class="pe-1"> {# see template for new prop #}
 	    {{ include('edit_bishop/_input_role_property.html.twig', {
@@ -11,13 +13,20 @@
 	    }) }}
 	</div>
     {% endfor %}
-    <div class="pe-1"
-	 data-insert-target="insertPoint"></div>
+    {# the server ignores the template if it contains no data #}
+    <div class="pe-1 d-none"
+	 data-insert-target="template">
+	{{ include('edit_bishop/_input_role_property.html.twig', {
+	    base_id: base_id_role,
+	    base_input_name: base_input_name_role,
+	    current_idx: '~~~'
+	}) }}
+    </div>
     <div class="input-group input-group-sm mt-1 ">
 	<button class="btn btn-sm btn-outline-secondary"
-		type="button"
-		data-new-input-target="button"
-		data-action="insert#insertLocal"
-		data-url="{{ path('edit_bishop_new_role_property') }}">Neues Attribut</button>
+		       type="button"
+		       data-new-input-target="button"
+		       data-action="insert#insertTemplate"
+		       data-url="{{ path('edit_bishop_new_role_property') }}"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
     </div>
 </div>

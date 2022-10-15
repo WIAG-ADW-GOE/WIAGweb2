@@ -80,7 +80,7 @@ class PersonRole
     private $institutionTypeId;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $dioceseName;
 
@@ -125,7 +125,7 @@ class PersonRole
     private $placeName = null;
 
     /**
-     * @ORM\Column(type="string", length=127, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $institutionName;
 

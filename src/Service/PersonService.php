@@ -945,7 +945,6 @@ class PersonService {
      * map content of $data to $obj_list
      */
     public function mapPerson($person, $data, $user_id) {
-        // dd($data);
         // item
         $item = $person->getItem();
 
@@ -1138,7 +1137,8 @@ class PersonService {
 
         $id = $data['id'];
 
-        $key_list = ['role', 'institution', 'date_begin', 'date_end'];
+        // $key_list = ['role', 'institution', 'date_begin', 'date_end'];
+        $key_list = ['role', 'institution'];
         $no_data = $this->utilService->no_data($data, $key_list);
         $delete_flag = isset($data['delete']);
 
@@ -1169,45 +1169,6 @@ class PersonService {
             return $role;
         }
 
-        if (false) {
-        // Doctrine does not reliably update diocese or institution,
-        // therefore delete role
-        $role = $roleRepository->find($id);
-
-        $prop_list = array();
-        if (!is_null($role)) {
-            // remove properties
-            foreach ($role->getRoleProperty() as $prop) {
-                $prop_list[] = $prop;
-                $role->getRoleProperty()->removeElement($prop);
-                $prop->setPersonRole(null);
-                $this->entityManager->remove($prop);
-            }
-            $person->getRole()->removeElement($role);
-            $role->setPerson(null);
-            $this->entityManager->remove($role);
-        }
-
-        if ($delete_flag || $no_data) {
-            return null;
-        }
-
-        $role = new PersonRole();
-        $person->getRole()->add($role);
-        if ($person->getId() > 0) {
-            $role->setPerson($person);
-            $this->entityManager->persist($role);
-        }
-        // restore properties
-        foreach ($prop_list as $prop) {
-            $new_prop = new PersonRoleProperty();
-            $new_prop = $prop;
-            $role->getRoleProperty()->add($new_prop);
-            $new_prop->setPersonRole($role);
-            $this->entityManager->persist($new_prop);
-        }
-        } // if debug
-
         $role_name = trim($data['role']);
         $role_role = $roleRoleRepository->findOneByName($role_name);
         if ($role_role) {
@@ -1219,13 +1180,15 @@ class PersonService {
         }
         $role->setRoleName($role_name);
 
-        $inst_name = trim($data['institution']);
+        $inst_name = substr(trim($data['institution']), 0, 255);
         $inst_type_id = $data['instTypeId'];
         $institution = null;
         $diocese = null;
         if ($inst_name != "") {
             $role->setInstitutionTypeId($inst_type_id);
             if ($inst_type_id == 1) {
+                $role->setInstitution(null);
+                $role->setInstitutionName(null);
                 $diocese = $dioceseRepository->findOneByName($inst_name);
                 if (is_null($diocese)) {
                     $msg = "Das Bistum '{$inst_name}' ist nicht in der Liste der Bistümer eingetragen.";
@@ -1237,6 +1200,8 @@ class PersonService {
                     $role->setDioceseName($diocese->getName());
                 }
             } else {
+                $role->setDiocese(null);
+                $role->setDioceseName(null);
                 $query_result = $institutionRepository->findBy([
                     'name' => $inst_name,
                     'itemTypeId' => $inst_type_id
@@ -1255,6 +1220,7 @@ class PersonService {
         }
 
         // other fields
+        $data['note'] = substr(trim($data['note']), 0, 255);
         $this->utilService->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
 
         // numerical values for dates
@@ -1383,12 +1349,12 @@ class PersonService {
      */
     private function mapItemProperty($person, $data) {
         $itemPropertyRepository = $this->entityManager->getRepository(ItemProperty::class);
-        dump($data);
 
         $id = $data['id'];
         $item = $person->getItem();
 
-        $key_list = ['type', 'value'];
+        // the property entry is considered empty if no value is set
+        $key_list = ['value'];
         $no_data = $this->utilService->no_data($data, $key_list);
         $itemProperty = null;
 
@@ -1486,7 +1452,8 @@ class PersonService {
         $rolePropertyRepository = $this->entityManager->getRepository(PersonRoleProperty::class);
         $id = $data['id'];
 
-        $key_list = ['name', 'value'];
+        // the property entry is considered empty if no value is set
+        $key_list = ['value'];
         $no_data = $this->utilService->no_data($data, $key_list);
         $roleProperty = null;
 

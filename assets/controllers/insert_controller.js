@@ -5,12 +5,17 @@ export default class extends Controller {
     static values = {
 	url: String,
 	baseId: String,
-	baseInputName: String
+	baseInputName: String,
+	placeholder: String,
+	moveTrigger: String,
     };
 
     connect() {
 	// console.log('connect new-element');
 	this.elmt_idx = 60;
+	if (this.hasTemplateTarget) {
+	    this.templateHTML = this.templateTarget.innerHTML;
+	}
     }
 
     async insert(event) {
@@ -55,6 +60,9 @@ export default class extends Controller {
 
     }
 
+    /**
+     *
+     */
     async insertLocal(event) {
 	const current_target = event.currentTarget;
 	const insert_elmt = this.insertPointTarget;
@@ -87,14 +95,34 @@ export default class extends Controller {
 	}
     }
 
+    /**
+     * copy (hidden) template
+     */
     insertTemplate(event) {
 	const template = this.templateTarget;
-	var new_elmt = template.cloneNode('deep');
-	new_elmt.classList.remove("d-none");
-	var inner_html = new_elmt.innerHTML;
-	inner_html = inner_html.replaceAll('xxx', this.elmt_idx++);
-	new_elmt.innerHTML = inner_html;
-	template.parentNode.insertBefore(new_elmt, template);
 
+	// replace placehoder with index
+	var inner_html = this.templateHTML;
+	inner_html = inner_html.replaceAll(this.placeholderValue, this.elmt_idx++);
+
+	// build new element
+	const wrap = document.createElement("div");
+	wrap.innerHTML = inner_html;
+	const new_elmt = wrap.firstElementChild;
+	// console.log(inner_html, this.hasTemplateTarget);
+	template.parentNode.insertBefore(new_elmt, template)
+
+	// move trigger
+	if (this.hasMoveTriggerValue) {
+	    var new_home = new_elmt.getElementsByTagName('span');
+	    if (new_home && new_home.length > 0) {
+		let first_child = new_home.item(0).firstElementChild;
+		if (first_child) {
+		    new_home.item(0).insertBefore(event.currentTarget, first_child)
+		} else {
+		    new_home.item(0).appendChild(event.currentTarget);
+		}
+	    }
+	}
     }
 }

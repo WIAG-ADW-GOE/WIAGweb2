@@ -3,10 +3,10 @@
      data-insert-base-input-name-value="{{ base_input_name }}"
      data-insert-placeholder-value="~~~"
      data-insert-move-trigger-value=1>
-    {% for role in person.role|sort((a, b) => a.datesortkey <=> b.datesortkey) %}
+    {% for ref in person.item.reference %}
 	<div class="row"
 	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_role.html.twig', {
+	    {{ include('edit_bishop/_input_reference.html.twig', {
 		base_id: base_id,
 		base_input_name: base_input_name,
 		current_idx: loop.index0,
@@ -16,11 +16,11 @@
     {% else %}
 	<div class="row"
 	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_role.html.twig', {
+	    {{ include('edit_bishop/_input_reference.html.twig', {
 		base_id: base_id,
 		base_input_name: base_input_name,
-		current_idx: 0,
-		is_last: true
+		current_idx: loop.index0,
+		is_last: true,
 	    }) }}
 	</div>
     {% endfor %}
@@ -28,19 +28,17 @@
     <div class="d-none" data-insert-target="template">
 	<div class="row"
 	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_role.html.twig', {
+	    {{ include('edit_bishop/_input_reference.html.twig', {
 		base_id: base_id,
 		base_input_name: base_input_name,
 		current_idx: '~~~',
-		is_last: false
+		is_last: false,
 	    }) }}
 	</div>
     </div>
-
 </div>
-{% for error_obj in person.inputError|filter(v => v.section == 'role') %}
+{% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
     <div class="row">
-	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
-	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
     </div>
 {% endfor %}
