@@ -238,13 +238,4 @@ class BishopController extends AbstractController {
         ]);
     }
 
-    /**
-     * @Route("bischof-neu", name="bishop_new")
-     * @IsGranted("ROLE_USER")
-     */
-    public function new() {
-        // $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        return new Response('Neuen Bischof anlegen');
-    }
-
 }

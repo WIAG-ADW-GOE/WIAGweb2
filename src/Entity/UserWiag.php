@@ -16,12 +16,11 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ROLE_DICT = [
         'ROLE_EDIT' => 'Redaktion',
-        'ROLE_DB_EDIT' => 'Datenbank',
+        'ROLE_CANON_ONEPAGE' => 'Domherren eines Domstifts als Liste ausgeben',
     ];
     const ROLE_DICT_EXTRA = [
-        'ROLE_USER_EDIT' => 'Benutzerverwaltung',
-        'ROLE_DATA_ADMIN' => 'Datenverwaltung',
-        'ROLE_ADMIN' => 'Verwaltung der Anwendung'
+        'ROLE_EDIT_USER' => 'Benutzerverwaltung',
+        'ROLE_ADMIN' => 'alle Rechte',
     ];
     /**
      * @ORM\Id

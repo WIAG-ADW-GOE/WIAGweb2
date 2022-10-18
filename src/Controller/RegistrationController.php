@@ -19,14 +19,13 @@ class RegistrationController extends AbstractController
 {
     /**
      * @Route("/register", name="user_register")
-     * @IsGranted("ROLE_USER_EDIT")
+     * @IsGranted("ROLE_EDIT_USER")
      */
     public function register(Request $request,
                              UserPasswordHasherInterface $userPasswordHasher,
                              EntityManagerInterface $entityManager,
                              UserAuthenticatorInterface $userAuthenticator,
-                             FormLoginAuthenticator $formLoginAuthenticator): Response
-    {
+                             FormLoginAuthenticator $formLoginAuthenticator): Response {
         $user = new UserWiag();
         $has_admin_access = $this->isGranted("ROLE_ADMIN");
         // dump($has_admin_access);

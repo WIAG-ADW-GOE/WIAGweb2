@@ -356,6 +356,7 @@ class EditBishopController extends AbstractController {
     }
 
     /**
+     * 2022-10-18 obsolete: show hidden template via JS
      * @return template for additional item property
      *
      * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
@@ -382,12 +383,13 @@ class EditBishopController extends AbstractController {
     }
 
     /**
+     * 2022-10-18 obsolete: show hidden template via JS
      * @return template for additional role property
      *
      * @Route("/edit/bischof/new-role-property", name="edit_bishop_new_role_property")
      */
-    public function new_role_property(Request $request,
-                                      EntityManagerInterface $entityManager) {
+    public function newRoleProperty(Request $request,
+                                    EntityManagerInterface $entityManager) {
 
         $property = new PersonRoleProperty;
         $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
