@@ -27,6 +27,7 @@
 		{% for node in canon_node_list %}
 		    {# 2022-07-12 prefer name as stored in Domherrendatenbank #}
 		    {% set id_public=node.personName.personName.item.idpublic %}
+		    {# todo clean code #}
 		    {% if node.personName.personName.sibling and false %}
 			{% set person=node.personName.personName.sibling %}
 		    {% else %}
@@ -51,7 +52,7 @@
 			<div custom-style="WiagId" class="d-flex"><a class="ms-auto" href={{ permalink }}>{{ id_public }}</a></div>
 			{# name #}
 			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
-			{% set academicTitle=person.item.itemPropertyValue('academic_title') %}
+			{% set academicTitle=person.combineProperty('academic_title') %}
 			{% if academicTitle %}
 			    <div custom-style="AkadTitel">{{ academicTitle }}</div>
 			{% endif %}

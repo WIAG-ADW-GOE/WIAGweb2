@@ -299,8 +299,7 @@ class CanonController extends AbstractController {
             // find all sources (persons with roles) for the elements of $canon_personName
             foreach($canon_personName as $personName) {
                 $node['personName'] = $personName;
-                /* get roles
-                 */
+                // get roles
                 $personIdName = $personName->getPersonIdName();
                 $canon_personRole = array_filter($canon_list, function($el) use ($personIdName) {
                     return $el->getPersonIdName() == $personIdName;

@@ -490,6 +490,18 @@ class Person {
         return $this->combineData($this->$getfnc(), $this->sibling->$getfnc());
     }
 
+    /**
+     * combine item properties
+     */
+    public function combineProperty($key) {
+        if (is_null($this->sibling)) {
+            return $this->item->itemPropertyValue($key);
+        }
+        $a = $this->item->itemPropertyValue($key);
+        $b = $this->sibling->getItem()->itemPropertyValue($key);
+        return $this->combineData($a, $b);
+    }
+
     public function getSibling(): ?Person {
         return $this->sibling;
     }
@@ -514,57 +526,60 @@ class Person {
      */
     public function commentLine($flag_names = true) {
 
-        $strGnVariants = null;
-        $strFnVariants = null;
+        $academic_title = $this->combineProperty('academic_title');
+
+        $str_gn_variants = null;
+        $str_fn_variants = null;
         if ($flag_names) {
             $givennameVariants = $this->getGivennameVariants();
             $familynameVariants = $this->getFamilynameVariants();
 
-            $gnVariants = array ();
+            $gn_variants = array ();
             foreach ($givennameVariants as $gn) {
-                $gnVariants[] = $gn->getName();
+                $gn_variants[] = $gn->getName();
             }
-            $fnVariants = array ();
+            $fn_variants = array ();
             foreach ($familynameVariants as $fn) {
-                $fnVariants[] = $fn->getName();
+                $fn_variants[] = $fn->getName();
             }
 
             if (!is_null($this->sibling)) {
                 foreach ($this->sibling->getGivennameVariants() as $gn) {
-                    $gnVariants[] = $gn->getName();
+                    $gn_variants[] = $gn->getName();
                 }
                 foreach ($this->sibling->getFamilynameVariants() as $fn) {
-                    $fnVariants[] = $fn->getName();
+                    $fn_variants[] = $fn->getName();
                 }
 
             }
-            $gnVariants = array_unique($gnVariants);
-            $fnVariants = array_unique($fnVariants);
+            $gn_variants = array_unique($gn_variants);
+            $fn_variants = array_unique($fn_variants);
 
-            $strGnVariants = $gnVariants ? implode(', ', $gnVariants) : null;
-            $strFnVariants = $fnVariants ? implode(', ', $fnVariants) : null;
+            $str_gn_variants = $gn_variants ? implode(', ', $gn_variants) : null;
+            $str_fn_variants = $fn_variants ? implode(', ', $fn_variants) : null;
         }
 
-        $eltCands = [
-            $strGnVariants,
-            $strFnVariants,
+        $elt_cands = [
+            $academic_title,
+            $str_gn_variants,
+            $str_fn_variants,
             $this->combine('noteName'),
             $this->combine('notePerson'),
         ];
 
-        $lineElts = array();
-        foreach ($eltCands as $elt) {
+        $line_elts = array();
+        foreach ($elt_cands as $elt) {
             if (!is_null($elt) && $elt != '') {
-                $lineElts[] = $elt;
+                $line_elts[] = $elt;
             }
         }
 
-        $commentLine = null;
-        if (count($lineElts) > 0) {
-            $commentLine = implode('; ', $lineElts);
+        $comment_line = null;
+        if (count($line_elts) > 0) {
+            $comment_line = implode('; ', $line_elts);
         }
 
-        return $commentLine;
+        return $comment_line;
     }
 
     public function describe(): string {
