@@ -66,14 +66,14 @@ class RegistrationController extends AbstractController
             //     $request
             // );
             return $this->render('registration/register_success.html.twig', [
-                'menuItem' => 'edit',
+                'menuItem' => 'edit-menu',
                 'user' => $user,
             ]);
 
         }
 
         return $this->render('registration/register.html.twig', [
-            'menuItem' => 'edit',
+            'menuItem' => 'edit-menu',
             'registrationForm' => $form->createView(),
         ]);
     }

@@ -48,6 +48,8 @@ class CanonController extends AbstractController {
         // we need to pass an instance of CanonFormModel, because facets depend on it's data
         $model = new CanonFormModel;
 
+        dump($_ENV);
+
         $flagInit = count($request->request->all()) == 0;
 
         $form = $this->createForm(CanonFormType::class, $model, [

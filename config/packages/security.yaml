@@ -39,11 +39,11 @@ security:
               password_parameter: password
               enable_csrf: true
               # use explicit target to force HTTPS
-              default_target_path: '%env(APP_HOME)%'
+              default_target_path: "https://${env:HTTP_HOST}"
             entry_point: form_login
             logout:
               # use explicit target to force HTTPS
-              target: '%env(APP_HOME)%'
+              target: "https://${env:HTTP_HOST}"
             remember_me:
               secret: '%kernel.secret%'
               signature_properties: [password]

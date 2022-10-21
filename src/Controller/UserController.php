@@ -69,7 +69,7 @@ class UserController extends AbstractController
         }
 
         return $this->render('user/user_edit.html.twig', [
-            'menuItem' => 'edit',
+            'menuItem' => 'edit-menu',
             'userForm' => $form->createView(),
         ]);
     }
@@ -83,7 +83,7 @@ class UserController extends AbstractController
         $user_list = $repository->findBy([], ['id' => 'ASC']);
 
         return $this->render('user/user_list.html.twig', [
-            'menuItem' => 'edit',
+            'menuItem' => 'edit-menu',
             'user_list' => $user_list,
         ]);
     }

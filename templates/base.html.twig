@@ -86,12 +86,19 @@
 				{% endif %}
 			    </li>
 			    {# edit #}
-			    {% if is_granted('ROLE_EDIT_MENU') and allow_edit == 'edit' %}
+			    {% if is_granted('ROLE_EDIT_MENU') %}
 				{{ include('menu/_edit.html.twig') }}
 			    {% endif %}
 			    {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
-				<li class="nav-item">
-				    <a class="nav-link fw-bold" role="button" href="{{ path('logout') }}">Logout</a>
+				<li class="nav-item dropdown">
+				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="logout" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Logout</a>
+				    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="logout">
+					{% if app.user %}
+					    <li><a class="dropdown-item" href="{{ path('logout') }}">{{ app.user.name }} abmelden</a></li>
+					{% else %}
+					    <li><a class="dropdown-item" href="{{ path('logout') }}">Abmelden</a></li>
+					{% endif %}
+				    </ul>
 				</li>
 			    {% else %}
 				<li class="nav-item">
@@ -102,7 +109,6 @@
 				    {% endif %}
 				</li>
 			    {% endif %}
-
 			</ul>
 		    </div>
 		</div>
