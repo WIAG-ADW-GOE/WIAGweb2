@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Item;
+use App\Entity\PersonRole;
 use App\Repository\PersonRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -638,6 +639,20 @@ class Person {
         }
         return false;
     }
+
+    public function getFirstRoleSortKey() {
+        $key = PersonRole::MAX_DATE_SORT_KEY;
+        if (count($this->role) > 0) {
+            if (is_array($this->role)) {
+                $role_list = $this->role;
+            } else {
+                $role_list = $this->role->toArray();
+            }
+            $key = array_values($role_list)[0]->getDateSortKey();
+        }
+        return $key;
+    }
+
 
 
 }

@@ -284,9 +284,18 @@ class CanonController extends AbstractController {
         $domstift = $model->domstift;
 
         $chunk_offset = 0;
-        $limit = 30;
+        // sort the list by office criteria (see below), therefore splitting up in chunks is not useful
+        $limit = $global_limit; # chunk size
         // split up in chunks
         $id_list = array_slice($id_all, $chunk_offset, $limit);
+        // element of $canon_node_list
+        // array [
+        //   "personName" => CanonLookup,
+        //   "personRole" => array [
+        //      0 => Person,
+        //      ...
+        //   ],
+        // ]
         $canon_node_list = array();
 
         while (count($id_list) > 0) {
@@ -322,39 +331,36 @@ class CanonController extends AbstractController {
                     }
 
                     $person->setRole($role_list);
-                    $personRole[] = $canon->getPerson();
+                    $personRole[] = $person;
                 }
 
                 $node['personRole'] = $personRole;
                 $canon_node_list[] = $node;
+
             }
+
             $chunk_offset += $limit;
             $id_list = array_slice($id_all, $chunk_offset, $limit);
         }
 
-        // dump($canon_list);
 
-        // $query_result = $canonLookupRepository->findWithOfficesByModel($model);
-        // // dd($query_result);
+        // sort by first relevant office
+        if ($domstift) {
+            uasort($canon_node_list, function($a, $b) {
+                $a_key = PersonRole::MAX_DATE_SORT_KEY;
+                if (count($a["personRole"]) > 0) {
+                    $a_fpr = $a["personRole"][0];
+                    $a_key = $a_fpr->getFirstRoleSortKey();
+                }
 
-        // $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
-        // $canon_list = array();
-        // $canon = array();
-        // $item_list = array();
-        // foreach($query_result as $obj) {
-        //     if (is_a($obj, Person::class)) {
-        //         if (count($canon) > 0) {
-        //             $canon['item'] = $item_list;
-        //             $canon_list[] = $canon;
-        //             $item_list = array();
-        //             $canon = array();
-        //             }
-        //             $canon['person'] = $obj;
-        //     } elseif (is_a($obj, Item::class)) {
-        //         $referenceVolumeRepository->addReferenceVolumes($obj);
-        //         $item_list[] = $obj;
-        //     } else {}
-        // }
+                $b_key = PersonRole::MAX_DATE_SORT_KEY;
+                if (count($b["personRole"]) > 0) {
+                    $b_fpr = $b["personRole"][0];
+                    $b_key = $b_fpr->getFirstRoleSortKey();
+                }
+                return $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
+            });
+        }
 
         $title = $model->domstift;
         if ($title) {
@@ -369,7 +375,8 @@ class CanonController extends AbstractController {
 
         return $this->render('canon/onepage_result.html.twig', [
             'title' => $title,
-            'canon_node_list' => $canon_node_list,
+            'canonNodeList' => $canon_node_list,
+            'limitReached' => count($canon_node_list) >= $global_limit,
         ]);
 
     }

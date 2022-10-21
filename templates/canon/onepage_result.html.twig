@@ -23,8 +23,11 @@
 		    {% else %}
 			<h1>Domherren</h1>
 		    {% endif %}
+		    {% if limitReached %}
+			<p>anzeigt: {{ canonNodeList|length }} Einträge (Limit erreicht)</p>
+		    {% endif %}
 		</div>
-		{% for node in canon_node_list %}
+		{% for node in canonNodeList %}
 		    {# 2022-07-12 prefer name as stored in Domherrendatenbank #}
 		    {% set id_public=node.personName.personName.item.idpublic %}
 		    {# todo clean code #}

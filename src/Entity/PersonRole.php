@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
  */
 class PersonRole
 {
+    const MAX_DATE_SORT_KEY = 9000900;
 
     /**
      * @ORM\Id
