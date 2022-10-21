@@ -139,7 +139,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         return array_column($result, "personIdName");
 
-
     }
 
     public function addCanonConditions($qb, $model) {

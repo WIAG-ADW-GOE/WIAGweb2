@@ -66,6 +66,11 @@
 	    }) }}
 	</div>
     </div>
+    {% if hide_facets is defined %}
+	<div class="d-none">
+	    {{ form_rest(form) }}
+	</div>
+    {% endif %}
 </div>
 
 {# {{ form_end(form) }} #}
