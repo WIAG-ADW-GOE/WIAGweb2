@@ -135,7 +135,7 @@ class BishopController extends AbstractController {
 
         $person_id = $ids[$idx];
 
-        // collect office data in Person[]
+        // collect office data in Person[] from different sources
         $personRole = $itemRepository->getBishopOfficeData($person_id);
         $person = null;
         foreach($personRole as $person_loop) {
@@ -144,6 +144,7 @@ class BishopController extends AbstractController {
                 break;
             }
         }
+        dump($person, $personRole);
 
         $itemRepository->setSibling($person);
 

@@ -395,7 +395,7 @@ class ItemRepository extends ServiceEntityRepository
         $authorityGs = Authority::ID['GS'];
         $gsn = $item[0]->getIdExternalByAuthorityId($authorityGs);
         if (!is_null($gsn)) {
-            // Each person from Germania Sacra should have an entry in table id_external with it's GSN.
+            // Each person from Germania Sacra should have an entry in table id_external with its GSN.
             // If data are up to date at most one of these requests is successful.
             $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
             $canonGs = $this->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
@@ -424,15 +424,15 @@ class ItemRepository extends ServiceEntityRepository
         }, $item);
 
         $personRepository = $em->getRepository(Person::class);
-        $personRole = $personRepository->findByIdList($id_list);
+        $person_role = $personRepository->findList($id_list);
 
-        $em->getRepository(PersonRole::class)->setPlaceNameInRole($personRole);
+        $em->getRepository(PersonRole::class)->setPlaceNameInRole($person_role);
 
-        $item_role = array_map(function($p) {return $p->getItem();}, $personRole);
+        $item_role = array_map(function($p) {return $p->getItem();}, $person_role);
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role);
         $em->getRepository(Authority::class)->setAuthority($item_role);
 
-        return $personRole;
+        return $person_role;
 
         // version before 2022-07-21
         // // get office data and references

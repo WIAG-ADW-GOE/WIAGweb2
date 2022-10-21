@@ -67,18 +67,6 @@ class PersonRepository extends ServiceEntityRepository {
     }
     */
 
-    public function findByIdList($id_list) {
-        $qb = $this->createQueryBuilder('p')
-                   ->select('p', 'r')
-                   ->leftjoin('p.role', 'r')
-                   ->andWhere('p.id in (:id_list)')
-                   ->setParameter('id_list', $id_list);
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        return $result;
-    }
-
     /**
      * see PriestUtController
      * 2022-10-07 obsolete? use findList instead
