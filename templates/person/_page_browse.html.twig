@@ -3,6 +3,7 @@
 	value: offset - pageSize,
 	disabled: offset < pageSize,
 	text: 'zurück'}) }}
+    {# {{ offset // pageSize + 1 }} #}
     <input type="text"
 	   name="pageNumber"
 	   value={{ offset // pageSize + 1 }}

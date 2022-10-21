@@ -344,7 +344,7 @@ class CanonController extends AbstractController {
         }
 
 
-        // sort by first relevant office
+        // sort by first relevant office, then by name
         if ($domstift) {
             uasort($canon_node_list, function($a, $b) {
                 $a_key = PersonRole::MAX_DATE_SORT_KEY;
@@ -358,7 +358,16 @@ class CanonController extends AbstractController {
                     $b_fpr = $b["personRole"][0];
                     $b_key = $b_fpr->getFirstRoleSortKey();
                 }
-                return $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
+                if ($a_key < $b_key) {
+                    return -1;
+                } elseif ($a_key > $b_key) {
+                    return 1;
+                } else {
+                    $a_name = $a["personName"]->getPerson()->getDisplayname();
+                    $b_name = $b["personName"]->getPerson()->getDisplayname();
+
+                    return $a_name < $b_name ? -1 : ($a_name > $b_name ? 1 : 0);
+                }
             });
         }
 
