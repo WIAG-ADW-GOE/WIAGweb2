@@ -144,7 +144,6 @@ class BishopController extends AbstractController {
                 break;
             }
         }
-        dump($person, $personRole);
 
         $itemRepository->setSibling($person);
 

@@ -325,10 +325,13 @@ class CanonController extends AbstractController {
                     } else {
                         $role_list = $person->getRole()->toArray();
                     }
-                    $role_list = $utilService->sortByFieldList($role_list, ['placeName', 'dateSortKey', 'id']);
+                    $crit_list = ['placeName', 'dateSortKey', 'id'];
+                    $role_list = $utilService->sortByFieldList($role_list, $crit_list );
                     if ($domstift) {
+                        $crit_list = ['dateSortKey', 'placeName', 'dateSortKey', 'id'];
                         $role_list = $utilService->sortByDomstift($role_list, $domstift);
-                    }
+                     }
+
 
                     $person->setRole($role_list);
                     $personRole[] = $person;
@@ -337,6 +340,11 @@ class CanonController extends AbstractController {
                 $node['personRole'] = $personRole;
                 $canon_node_list[] = $node;
 
+                // debug
+                // if ($node['personName']->getPerson()->getFamilyname() == "Ketelhod") {
+                //      dump($node);
+                // }
+
             }
 
             $chunk_offset += $limit;
@@ -344,7 +352,7 @@ class CanonController extends AbstractController {
         }
 
 
-        // sort by first relevant office, then by name
+        // sort elements of $canon_node_list by first relevant office, then by name
         if ($domstift) {
             uasort($canon_node_list, function($a, $b) {
                 $a_key = PersonRole::MAX_DATE_SORT_KEY;
@@ -358,16 +366,26 @@ class CanonController extends AbstractController {
                     $b_fpr = $b["personRole"][0];
                     $b_key = $b_fpr->getFirstRoleSortKey();
                 }
-                if ($a_key < $b_key) {
-                    return -1;
-                } elseif ($a_key > $b_key) {
-                    return 1;
-                } else {
+
+                $result = $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
+
+                // second criterion: name
+                if ($result == 0) {
                     $a_name = $a["personName"]->getPerson()->getDisplayname();
                     $b_name = $b["personName"]->getPerson()->getDisplayname();
 
-                    return $a_name < $b_name ? -1 : ($a_name > $b_name ? 1 : 0);
+                    $result =  $a_name < $b_name ? -1 : ($a_name > $b_name ? 1 : 0);
                 }
+
+                // third criterion: id
+                if ($result == 0) {
+                    $a_id = $a["personName"]->getPerson()->getId();
+                    $b_id = $b["personName"]->getPerson()->getId();
+
+                    $result =  $a_id < $b_id ? -1 : ($a_id > $b_id ? 1 : 0);
+                }
+
+                return $result;
             });
         }
 

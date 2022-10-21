@@ -88,58 +88,68 @@ class UtilService {
     }
 
     /**
-     * use criteria in $crit_list to sort $list (array of arrays)
+     * use $crit_list to compare $a and $b
+     */
+    static function cmpRoles($a, $b, $crit_list) {
+        $cmp_val = 0;
+        foreach ($crit_list as $field) {
+            $getfnc = 'get'.ucfirst($field);
+            if (is_object($a)) {
+                $a_val = $a->$getfnc();
+                $b_val = $b->$getfnc();
+            } else {
+                $a_val = $a[$field];
+                $b_val = $b[$field];
+            }
+            // sort null last
+
+            if (is_null($a_val) && is_null($b_val)) {
+                $cmp_val = 0;
+                continue;
+            }
+
+            if (is_null($a_val) && !is_null($b_val)) {
+                $cmp_val = 1;
+                break;
+            }
+
+            if (is_null($b_val) && !is_null($a_val)) {
+                $cmp_val = -1;
+                break;
+            }
+
+            if ($a_val < $b_val) {
+                $cmp_val = -1;
+                break;
+            } elseif ($a_val > $b_val) {
+                $cmp_val = 1;
+                break;
+            } else {
+                $cmp_val = 0;
+            }
+        }
+
+        return $cmp_val;
+    }
+
+
+    /**
+     * use crit_list in $crit_list to sort $list (array of arrays)
      */
     public function sortByFieldList($list, $crit_list) {
         uasort($list, function($a, $b) use ($crit_list) {
-            $cmp_val = 0;
-            foreach ($crit_list as $field) {
-                $getfnc = 'get'.ucfirst($field);
-                if (is_object($a)) {
-                    $a_val = $a->$getfnc();
-                    $b_val = $b->$getfnc();
-                } else {
-                    $a_val = $a[$field];
-                    $b_val = $b[$field];
-                }
-                // sort null last
-
-                if (is_null($a_val) && is_null($b_val)) {
-                    $cmp_val = 0;
-                    continue;
-                }
-
-                if (is_null($a_val) && !is_null($b_val)) {
-                    $cmp_val = 1;
-                    break;
-                }
-
-                if (is_null($b_val) && !is_null($a_val)) {
-                    $cmp_val = -1;
-                    break;
-                }
-
-                if ($a_val < $b_val) {
-                    $cmp_val = -1;
-                    break;
-                } elseif ($a_val > $b_val) {
-                    $cmp_val = 1;
-                    break;
-                } else {
-                    $cmp_val = 0;
-                }
-            }
-
-            return $cmp_val;
+            return self::cmpRoles($a, $b, $crit_list);
         });
 
         return $list;
     }
 
+
     /**
-     * use criteria in $crit_list to sort $list (array of arrays)
+     * use criteria in $crit_list to sort $list (array of PersonRole)
      */
     public function sortByDomstift($list, $domstift) {
+        // for PHP 8.0.0 and later sorting is stable, until then use second criterion
         uasort($list, function($a, $b) use ($domstift) {
 
             $a_inst = $a->getInstitution();
@@ -158,17 +168,28 @@ class UtilService {
                 return -1;
             }
 
+            $result = 0;
             if ($a_val == $domstift || $a_val == $domstift_long) {
                 if ($b_val == $domstift || $b_val == $domstift_long) {
-                    return 0;
+                    $result = 0;
+                    //
+                    $result = self::cmpRoles($a, $b, ['dateSortKey', 'id']);
                 } else {
-                    return -1;
+                    $result = -1;
                 }
             } elseif ($b_val == $domstift || $b_val == $domstift_long) {
-                return 1;
+                $result = 1;
             } else {
-                return 0;
+                $result = 0;
             }
+
+            // other criteria
+            if ($result == 0) {
+                $result = self::cmpRoles($a, $b, ['placeName', 'dateSortKey', 'id']);
+            }
+
+            return $result;
+
         });
 
         return $list;
