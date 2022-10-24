@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block body %}
-    {% if false %}
+    {% if not personName %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <p class="em">Domherr nicht gefunden.</p>
 	</div>
@@ -39,12 +39,18 @@
 	</div>
 	{% endset %}
 	<div class="container-fluid"
-	     data-controller="hide-on-input">
+	     data-controller="hide-on-input facet-state">
 	    <div class="row ms-2 col-12">
 		<span class="topic-title">{{ canon_title }}</span>
 	    </div>
 	    {% if form is defined %}
-		{{ form_start(form, {'attr': {'id':'form', 'action':path('canon_query')} }) }}
+		{{ form_start(form, {
+		    'attr': {
+			'id': 'form',
+			'action': path('canon_query'),
+			'data-action': 'input->facet-state#clearFacet',
+		    }
+		}) }}
 		    {{ include('canon/_form_elements.html.twig', {hide_facets: true}) }}
 		    <div class="row mt-2 mx-2">
 			<div class="col-12">
