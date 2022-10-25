@@ -93,7 +93,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         // sort in an extra step, see below
         if ($domstift) {
-            $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey');
+            $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(inst_domstift.nameShort) as sort_domstift, min(r_all.dateSortKey) as dateSortKey');
         }
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
             $qb->select('c.personIdName, p.givenname, (CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p.familyname, min(d.nameShort) as sort_domstift, min(r.dateSortKey) as dateSortKey')
@@ -120,7 +120,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
         if ($model->isEmpty() || $domstift || $office) {
-            $sort_list = ['sort_domstift', 'dateSortKey', 'hasFamilyname', 'familyname', 'givenname', 'personIdName'];
+            $sort_list = ['sort_domstift', 'dateSortKey', 'givenname', 'familyname', 'personIdName'];
         } elseif ($name) {
             $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'sort_domstift', 'dateSortKey', 'personIdName'];
         } elseif ($year) {

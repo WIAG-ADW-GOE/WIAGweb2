@@ -78,52 +78,6 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-    /**
-     * 2022-01-08 obsolete?
-     */
-    public function countBishop_hide($model) {
-        $result = array('n' => 0);
-
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
-
-        // diocese or office
-        $diocese = $model->diocese;
-        $office = $model->office;
-        $year = $model->year;
-        $name = $model->name;
-        $someid = $model ->someid;
-
-        if ($diocese || $office) {
-            $qb = $this->createQueryBuilder('i')
-                       ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
-                       ->select('COUNT(DISTINCT i.id) as n')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1');
-            if($year) {
-                $qb->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id');
-            }
-        } elseif ($year) {
-            $qb = $this->createQueryBuilder('i')
-                       ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                       ->select('COUNT(DISTINCT i.id) as n')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1');
-        } elseif ($model->isEmpty() || $name || $someid) {
-            $qb = $this->createQueryBuilder('i')
-                       ->select('COUNT(DISTINCT i.id) as n')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1');
-        }
-
-        $qb = $this->addBishopConditions($qb, $model);
-        $qb = $this->addBishopFacets($qb, $model);
-
-        $query = $qb->getQuery();
-        $result = $query->getOneOrNullResult();
-
-        return $result;
-    }
-
 
     public function bishopIds($model, $limit = 0, $offset = 0) {
         $result = null;
@@ -532,28 +486,6 @@ class ItemRepository extends ServiceEntityRepository
 
         return $suggestions;
     }
-
-    public function countPriestUt_hide($model) {
-        $result = array('n' => 0);
-
-        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
-
-
-        $qb = $this->createQueryBuilder('i')
-                       ->join('i.person', 'p')
-                       ->select('COUNT(DISTINCT i.id) as n')
-                       ->andWhere("i.itemTypeId = ${itemTypeId}")
-                       ->andWhere('i.isOnline = 1');
-
-        $qb = $this->addPriestUtConditions($qb, $model);
-        $qb = $this->addPriestUtFacets($qb, $model);
-
-        $query = $qb->getQuery();
-        $result = $query->getOneOrNullResult();
-
-        return $result;
-    }
-
 
     public function priestUtIds($model, $limit = 0, $offset = 0) {
         $result = null;
