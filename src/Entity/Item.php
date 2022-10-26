@@ -233,7 +233,9 @@ class Item {
                 return 1;
             }
 
-            if ($a_vol->getDisplayOrder() <= $b_vol->getDisplayOrder()) {
+            // cv bk 2022-10-26 sort by title_short
+            // if ($a_vol->getDisplayOrder() <= $b_vol->getDisplayOrder()) {
+            if ($a_vol->getTitleShort() <= $b_vol->getTitleShort()) {
                 return -1;
             } else {
                 return 1;

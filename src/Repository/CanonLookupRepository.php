@@ -540,6 +540,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                                'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
                    ->andWhere('item_ref.itemTypeId = :item_type_id')
                    ->setParameter('item_type_id', $item_type_id)
+                   ->addOrderBy('v.titleShort', 'ASC')
                    ->addOrderBy('v.itemTypeId', 'ASC')
                    ->addOrderBy('v.displayOrder', 'ASC')
                    ->addOrderBy('v.referenceId', 'ASC');
