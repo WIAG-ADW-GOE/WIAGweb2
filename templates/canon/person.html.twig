@@ -103,18 +103,20 @@
 			</div>
 		    </div>
 		{% endif %}
-		{% for person in personRole %}
-		    {# 2022-11-02 TODO {{ dump(person) }} #}
-		    {% for urltype in person.urlbytype|keys %}
-			<div class="row mx-2 mt-3 mb-2">
-			    <div class="col-12">
-				{{ include('canon/_person_url_external.html.twig', {
-				    urltype: urltype,
-				    urls: personName.urlbytype[urltype],
-				}) }}
-			    </div>
+
+		{% set url_by_type=personName.urlbytype %}
+		{% if url_by_type is null or url_by_type is empty %}
+		    {% set url_by_type=personName.sibling ? personName.sibling.urlbytype : [] %}
+		{% endif %}
+		{% for urltype in url_by_type|keys %}
+		    <div class="row mx-2 mt-3 mb-2">
+			<div class="col-12">
+			    {{ include('canon/_person_url_external.html.twig', {
+				urltype: urltype,
+				urls: url_by_type[urltype],
+			    }) }}
 			</div>
-		    {% endfor %}
+		    </div>
 		{% endfor %}
 		<div class="row mx-2">
 		    <div class="col-12">

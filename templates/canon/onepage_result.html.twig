@@ -55,23 +55,16 @@
 			<div custom-style="WiagId" class="d-flex"><a class="ms-auto" href={{ permalink }}>{{ id_public }}</a></div>
 			{# name #}
 			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
-			{% set academicTitle=person.combineProperty('academic_title') %}
-			{% if academicTitle %}
-			    <div custom-style="AkadTitel">{{ academicTitle }}</div>
+			{% set academic_title=person.combineProperty('academic_title') %}
+			{% if academic_title %}
+			    <div custom-style="AkadTitel">{{ academic_title }}</div>
 			{% endif %}
-			{# comments #}
-			{# 2022-11-01 TODO #}
-			{% if false %}
-			    {% for person_loop in node.personRole %}
-				{{ dump(person_loop.noteperson) }}
-			    {% endfor %}
-			{% endif %}
-			{% set note_person=person.combineProperty('note_person') %}
+			{# comments; skip person.noteName and name variants #}
+			{% set note_person = person.combine('notePerson') %}
 			{% if note_person %}
 			    <div custom-style="Bemerkung">{{ note_person|protectOrdinal|raw }}</div>
 			{% endif %}
 		    </div>
-
 		    {# offices and references #}
 		    {% for person_loop in node.personRole %}
 		    {# offices, parameter: item #}

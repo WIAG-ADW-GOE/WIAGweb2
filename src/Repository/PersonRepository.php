@@ -13,6 +13,7 @@ use App\Entity\ReferenceVolume;
 use App\Entity\InstitutionPlace;
 use App\Entity\Authority;
 use App\Entity\PlaceIdExternal;
+use App\Entity\UrlExternal;
 use App\Form\Model\BishopFormModel;
 use App\Service\UtilService;
 
@@ -157,7 +158,9 @@ class PersonRepository extends ServiceEntityRepository {
 
 
     /**
+     * setPersonName($canon_list)
      *
+     * set personName foreach element of `$canon_list`.
      */
     public function setPersonName($canon_list) {
 
@@ -176,8 +179,27 @@ class PersonRepository extends ServiceEntityRepository {
             $id_person_map[$r->getId()] = $r;
         }
 
+        // set personName, personName->sibling, personName->urlByType, personName->sibling->urlByType
+        $em = $this->getEntityManager();
+        $itemRepository = $em->getRepository(Item::class);
+        $urlExternalRepository = $em->getRepository(UrlExternal::class);
         foreach($canon_list as $canon) {
-            $person = $id_person_map[$canon->getPersonIdName()];
+            $person_id_name = $canon->getPersonIdName();
+            $person = $id_person_map[$person_id_name];
+            // set sibling (only relevant for bishops)
+            if ($person->getItem()->getSource() == 'Bischof') {
+                $itemRepository->setSibling($person);
+            }
+
+            $urlByType = $urlExternalRepository->groupByType($person_id_name);
+            $person->setUrlByType($urlByType);
+
+            $sibling = $person->getSibling();
+            if ($sibling) {
+                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
+                $sibling->setUrlByType($urlByType);
+            }
+
             $canon->setPersonName($person);
         }
 

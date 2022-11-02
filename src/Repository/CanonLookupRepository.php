@@ -319,19 +319,11 @@ class CanonLookupRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
 
         // set $canon->personName
+        // with sibling and urlExternal
         $em->getRepository(Person::class)->setPersonName($canon_list);
 
         // set $canon->otherSource
         $this->setOtherSource($canon_list);
-
-        $itemRepository = $em->getRepository(Item::class);
-        // set sibling (only relevant for bishops)
-        foreach($canon_list as $canon) {
-            $person = $canon->getPersonName();
-            if ($person->getItem()->getSource() == 'Bischof') {
-                $itemRepository->setSibling($person);
-            }
-        }
 
         $person_list = $this->getPersonList($canon_list);
 

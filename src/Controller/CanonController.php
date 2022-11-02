@@ -158,10 +158,6 @@ class CanonController extends AbstractController {
         // $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
         // $itemReferenceRepository->setReferenceVolume($personRole);
 
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
-        $urlByType = $urlExternalRepository->groupByType($personName->getId());
-        $personName->setUrlByType($urlByType);
-
         // * version before 2022-07-18
         // // get person (name, date of birth ...)
         // $personRepository = $entityManager->getRepository(Person::class);

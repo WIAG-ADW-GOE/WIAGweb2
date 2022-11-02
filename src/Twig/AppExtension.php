@@ -26,7 +26,7 @@ class AppExtension extends AbstractExtension
     }
 
     public function protectOrdinal(string $info): string {
-        $protectOrdinal = preg_replace('/( [IVX]+\.)/', '&nbsp;${1}', $info);
+        $protectOrdinal = preg_replace('/ ([IVX]+\.)/', '&nbsp;${1}', $info);
         return $protectOrdinal;
     }
 }
