@@ -92,7 +92,6 @@ class CanonController extends AbstractController {
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
 
-
             $canonLookupRepository = $em->getRepository(CanonLookup::class);
             $canon_list = $canonLookupRepository->findList($id_list, 1);
 

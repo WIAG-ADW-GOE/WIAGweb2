@@ -60,8 +60,15 @@
 			    <div custom-style="AkadTitel">{{ academicTitle }}</div>
 			{% endif %}
 			{# comments #}
-			{% if person.noteperson %}
-			    <div custom-style="Bemerkung">{{ person.noteperson|protectOrdinal|raw }}</div>
+			{# 2022-11-01 TODO #}
+			{% if false %}
+			    {% for person_loop in node.personRole %}
+				{{ dump(person_loop.noteperson) }}
+			    {% endfor %}
+			{% endif %}
+			{% set note_person=person.combineProperty('note_person') %}
+			{% if note_person %}
+			    <div custom-style="Bemerkung">{{ note_person|protectOrdinal|raw }}</div>
 			{% endif %}
 		    </div>
 
