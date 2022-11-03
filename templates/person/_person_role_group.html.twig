@@ -10,7 +10,7 @@
 		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
 		    {% set references = person.item.reference|filter(r => r.containsbio) %}
 		{% else %}
-		    {% set references = person.item.sortedreference %}
+		    {% set references = person.item.sortedreference('displayOrder') %}
 		{% endif %}
 		{% if references and references|length > 0 %}
 		    <dt class="col-sm-3">{{ references|length > 1 ? 'Referenzwerke' : 'Referenzwerk' }}</dt>

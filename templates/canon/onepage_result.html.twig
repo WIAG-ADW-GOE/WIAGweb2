@@ -104,7 +104,7 @@
 		    </div>
 		    <div class="row col-12 mx-2">
 			<div custom-style="Compact" class="small mt-2">
-			    {% for ref in person_loop.item.sortedreference %}
+			    {% for ref in person_loop.item.sortedreference('titleShort') %}
 				{% set idinref = ref.idinreference %}
 				{% if ref.referencevolume %}
 				    {{ ref.referencevolume.titleshort }}{% if ref.page %}, S.&nbsp;{{ ref.page|replace({'<b>':'', '</b>':''}) }}{% endif %}{% if idinref %}, ID/Nr.&nbsp;{{ idinref }}{% endif %}{% if not loop.last %} &ndash; {% endif %}

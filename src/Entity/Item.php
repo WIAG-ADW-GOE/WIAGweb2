@@ -217,11 +217,11 @@ class Item {
         return $this->reference;
     }
 
-    public function getSortedReference() {
+    public function getSortedReference(string $field) {
         // sort by referece_volume.display_order
 
         $ref_list = $this->reference->toArray();
-        uasort($ref_list, function($a, $b) {
+        uasort($ref_list, function($a, $b) use ($field) {
             $a_vol = $a->getReferenceVolume();
             $b_vol = $b->getReferenceVolume();
 
@@ -233,9 +233,11 @@ class Item {
                 return 1;
             }
 
-            // cv bk 2022-10-26 sort by title_short
+            // cv bk 2022-10-26 sort by title_short for single page
             // if ($a_vol->getDisplayOrder() <= $b_vol->getDisplayOrder()) {
-            if ($a_vol->getTitleShort() <= $b_vol->getTitleShort()) {
+            $getter = 'get'.ucfirst($field);
+
+            if ($a_vol->$getter() <= $b_vol->$getter()) {
                 return -1;
             } else {
                 return 1;
