@@ -159,9 +159,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $year = $model->year;
         $someid = $model->someid;
 
-        // $query = $qb->getQuery();
-        // dump($query->getDQL());
-
         // join tables when called for facet counts
         if ($add_joins) {
             if ($domstift) {
@@ -184,7 +181,6 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->setParameter('q_office', '%'.$office.'%');
             }
         } elseif ($office) {
-            dump("conditions office");
             $qb->leftjoin('r.role', 'role_type')
                ->andWhere('r.roleName LIKE :q_office OR role_type.name LIKE :q_office')
                ->setParameter('q_office', '%'.$office.'%');
