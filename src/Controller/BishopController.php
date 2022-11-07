@@ -82,6 +82,7 @@ class BishopController extends AbstractController {
             }
 
             $itemRepository = $entityManager->getRepository(Item::class);
+            $model->editStatus = [Item::ONLINE_STATUS['Bischof']];
             $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
 

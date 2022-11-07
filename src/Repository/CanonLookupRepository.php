@@ -67,6 +67,9 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     *
+     */
     public function canonIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
@@ -80,8 +83,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $name = $model->name;
         $someid = $model->someid;
 
-        // TODO (edit) include item->isOnline as criterion
-
         // c (group by and query conditions)
         // p, r (sort) use person with prioRole 1
         // p_name with c.prioRole = 1: we need each person only once
@@ -91,6 +92,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->join('App\Entity\Person', 'p_prio', 'WITH', 'p_prio.id = c_prio.personIdRole')
                    ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = c_prio.personIdName');
 
+        // table canon_lookup only contains entries with status 'online'
         $this->addCanonConditions($qb, $model, false);
         $this->addCanonFacets($qb, $model);
 

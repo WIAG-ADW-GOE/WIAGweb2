@@ -32,6 +32,14 @@ class Item {
         'Priester Utrecht' => ['id' => 10],
     ];
 
+    // map online status
+    const ONLINE_STATUS = [
+        4 => 'fertig', # bishop
+        'Bischof' => 'fertig',
+        5 => 'online', # canon
+        'Domherr' => 'online',
+    ];
+
     // map authority name
     const AUTHORITY_ID = [
             "GND" => 1,

@@ -14,9 +14,9 @@ class BishopFormModel {
     public $office = null;
     public $year = null;
     public $someid = null;
-    public $isOnline = true;
+    public $isOnline = null;
     public $isDeleted = 0;
-    public $editStatus = ['fertig'];
+    public $editStatus = [];
     public $commentDuplicate = null;
     public $comment = null;
     public $dateCreated = null;

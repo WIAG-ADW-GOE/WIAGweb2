@@ -630,7 +630,9 @@ class ItemRepository extends ServiceEntityRepository
                    ->setParameter(':authId', $authId);
 
         if ($isonline) {
-            $qb->andWhere('i.isOnline = 1');
+            $online_status = Item::ONLINE_STATUS[$itemTypeId];
+            $qb->andWhere('i.isOnline = :online_status')
+               ->setParameter('online_status', $online_status);
         }
 
         $query = $qb->getQuery();
