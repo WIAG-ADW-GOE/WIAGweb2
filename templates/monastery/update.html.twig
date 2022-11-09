@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {{ form_start(form) }}
+	<div class="container-fluid">
+	    <div class="row ms-2">
+		<div class="col-12">
+		    <div class="topic-title">Klöster &ndash; Daten der Klosterdatenbank</div>
+		     {% if testResult is defined and testResult is not null%}
+			 <div>{{ testResult }}</div>
+		     {% endif %}
+		     <button type="submit" class="btn btn-primary btn-sm">Servertest</button>
+		</div>
+	    </div>
+	</div>
+    {{ form_end(form) }}
+{% endblock %}
