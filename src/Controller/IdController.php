@@ -73,7 +73,7 @@ class IdController extends AbstractController {
             return $this->$typeName($itemId, $format);
 
         } else {
-            throw $this->createNotFoundException('Id is nicht gültig: '.$itemId);
+            throw $this->createNotFoundException('ID is nicht gültig: '.$id);
         }
 
 
@@ -147,8 +147,9 @@ class IdController extends AbstractController {
     public function canon($id, $format) {
 
         $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
-        $canon_list = $canonLookupRepository->findList([$id], null);
-        // dd($ids, $person_id, $canon_list);
+        $canon_lookup_list = $canonLookupRepository->findByPersonIdRole($id);
+        $id_name = $canon_lookup_list[0]->getPersonIdName();
+        $canon_list = $canonLookupRepository->findList([$id_name], null);
 
         // extract Person object to be compatible with bishops
         $canon_list = $this->utilService->sortByFieldList($canon_list, ['prioRole']);
