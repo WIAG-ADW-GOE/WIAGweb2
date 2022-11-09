@@ -631,7 +631,7 @@ class ItemRepository extends ServiceEntityRepository
 
         if ($isonline) {
             $online_status = Item::ONLINE_STATUS[$itemTypeId];
-            $qb->andWhere('i.isOnline = :online_status')
+            $qb->andWhere('i.editStatus = :online_status')
                ->setParameter('online_status', $online_status);
         }
 
