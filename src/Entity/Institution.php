@@ -203,4 +203,9 @@ class Institution
 
         return $this;
     }
+
+    public function getInstitutionPlace() {
+        return $this->institutionPlace;
+    }
+
 }

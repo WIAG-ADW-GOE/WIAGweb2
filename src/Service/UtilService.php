@@ -622,4 +622,17 @@ class UtilService {
         }
     }
 
+    static public function offset($offset, $page_number, $count, $page_size) {
+        if (!is_null($offset)) {
+            $offset = intdiv($offset, $page_size) * $page_size;
+        } elseif (!is_null($page_number) && $page_number > 0) {
+            $page_number = min($page_number, intdiv($count - 1, $page_size) + 1);
+            $offset = ($page_number - 1) * $page_size;
+        } else {
+            $offset = 0;
+        }
+
+        return $offset;
+    }
+
 }

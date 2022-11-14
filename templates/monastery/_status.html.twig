@@ -1,0 +1,16 @@
+{% if status == 200 or status == 240 %}
+    <div>Abfrage der Klosterdatenbank erfolgreich.</div>
+    {% set pb_width=total * 100 // countMax %}
+    <div class="progress w-25">
+	<div class="progress-bar"
+	     style="width: {{ pb_width }}%"
+	     role="progressbar"
+	     aria-label="Zahl der Klosterdaten"
+	     aria-valuenow="{{ total }}"
+	     aria-valuemin="0"
+	     aria-valuemax="{{ countMax }}"></div>
+    </div>
+{% else %}
+    <div>Abfrage der Klosterdatenbank beendet mit Status {{ status }}.</div>
+{% endif %}
+<div>Zahl der ausgelesenen Klosterdaten: {{ total }}</div>

@@ -88,6 +88,24 @@ class InstitutionPlace
         return $this->id;
     }
 
+    public function getInstitution() {
+        return $this->institution;
+    }
+
+    public function setInstitution($institution) {
+        $this->institution = $institution;
+        return $this;
+    }
+
+    public function getPlace() {
+        return $this->place;
+    }
+
+    public function setPlace($place) {
+        $this->place = $place;
+        return $this;
+    }
+
     public function getInstitutionId(): ?int
     {
         return $this->institutionId;

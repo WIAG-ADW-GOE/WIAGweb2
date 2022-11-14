@@ -12,7 +12,7 @@
 	<div class="row ms-2">
 	    <div class="col-12">
 		<div class="topic-title">Klöster</div>
-		<div>Daten der Klosterdatenbank übernehmen.</div>
+		<div>Daten der Klosterdatenbank übernehmen</div>
 	    </div>
 	</div>
 	<div class="row ms-2">
@@ -21,7 +21,9 @@
 		 data-iterate-query-url-value="{{ path('edit_monastery_update_step') }}"
 		 data-iterate-query-chunk-size-value="500">
 		<div class="my-2"
-		     data-iterate-query-target="status"></div>
+		     data-iterate-query-target="status">
+		    {{ include('monastery/_status.html.twig') }}
+		</div>
 		<button type="button"
 			class="btn btn-primary btn-sm"
 			data-action="iterate-query#start">Start</button>
