@@ -191,12 +191,13 @@ class Item {
     }
 
     static public function newItem($userWiagId, $itemType) {
+        $now = new \DateTimeImmutable('now');
         $item = new Item();
         $item->setItemTypeId(self::ITEM_TYPE_ID[$itemType]['id']);
         $item->setCreatedBy($userWiagId);
-        $item->setDateCreated(new \DateTimeImmutable('now'));
+        $item->setDateCreated($now);
         $item->setChangedBy($userWiagId);
-        $item->setDateChanged(new \DateTimeImmutable('now'));
+        $item->setDateChanged($now);
         return $item;
     }
 

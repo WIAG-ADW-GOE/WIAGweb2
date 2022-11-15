@@ -2,8 +2,12 @@
 
 namespace App\Entity;
 
+use App\Entity\Item;
 use App\Repository\InstitutionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 
 /**
  * @ORM\Entity(repositoryClass=InstitutionRepository::class)
@@ -78,6 +82,23 @@ class Institution
      * @ORM\Column(type="integer")
      */
     private $itemTypeId;
+
+    public function __construct() {
+        $this->institutionPlace = new ArrayCollection();
+    }
+
+    public function setItem($item) {
+        $this->item = $item;
+        return $this;
+    }
+
+    static public function newInstitution(Item $item) {
+        $institution = new Institution();
+        $institution->setItem($item)
+                    ->setItemTypeId($item->getItemTypeId());
+        return $institution;
+    }
+
 
     public function getId(): ?int
     {

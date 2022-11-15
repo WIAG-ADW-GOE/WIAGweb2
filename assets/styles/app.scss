@@ -98,6 +98,19 @@ footer {
     background-color: #efefee;
 }
 
+.blink {
+    animation: 2s infinite alternate blink-animation;
+}
+
+@keyframes blink-animation {
+    from {
+	opacity: 90%
+    }
+    to {
+	opacity: 10%
+  }
+}
+
 // 2022-08-03
 // add additional values
 .w-10 {

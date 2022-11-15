@@ -14,6 +14,9 @@ export default class extends Controller {
 
     async start() {
 	var offset = 0;
+	var total_count = 0;
+	var new_count = 0;
+
 
 	// debug
 	// this.chunkSizeValue = 10;
@@ -40,15 +43,33 @@ export default class extends Controller {
 	    }
 	    offset += parseInt(this.chunkSizeValue, 10);
 
+	    // sum up number of new elements
+	    new_count = this.accumulateByClassName(new_count, "new-count");
+
 	    if (offset >= max_offset) {
 		console.log('Abbruch: Obergrenze erreicht: ' + max_offset);
 		break;
 	    }
 
+	    // e.g. application specific status 240
 	    if (response.status > 200) {
 		break;
 	    }
 	}
+
     }
+
+    accumulateByClassName(total, class_name) {
+	var elmt_list = this.statusTarget.getElementsByClassName(class_name);
+
+	if (elmt_list.length > 0) {
+	    let acc_elmt = elmt_list.item(0);
+	    total += parseInt(acc_elmt.innerHTML);
+	    acc_elmt.innerHTML = total;
+	}
+
+	return total;
+    }
+
 
 }

@@ -23,12 +23,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class MonasteryController extends AbstractController {
     // route '/edit' is globally protected (see security.yaml)
 
-    // approximate total number of entries in Klosterdatenbank
-    const COUNT_MAX = 6000;
-
 
     /**
      * update monastery data
+     *
+     * display page with update options
      *
      * @Route("/edit/monastery/update", name="edit_monastery_update")
      */
@@ -46,8 +45,9 @@ class MonasteryController extends AbstractController {
      * @Route("/edit/monastery/update-step", name="edit_monastery_update_step")
      */
     function updateStep(Request $request,
-                        MonasteryService $service) {
-        $debug_flag = true;
+                        MonasteryService $service,
+                        EntityManagerInterface $entityManager) {
+        $debug_flag = false;
         $chunk_size = $request->query->get('chunkSize');
         $offset = $request->query->get('offset');
 
@@ -55,7 +55,9 @@ class MonasteryController extends AbstractController {
         $count = 0;
         $status = 200;
         try {
-            $list = $service->queryGSList($chunk_size, $offset);
+            $set_size_n_list = $service->queryGSList($chunk_size, $offset);
+            $list = $set_size_n_list["list"];
+            $set_size = $set_size_n_list["set_size"];
         } catch (Exception $e) {
             $status = $e->getMessage();
         }
@@ -67,47 +69,56 @@ class MonasteryController extends AbstractController {
             $updated_n = 0;
             $created_n = 0;
             foreach ($list as $gsn) {
-                $update_flag = $service->update($gsn);
-                if ($update_flag) {
+                $repository = $entityManager->getRepository(Institution::class);
+                $monastery_list = $repository->findByIdGsn($gsn);
+
+                if (!is_null($monastery_list) && count($monastery_list) > 0) {
+                    $service->update($monastery_list[0]);
                     $updated_n += 1;
                 } else {
-                    // TODO new entry
-                    // $service->create($gsn);
+                    $new_item = Item::newItem($this->getUser()->getId(), 'Kloster');
+                    $new_monastery = Institution::newInstitution($new_item);
+                    $new_monastery->setIdGsn($gsn);
+                    $service->update($new_monastery);
+                    $entityManager->persist($new_item);
+                    $entityManager->persist($new_monastery);
                     $created_n += 1;
                 }
             }
-            $this->getEntityManager()->flush();
+            $entityManager->flush();
 
             $count = count($list);
+            // done ?
             if ($count < $chunk_size) {
                 $status = 240;
             }
+
+            //debug
+            // $max_offset = 500;
+            // if ($offset > $max_offset) {
+            //     $status = 240;
+            // }
         }
 
         if ($debug_flag) {
-            $response = $this->render('monastery/debug_status.html.twig', [
-                'status' => $status,
-                'count' => $count,
-                'total' => $offset + $count,
-                'countMax' => self::COUNT_MAX,
-            ]);
-
-            return $response;
+            // access dump data
+            $template = 'monastery/debug_status.html.twig';
+        } else {
+            $template = 'monastery/_status.html.twig';
         }
 
-
-        $response = $this->render('monastery/_status.html.twig', [
+        $response = $this->render($template, [
             'status' => $status,
             'count' => $count,
-            'total' => $offset + $count,
-            'countMax' => self::COUNT_MAX,
+            'totalCount' => $offset + $updated_n + $created_n,
+            'maxCount' => $set_size,
+            'createdCount' => $created_n,
         ]);
-
-
 
         $response->setStatusCode($status);
 
         return $response;
     }
+
 
 }
