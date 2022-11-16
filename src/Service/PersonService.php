@@ -1475,7 +1475,7 @@ class PersonService {
         }
 
         // delete?
-        if (!is_null($roleProperty) && (isset($data['delete']) || $no_data)) {
+        if (!is_null($roleProperty) && $data['delete'] == "delete" || $no_data) {
             $role->getRoleProperty()->removeElement($roleProperty);
             $roleProperty->setPersonRole(null);
             $this->entityManager->remove($roleProperty);

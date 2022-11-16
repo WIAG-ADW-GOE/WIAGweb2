@@ -26,17 +26,7 @@
 		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
 	{% endif %}
 	{# delete button #}
-	<button class="btn btn-light btn-sm"
-		type="button"
-		data-value="up"
-		data-controller="toggle-arrow set-value"
-		data-toggle-arrow-target="button"
-		data-set-value-old-data-value=""
-		data-set-value-new-data-value="delete"
-		data-set-value-target-id-value="{{ base_id_role }}_delete"
-		data-toggle-arrow-img-closed-value="3-fill"
-		data-toggle-arrow-img-open-value="3"
-		data-action="toggle-arrow#toggle click->on-input#mark click->set-value#set"><img width="20" height="20" currentColor="orange" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
+	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_role }) }}
     </span>
 </div>
 <div class="col-11">
@@ -53,6 +43,7 @@
 		   name="{{ base_input_name_role }}[id]"
 		   class="form-control form-control-sm d-none"
 		   value="{{ role.id ?? null }}">
+	    {# delete flag (hidden) #}
 	    <input type="text"
 		   id="{{ base_id_role }}_delete"
 		   name="{{ base_input_name_role }}[delete]"

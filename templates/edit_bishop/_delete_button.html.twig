@@ -1,0 +1,12 @@
+{# params: base_id_delete #}
+<button class="btn btn-light btn-sm"
+	       type="button"
+	       data-value="up"
+	       data-controller="toggle-arrow set-value"
+	       data-toggle-arrow-target="button"
+	       data-set-value-old-data-value=""
+	       data-set-value-new-data-value="delete"
+	       data-set-value-target-id-value="{{ base_id_delete }}_delete"
+	       data-toggle-arrow-img-closed-value="3-fill"
+	       data-toggle-arrow-img-open-value="3"
+	       data-action="toggle-arrow#toggle click->on-input#mark click->set-value#set"><img width="20" height="20" currentColor="orange" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>

@@ -10,6 +10,7 @@
 {% endif %}
 <div data-controller="input-state">
     <div class="input-group input-group-sm mb-1">
+	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_prop  }) }}
 	{# property name label #}
 	<label class="input-group-text wiag-input-text-blue" for="{{ base_id_prop }}_type">Attribut-Name</label>
 	{# - id (hidden) #}
@@ -19,6 +20,12 @@
 	       class="form-control form-control-sm"
 	       hidden="hidden"
 	       value="{{ prop.id }}">
+	{# - delete flag (hidden) #}
+	<input type="text"
+	       id="{{ base_id_prop }}_delete"
+	       name="{{ base_input_name_prop }}[delete]"
+	       class="form-control form-control-sm d-none"
+	       value="">
 	{# property name #}
 	<span class="w-20">
 	    <select class="form-select form-select-sm wiag-input"
@@ -46,17 +53,5 @@
 		data-autocomplete-target="results"
 		style="max-width: 12rem;"></ul>
 	</div>
-	{% if delete_by_button %}
-	    {# delete #}
-	    <div class="form_check ms-2 mt-1 align-middle">
-		<input class="form-check-input"
-		       type="checkbox"
-		       value=""
-		       id="{{ base_id_prop }}_delete"
-		       name="{{ base_input_name_prop }}[delete]"
-		       data-action="click->input-state#toggle">
-		<label class="form-check-label ms-1" for="{{ base_id_prop }}_delete">löschen</label>
-	    </div>
-	{% endif %}
     </div>
 </div>
