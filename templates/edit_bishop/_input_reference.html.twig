@@ -12,8 +12,7 @@
 	idinreference: "",
     } %}
 {% endif %}
-<div class="col-1 text-end pe-0"
-     data-controller="on-input">
+<div class="col-1 text-end pe-0">
     {# insert button #}
     <span class="text-nowrap">
 	{% if is_last %}
@@ -21,27 +20,7 @@
 		    type="button"
 		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
 	{% endif %}
-	{% if delete_by_button %}
-	    {# delete checkbox #}
-	    <input class="form-check-input"
-		   type="checkbox"
-		   value=""
-		   hidden="hidden"
-		   id="{{ base_id_ref }}_delete"
-		   name="{{ base_input_name_ref }}[delete]"
-		   data-input-state-target="checkbox"
-		   data-on-input-target="checkbox"
-		   data-action="click->input-state#toggle">
-	    {# delete button #}
-	    <button class="btn btn-light btn-sm"
-		    type="button"
-		    data-value="up"
-		    data-controller="toggle-arrow"
-		    data-toggle-arrow-target="button"
-		    data-toggle-arrow-img-closed-value="3-fill"
-		    data-toggle-arrow-img-open-value="3"
-		    data-action="toggle-arrow#toggle click->on-input#toggle"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
-	{% endif %}
+	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_ref  }) }}
     </span>
 </div>
 <div class="col-11">
@@ -53,6 +32,12 @@
 	       name="{{ base_input_name_ref }}[id]"
 	       class="form-control form-control-sm d-none"
 	       value="{{ ref.id }}">
+	{# delete flag (hidden) #}
+	<input type="text"
+	       id="{{ base_id_ref }}_delete"
+	       name="{{ base_input_name_ref }}[delete]"
+	       class="form-control form-control-sm d-none"
+	       value="">
 	<div class="w-50"
 	     {{ stimulus_controller('autocomplete', {
 		 url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),

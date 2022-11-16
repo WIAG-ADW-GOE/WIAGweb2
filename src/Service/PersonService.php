@@ -1140,7 +1140,6 @@ class PersonService {
         // $key_list = ['role', 'institution', 'date_begin', 'date_end'];
         $key_list = ['role', 'institution'];
         $no_data = $this->utilService->no_data($data, $key_list);
-        $delete_flag = isset($data['delete']);
 
         $role = null;
 
@@ -1312,7 +1311,7 @@ class PersonService {
         }
 
         // delete?
-        if (!is_null($reference) && (isset($data['delete']) || $no_data)) {
+        if (!is_null($reference) && $data['delete'] == "delete" || $no_data) {
             $item->getReference()->removeElement($reference);
             $reference->setItem(null);
             $this->entityManager->remove($reference);
