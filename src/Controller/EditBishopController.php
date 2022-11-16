@@ -257,7 +257,7 @@ class EditBishopController extends AbstractController {
         $template = "";
         if ($request->query->get('listOnly')) {
             $template = 'edit_bishop/_list.html.twig';
-        } else { // useful for debugging: dump output is accessible
+        } else { // useful for debugging: dump output is accessible; see edit_bishop/_list.html.twig
             $template = 'edit_bishop/edit_result.html.twig';
         }
 

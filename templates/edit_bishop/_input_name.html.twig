@@ -27,7 +27,9 @@
 		       class="form-control wiag-input"
 		       value="{{ person.familyname }}"
 		       spellcheck="false"
-		       aria-label="Vorname">
+		       aria-label="Nachname"
+		       data-controller="move-cursor"
+		       data-action="blur->move-cursor#moveStart">
 	    </div>
 	    <div class="input-group input-group-sm mt-1">
 		<span class="input-group-text">geboren</span>
