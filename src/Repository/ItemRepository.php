@@ -404,9 +404,9 @@ class ItemRepository extends ServiceEntityRepository
 
 
     /**
-     * AJAX
+     * usually used for asynchronous JavaScript request
      */
-    public function suggestBishopName($name, $hintSize) {
+    public function suggestBishopName($name, $hintSize, $edit_status = null) {
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
@@ -419,6 +419,11 @@ class ItemRepository extends ServiceEntityRepository
                    ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
                    ->setParameter(':name', '%'.$name.'%');
 
+        if (!is_null($edit_status)) {
+            $qb->andWhere('i.editStatus = :edit_status')
+               ->setParameter('edit_status', $edit_status);
+        }
+
         $qb->setMaxResults($hintSize);
 
         $query = $qb->getQuery();
@@ -428,7 +433,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * AJAX
+     * usually used for asynchronous JavaScript request
      */
     public function suggestBishopDiocese($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')
@@ -448,7 +453,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * AJAX
+     * usually used for asynchronous JavaScript request
      */
     public function suggestBishopOffice($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')
@@ -469,7 +474,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * JavaScript call
+     * usually used for asynchronous JavaScript request
      */
     public function suggestBishopCommentDuplicate($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')

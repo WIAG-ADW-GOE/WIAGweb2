@@ -6,7 +6,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'name'}),
+		     url: path('bishop_suggest_all', {field: 'name'}),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}

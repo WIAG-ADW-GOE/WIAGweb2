@@ -217,7 +217,7 @@ class BishopController extends AbstractController {
 
 
     /**
-     * AJAX
+     * usually used for asynchronous JavaScript request
      *
      * @Route("/bischof-suggest/{field}", name="bishop_suggest")
      */
@@ -225,12 +225,44 @@ class BishopController extends AbstractController {
                                  ItemRepository $repository,
                                  String $field) {
         $name = $request->query->get('q');
+
+        $edit_status = Item::ONLINE_STATUS['Bischof'];
+        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+
+    }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     *
+     * @Route("/bischof-suggest-all/{field}", name="bishop_suggest_all")
+     */
+    public function autocompleteAll(Request $request,
+                                    ItemRepository $repository,
+                                    String $field) {
+        $name = $request->query->get('q');
+
+        $edit_status = null;
+        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+    }
+
+
+    private function handleAutocomplete($repository,
+                                        $name,
+                                        $field,
+                                        $edit_status) {
+
         $fnName = 'suggestBishop'.ucfirst($field);
-        $suggestions = $repository->$fnName($name, self::HINT_SIZE);
+        if ($field == 'name') {
+            $suggestions = $repository->$fnName($name, self::HINT_SIZE, $edit_status);
+        } else {
+            $suggestions = $repository->$fnName($name, self::HINT_SIZE);
+        }
 
         return $this->render('bishop/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
     }
+
+
 
 }

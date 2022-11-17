@@ -69,33 +69,6 @@ class PersonRepository extends ServiceEntityRepository {
     */
 
     /**
-     * see PriestUtController
-     * 2022-10-07 obsolete? use findList instead
-     */
-    // public function findWithOffice($id) {
-    //     $qb = $this->createQueryBuilder('p')
-    //                ->addSelect('bp')
-    //                ->join('p.item', 'i')
-    //                ->leftjoin('i.itemProperty', 'ip')
-    //                ->leftjoin('p.birthplace', 'bp')
-    //                ->andWhere('p.id = :id')
-    //                ->setParameter('id', $id);
-
-    //     // sorting of birthplaces see annotation
-
-    //     $query = $qb->getQuery();
-    //     $person = $query->getOneOrNullResult();
-
-    //     $personRoleRepository = $this->getEntityManager()
-    //                                  ->getRepository(PersonRole::class);
-
-    //     $person->setRole($personRoleRepository->findRoleWithPlace($id));
-
-    //     return $person;
-    // }
-
-
-    /**
      *
      */
     public function findList($id_list) {
@@ -350,7 +323,7 @@ class PersonRepository extends ServiceEntityRepository {
         return $suggestions;
     }
 
-        /**
+    /**
      * usually used for asynchronous JavaScript request
      */
     public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
