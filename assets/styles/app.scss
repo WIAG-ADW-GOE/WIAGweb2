@@ -56,17 +56,21 @@
     font-weight: 600;
 }
 
+.wiag-form-warning {
+    color: #fd7e14;
+}
+
 .wiag-input::placeholder {
     font-weight: 300;
 }
 
 .wiag-input-text-blue {
     // background: #b6c0df
-    background: #8bbfe1
+    background: #8bbfe1;
 }
 
 .wiag-bg-internal {
-    background: #cce8cf
+    background: #cce8cf;
 }
 
 // remove the standard caret after the dropdown menu entry

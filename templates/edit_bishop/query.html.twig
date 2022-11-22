@@ -8,19 +8,13 @@
 {% endblock %}
 
 {% block body %}
-    {{ form_start(form) }}
-	<div class="container-fluid">
-	    <div class="row ms-2 col-12">
-		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
-	    </div>
-	    {{ include("edit_bishop/_form_elements.html.twig") }}
-	    <div class="row mt-2 mx-2">
-		<div class="col-12">
-		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
-		</div>
-	    </div>
-	</div>
-
-    {{ form_end(form) }}
-
+    <div data-controller="modal-form"
+	 data-modal-form-query-url-value="{{ path('edit_bishop_merge_query') }}"
+	 data-modal-form-merge-item-url-value="{{ path('edit_bishop_merge_item') }}">
+	{{ include('edit_bishop/_query_body.html.twig') }}
+	{{ include("_modal.html.twig", {
+	    modal_title: "Bischöfe zusammenführen",
+	    modal_success: "Übernehmen",
+	}) }}
+    </div>
 {% endblock %}

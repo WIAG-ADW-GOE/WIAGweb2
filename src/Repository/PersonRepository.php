@@ -91,8 +91,6 @@ class PersonRepository extends ServiceEntityRepository {
         $query = $qb->getQuery();
         $person_list = $query->getResult();
 
-        // restore order as in $id_list
-        $person_list = $this->utilService->reorder($person_list, $id_list, "id");
 
         $em = $this->getEntityManager();
         $itemRepository = $em->getRepository(Item::class);
@@ -112,6 +110,9 @@ class PersonRepository extends ServiceEntityRepository {
 
         // set authorities
         $em->getRepository(Authority::class)->setAuthority($item_list);
+
+        // restore order as in $id_list
+        $person_list = $this->utilService->reorder($person_list, $id_list, "id");
 
         return $person_list;
     }
@@ -179,21 +180,6 @@ class PersonRepository extends ServiceEntityRepository {
         return null;
     }
 
-    /**
-     * 2022-07-21 obsolete?
-     */
-    // public function addReferenceVolumes($person) {
-    //     $em = $this->getEntityManager();
-    //     # add reference volumes (combined key)
-    //     $repository = $em->getRepository(ReferenceVolume::class);
-    //     foreach ($person->getItem()->getReference() as $reference) {
-    //         $itemTypeId = $reference->getItemTypeId();
-    //         $referenceId = $reference->getReferenceId();
-    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-    //         $reference->setReferenceVolume($referenceVolume);
-    //     }
-    //     return $person;
-    // }
 
     /**
      * usually used for asynchronous JavaScript request

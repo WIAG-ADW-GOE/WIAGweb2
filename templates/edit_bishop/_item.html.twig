@@ -1,12 +1,12 @@
-<div class="container-fluid p-2 my-2 border border-2 border-success rounded">
-    {% set delete_by_button=false %}
-    {% set intern_collapsable=false %}
-    {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
-    {% set base_id=editFormId~'_'~loop.index0 %}
-    {% set base_input_name=editFormId~'['~loop.index0~']' %}
-    {# header #}
-    {% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
-    {# TODO drop controller insert; update Aktion-Menu #}
+{% set delete_by_button=false %}
+{% set intern_collapsable=false %}
+{% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
+{% set base_id=editFormId~'_'~index %}
+{% set base_input_name=editFormId~'['~index~']' %}
+{# header #}
+{% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+<div class="container-fluid p-2 my-2 border border-2 border-success rounded"
+     id="{{ base_id }}">
     <div data-controller="toggle-arrow on-input insert auth-search"
 	 data-toggle-arrow-state-value="true"
 	 data-toggle-arrow-img-open-value="down"

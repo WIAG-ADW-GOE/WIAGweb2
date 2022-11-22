@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
@@ -36,8 +37,11 @@ class EditBishopController extends AbstractController {
 
     private $personService;
     private $itemTypeId;
+    private $entityManager;
 
-    public function __construct(PersonService $personService) {
+    public function __construct(PersonService $personService,
+                                EntityManagerInterface $entityManager) {
+        $this->entityManager = $entityManager;
         $this->personService = $personService;
         $this->itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
     }
@@ -50,21 +54,13 @@ class EditBishopController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager) {
 
-
         $model = new BishopFormModel;
         // set defaults
         $model->editStatus = ['fertig'];
         $model->isOnline = true;
         $model->listSize = 5;
 
-        $personRepository = $entityManager->getRepository(Person::class);
-
-        $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
-        $status_list = array_column($suggestions, 'suggestion');
-
-        $status_choices = ['- alle -' => null];
-        $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
-        // $status_choices = array_combine($status_list, $status_list);
+        $status_choices = $this->getStatusChoices($entityManager);
 
         $form = $this->createForm(EditBishopFormType::class, $model, [
             'status_choices' => $status_choices,
@@ -76,7 +72,13 @@ class EditBishopController extends AbstractController {
         $form->handleRequest($request);
         $model = $form->getData();
 
+        $template_params = [
+            'form' => $form,
+        ];
+
+        $person_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
+            $personRepository = $entityManager->getRepository(Person::class);
 
             $itemRepository = $entityManager->getRepository(Item::class);
 
@@ -99,38 +101,39 @@ class EditBishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 
-            $edit_form_id = 'edit_bishop_edit_form';
-            $userWiagRepository = $entityManager->getRepository(UserWiag::class);
-            $authorityRepository = $entityManager->getRepository(Authority::class);
-            $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
-
-            // property types
-            $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-            $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-            $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
-            $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-
-            return $this->renderForm('edit_bishop/query_result.html.twig', [
-                'menuItem' => 'edit-menu',
-                'form' => $form,
-                'editFormId' => $edit_form_id,
-                'count' => $count,
+            $template_params = [
                 'personList' => $person_list,
-                'userWiagRepository' => $userWiagRepository,
+                'form' => $form,
+                'count' => $count,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
-                'authBaseUrlList' => $auth_base_url_list,
-                'itemPropertyTypeList' => $item_property_type_list,
-                'rolePropertyTypeList' => $role_property_type_list,
-            ]);
+            ];
+
         }
 
-        return $this->renderForm('edit_bishop/query.html.twig', [
-            'menuItem' => 'edit-menu',
-            'form' => $form,
-        ]);
+        $template = 'edit_bishop/query.html.twig';
+        return $this->renderEditElements($template, $template_params);
 
     }
+
+    /**
+     * getStatusChoices(EntityManagerInterface $entityManager)
+     *
+     * @return choice list for status values
+     */
+    private function getStatusChoices(EntityManagerInterface $entityManager) {
+        $personRepository = $entityManager->getRepository(Person::class);
+
+        $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
+        $status_list = array_column($suggestions, 'suggestion');
+
+        $status_choices = ['- alle -' => null];
+        $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
+        // $status_choices = array_combine($status_list, $status_list);
+
+        return $status_choices;
+    }
+
 
     /**
      * map data to objects and save them to the database
@@ -141,7 +144,6 @@ class EditBishopController extends AbstractController {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
-
 
         /* map/validate form */
         $current_user_id = $this->getUser()->getId();
@@ -243,17 +245,6 @@ class EditBishopController extends AbstractController {
             }
         }
 
-        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
-        $authorityRepository = $entityManager->getRepository(Authority::class);
-
-        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
-
-        // property types
-        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-
         $template = "";
         if ($request->query->get('listOnly')) {
             $template = 'edit_bishop/_list.html.twig';
@@ -261,16 +252,38 @@ class EditBishopController extends AbstractController {
             $template = 'edit_bishop/edit_result.html.twig';
         }
 
-        return $this->render($template, [
-            'menuItem' => 'edit-menu',
+        return $this->renderEditElements($template, [
             'personList' => $person_list,
             'newEntry' => $new_entry,
+        ]);
+
+    }
+
+    private function renderEditElements($template, $param_list = array()) {
+        $edit_form_id = 'edit_bishop_edit_form';
+
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+
+        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
+
+        // property types
+        $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
+        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
+        $param_list_combined = array_merge($param_list, [
+            'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'userWiagRepository' => $userWiagRepository,
             'authBaseUrlList' => $auth_base_url_list,
             'itemPropertyTypeList' => $item_property_type_list,
             'rolePropertyTypeList' => $role_property_type_list,
         ]);
+
+        return $this->renderForm($template, $param_list_combined);
+
     }
 
     /**
@@ -288,30 +301,12 @@ class EditBishopController extends AbstractController {
 
         $person_list = array($person);
 
-        $edit_form_id = 'edit_bishop_edit_form';
+        $template = 'edit_bishop/new_bishop.html.twig';
 
-        $userWiagRepository = $entityManager->getRepository(UserWiag::class);
-        $authorityRepository = $entityManager->getRepository(Authority::class);
-        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
-
-        // property types
-        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-
-
-        return $this->render('edit_bishop/new_bishop.html.twig', [
-            'menuItem' => 'edit-menu',
-            'form' => null,
-            'editFormId' => $edit_form_id,
-            'count' => 1,
+        return $this->renderEditElements($template, [
             'personList' => $person_list,
-            // find user WIAG for all elements of $person_list
-            'userWiagRepository' => $userWiagRepository,
-            'authBaseUrlList' => $auth_base_url_list,
-            'itemPropertyTypeList' => $item_property_type_list,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'form' => null,
+            'count' => 1,
         ]);
 
     }
@@ -355,58 +350,109 @@ class EditBishopController extends AbstractController {
 
     }
 
+
     /**
-     * 2022-10-18 obsolete: show hidden template via JS
-     * @return template for additional item property
+     * display query form for bishops; handle query
      *
-     * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
+     * @Route("/edit/bischof/merge-query", name="edit_bishop_merge_query")
      */
-    public function newProperty(Request $request,
-                                EntityManagerInterface $entityManager) {
+    public function mergeQuery(Request $request,
+                               EntityManagerInterface $entityManager,
+                               FormFactoryInterface $formFactory) {
 
-        $property = new ItemProperty;
+        $model = new BishopFormModel;
+        // set defaults
+        $model->editStatus = ['fertig'];
+        $model->isOnline = true;
+        $model->listSize = 5;
 
-        // property types
-        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-        $property->setType($item_property_type_list[0]);
+        $status_choices = $this->getStatusChoices($entityManager);
 
-        return $this->render('edit_bishop/_input_property.html.twig', [
-            'base_id' => $request->query->get('base_id'),
-            'base_input_name' => $request->query->get('base_input_name'),
-            'current_idx' => $request->query->get('current_idx'),
-            'prop' => $property,
-            'itemTypeId' => $this->itemTypeId,
-            'itemPropertyTypeList' => $item_property_type_list,
+        $form = $formFactory->createNamed('bishop_merge', EditBishopFormType::class, $model, [
+            'status_choices' => $status_choices,
         ]);
+        // $form = $this->createForm(EditBishopFormType::class);
+
+        $offset = 0;
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+
+        $template_params = [
+            'menuItem' => 'edit-menu',
+            'form' => $form,
+        ];
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $personRepository = $entityManager->getRepository(Person::class);
+
+            $itemRepository = $entityManager->getRepository(Item::class);
+
+            $id_all = $itemRepository->bishopIds($model);
+            $count = count($id_all);
+
+            $offset = $request->request->get('offset');
+            $page_number = $request->request->get('pageNumber');
+
+            // set offset to page begin
+            if (!is_null($offset)) {
+                $offset = intdiv($offset, $model->listSize) * $model->listSize;
+            } elseif (!is_null($page_number) && $page_number > 0) {
+                $page_number = min($page_number, intdiv($count, $model->listSize) + 1);
+                $offset = ($page_number - 1) * $model->listSize;
+            } else {
+                $offset = 0;
+            }
+
+            $id_list = array_slice($id_all, $offset, $model->listSize);
+            $person_list = $personRepository->findList($id_list);
+
+            $template_params = [
+                'menuItem' => 'edit-menu',
+                'form' => $form,
+                'count' => $count,
+                'personList' => $person_list,
+                'offset' => $offset,
+                'pageSize' => $model->listSize,
+                'mergeSelectFormId' => 'merge_select',
+            ];
+
+        }
+
+        $debug_flag = $request->query->get('debug');
+        $template = $debug_flag ? 'merge_query_debug.html.twig' : 'merge_query.html.twig';
+
+        return $this->renderForm('edit_bishop/'.$template, $template_params);
 
     }
 
     /**
-     * 2022-10-18 obsolete: show hidden template via JS
-     * @return template for additional role property
+     * merge data in a form section
      *
-     * @Route("/edit/bischof/new-role-property", name="edit_bishop_new_role_property")
+     * @Route("/edit/bischof/merge-item/{first}/{index}", name="edit_bishop_merge_item")
      */
-    public function newRoleProperty(Request $request,
-                                    EntityManagerInterface $entityManager) {
+    public function mergeItem(Request $request,
+                              EntityManagerInterface $entityManager,
+                              $first = null,
+                              $index = null) {
 
-        $property = new PersonRoleProperty;
-        $rolePropertyTypeRepository = $entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
-        $property->setType($role_property_type_list[0]);
+        $personRepository = $entityManager->getRepository(Person::class);
 
+        $second = $request->request->get('merge_select');
+        $id_list = [$first, $second];
+        $id_list = array_map(function($v) { return intval($v, 10); }, $id_list);
 
-        return $this->render('edit_bishop/_input_role_property.html.twig', [
-            'base_id' => $request->query->get('base_id'),
-            'base_input_name' => $request->query->get('base_input_name'),
-            'current_idx' => $request->query->get('current_idx'),
-            'prop' => $property,
-            'itemTypeId' => $this->itemTypeId,
-            'rolePropertyTypeList' => $role_property_type_list,
+        $person_list = $personRepository->findList($id_list);
+
+        // TODO combine data
+
+        $template = 'edit_bishop/_item.html.twig';
+
+        return $this->renderEditElements($template, [
+            'person' => $person_list[0],
+            'index' => $index,
         ]);
-
     }
-
 
 }

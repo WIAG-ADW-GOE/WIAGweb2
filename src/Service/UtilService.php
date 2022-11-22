@@ -205,7 +205,7 @@ class UtilService {
         $getfnc = 'get'.ucfirst($field);
         $idx_map = array_flip($sorted);
 
-        uasort($list, function($a, $b) use ($idx_map, $getfnc) {
+        usort($list, function($a, $b) use ($idx_map, $getfnc) {
             $idx_a = $idx_map[$a->$getfnc()];
             $idx_b = $idx_map[$b->$getfnc()];
 
@@ -583,18 +583,49 @@ class UtilService {
             return null;
         }
         $s_list = explode('-', $s);
-        $d_list = array_map(function($se) {
-            $se = trim($se);
-            // 01.09.22
-            $d = \DateTimeImmutable::createFromFormat('d.m.y', $se);
-            // 01.09.2022
-            if (!$d) {
-                $d = \DateTimeImmutable::createFromFormat('d.m.Y', $se);
-            }
-            return $d;
-        }, $s_list);
+        dump($s_list);
 
-        return $d_list;
+        // TODO
+        // return null or a two element array
+        // only one value
+        // first not null, second null
+        // first null, second not null
+        // else null
+        $range = array();
+        foreach($s_list as $index => $date) {
+            $date = trim($date);
+            $d_obj = \DateTime::createFromFormat('d.m.y', $date);
+            if (!$d_obj) {
+                $d_obj = \DateTime::createFromFormat('d.m.Y', $date);
+            }
+
+            $range[] = $d_obj;
+        }
+
+        dump($range);
+
+        if (count($range) > 1) {
+            if (!$range[0] && !$range[1]) {
+                return null;
+            } elseif (!$range[0] && $range[1]) {
+                $range[0] = \DateTimeImmutable::createFromFormat('d.m.Y', "01.01.1000");
+            } elseif ($range[0] && !$range[1]) {
+                $range[1] = \DateTimeImmutable::createFromFormat('d.m.Y', "31.12.2999");
+            }
+        } elseif (!$range[0]) {
+            return null;
+        } else {
+            $range[1] = clone $range[0];
+            $range[1]->modify('+1 day');
+        }
+
+        $str_range = array();
+        foreach($range as $r_loop) {
+            $str_range[] = $r_loop->format("Y-m-d");
+        }
+
+        dump($str_range);
+        return $str_range;
     }
 
     public function no_data($a, $key_list) {

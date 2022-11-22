@@ -21,13 +21,14 @@
 		    <a href="{{ path('edit_bishop_query') }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
 		</div>
 	    </div>
-	    <div data-hide-on-input-target="result">
-		<div class="row mt-2 mx-2">
- 		    <div class="col-12">
-			{% if count == 0 %}
+	    {% if personList is defined %}
+		<div data-hide-on-input-target="result">
+		    <div class="row mt-2 mx-2">
+ 			<div class="col-12">
+			    {% if count == 0 %}
 			    Treffer: keine
-			{% elseif count == 1 %}
-			    Treffer: 1
+			    {% elseif count == 1 %}
+				Treffer: 1
 			{% else %}
 			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
 			    {% if count > pageSize %}
@@ -36,10 +37,11 @@
 			{% endif %}
 		    </div>
 		</div>
-	    </div>
+		</div>
+	    {% endif %}
 	{{ form_end(form) }}
 	{# use the same div because of the scope of hide-on-input #}
-	{% if count > 0 %}
+	{% if personList is defined and count > 0 %}
 	    {{ include('edit_bishop/_list.html.twig', {
 		newEntry: 0,
 	    }) }}

@@ -1,7 +1,7 @@
 <div class="row"> {# empty div to have the same structure for all sections #}
     <div class="col-12">
 	<div class="input-group input-group-sm mb-1 mt-1">
-	    {% if newEntry > 0%}
+	    {% if newEntry is defined and newEntry > 0 %}
 		<span class="input-group-text">Id</span>
 		<input type="text" id="{{ base_id }}_item_id_in_source"
 		       name="{{ base_input_name}}[item][idInSource]"
@@ -27,7 +27,7 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
-	    {# insert display status to the form (hidden) #}
+	    {# insert display status (hidden) #}
 	    <span><input type="checkbox"
 			 hidden="hidden"
 			 id="{{ base_id }}_item_formIsExpanded"
@@ -44,26 +44,30 @@
 		   aria-label="Kommentar Dublette">
 	    <div class="dropdown ms-auto">
 		<button class="btn btn-sm btn-secondary dropdown-toggle"
-			type="button"
-			data-bs-toggle="dropdown"
-			aria-expanded="false">Aktion</button>
-		<ul class="dropdown-menu">
-		    <li><button class="dropdown-item"
-				type="button"
-				data-action="insert#insert"
-				data-id-sans-idx="{{ base_id~'_role' }}"
-				data-obj-type="role"
-				data-url="{{ path('edit_bishop_new_role') }}">Neues Amt</button></li>
-		    <li><button class="dropdown-item"
-				       type="button"
-				       data-action="insert#insert"
-				       data-obj-type="reference"
-				       data-id-sans-idx="{{ base_id~'_ref' }}"
-				       data-url="{{ path('edit_bishop_new_reference') }}">Neue Referenz</button></li>
-		</ul>
+			    type="button"
+			    data-bs-toggle="dropdown"
+			    aria-expanded="false">Aktion</button>
+		    <ul class="dropdown-menu">
+			<li><button class="dropdown-item"
+				    type="button"
+				    value="{{ base_id }}"
+				    data-person-id="{{ person.item.id }}"
+				    data-list-index="{{ index }}"
+				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
+			{% if person.item.commentduplicate %}
+			    <li><button class="dropdown-item"
+					type="button"
+					value="{{ base_id }}"
+					data-person-id="{{ person.item.id }}"
+					data-list-index="{{ index }}"
+					data-merge-select ="{{ person.item.commentduplicate }} "
+					data-action="modal-form#mergeItem">Zusammenführen mit {{ person.item.commentduplicate }}</button></li>
+			{% endif %}
+		    </ul>
 	    </div>
 	</div>
     </div>
+
 </div>
 {# validation messages #}
 {% for error_obj in person.inputError|filter(v => v.section == 'status') %}

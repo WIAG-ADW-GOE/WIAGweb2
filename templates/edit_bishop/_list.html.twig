@@ -35,6 +35,7 @@
 	    <div class="col-12">
 		{% for person in personList %}
 		    {{ include('edit_bishop/_item.html.twig', {
+			index: loop.index0,
 			person: person,
 		    }) }}
 		{% endfor %}

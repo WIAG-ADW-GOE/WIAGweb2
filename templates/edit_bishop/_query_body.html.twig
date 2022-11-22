@@ -1,0 +1,48 @@
+<div class="container-fluid"
+     data-controller="hide-on-input">
+    {{ form_start(form) }}
+	<div class="row ms-2 col-12">
+	    <span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	</div>
+	{{ include("edit_bishop/_form_elements.html.twig", {
+	    indent_class: "ms-2",
+	    input_width_name: 35,
+	    input_width_diocese: 16,
+	    input_width_office: 18,
+	    input_width_id: 26,
+	    input_width_duplicate: 8,
+	    input_width_comment: 21,
+	    input_width_date: 18,
+	}) }}
+	<div class="row mt-2 mx-2">
+	    <div class="col-12">
+		<button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		<a href="{{ path('edit_bishop_query') }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+	    </div>
+	</div>
+	{% if personList is defined %}
+	    <div data-hide-on-input-target="result">
+		<div class="row mt-2 mx-2">
+ 		    <div class="col-12">
+			{% if count == 0 %}
+			    Treffer: keine
+			{% elseif count == 1 %}
+			    Treffer: 1
+			{% else %}
+			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+			    {% if count > pageSize %}
+				{{ include('person/_page_browse.html.twig') }}
+			    {% endif %}
+			{% endif %}
+		    </div>
+		</div>
+	    </div>
+	{% endif %}
+    {{ form_end(form) }}
+    {# use the same div because of the scope of hide-on-input #}
+    {% if personList is defined and count > 0 %}
+	{{ include('edit_bishop/_list.html.twig', {
+	    newEntry: 0,
+	}) }}
+    {% endif %}
+</div>

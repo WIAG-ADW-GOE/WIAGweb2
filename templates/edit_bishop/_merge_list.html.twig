@@ -1,0 +1,52 @@
+<form id ="merge_select_form"
+      name="merge_select_form"
+      action="#"
+      method="post">
+    <div class="table-responsive">
+	<table class="table">
+	    <thead class="thead-light">
+		<tr>
+		    <th scope="col"></th>
+		    <th scope="col">ID</th>
+		    <th scope="col">Name</th>
+		    <th scope="col">Ämter</th>
+		</tr>
+	    </thead>
+	    <tbody>
+		{% for person in personList %}
+		    {% set displayname = person.combine('displayname') %}
+		    {% set datebirth = person.combine('datebirth') %}
+		    {% set datedeath = person.combine('datedeath') %}
+		    <tr>
+			<td><div class="form-check">
+			    <input class="form-check-input" type="radio" name="merge_select" value="{{ person.item.id }}">
+			</div>
+			<td>{{ person.item.idInSource }}</td>
+			<td>{{ displayname }}
+			    {% if not datebirth and not datedeath %}
+			    {% elseif datebirth and not datedeath %}
+				<p class="ms-3">* {{ datebirth }}</p>
+			    {% elseif not datebirth and datedeath %}
+				<p class="ms-3">&dagger; {{ datedeath }}</p>
+			    {% else %}
+				<p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
+			    {% endif %}
+			</td>
+			<td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+
+			    <small>{% if r.rolename %}{{ r.rolename }}{% endif %}
+				{% if r.diocese %}({{ r.diocese.name }})
+				{% elseif r.diocesename %}({{ r.diocesename }})
+				{% endif %}
+				{% if r.placename %}({{ r.placename }}) {% endif %}
+				{% if r.datebegin and not r.dateend %}{{ r.datebegin }}
+				{% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
+				{% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
+			    </small><br/>{% endfor %}
+			</td>
+		    </tr>
+		{% endfor %}
+	    </tbody>
+	</table>
+    </div> {# table-responsive #}
+</form>
