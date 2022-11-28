@@ -29,8 +29,7 @@
 			{% endif %}
 		    </td>
 		    <td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-
-			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}
+			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}{% if r.uncertain %}? {% endif %}
 			    {% if r.diocese %}({{ r.diocese.name }})
 			    {% elseif r.diocesename %}({{ r.diocesename }})
 			    {% endif %}

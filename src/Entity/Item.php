@@ -571,4 +571,49 @@ class Item {
         return $this;
     }
 
+    public function mergeCollection($collection_name, Item $candidate) {
+        $getfn = 'get'.ucfirst($collection_name);
+        $setfn = 'set'.ucfirst($collection_name);
+        $data = $candidate->$getfn();
+        if (is_null($this->$getfn())) {
+            return $this->$setfn($data);
+        } elseif (!is_null($data)) {
+            foreach ($data as $data_elmt) {
+                $this->$getfn()->add($data_elmt);
+            }
+        }
+        return $this;
+    }
+
+    public function mergeIdExternal(Item $candidate) {
+        $this->mergeCollection('idExternal', $candidate);
+
+        $list = $this->idExternal->toArray();
+        usort($list, function($a, $b) {
+            $cmp = 0;
+            if ($a->getAuthorityId() < $b->getAuthorityId()) {
+                $cmp = -1;
+            } elseif ($a->getAuthorityId() > $b->getAuthorityId())  {
+                $cmp = 1;
+            }
+            return $cmp;
+        });
+
+        $merged_list = new ArrayCollection();
+        $last_ref_ext = null;
+        foreach ($list as $ref_ext) {
+            if (is_null($last_ref_ext) || $ref_ext->getAuthorityId() != $last_ref_ext->getAuthorityId()) {
+                $last_ref_ext = $ref_ext;
+                $merged_list->add($ref_ext);
+            } else {
+                $last_value = $last_ref_ext->getValue();
+                $merge_value = $ref_ext->getValue();
+                $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+            }
+        }
+        $this->idExternal = $merged_list;
+
+    }
+
+
 }

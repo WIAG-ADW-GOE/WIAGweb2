@@ -296,14 +296,13 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->leftjoin('i.reference', 'ref')
                    ->leftjoin('i.idExternal', 'idext')
                    ->leftjoin('i.itemProperty', 'i_prop')
-                   ->join('p.role', 'role')
+                   ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
                    ->leftjoin('role.institution', 'institution')
                    ->andWhere('c.personIdName in (:id_list)')
                    ->addOrderBy('role.dateSortKey')
                    ->addOrderBy('role.id')
                    ->setParameter('id_list', $id_list);
-
 
         if (!is_null($prio_role)) {
             // dump($prio_role);

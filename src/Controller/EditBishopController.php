@@ -51,8 +51,7 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/query", name="edit_bishop_query")
      */
-    public function query(Request $request,
-                          EntityManagerInterface $entityManager) {
+    public function query(Request $request) {
 
         $model = new BishopFormModel;
         // set defaults
@@ -60,7 +59,7 @@ class EditBishopController extends AbstractController {
         $model->isOnline = true;
         $model->listSize = 5;
 
-        $status_choices = $this->getStatusChoices($entityManager);
+        $status_choices = $this->getStatusChoices();
 
         $form = $this->createForm(EditBishopFormType::class, $model, [
             'status_choices' => $status_choices,
@@ -78,9 +77,9 @@ class EditBishopController extends AbstractController {
 
         $person_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
-            $personRepository = $entityManager->getRepository(Person::class);
+            $personRepository = $this->entityManager->getRepository(Person::class);
 
-            $itemRepository = $entityManager->getRepository(Item::class);
+            $itemRepository = $this->entityManager->getRepository(Item::class);
 
             $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
@@ -117,12 +116,12 @@ class EditBishopController extends AbstractController {
     }
 
     /**
-     * getStatusChoices(EntityManagerInterface $entityManager)
+     * getStatusChoices()
      *
      * @return choice list for status values
      */
-    private function getStatusChoices(EntityManagerInterface $entityManager) {
-        $personRepository = $entityManager->getRepository(Person::class);
+    private function getStatusChoices() {
+        $personRepository = $this->entityManager->getRepository(Person::class);
 
         $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
         $status_list = array_column($suggestions, 'suggestion');
@@ -139,8 +138,7 @@ class EditBishopController extends AbstractController {
      * map data to objects and save them to the database
      * @Route("/edit/bischof/save", name="edit_bishop_save")
      */
-    public function save(Request $request,
-                         EntityManagerInterface $entityManager) {
+    public function save(Request $request) {
 
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
@@ -148,7 +146,7 @@ class EditBishopController extends AbstractController {
         /* map/validate form */
         $current_user_id = $this->getUser()->getId();
 
-        $personRepository = $entityManager->getRepository(Person::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
         $error_flag = false;
         foreach($form_data as $data) {
@@ -186,12 +184,12 @@ class EditBishopController extends AbstractController {
         if (!$error_flag) {
             $person_list = array();
             // otherwise previous data for roles show still up 2022-10-06
-            $entityManager->clear();
+            $this->entityManager->clear();
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
 
-            $nameLookupRepository = $entityManager->getRepository(NameLookup::class);
-            $itemRepository = $entityManager->getRepository(Item::class);
+            $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
+            $itemRepository = $this->entityManager->getRepository(Item::class);
 
             // rebuild $person_list with persistent new entries
             foreach($form_data as $data) {
@@ -200,23 +198,17 @@ class EditBishopController extends AbstractController {
                 $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
                 $person = null;
                 if ($edited_flag) {
-                    if (!$person_id > 0) { // new entry
-                        $item = Item::newItem($current_user_id, 'Bischof');
-                        $person = Person::newPerson($item);
-                        $entityManager->persist($person);
-                        $entityManager->flush();
-                        $person_id = $item->getId();
-                        $person = $personRepository->find($person_id);
-                        $person_list[] = $person;
-                        $this->personService->mapPerson($person, $data, $current_user_id);
-                        $person->getItem()->setFormIsExpanded($expanded_flag);
-                    } elseif ($person_id > 0) {
+                    if ($person_id < 1) { // new entry
+                        $person = $this->personService->makePersonPersist($current_user_id, 'Bischof');
+                        $this->personService->updateMerged($data, $current_user_id);
+                    } else {
                         // edited, no errors
                         $person = $personRepository->findList([$person_id])[0];
-                        $this->personService->mapPerson($person, $data, $current_user_id);
-                        $person_list[] = $person;
-                        $person->getItem()->setFormIsExpanded($expanded_flag);
                     }
+                    $this->personService->mapPerson($person, $data, $current_user_id);
+                    $person_list[] = $person;
+                    $person->getItem()->setFormIsExpanded($expanded_flag);
+
                 } elseif(!$new_entry) { // in edit/change-mode restore complete list
                     $person = $personRepository->findList([$person_id])[0];
                     $person_list[] = $person;
@@ -233,11 +225,12 @@ class EditBishopController extends AbstractController {
                 }
             }
 
-            $entityManager->flush();
+            $this->entityManager->flush();
 
+            // add an empty form in case the user wants to add more items
             if ($new_entry) {
                 $item_type_id = $this->itemTypeId;
-                $itemRepository = $entityManager->getRepository(Item::class);
+                $itemRepository = $this->entityManager->getRepository(Item::class);
                 $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
 
                 $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
@@ -291,10 +284,9 @@ class EditBishopController extends AbstractController {
      *
      * @Route("/edit/bischof/new", name="edit_bishop_new")
      */
-    public function newBishop(Request $request,
-                              EntityManagerInterface $entityManager) {
+    public function newBishop(Request $request) {
 
-        $itemRepository = $entityManager->getRepository(Item::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
         $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
 
         $person = $this->personService->makePersonScheme($id_in_source, $this->getUser()->getId());
@@ -357,7 +349,6 @@ class EditBishopController extends AbstractController {
      * @Route("/edit/bischof/merge-query", name="edit_bishop_merge_query")
      */
     public function mergeQuery(Request $request,
-                               EntityManagerInterface $entityManager,
                                FormFactoryInterface $formFactory) {
 
         $model = new BishopFormModel;
@@ -366,7 +357,7 @@ class EditBishopController extends AbstractController {
         $model->isOnline = true;
         $model->listSize = 5;
 
-        $status_choices = $this->getStatusChoices($entityManager);
+        $status_choices = $this->getStatusChoices();
 
         $form = $formFactory->createNamed('bishop_merge', EditBishopFormType::class, $model, [
             'status_choices' => $status_choices,
@@ -385,9 +376,9 @@ class EditBishopController extends AbstractController {
 
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $personRepository = $entityManager->getRepository(Person::class);
+            $personRepository = $this->entityManager->getRepository(Person::class);
 
-            $itemRepository = $entityManager->getRepository(Item::class);
+            $itemRepository = $this->entityManager->getRepository(Item::class);
 
             $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
@@ -430,22 +421,52 @@ class EditBishopController extends AbstractController {
     /**
      * merge data in a form section
      *
-     * @Route("/edit/bischof/merge-item/{first}/{index}", name="edit_bishop_merge_item")
+     * @Route("/edit/bischof/merge-item/{first}/{index}/{second_id}", name="edit_bishop_merge_item")
+     * merge $first (id) with $second_id (id_in_source) into a new person
+     * route paramters are optional, because the JS controller needs the base path.
+     * 2022-11-25: $index is obsolete if merged data are displayed in a new window.
      */
     public function mergeItem(Request $request,
-                              EntityManagerInterface $entityManager,
                               $first = null,
-                              $index = null) {
+                              $index = null,
+                              $second_id = null) {
 
-        $personRepository = $entityManager->getRepository(Person::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
 
-        $second = $request->request->get('merge_select');
-        $id_list = [$first, $second];
-        $id_list = array_map(function($v) { return intval($v, 10); }, $id_list);
+        $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
+        $wiag_user_id = $this->getUser()->getId();
+        $person = $this->personService->makePersonScheme($id_in_source, $wiag_user_id);
 
-        $person_list = $personRepository->findList($id_list);
+        // $second_id is item.id_in_source
+        // dump($second_id);
+        $second_item = $itemRepository->findOneByIdInSource(intval($second_id, 10));
+        $second_item_id = $second_item->getId();
 
-        // TODO combine data
+        $id_list = [intval($first, 10), $second_item_id];
+
+        $person_merge_list = $personRepository->findList($id_list);
+
+        $person->merge($person_merge_list[0]);
+        $person->merge($person_merge_list[1]);
+
+        $ancestor_list = $person->getMergeAncestor();
+        $ancestor_list->add($person_merge_list[0]->getItem()->getIdInSource());
+        $ancestor_list->add($person_merge_list[1]->getItem()->getIdInSource());
+
+        $person_list=array($person);
+
+        $template = 'edit_bishop/new_bishop.html.twig';
+
+        return $this->renderEditElements($template, [
+            'personList' => $person_list,
+            'form' => null,
+            'count' => 1,
+        ]);
+
+        // obsolete 2022-11-25
+        $template = 'edit_bishop/new_bishop.html.twig';
 
         $template = 'edit_bishop/_item.html.twig';
 

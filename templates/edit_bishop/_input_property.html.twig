@@ -9,8 +9,11 @@
     } %}
 {% endif %}
 <div class="my-1"
-     data-controller="input-state">
+     data-controller="input-state set-v-attr"
+     data-set-v-attr-to-value="delete"
+     data-set-v-attr-from-value="">
     <div class="input-group input-group-sm">
+	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_prop, base_name_delete: base_input_name_prop }) }}
 	{# property name label #}
 	<label class="input-group-text" for="{{ base_id_prop }}_type">Attribut-Name</label>
 	{# - id (hidden) #}
@@ -19,7 +22,7 @@
 	       name="{{ base_input_name_prop }}[id]"
 	       class="form-control form-control-sm"
 	       hidden="hidden"
-	       value="{{ prop.id }}">
+	       value="{{ person.item.id ? prop.id : null }}"> {# ID is null for new entry or merged entry #}
 	{# property name #}
 	<span class="w-20">
 	    <select class="form-select form-select-sm wiag-input"

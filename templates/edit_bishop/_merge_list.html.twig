@@ -19,7 +19,7 @@
 		    {% set datedeath = person.combine('datedeath') %}
 		    <tr>
 			<td><div class="form-check">
-			    <input class="form-check-input" type="radio" name="merge_select" value="{{ person.item.id }}">
+			    <input class="form-check-input" type="radio" name="merge_select" value="{{ person.item.idInSource }}">
 			</div>
 			<td>{{ person.item.idInSource }}</td>
 			<td>{{ displayname }}

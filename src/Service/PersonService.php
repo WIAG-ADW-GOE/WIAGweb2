@@ -948,14 +948,9 @@ class PersonService {
         // item
         $item = $person->getItem();
 
-        $item->setChangedBy($user_id);
-        $item->setDateChanged(new \DateTimeImmutable('now'));
-
-
-        if ($data['item']['id'] == "") {
-            $item->setCreatedBy($user_id);
-            $item->setDateCreated(new \DateTimeImmutable('now'));
-        }
+        $edit_status = trim($data['item']['editStatus']);
+        $new_flag = ($data['item']['id'] == "");
+        $this->updateEditMetaData($item, $edit_status, $user_id, $new_flag);
 
         // item: deleted TODO 2022-09-22 turned off for the moment
         // $deleted_status = $data['item']['isDeleted'];
@@ -986,7 +981,7 @@ class PersonService {
         }
 
         // item: status values, editorial notes
-        $key_list = ['editStatus', 'commentDuplicate'];
+        $key_list = ['commentDuplicate'];
         $this->utilService->setByKeys($item, $data['item'], $key_list);
 
         // person
@@ -1044,6 +1039,9 @@ class PersonService {
 
         foreach($section_map as $key => $mapFunction) {
             if (array_key_exists($key, $data)) {
+                if ($key == 'role') {
+                    dump($data[$key]);
+                }
                 foreach($data[$key] as $data_loop) {
                     $this->$mapFunction($person, $data_loop);
                 }
@@ -1219,7 +1217,11 @@ class PersonService {
         }
 
         // other fields
-        $data['note'] = substr(trim($data['note']), 0, 255);
+        if (isset($data['uncertain'])) {
+            $role->setUncertain(1);
+        }
+
+        $data['note'] = substr(trim($data['note']), 0, 1023);
         $this->utilService->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
 
         // numerical values for dates
@@ -1374,7 +1376,7 @@ class PersonService {
         }
 
         // delete?
-        if (!is_null($itemProperty) && (isset($data['delete']) || $no_data)) {
+        if (!is_null($itemProperty) && ($data['delete'] == 'delete' || $no_data)) {
             $item->getItemProperty()->removeElement($itemProperty);
             $itemProperty->setItem(null);
             $this->entityManager->remove($itemProperty);
@@ -1571,23 +1573,55 @@ class PersonService {
         return $person;
     }
 
-    // 2022-09-26
-    // public function addRoleMaybe($person) {
-    //     if ($person->getRole()->isEmpty()) {
-    //         $role = new PersonRole();
-    //         $person->getRole()->add($role);
-    //         $role->setPerson($person);
-    //     }
-    //     return $person;
-    // }
+    /**
+     * create person object and persist
+     */
+    public function makePersonPersist($user_wiag_id, $item_type_name) {
 
-    // public function addReferenceMaybe($item) {
-    //     if ($item->getReference()->isEmpty()) {
-    //         $reference = new ItemReference();
-    //         $item->getReference()->add($reference);
-    //         $reference->setItem($item);
-    //     }
-    //     return $item;
-    // }
+        $item = Item::newItem($user_wiag_id, $item_type_name);
+        $person = Person::newPerson($item);
+
+        $item->setEditStatus(self::EDIT_STATUS_DEFAULT[$item_type_name]);
+        $this->entityManager->persist($person);
+        $this->entityManager->flush();
+        $person_id = $item->getId();
+
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $person = $personRepository->find($person_id);
+
+        return $person;
+    }
+
+    /**
+     *
+     */
+    public function updateMerged($form_data, $user_wiag_id) {
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+         if (array_key_exists('mergedAncestor', $form_data['item'])) {
+             foreach($form_data['item']['mergedAncestor'] as $id_in_source) {
+                 $item_list = $itemRepository->findByIdInSource($id_in_source);
+                 $item = $item_list[0];
+                 $this->updateEditMetaData($item, 'merged', $user_wiag_id);
+             }
+        }
+    }
+
+    public function updateEditMetaData($item, $edit_status, $user_wiag_id, $new_flag = false) {
+
+        $now_date = new \DateTimeImmutable('now');
+        $item->setChangedBy($user_wiag_id);
+        $item->setDateChanged($now_date);
+
+        // new item
+        if ($new_flag) {
+            $item->setCreatedBy($user_wiag_id);
+            $item->setDateCreated($now_date);
+        }
+
+        $item->setEditStatus($edit_status);
+
+        return($item);
+
+    }
 
 };

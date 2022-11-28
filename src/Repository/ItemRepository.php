@@ -173,7 +173,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $someid = $model->someid;
         if ($someid) {
-            $qb->join('i.idExternal', 'ixt')
+            $qb->leftjoin('i.idExternal', 'ixt')
                ->andWhere("i.idPublic LIKE :q_id ".
                           "OR ixt.value LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');

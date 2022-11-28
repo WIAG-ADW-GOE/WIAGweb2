@@ -30,7 +30,8 @@
 				    {% else %}
 					    {% set idinref = ref.idinreference %}
 					    {% set refuri %}{% if ref.referencevolume.onlineresource %}{{ ref.referencevolume.onlineresource }}{% else %}{{ path('reference', {'id': ref.referencevolume.id }) }}{% endif %}{% endset %}
-					    <li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span>{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% else %}{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% endif %}</li>
+					    {% set refonline=ref.referencevolume.onlineresource %}
+					    <li>{{ ref.referencevolume.fullcitation }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span>{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% else %}{% if idinref %}, <span class="text-nowrap">ID/Nr. {{ idinref }}</span>{% endif %}{% endif %}{% if refonline %}, <a href="{{ refonline }}" target="_blank" rel="noopener">{{ refonline }}</a>{% endif %}</li>
 				    {% endif %}
 				{% endif %}
 			    {% endfor %}

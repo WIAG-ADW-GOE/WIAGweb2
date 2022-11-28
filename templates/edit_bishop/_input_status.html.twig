@@ -35,13 +35,25 @@
 			 class="form-check-input"
 			 {% if person.item.formIsExpanded %}checked="checked"{% endif %}
 			 data-save-collapse-target="carrier"></span>
-	    <span class="input-group-text ms-2">Identisch mit</span>
+	    <span class="input-group-text ms-2">identisch mit</span>
 	    <input type="text" id="{{ base_id }}_item_commentduplicate"
 		   name="{{ base_input_name}}[item][commentDuplicate]"
 		   class="form-control form-control-sm wiag-input"
 		   style="max-width: 9em"
 		   value="{{ person.item.commentduplicate }}"
 		   aria-label="Kommentar Dublette">
+	    {% if person.mergeancestor|length > 0 %}
+		<span class="input-group-text ms-2">Zusammengesetzt aus</span>
+		{% for ancestor in person.mergeancestor %}
+		    <input type="text" id="{{ base_id }}_item_mergedAncestor_{{ loop.index0 }}"
+			   name="{{ base_input_name}}[item][mergedAncestor][{{ loop.index0 }}]"
+			   class="form-control form-control-sm wiag-input"
+			   style="max-width: 9em"
+			   value="{{ ancestor }}"
+			   readonly="readonly"
+			   aria-label="Merge Vorgänger">
+		{% endfor %}
+	    {% endif %}
 	    <div class="dropdown ms-auto">
 		<button class="btn btn-sm btn-secondary dropdown-toggle"
 			    type="button"
@@ -55,13 +67,8 @@
 				    data-list-index="{{ index }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
 			{% if person.item.commentduplicate %}
-			    <li><button class="dropdown-item"
-					type="button"
-					value="{{ base_id }}"
-					data-person-id="{{ person.item.id }}"
-					data-list-index="{{ index }}"
-					data-merge-select ="{{ person.item.commentduplicate }} "
-					data-action="modal-form#mergeItem">Zusammenführen mit {{ person.item.commentduplicate }}</button></li>
+			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'index': index, 'second_id': person.item.commentduplicate }) }}">Zusammenführen mit {{ person.item.commentduplicate }}</a>
+			    </li>
 			{% endif %}
 		    </ul>
 	    </div>

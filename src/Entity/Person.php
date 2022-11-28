@@ -156,6 +156,12 @@ class Person {
      */
     private $formFamilynameVariants;
 
+    /**
+     * no DB-mapping
+     * hold ids of merge ancestors
+     */
+    private $mergeAncestor;
+
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
@@ -163,6 +169,7 @@ class Person {
         $this->birthPlace = new ArrayCollection();
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
+        $this->mergeAncestors = new ArrayCollection();
         # TODO $this-urlByType;
     }
 
@@ -523,6 +530,16 @@ class Person {
     }
 
     /**
+     * do not provide setMergeAncestor; use add or remove to manipulate this property
+     */
+    public function getMergeAncestor() {
+        if (is_null($this->mergeAncestor)) {
+            $this->mergeAncestor = new ArrayCollection;
+        }
+        return $this->mergeAncestor;
+    }
+
+    /**
      * concatenate name variants and comments
      */
     public function commentLine($flag_names = true) {
@@ -653,6 +670,75 @@ class Person {
         return $key;
     }
 
+    public function merge(Person $candidate) {
+        $field_list = [
+            'givenname',
+            'prefixname',
+            'familyname',
+            'dateBirth',
+            'dateDeath',
+            'comment',
+            'notePerson',
+
+        ];
+
+        foreach ($field_list as $field) {
+            $this->mergeField($field, $candidate);
+        }
+
+        $collection_list = [
+            'givennameVariants',
+            'familynameVariants',
+            'role',
+        ];
+
+        foreach($collection_list as $collection_name) {
+            $this->mergeCollection($collection_name, $candidate);
+        }
+
+        $item_collection_list = [
+            'reference',
+            'itemProperty',
+        ];
+
+        foreach($item_collection_list as $item_collection_name) {
+            $this->item->mergeCollection($item_collection_name, $candidate->getItem());
+        }
+
+        $this->item->mergeIdExternal($candidate->getItem());
+
+        return $this;
+    }
+
+    public function mergeField($field, Person $candidate) {
+        $getfn = 'get'.ucfirst($field);
+        $setfn = 'set'.ucfirst($field);
+        $data = $candidate->$getfn();
+        if (is_null($this->$getfn())) {
+            return $this->$setfn($data);
+        } elseif (!is_null($data)) {
+            if ($this->$getfn() != $data) {
+                $value = $this->$getfn()." | ".$data;
+                return $this->$setfn($value);
+            }
+        }
+        return $this;
+    }
+
+    public function mergeCollection($collection_name, Person $candidate) {
+        $getfn = 'get'.ucfirst($collection_name);
+        $setfn = 'set'.ucfirst($collection_name);
+        $data = $candidate->$getfn();
+        if (is_null($this->$getfn())) {
+            return $this->$setfn($data);
+        } elseif (!is_null($data)) {
+            foreach ($data as $data_elmt) {
+                $this->$getfn()->add($data_elmt);
+            }
+        }
+
+        return $this;
+    }
 
 
 }

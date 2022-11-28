@@ -13,6 +13,9 @@
     } %}
 {% endif %}
 <div class="col-1 text-end pe-0">
+    <div data-controller="set-v-attr"
+	 data-set-v-attr-to-value="delete"
+	 data-set-v-attr-from-value="">
     {# insert button #}
     <span class="text-nowrap">
 	{% if is_last %}
@@ -20,8 +23,9 @@
 		    type="button"
 		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
 	{% endif %}
-	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_ref  }) }}
+	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_ref, base_name_delete: base_input_name_ref }) }}
     </span>
+    </div>
 </div>
 <div class="col-11">
     <div class="input-group input-group-sm mb-1">
@@ -31,13 +35,8 @@
 	       id="{{ base_id_ref }}_id"
 	       name="{{ base_input_name_ref }}[id]"
 	       class="form-control form-control-sm d-none"
-	       value="{{ ref.id }}">
+	       value="{{ person.item.id ? ref.id : null }}"> {# id is null for new entry or merged entry #}
 	{# delete flag (hidden) #}
-	<input type="text"
-	       id="{{ base_id_ref }}_delete"
-	       name="{{ base_input_name_ref }}[delete]"
-	       class="form-control form-control-sm d-none"
-	       value="">
 	<div class="w-50"
 	     {{ stimulus_controller('autocomplete', {
 		 url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),

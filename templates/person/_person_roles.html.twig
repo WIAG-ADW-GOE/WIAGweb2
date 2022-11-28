@@ -5,7 +5,7 @@
 	{% for o in roles %}
 	    <li>
 		<ul class="list-inlined list-unstyled">
-		    <li class="list-inline-item"> {% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}</li>
+		    <li class="list-inline-item"> {% if o.role and o.role.name %}{{ o.role.name }}{% elseif o.rolename %}{{ o.rolename }}{% endif %}{% if o.uncertain %}? {% endif %}</li>
 		    {% if o.diocesename and not o.institutionid %}
 			<li class="list-inline-item">{% if o.dioceseid %}<a href="{{ path('id', {'id': o.diocese.item.idpublic}) }}">{{ o.diocesename }}</a>{% else %}{{ o.diocesename }}{% endif %}</li>
 		    {% endif %}

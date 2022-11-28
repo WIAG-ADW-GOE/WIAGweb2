@@ -116,6 +116,11 @@ class PersonRole
     private $displayOrder;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $uncertain;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $note;
@@ -367,6 +372,18 @@ class PersonRole
     public function setDisplayOrder(?int $displayOrder): self
     {
         $this->displayOrder = $displayOrder;
+
+        return $this;
+    }
+
+    public function getUncertain(): ?int
+    {
+        return $this->uncertain;
+    }
+
+    public function setUncertain(int $uncertain): self
+    {
+        $this->uncertain = $uncertain;
 
         return $this;
     }

@@ -14,20 +14,25 @@
 	dateBegin: "",
 	dateEnd: "",
 	note: "",
+	uncertain: null,
 	roleproperty: [],
     } %}
 {% endif %}
 <div class="col-1 text-end pe-0">
-    {# insert button #}
-    <span class="text-nowrap">
-	{% if is_last %}
-	    <button class="btn btn-light btn-sm"
-		    type="button"
-		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
-	{% endif %}
-	{# delete button #}
-	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_role }) }}
-    </span>
+    <div data-controller="input-state set-v-attr"
+	 data-set-v-attr-to-value="delete"
+	 data-set-v-attr-from-value="">
+	{# insert button #}
+	<span class="text-nowrap">
+	    {% if is_last %}
+		<button class="btn btn-light btn-sm"
+			       type="button"
+			data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
+	    {% endif %}
+	    {# delete button #}
+	    {{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_role, base_name_delete: base_input_name_role }) }}
+	</span>
+    </div>
 </div>
 <div class="col-11">
     <div data-controller="toggle-arrow select-institution"
@@ -42,13 +47,7 @@
 		   id="{{ base_id_role }}_id"
 		   name="{{ base_input_name_role }}[id]"
 		   class="form-control form-control-sm d-none"
-		   value="{{ role.id ?? null }}">
-	    {# delete flag (hidden) #}
-	    <input type="text"
-		   id="{{ base_id_role }}_delete"
-		   name="{{ base_input_name_role }}[delete]"
-		   class="form-control form-control-sm d-none"
-		   value="">
+		   value="{{ person.item.id ? (role.id ?? null) : null }}"> {# id is null for new entry or merged entry #}
 	    {# role name #}
 	    <div class="w-15"
     		 {{ stimulus_controller('autocomplete', {
@@ -62,8 +61,8 @@
 		       aria-label="Amt"
 		       data-autocomplete-target="input">
 		<ul class="list-group autocomplete-target"
-			   data-autocomplete-target="results"
-			   style="max-width: 18rem;"></ul>
+		    data-autocomplete-target="results"
+		    style="max-width: 18rem;"></ul>
 	    </div>
 	    {# default for inst_type_id is '1' (diocese) #}
 	    {{ include('edit_bishop/_input_institution.html.twig', {
@@ -88,21 +87,21 @@
 		{% if role.note or role.roleproperty|length > 0 %}
 		    {% set expanded = true %}
 		    <button class="btn btn-sm ms-1 pt-0 align-middle"
-				   type="button"
-				   data-bs-toggle="collapse"
-				   data-bs-target="#div_{{ base_id_role }}_note"
-				   aria-expanded="true"
-				   aria-controls="div_{{ base_id_role }}_note"
-				   data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target="#div_{{ base_id_role }}_note"
+			    aria-expanded="true"
+			    aria-controls="div_{{ base_id_role }}_note"
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
 		{% else %}
 		    {% set expanded = false %}
 		    <button class="btn btn-sm ms-1 pt-0 align-middle"
-				   type="button"
-				   data-bs-toggle="collapse"
-				   data-bs-target="#div_{{ base_id_role }}_note"
-				   aria-expanded="false"
-				   aria-controls="div_{{ base_id_role }}_note"
-				   data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target="#div_{{ base_id_role }}_note"
+			    aria-expanded="false"
+			    aria-controls="div_{{ base_id_role }}_note"
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
 		{% endif %}
 	    {% else %}
 		{% set expanded = true %}
@@ -110,7 +109,11 @@
 	</div>
 	<div class="ms-5 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id_role }}_note">
 	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text wiag-input-text-blue">Bemerkung</span>
+		<div class="form-check">
+		    <input class="form-check-input" type="checkbox" value="1" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain %}checked="checked"{% endif %}>
+		    <label class="form-check-label" for="{{ base_id_role }}_uncertain">unsicher</label>
+		</div>
+		<span class="input-group-text wiag-input-text-blue ms-1">Bemerkung</span>
 		<input type="text"
 		       id="{{ base_id_role }}_note"
 		       name="{{ base_input_name_role }}[note]"

@@ -1,12 +1,16 @@
-{# params: base_id_delete #}
+{# params: base_id_delete base_name_delete #}
+{# do not put a div here to avoid line break #}
+<input type="text"
+       id="{{ base_id_delete }}_delete"
+       name="{{ base_name_delete }}[delete]"
+       class="form-control form-control-sm d-none"
+       data-set-v-attr-target="flag"
+       value="">
 <button class="btn btn-light btn-sm"
 	type="button"
 	data-value="up"
-	data-controller="toggle-arrow set-value"
+	data-controller="toggle-arrow"
 	data-toggle-arrow-target="button"
-	data-set-value-old-data-value=""
-	data-set-value-new-data-value="delete"
-	data-set-value-target-id-value="{{ base_id_delete }}_delete"
 	data-toggle-arrow-img-closed-value="3-fill"
 	data-toggle-arrow-img-open-value="3"
-	data-action="toggle-arrow#toggle click->on-input#mark click->set-value#set"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
+	data-action="toggle-arrow#toggle click->on-input#mark click->set-v-attr#toggle"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>

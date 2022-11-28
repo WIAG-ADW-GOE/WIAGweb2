@@ -91,7 +91,6 @@ class PersonRepository extends ServiceEntityRepository {
         $query = $qb->getQuery();
         $person_list = $query->getResult();
 
-
         $em = $this->getEntityManager();
         $itemRepository = $em->getRepository(Item::class);
 

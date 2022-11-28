@@ -61,16 +61,32 @@ export default class extends Controller {
 	    return await this.submitQuery(event);
 	}
 
-	var data = new FormData(form_elmt);
+	var form_data = new FormData(form_elmt);
 
 	// issue a warning if no selection was made
-	if (!data.has('merge_select')) {
+	if (!form_data.has('merge_select')) {
 	    var msg = "Es ist kein Personeneintrag ausgewählt."
 	    return await this.submitQuery(event, msg);
 	}
+	console.log(form_data.get('merge_select'));
 
-	var request_body = new URLSearchParams(new FormData(form_elmt));
+	// new 2022-11-25; create new entry
+	const url_comp_list = [
+	    this.mergeItemUrlValue,
+	    this.personID,
+	    this.listIndex,
+	    form_data.get('merge_select')
+	];
+	var url = url_comp_list.join('/');
 
+	this.modal.hide();
+	window.location.assign(url);
+
+	return null;
+
+	// legacy 2022-11-25
+
+	var request_body = new URLSearchParams(form_data);
 	await this.updateEntry(request_body);
 
 	this.modal.hide();
