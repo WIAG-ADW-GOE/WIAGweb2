@@ -496,11 +496,21 @@ class CanonLookupRepository extends ServiceEntityRepository
                                'WITH',
                                'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
                    ->andWhere('item_ref.itemTypeId = :item_type_id')
-                   ->setParameter('item_type_id', $item_type_id)
-                   ->addOrderBy('v.titleShort', 'ASC')
-                   ->addOrderBy('v.itemTypeId', 'ASC')
-                   ->addOrderBy('v.displayOrder', 'ASC')
-                   ->addOrderBy('v.referenceId', 'ASC');
+                   ->setParameter('item_type_id', $item_type_id);
+
+
+        if ($item_type_id = Item::ITEM_TYPE_ID['Domherr GS']
+            || $item_type_id = Item::ITEM_TYPE_ID['Bischof GS']) {
+            $qb->addOrderBy('v.displayOrder', 'ASC')
+               ->addOrderBy('v.titleShort', 'ASC')
+               ->addOrderBy('v.itemTypeId', 'ASC')
+               ->addOrderBy('v.referenceId', 'ASC');
+        } else {
+            $qb->addOrderBy('v.titleShort', 'ASC')
+               ->addOrderBy('v.itemTypeId', 'ASC')
+               ->addOrderBy('v.displayOrder', 'ASC')
+               ->addOrderBy('v.referenceId', 'ASC');
+        }
 
         $this->addCanonConditions($qb, $model);
 
