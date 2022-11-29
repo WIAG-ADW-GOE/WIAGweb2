@@ -142,6 +142,9 @@ class Person {
      */
     private ?Person $sibling = null;
 
+    /**
+     * collection of InputError
+     */
     private $inputError;
 
     /**

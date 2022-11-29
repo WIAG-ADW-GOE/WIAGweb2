@@ -589,6 +589,7 @@ class Item {
         $this->mergeCollection('idExternal', $candidate);
 
         $list = $this->idExternal->toArray();
+        // sort by authority
         usort($list, function($a, $b) {
             $cmp = 0;
             if ($a->getAuthorityId() < $b->getAuthorityId()) {
@@ -608,7 +609,9 @@ class Item {
             } else {
                 $last_value = $last_ref_ext->getValue();
                 $merge_value = $ref_ext->getValue();
-                $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+                if ($last_value != $merge_value) {
+                    $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+                }
             }
         }
         $this->idExternal = $merged_list;

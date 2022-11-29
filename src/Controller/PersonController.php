@@ -31,7 +31,10 @@ class PersonController extends AbstractController {
                                  String $itemTypeId) {
         $repository = $entityManager->getRepository(Person::class);
         $name = $request->query->get('q');
-        $fnName = 'suggest'.ucfirst($field);
+        $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
+        if ($field == "institution") {
+            $itemTypeId = explode("-", $itemTypeId);
+        }
         $suggestions = $repository->$fnName($itemTypeId, $name, self::HINT_SIZE);
 
         return $this->render('person/_autocomplete.html.twig', [

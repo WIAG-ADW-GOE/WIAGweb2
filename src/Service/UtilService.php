@@ -583,7 +583,6 @@ class UtilService {
             return null;
         }
         $s_list = explode('-', $s);
-        dump($s_list);
 
         // TODO
         // return null or a two element array
@@ -601,8 +600,6 @@ class UtilService {
 
             $range[] = $d_obj;
         }
-
-        dump($range);
 
         if (count($range) > 1) {
             if (!$range[0] && !$range[1]) {
@@ -624,7 +621,6 @@ class UtilService {
             $str_range[] = $r_loop->format("Y-m-d");
         }
 
-        dump($str_range);
         return $str_range;
     }
 

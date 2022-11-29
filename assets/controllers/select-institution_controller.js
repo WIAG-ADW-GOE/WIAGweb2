@@ -1,6 +1,5 @@
 import { Controller } from 'stimulus';
 
-// 2022-12-10 obsolete: only one institution is allowed; selection is evaluated on server side
 export default class extends Controller {
     static targets = ['carrier'];
 
@@ -14,8 +13,9 @@ export default class extends Controller {
 
     /**
      * toggle carrierTargets
+     * obsolete 2022-11-29
      */
-    toggle(event) {
+    toggle_hide(event) {
 	// console.log(this.carrierTargets[0].style.width)
 	// console.log(this.carrierTargets[1].style.width);
 	const show_idx = event.currentTarget.value;
@@ -26,8 +26,9 @@ export default class extends Controller {
 
     /**
      * clear content of the related element
+     * obsolete 2022-11-29
      */
-    clear(event) {
+    clear_hide(event) {
 	const event_target = event.currentTarget; // div
 	// old version
 	// var clear_idx = 0;
@@ -48,20 +49,10 @@ export default class extends Controller {
 
     }
 
+    /**
+     * set autocomplete URL for different institution types
+     */
     select(event) {
-	// const event_target = event.currentTarget;
-	// const options = event_target.options;
-	// const elmt_selected = Array.from(options).filter(elmt => elmt.selected)[0];
-	// // console.log(elmt_selected);
-
-	// const selected_idx = elmt_selected.dataset.index;
-	// for (let elmt of this.carrierTargets) {
-	//     if (elmt.dataset.index == selected_idx) {
-	// 	elmt.style.width = this.baseWidthValue;
-	//     } else {
-	// 	elmt.style.width = '0em';
-	//     }
-	// }
 
 	const options = event.currentTarget.options;
 	const elmt_selected = Array.from(options).filter(elmt => elmt.selected)[0];

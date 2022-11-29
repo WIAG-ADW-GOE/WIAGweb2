@@ -6,6 +6,7 @@ use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
 use App\Entity\Person;
+use App\Entity\InputError;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
 use App\Entity\RolePropertyType;
@@ -439,21 +440,31 @@ class EditBishopController extends AbstractController {
         $wiag_user_id = $this->getUser()->getId();
         $person = $this->personService->makePersonScheme($id_in_source, $wiag_user_id);
 
+        $id_list = array(intval($first, 10));
+
         // $second_id is item.id_in_source
         // dump($second_id);
-        $second_item = $itemRepository->findOneByIdInSource(intval($second_id, 10));
-        $second_item_id = $second_item->getId();
+        $second_item = $itemRepository->findOneBy([
+            'idInSource' => intval($second_id, 10),
+            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
+        ]);
 
-        $id_list = [intval($first, 10), $second_item_id];
+        if ($second_item) {
+            $id_list[] = $second_item->getId();
+        }
 
         $person_merge_list = $personRepository->findList($id_list);
 
-        $person->merge($person_merge_list[0]);
-        $person->merge($person_merge_list[1]);
-
         $ancestor_list = $person->getMergeAncestor();
+        $person->merge($person_merge_list[0]);
         $ancestor_list->add($person_merge_list[0]->getItem()->getIdInSource());
-        $ancestor_list->add($person_merge_list[1]->getItem()->getIdInSource());
+
+        if (count($person_merge_list) > 1) {
+            $person->merge($person_merge_list[1]);
+            $ancestor_list->add($person_merge_list[1]->getItem()->getIdInSource());
+        } else {
+            $person->getInputError()->add(new InputError("status", "Zu {$second_id} wurde keine Person gefunden"));
+        }
 
         $person_list=array($person);
 

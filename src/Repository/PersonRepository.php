@@ -229,7 +229,7 @@ class PersonRepository extends ServiceEntityRepository {
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.name AS suggestion")
                          ->andWhere('i.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->andWhere('i.itemTypeId in (:item_type_id)')
                          ->addOrderBy('i.name')
                          ->setParameter('name', '%'.$name.'%')
                          ->setParameter('item_type_id', $item_type_id);

@@ -1039,9 +1039,6 @@ class PersonService {
 
         foreach($section_map as $key => $mapFunction) {
             if (array_key_exists($key, $data)) {
-                if ($key == 'role') {
-                    dump($data[$key]);
-                }
                 foreach($data[$key] as $data_loop) {
                     $this->$mapFunction($person, $data_loop);
                 }
@@ -1143,8 +1140,7 @@ class PersonService {
 
         // new role
         if ($data['id'] == 0) {
-            if ($no_data) {
-                // TODO add error message?
+            if ($no_data || $data['delete'] == "delete") {
                 return null;
             } else {
                 $role = new PersonRole();
@@ -1297,8 +1293,7 @@ class PersonService {
 
         // new reference
         if ($data['id'] == 0) {
-            if ($no_data) {
-                // TODO add error message?
+            if ($no_data || $data['delete'] == "delete") {
                 return null;
             } else {
                 $reference = new ItemReference();
