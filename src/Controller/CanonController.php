@@ -145,7 +145,6 @@ class CanonController extends AbstractController {
 
         $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
         $canon_list = $canonLookupRepository->findList([$person_id], null);
-        // dd($ids, $person_id, $canon_list);
 
         // extract Person object to be compatible with bishops
         $personName = $canon_list[0]->getPersonName();
@@ -154,26 +153,6 @@ class CanonController extends AbstractController {
             return $el->getPerson();
         }, $canon_list);
 
-
-        // $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
-        // $itemReferenceRepository->setReferenceVolume($personRole);
-
-        // * version before 2022-07-18
-        // // get person (name, date of birth ...)
-        // $personRepository = $entityManager->getRepository(Person::class);
-        // $person = $personRepository->find($person_id);
-
-        // // collect external URLs
-        // $urlExternalRepository = $dcn->getRepository(UrlExternal::class);
-        // $urlByType = $urlExternalRepository->groupByType($person_id);
-        // $person->setUrlByType($urlByType);
-
-        // // collect office data in an array of Items
-        // $item = $service->getCanonOfficeData($person);
-
-        // // collect comments, name variants from other sources
-        // $sibling = $service->getSibling($person);
-        // $person->setSibling($sibling);
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),

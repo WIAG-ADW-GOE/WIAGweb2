@@ -35,7 +35,6 @@ class MonasteryController extends AbstractController {
         $test_result = null;
         $form->handleRequest($request);
 
-        dump($form->isSubmitted());
         if ($form->isSubmitted() && $form->isValid()) {
 
             // ... perform some action, such as saving the task to the database

@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\Authority;
+use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
@@ -106,8 +107,11 @@ class BishopController extends AbstractController {
      * @Route("/bischof/listenelement", name="bishop_list_detail")
      */
     public function bishopListDetail(Request $request,
-                                     ItemRepository $itemRepository,
-                                     PersonRepository $personRepository) {
+                                     EntityManagerInterface $entityManager) {
+
+        $itemRepository = $entityManager->getRepository(Item::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
         $model = new BishopFormModel;
 
@@ -147,6 +151,12 @@ class BishopController extends AbstractController {
         }
 
         $itemRepository->setSibling($person);
+        // find external URLs for sibling (Domherr GS)
+        $sibling = $person->getSibling();
+        if (!is_null($sibling)) {
+            $urlByType = $urlExternalRepository->groupByType($sibling->getId());
+            $sibling->setUrlByType($urlByType);
+        }
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),

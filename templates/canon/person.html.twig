@@ -111,7 +111,7 @@
 		{% for urltype in url_by_type|keys %}
 		    <div class="row mx-2 mt-3 mb-2">
 			<div class="col-12">
-			    {{ include('canon/_person_url_external.html.twig', {
+			    {{ include('person/_person_url_external.html.twig', {
 				urltype: urltype,
 				urls: url_by_type[urltype],
 			    }) }}
