@@ -99,6 +99,21 @@
 			</div>
 		    </div>
 		{% endif %}
+		{% set url_by_type=personName.urlbytype %}
+		{% if url_by_type is null or url_by_type is empty %}
+		    {% set url_by_type=personName.sibling ? personName.sibling.urlbytype : [] %}
+		{% endif %}
+		{% for urltype in url_by_type|keys %}
+		    <div class="row mx-2 mt-3 mb-2">
+			<div class="col-12">
+			    {{ include('person/_person_url_external.html.twig', {
+				urltype: urltype,
+				urls: url_by_type[urltype],
+			    }) }}
+			</div>
+		    </div>
+		{% endfor %}
+
 		<div class="row mx-2">
 		    <div class="col-12">
 			Empfohlene Zitierweise:

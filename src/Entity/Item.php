@@ -38,8 +38,8 @@ class Item {
         'Bischof' => 'fertig',
         5 => 'online', # canon
         'Domherr' => 'online',
-        6 => 'importiert', # canon gs; import only if online in Personendatenbank
-        9 => 'importiert', # bishop gs; import only if online in Personendatenbank
+        6 => 'online', # canon gs; import only if online in Personendatenbank
+        9 => 'online', # bishop gs; import only if online in Personendatenbank
     ];
 
     // map authority name

@@ -83,6 +83,7 @@ class IdController extends AbstractController {
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
         $person = $personRepository->find($id);
         // collect office data in an array of Items
@@ -92,6 +93,12 @@ class IdController extends AbstractController {
         if ($format == 'html') {
 
             $itemRepository->setSibling($person);
+            // find external URLs for sibling (Domherr GS)
+            $sibling = $person->getSibling();
+            if (!is_null($sibling)) {
+                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
+                $sibling->setUrlByType($urlByType);
+            }
 
             return $this->render('bishop/person.html.twig', [
                 'personName' => $person,
