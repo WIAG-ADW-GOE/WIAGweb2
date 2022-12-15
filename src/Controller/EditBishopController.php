@@ -111,6 +111,7 @@ class EditBishopController extends AbstractController {
 
         }
 
+
         $template = 'edit_bishop/query.html.twig';
         return $this->renderEditElements($template, $template_params);
 
@@ -201,12 +202,14 @@ class EditBishopController extends AbstractController {
                 if ($edited_flag) {
                     if ($person_id < 1) { // new entry
                         $person = $this->personService->makePersonPersist($current_user_id, 'Bischof');
-                        $this->personService->updateMerged($data, $current_user_id);
                     } else {
                         // edited, no errors
                         $person = $personRepository->findList([$person_id])[0];
                     }
                     $this->personService->mapPerson($person, $data, $current_user_id);
+                    if ($person_id < 1) {
+                        $this->personService->updateMerged($person, $current_user_id);
+                    }
                     $person_list[] = $person;
                     $person->getItem()->setFormIsExpanded($expanded_flag);
 
@@ -423,6 +426,7 @@ class EditBishopController extends AbstractController {
      * merge data in a form section
      *
      * @Route("/edit/bischof/merge-item/{first}/{index}/{second_id}", name="edit_bishop_merge_item")
+     *
      * merge $first (id) with $second_id (id_in_source) into a new person
      * route paramters are optional, because the JS controller needs the base path.
      * 2022-11-25: $index is obsolete if merged data are displayed in a new window.
@@ -434,57 +438,47 @@ class EditBishopController extends AbstractController {
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
-        $itemRepository = $this->entityManager->getRepository(Item::class);
 
-        $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
+
+        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
+
+        // 2022-12-14 obsolete?
+        // if ($second) {
+        //     $id_list[] = $second["id"];
+        // }
+
+        // create new person
+        $parent_list = $itemRepository->findById($first);
+
+        $id_in_source = $parent_list[0]->getIdInSource();
         $wiag_user_id = $this->getUser()->getId();
         $person = $this->personService->makePersonScheme($id_in_source, $wiag_user_id);
 
-        $id_list = array(intval($first, 10));
-
-        // $second_id is item.id_in_source
-        // dump($second_id);
-        $second_item = $itemRepository->findOneBy([
-            'idInSource' => intval($second_id, 10),
-            'itemTypeId' => Item::ITEM_TYPE_ID['Bischof']['id'],
-        ]);
-
-        if ($second_item) {
-            $id_list[] = $second_item->getId();
-        }
-
-        $person_merge_list = $personRepository->findList($id_list);
-
-        $ancestor_list = $person->getMergeAncestor();
-        $person->merge($person_merge_list[0]);
-        $ancestor_list->add($person_merge_list[0]->getItem()->getIdInSource());
-
-        if (count($person_merge_list) > 1) {
-            $person->merge($person_merge_list[1]);
-            $ancestor_list->add($person_merge_list[1]->getItem()->getIdInSource());
+        $second = $itemRepository->findMergeCandidate($second_id, $item_type_id);
+        if (is_null($second)) {
+            $msg = "Zu {$second_id} wurde keine Person gefunden.";
+            $person->getInputError()->add(new InputError("status", $msg));
         } else {
-            $person->getInputError()->add(new InputError("status", "Zu {$second_id} wurde keine Person gefunden"));
+            $parent_list[] = $second;
         }
 
-        $person_list=array($person);
+        // store parents in $person and merge data
+        $parent_person_list = array();
+
+        foreach($parent_list as $parent_item) {
+            $parent_person_result = $personRepository->findById($parent_item->getId());
+            $parent_person_list[] = $parent_person_result[0];
+        }
+        $person->merge($parent_list, $parent_person_list);
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
         return $this->renderEditElements($template, [
-            'personList' => $person_list,
+            'personList' => array($person),
             'form' => null,
             'count' => 1,
         ]);
 
-        // obsolete 2022-11-25
-        $template = 'edit_bishop/new_bishop.html.twig';
-
-        $template = 'edit_bishop/_item.html.twig';
-
-        return $this->renderEditElements($template, [
-            'person' => $person_list[0],
-            'index' => $index,
-        ]);
     }
 
 }

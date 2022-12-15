@@ -110,6 +110,9 @@ class PersonRepository extends ServiceEntityRepository {
         // set authorities
         $em->getRepository(Authority::class)->setAuthority($item_list);
 
+        // set merge ancestors
+        $itemRepository->setMergeParent($item_list);
+
         // restore order as in $id_list
         $person_list = $this->utilService->reorder($person_list, $id_list, "id");
 

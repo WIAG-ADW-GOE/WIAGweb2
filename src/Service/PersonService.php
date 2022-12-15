@@ -973,6 +973,7 @@ class PersonService {
         // idInSource
         if (array_key_exists('idInSource', $data['item'])) {
             $id_in_source = $data['item']['idInSource'];
+            # TODO 2022-12-13 use parameter instead of 'Bischof'
             $id_public = $this->makeIdPublic('Bischof', $id_in_source);
 
             $item->setIdInSource($id_in_source);
@@ -985,6 +986,15 @@ class PersonService {
         $this->utilService->setByKeys($item, $data['item'], $key_list);
 
         // person
+
+        //- merge parents
+        if (array_key_exists('mergeParentId', $data['item'])) {
+            $itemRepository = $this->entityManager->getRepository(Item::class);
+            $parent_list = $itemRepository->findBy(['id' => $data['item']['mergeParentId']]);
+            $item->setMergeParent($parent_list);
+            $item->setMergeStatus('child');
+        }
+
         $key_list = ['givenname',
                      'prefixname',
                      'familyname',
@@ -994,6 +1004,8 @@ class PersonService {
                      'noteName',
                      'notePerson'];
         $this->utilService->setByKeys($person, $data, $key_list);
+
+        $this->validateSubstring($person, $key_list, Item::JOIN_DELIM);
 
         if (is_null($person->getGivenname())) {
             $msg = "Das Feld 'Vorname' kann nicht leer sein.";
@@ -1213,9 +1225,8 @@ class PersonService {
         }
 
         // other fields
-        if (isset($data['uncertain'])) {
-            $role->setUncertain(1);
-        }
+        $role_uncertain = isset($data['uncertain']) ? 1 : 0;
+        $role->setUncertain($role_uncertain);
 
         $data['note'] = substr(trim($data['note']), 0, 1023);
         $this->utilService->setByKeys($role, $data, ['note', 'dateBegin', 'dateEnd']);
@@ -1423,7 +1434,7 @@ class PersonService {
                 $id_external->setAuthorityId($authority_id);
                 $authority = $authorityRepository->find($authority_id);
                 $id_external->setAuthority($authority);
-                // do not save the base URL
+                // drop base URL if present
                 if ($key == 'Wikipedia') {
                     $val_list = explode('/', trim($value));
                     $value = array_slice($val_list, -1)[0];
@@ -1588,19 +1599,25 @@ class PersonService {
     }
 
     /**
+     * updateMerged($form_data, $user_wiag_id)
      *
+     * find merged entities; update meta data
      */
-    public function updateMerged($form_data, $user_wiag_id) {
+    public function updateMerged($person, $user_wiag_id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
-         if (array_key_exists('mergedAncestor', $form_data['item'])) {
-             foreach($form_data['item']['mergedAncestor'] as $id_in_source) {
-                 $item_list = $itemRepository->findByIdInSource($id_in_source);
-                 $item = $item_list[0];
-                 $this->updateEditMetaData($item, 'merged', $user_wiag_id);
-             }
+        $parent_list = $person->getItem()->getMergeParent();
+        $child_id = $person->getId();
+        foreach ($parent_list as $parent) {
+            $parent->setMergedIntoId($child_id);
+            $parent->setMergeStatus('parent');
         }
     }
 
+    /**
+     * updateEditMetaData($item, $edit_status, $user_wiag_id, $child_id, $new_flag = false)
+     *
+     * update meta data for $item
+     */
     public function updateEditMetaData($item, $edit_status, $user_wiag_id, $new_flag = false) {
 
         $now_date = new \DateTimeImmutable('now');
@@ -1617,6 +1634,22 @@ class PersonService {
 
         return($item);
 
+    }
+
+    /**
+     * validateSubstring($person, $key_list, $substring)
+     *
+     * Set error if fields contain $substring
+     */
+    public function validateSubstring($person, $key_list, $substring) {
+        foreach($key_list as $key) {
+            $get_fnc = 'get'.ucfirst($key);
+            if (str_contains($person->$get_fnc(), $substring)) {
+                $field = Person::EDIT_FIELD_LIST[$key];
+                $msg = "Das Feld '".$field."' enthält '".$substring."'.";
+                $person->getInputError()->add(new InputError('name', $msg));
+            }
+        }
     }
 
 };

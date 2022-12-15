@@ -52,6 +52,8 @@ class Item {
             "GS" => 200,
     ];
 
+    const JOIN_DELIM = "|";
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -121,6 +123,13 @@ class Item {
     private $editStatus;
 
     /**
+     * @ORM\Column(type="string", length=31, nullable=true)
+     *
+     * one of: original, parent, child
+     */
+    private $mergeStatus;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $createdBy;
@@ -172,6 +181,12 @@ class Item {
 
     /**
      * no DB-mapping
+     * hold merge parents
+     */
+    private $mergeParent = array();
+
+    /**
+     * no DB-mapping
      * hold form input data
      */
     private $formIsEdited = false;
@@ -188,6 +203,8 @@ class Item {
         $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
+        $this->mergeStatus = 'original';
+        $this->mergeParent = array();
     }
 
     static public function newItem($userWiagId, $itemType) {
@@ -337,6 +354,19 @@ class Item {
         return $this;
     }
 
+    public function getMergeStatus(): ?string
+    {
+        return $this->mergeStatus;
+    }
+
+    public function setMergeStatus(?string $mergeStatus): self
+    {
+        $this->mergeStatus = $mergeStatus;
+
+        return $this;
+    }
+
+
     public function getCreatedBy(): ?int
     {
         return $this->createdBy;
@@ -463,6 +493,25 @@ class Item {
         return $this->formIsExpanded;
     }
 
+    public function setMergeParent($value): self {
+        $this->mergeParent = $value;
+        return $this;
+    }
+
+    public function getMergeParent() {
+        return $this->mergeParent;
+    }
+
+    public function getMergeParentTxt() {
+        if (is_null($this->mergeParent) || count($this->mergeParent) < 1) {
+            return null;
+        } else {			
+            $id_list = array_map(
+                function ($v) {return $v->getIdInSource();},
+                $this->mergeParent);
+            return implode($id_list, ", ");
+        }
+    }
 
     /**
      *

@@ -8,7 +8,7 @@
 	     }) }}
      data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
 	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text">Vorname, Präfix, Nachname</span>
+		<span class="input-group-text">Vorname, Präfix, Familienname</span>
 		<input type="text" id="{{ base_id }}_givenname"
 		       name="{{ base_input_name}}[givenname]"
 		       class="form-control wiag-input"
@@ -27,7 +27,7 @@
 		       class="form-control wiag-input"
 		       value="{{ person.familyname }}"
 		       spellcheck="false"
-		       aria-label="Nachname"
+		       aria-label="Familienname"
 		       data-controller="move-cursor"
 		       data-action="blur->move-cursor#moveStart">
 	    </div>

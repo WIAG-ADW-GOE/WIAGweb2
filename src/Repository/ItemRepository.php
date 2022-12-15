@@ -739,4 +739,57 @@ class ItemRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * findMergeCandidate($id_in_source, $item_type_id)
+     * status 'merged' is excluded
+     */
+    public function findMergeCandidate($id_in_source, $item_type_id) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("i")
+                   ->andWhere('i.itemTypeId = :item_type_id')
+                   ->andWhere('i.idInSource = :id_in_source')
+                   ->andWhere("i.mergeStatus <> 'parent'")
+                   ->setParameter('item_type_id', $item_type_id)
+                   ->setParameter('id_in_source', $id_in_source);
+
+        $query = $qb->getQuery();
+        return $query->getOneOrNullResult();
+    }
+
+    /**
+     * setMergeParent($item_list)
+     *
+     * set merge ancestors
+     */
+    public function setMergeParent($item_list) {
+
+        $id_list = array_map(function($v){
+            return $v->getId();
+        }, $item_list);
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i')
+                   ->andWhere('i.mergedIntoId in (:item_list)')
+                   ->setParameter('item_list', $item_list);
+
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        $n = 0;
+        if (count($result) > 0) {
+            foreach ($item_list as $item) {
+                $n += 1;
+                $id = $item->getId();
+                $parent_list = array_filter($result, function($el) use ($id) {
+                    return ($el->getMergedIntoId() == $id);
+                });
+                $item->setMergeParent($parent_list);
+            }
+        }
+
+        return $n;
+    }
+
+
 }

@@ -42,18 +42,18 @@
 		   style="max-width: 9em"
 		   value="{{ person.item.commentduplicate }}"
 		   aria-label="Kommentar Dublette">
-	    {% if person.mergeancestor|length > 0 %}
-		<span class="input-group-text ms-2">Zusammengesetzt aus</span>
-		{% for ancestor in person.mergeancestor %}
-		    <input type="text" id="{{ base_id }}_item_mergedAncestor_{{ loop.index0 }}"
-			   name="{{ base_input_name}}[item][mergedAncestor][{{ loop.index0 }}]"
-			   class="form-control form-control-sm wiag-input"
-			   style="max-width: 9em"
-			   value="{{ ancestor }}"
-			   readonly="readonly"
-			   aria-label="Merge Vorgänger">
-		{% endfor %}
+	    {% if person.item.mergeparenttxt %}
+		<span class="input-group-text ms-2">Zusammengesetzt aus: {{ person.item.mergeparenttxt }}</span>
 	    {% endif %}
+	    {% for parent_item in person.item.mergeparent %}
+
+		<input type="text" id="{{ base_id }}_item_mergeParentId_{{ loop.index0 }}"
+		       name="{{ base_input_name}}[item][mergeParentId][{{ loop.index0 }}]"
+		       class="form-control form-control-sm d-none"
+		       style="max-width: 9em"
+		       value="{{ parent_item.id }}"
+		       aria-label="Zusammengesetzt aus">
+	    {% endfor %}
 	    <div class="dropdown ms-auto">
 		<button class="btn btn-sm btn-secondary dropdown-toggle"
 			    type="button"

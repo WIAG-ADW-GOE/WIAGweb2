@@ -13,6 +13,18 @@ use Doctrine\Common\Collections\Collection;
  * @ORM\Entity(repositoryClass=PersonRepository::class)
  */
 class Person {
+
+    const EDIT_FIELD_LIST = [
+        'givenname' => 'Vorname',
+        'familyname' => 'Familienname',
+        'dateBirth' => 'geboren',
+        'dateDeath' => 'gestorben',
+        'comment' => 'Kommentar (red.)',
+        'noteName' => 'Namenszusätze',
+        'notePerson' => 'Bemerkung zur Person (online)'
+    ];
+
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -161,9 +173,10 @@ class Person {
 
     /**
      * no DB-mapping
-     * hold ids of merge ancestors
+     * flag for new entry
      */
-    private $mergeAncestor;
+    // 2022-12-14 obsolete
+    //private $isNew;
 
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
@@ -172,7 +185,6 @@ class Person {
         $this->birthPlace = new ArrayCollection();
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
-        $this->mergeAncestors = new ArrayCollection();
         # TODO $this-urlByType;
     }
 
@@ -180,6 +192,7 @@ class Person {
         $person = new Person();
         $person->setItem($item);
         $person->setItemTypeId($item->getItemTypeId());
+        $person->setIsNew = true;
         return $person;
     }
 
@@ -476,6 +489,15 @@ class Person {
         return null;
     }
 
+    private function setIsNew($flag) {
+        $this->isNew = $flag;
+        return $this;
+    }
+
+    public function getIsNew() {
+        return $this->isNew;
+    }
+
     static private function combineData($a, $b) {
         if (is_null($a)) {
             return $b;
@@ -530,16 +552,6 @@ class Person {
             $this->inputError = new ArrayCollection;
         }
         return $this->inputError;
-    }
-
-    /**
-     * do not provide setMergeAncestor; use add or remove to manipulate this property
-     */
-    public function getMergeAncestor() {
-        if (is_null($this->mergeAncestor)) {
-            $this->mergeAncestor = new ArrayCollection;
-        }
-        return $this->mergeAncestor;
     }
 
     /**
@@ -673,7 +685,15 @@ class Person {
         return $key;
     }
 
-    public function merge(Person $candidate) {
+    public function merge($parent_list, $parent_person_list) {
+        $this->getItem()->setMergeParent($parent_list);
+        foreach ($parent_person_list as $p) {
+            $this->mergeData($p);
+        }
+        return $this;
+    }
+
+    public function mergeData(Person $candidate) {
         $field_list = [
             'givenname',
             'prefixname',
@@ -681,8 +701,8 @@ class Person {
             'dateBirth',
             'dateDeath',
             'comment',
+            'noteName',
             'notePerson',
-
         ];
 
         foreach ($field_list as $field) {
@@ -735,8 +755,11 @@ class Person {
         if (is_null($this->$getfn())) {
             return $this->$setfn($data);
         } elseif (!is_null($data)) {
+            $collection = $this->$getfn();
             foreach ($data as $data_elmt) {
-                $this->$getfn()->add($data_elmt);
+                if (!$collection->contains($data_elmt)) {
+                    $this->$getfn()->add($data_elmt);
+                }
             }
         }
 
