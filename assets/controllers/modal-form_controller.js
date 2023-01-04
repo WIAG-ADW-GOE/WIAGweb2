@@ -16,7 +16,7 @@ export default class extends Controller {
     listIndex = null;
 
     connect() {
-        // console.log('☕️');
+        // console.log('☕');
     };
 
     async openModal(event) {
@@ -34,24 +34,44 @@ export default class extends Controller {
 	this.modalBodyTarget.innerHTML = modalBody;
     }
 
-    async submitQuery(event, msg = null) {
-	event.preventDefault();
-	var form_elmt = this.modalBodyTarget.getElementsByTagName('form').item(0);
-
-	const response = await fetch(this.queryUrlValue, {
-	    method: form_elmt.method,
-	    body: new URLSearchParams(new FormData(form_elmt)),
-	});
-
-	var modalBody = await response.text();
-	this.modalBodyTarget.innerHTML = modalBody;
-	if (msg !== null) {
-	    var msg_elmt = this.modalBodyTarget.getElementsByClassName('wiag-form-warning').item(0);
-	    msg_elmt.innerHTML = msg;
+    async submitOnEnter(event) {
+	if (event.type == 'keyup' && event.key == 'Enter') {
+	    return await this.submitQuery(event);
 	}
-
 	return null;
+    }
 
+
+    async submitQuery(event, msg = null) {
+	// avoid weird duplicate queries through buttons and the ENTER key
+	if ((event.type == 'click' && event.target.tagName == "BUTTON")
+	    || (event.type == 'keyup' && event.key == 'Enter')) {
+
+	    event.preventDefault();
+
+	    var form_elmt = this.modalBodyTarget.getElementsByTagName('form').item(0);
+
+	    var body = new URLSearchParams(new FormData(form_elmt));
+	    // include name - value pairs of page navigation buttons
+	    const btn = event.target;
+	    // console.log(btn.name, btn.value);
+	    if (btn.name == "offset" && btn.value != "") {
+		body.append(btn.name, btn.value);
+	    }
+
+	    const response = await fetch(this.queryUrlValue, {
+		method: form_elmt.method,
+		body: body,
+	    });
+
+	    var modalBody = await response.text();
+	    this.modalBodyTarget.innerHTML = modalBody;
+	    if (msg !== null) {
+		var msg_elmt = this.modalBodyTarget.getElementsByClassName('wiag-form-warning').item(0);
+		msg_elmt.innerHTML = msg;
+	    }
+	}
+	return null;
     }
 
     async submitForm(event) {
@@ -68,13 +88,12 @@ export default class extends Controller {
 	    var msg = "Es ist kein Personeneintrag ausgewählt."
 	    return await this.submitQuery(event, msg);
 	}
-	console.log(form_data.get('merge_select'));
+	// console.log(form_data.get('merge_select'));
 
-	// new 2022-11-25; create new entry
+	// create new entry
 	const url_comp_list = [
 	    this.mergeItemUrlValue,
 	    this.personID,
-	    this.listIndex,
 	    form_data.get('merge_select')
 	];
 	var url = url_comp_list.join('/');
@@ -83,21 +102,16 @@ export default class extends Controller {
 	window.location.assign(url);
 
 	return null;
-
-	// legacy 2022-11-25
-
-	var request_body = new URLSearchParams(form_data);
-	await this.updateEntry(request_body);
-
-	this.modal.hide();
     }
 
     /**
      * updateEntry(form_elmt)
      *
      * fetch data for the current item and the merge item; update form section for item
+     * 2022-12-22 obsolete?
      */
     async updateEntry(request_body) {
+	// console.log('this is updateEntry');
 	// find the form section to update
 	const entry_elmt = document.getElementById(this.elmtID);
 
@@ -115,7 +129,11 @@ export default class extends Controller {
 	entry_elmt.firstElementChild.innerHTML = wrap.firstElementChild.firstElementChild.innerHTML;
     }
 
+    /**
+     * 2022-12-22 obsolete?
+     */
     async mergeItem(event) {
+	// console.log('this is mergeItem');
 	this.elmtID = event.currentTarget.value;
 	this.personID = event.currentTarget.dataset.personId;
 	this.listIndex = event.currentTarget.dataset.listIndex;

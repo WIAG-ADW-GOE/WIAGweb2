@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=AuthorityRepository::class)
  */
-class Authority
-{
+class Authority {
+
     const ID = [
         'GND' => 1,
         'Wikidata' => 2,

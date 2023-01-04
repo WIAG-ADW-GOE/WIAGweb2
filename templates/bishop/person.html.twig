@@ -90,11 +90,11 @@
 		{% endfor %}
 
 		{# external IDs #}
-		{% if personName.item.idExternal and personName.item.idExternal|length > 0 %}
+		{% if personName.item.displayIdExternal %}
 		    <div class="row mx-2 mt-3 mb-2">
 			<div class="col-12">
 			    {{ include('person/_person_id_external.html.twig', {
-				ids: personName.item.idExternal
+				ids: personName.item.displayIdExternal
 			    }) }}
 			</div>
 		    </div>

@@ -1,5 +1,6 @@
 import { Controller } from 'stimulus';
 
+// set value of an attribute
 export default class extends Controller {
     static targets = ['flag'];
     static values = {

@@ -1,0 +1,23 @@
+{# handle 'click' in top level div and 'keyup' in input #}
+<div class="d-inline-flex p-2"
+     data-action="click->modal-form#submitQuery">
+    {% set b_value, b_disabled = offset - pageSize, offset < pageSize %}
+    <button type="submit"
+	    form =" {{ form.vars.id }}"
+	    class="btn btn-secondary"
+	    name="offset" value="{{ b_value }}" {% if b_disabled %}disabled="disabled"{% endif %}>{{ include('symbols/backward.svg') }} zurück</button>
+    {# {{ offset // pageSize + 1 }} #}
+    <input type="text"
+	   name="pageNumber"
+	   value={{ offset // pageSize + 1 }}
+	   class="mx-1 text-center"
+	   style="width:3em"
+	   autocomplete="off"
+	   data-hide-on-input-target="pageNumber"
+	   data-action="keyup->modal-form#submitQuery">
+    {% set f_value, f_disabled = offset + pageSize, offset + pageSize >= count %}
+    <button type="submit"
+	    form="{{ form.vars.id }}"
+	    class="btn btn-secondary"
+	    name="offset" value="{{ f_value }}" {% if f_disabled %}disabled="disabled"{% endif %}>vor {{ include('symbols/forward.svg') }}</button>
+</div>

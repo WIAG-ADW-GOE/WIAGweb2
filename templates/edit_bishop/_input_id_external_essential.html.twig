@@ -1,0 +1,37 @@
+{# 2022-12-21 not in use anymore; see _input_id_external #}
+{# parameter: authBaseUrlList (for links; controller) #}
+<div class="row"> {# empty div to copy the structure of the other sections #}
+    <div class="col-12">
+	{% set base_id_idext=base_id~'_idext' %}
+	{% set base_input_name_idext=base_input_name~'[idext]' %}
+	{% set auth_norm_list = [
+	    { id: '200', short: 'GS', aria: 'GSN', paramfx: 'index?name', width: 'w-10' },
+	    { id: '1', short: 'GND', aria: 'GND', paramfx: '', width: 'w-10' },
+	    { id: '2', short: 'Wikidata', aria: 'Wikidata-ID', paramfx: '', width: 'w-10' },
+	    { id: '4', short: 'VIAF', aria: 'VIAF-ID', paramfx: '', width: 'w-10' },
+	    { id: '3', short: 'Wikipedia', aria: 'Wikipedia', paramfx: '', width:'w-20' },
+	] %}
+	<div class="input-group input-group-sm mb-1">
+	    {% for auth in auth_norm_list %}
+		{% set auth_url=person.item.geturiextbyauth(auth.short) %}
+		<span class="input-group-text">{% if auth_url %}<a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth.short }}</a>{% else %}{{ auth.short }}{% endif %}
+		    <a href="{{ authBaseUrlList[auth.short] }}"
+		       target="blank"
+		       rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
+		<input type="text" id="{{ base_id_idext }}_{{ loop.index0 }}_id"
+		       name="{{ base_input_name_idext}}[{{ loop.index0 }}][id]"
+		       class="form-control form-control-sm d-none"
+		       value="{{ auth.id }}"
+		       spellcheck="false"
+		       aria-label="{{ auth.aria }} ID">
+		<input type="text" id="{{ base_id_idext }}_{{ loop.index0 }}_value"
+		       name="{{ base_input_name_idext}}[{{ loop.index0 }}][value]"
+		       data-paramfx="{{ auth.paramfx }}"
+		       class="form-control form-control-sm wiag-input {{ auth.width }}"
+		       value="{{ person.item.getidexternalbyauthority(auth.id) }}"
+		       spellcheck="false"
+		       aria-label="{{ auth.aria }} value">
+	    {% endfor %}
+	</div>
+    </div>
+</div>

@@ -31,7 +31,6 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
-
 class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
@@ -78,13 +77,16 @@ class EditBishopController extends AbstractController {
 
         $person_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
+
             $personRepository = $this->entityManager->getRepository(Person::class);
 
             $itemRepository = $this->entityManager->getRepository(Item::class);
 
-            $id_all = $itemRepository->bishopIds($model);
+            $limit = 0; $offset = 0; $online_only = false;
+            $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
             $count = count($id_all);
 
+            //
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
@@ -107,6 +109,7 @@ class EditBishopController extends AbstractController {
                 'count' => $count,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
+                'mergeStep' => false,
             ];
 
         }
@@ -208,7 +211,7 @@ class EditBishopController extends AbstractController {
                     }
                     $this->personService->mapPerson($person, $data, $current_user_id);
                     if ($person_id < 1) {
-                        $this->personService->updateMerged($person, $current_user_id);
+                        $this->personService->updateMergeMetaData($person, $current_user_id);
                     }
                     $person_list[] = $person;
                     $person->getItem()->setFormIsExpanded($expanded_flag);
@@ -252,6 +255,7 @@ class EditBishopController extends AbstractController {
         return $this->renderEditElements($template, [
             'personList' => $person_list,
             'newEntry' => $new_entry,
+            'mergeStep' => false,
         ]);
 
     }
@@ -277,6 +281,7 @@ class EditBishopController extends AbstractController {
             'authBaseUrlList' => $auth_base_url_list,
             'itemPropertyTypeList' => $item_property_type_list,
             'rolePropertyTypeList' => $role_property_type_list,
+            'mergeStep' => false,
         ]);
 
         return $this->renderForm($template, $param_list_combined);
@@ -303,6 +308,7 @@ class EditBishopController extends AbstractController {
             'personList' => $person_list,
             'form' => null,
             'count' => 1,
+            'mergeStep' => false,
         ]);
 
     }
@@ -363,7 +369,8 @@ class EditBishopController extends AbstractController {
 
         $status_choices = $this->getStatusChoices();
 
-        $form = $formFactory->createNamed('bishop_merge', EditBishopFormType::class, $model, [
+        $form = $formFactory->createNamed('bishop_merge',
+                                          EditBishopFormType::class, $model, [
             'status_choices' => $status_choices,
         ]);
         // $form = $this->createForm(EditBishopFormType::class);
@@ -384,7 +391,10 @@ class EditBishopController extends AbstractController {
 
             $itemRepository = $this->entityManager->getRepository(Item::class);
 
-            $id_all = $itemRepository->bishopIds($model);
+            $limit = 0;
+            $offset = 0;
+            $online_only = false;
+            $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
             $count = count($id_all);
 
             $offset = $request->request->get('offset');
@@ -423,17 +433,15 @@ class EditBishopController extends AbstractController {
     }
 
     /**
-     * merge data in a form section
+     * merge data; display merged data in a new window
      *
-     * @Route("/edit/bischof/merge-item/{first}/{index}/{second_id}", name="edit_bishop_merge_item")
+     * @Route("/edit/bischof/merge-item/{first}/{second_id}", name="edit_bishop_merge_item")
      *
      * merge $first (id) with $second_id (id_in_source) into a new person
      * route paramters are optional, because the JS controller needs the base path.
-     * 2022-11-25: $index is obsolete if merged data are displayed in a new window.
      */
     public function mergeItem(Request $request,
                               $first = null,
-                              $index = null,
                               $second_id = null) {
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
@@ -441,11 +449,6 @@ class EditBishopController extends AbstractController {
 
 
         $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
-
-        // 2022-12-14 obsolete?
-        // if ($second) {
-        //     $id_list[] = $second["id"];
-        // }
 
         // create new person
         $parent_list = $itemRepository->findById($first);
@@ -465,11 +468,23 @@ class EditBishopController extends AbstractController {
         // store parents in $person and merge data
         $parent_person_list = array();
 
-        foreach($parent_list as $parent_item) {
-            $parent_person_result = $personRepository->findById($parent_item->getId());
-            $parent_person_list[] = $parent_person_result[0];
-        }
+        // we need completely inilialized Person objects
+        $id_list = array_map(
+            function ($v) {return $v->getId(); },
+            $parent_list);
+        $parent_person_list = $personRepository->findList($id_list);
+
         $person->merge($parent_list, $parent_person_list);
+        // child should be findable by its parents IDs
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $authority = $authorityRepository->find(Authority::ID['WIAG-ID']);
+        $item = $person->getItem();
+        $id_external_list = $item->getIdExternal();
+        foreach ($parent_person_list as $parent) {
+            $value = $parent->getItem()->getIdPublic();
+            $id_external = $this->personService->makeIdExternal($item, $authority, $value);
+            $id_external_list->add($id_external);
+        }
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
@@ -477,6 +492,58 @@ class EditBishopController extends AbstractController {
             'personList' => array($person),
             'form' => null,
             'count' => 1,
+            'mergeStep' => true,
+        ]);
+
+    }
+
+    /**
+     * split merged item, show parents in edit forms
+     *
+     * @Route("/edit/bischof/split-item/{id}", name="edit_bishop_split_item")
+     *
+     */
+    public function splitItem(int $id) {
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $item = $itemRepository->find($id);
+
+        // set status values for parents and child
+        $person_list = array();
+        if (!is_null($item)) {
+            $itemRepository->setMergeParent(array($item));
+
+            $item->setIsDeleted(1);
+            $item->setMergeStatus('orphan');
+            $item->setIsOnline(0);
+
+            $online_status = Item::ONLINE_STATUS[$item->getItemTypeId()];
+            $parent_list = $item->getMergeParent();
+            $id_list = array();
+            foreach($parent_list as $parent_item) {
+                if ($parent_item->getEditStatus() == $online_status) {
+                    $parent_item->setIsOnline(1);
+                }
+                $parent_item->setFormIsExpanded(1);
+                $parent_item->setMergeStatus('original');
+                $id_list[] = $parent_item->getId();
+            }
+            $person_list = $personRepository->findList($id_list);
+
+            $this->entityManager->flush();
+
+        } else {
+            throw $this->createNotFoundException('ID is nicht gültig: '.$id);
+        }
+
+        $template = 'edit_bishop/new_bishop.html.twig';
+
+        return $this->renderEditElements($template, [
+            'personList' => $person_list,
+            'form' => null,
+            'count' => count($person_list),
+            'mergeStep' => false,
         ]);
 
     }

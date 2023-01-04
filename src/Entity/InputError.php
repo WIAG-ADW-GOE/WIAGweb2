@@ -8,7 +8,8 @@ class InputError {
         'error'   => ['error'],
     ];
 
-    private $section; // 2022-08-30: one of: 'status', 'name', 'person', 'role', 'reference'
+    // 2022-08-30: one of: 'status', 'name', 'person', 'role', 'reference'
+    private $section; 
     private $msg;
     private $level;
 

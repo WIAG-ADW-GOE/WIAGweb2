@@ -32,15 +32,6 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersonService {
-    // see table `authority
-    const AUTH_ID = [
-        'GND' => 1,
-        'GS' => 200,
-        'VIAF' => 4,
-        'Wikidata' => 2,
-        'Wikipedia' => 3,
-    ];
-
     const EDIT_STATUS_DEFAULT = [
         'Bischof' => 'angelegt',
     ];
@@ -411,7 +402,7 @@ class PersonService {
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::AUTH_ID['GND']);
+        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
         if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
 
 
@@ -427,7 +418,7 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(self::AUTH_ID['Wikipedia']);
+        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
@@ -727,7 +718,7 @@ class PersonService {
             $pld[$scafx.'birthPlace'] = $fv;
         }
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(self::AUTH_ID['GND']);
+        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
         if($fv) $pld[$gfx.'gndIdentifier'] = $fv;
 
 
@@ -741,7 +732,7 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(self::AUTH_ID['Wikipedia']);
+        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
         if($fv) {
             $pld[$foaffx.'page'] = $fv;
         }
@@ -952,6 +943,17 @@ class PersonService {
         $new_flag = ($data['item']['id'] == "");
         $this->updateEditMetaData($item, $edit_status, $user_id, $new_flag);
 
+        if ($edit_status == "") {
+            $msg = "Das Feld 'Status' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('status', $msg));
+        }
+
+        if ($edit_status == Item::ONLINE_STATUS['Bischof']) {
+            $item->setIsOnline(1);
+        } else {
+            $item->setIsOnline(0);
+        }
+
         // item: deleted TODO 2022-09-22 turned off for the moment
         // $deleted_status = $data['item']['isDeleted'];
         // $item->setIsDeleted($deleted_status);
@@ -1066,10 +1068,6 @@ class PersonService {
         // validation
         if ($item->getIsOnline() && $item->getIsDeleted()) {
             $msg = "Der Eintrag kann nicht gleichzeitig online und gelöscht sein.";
-            $person->getInputError()->add(new InputError('status', $msg));
-        }
-        if (is_null($item->getEditStatus())) {
-            $msg = "Das Feld 'Status' darf nicht leer sein.";
             $person->getInputError()->add(new InputError('status', $msg));
         }
 
@@ -1417,32 +1415,42 @@ class PersonService {
 
         $item_id_external_list = $item->getIdExternal();
         // replace all existing entries
-        $id_external_list = $idExternalRepository->findByItemId($item_id);
+        // $id_external_list = $idExternalRepository->findByItemId($item_id);
+        $id_external_list = $item->getIdExternal();
         foreach($id_external_list as $id_loop) {
-            $item->getIdExternal()->removeElement($id_loop);
+            $id_external_list->removeElement($id_loop);
             //$id_loop->setItem(null); not necessary
             $this->entityManager->remove($id_loop);
         }
 
+        foreach ($data as $idext) {
+            $value = is_null($idext['value']) ? null : trim($idext['value']);
+            if (!is_null($value) && $value != "" && $idext['delete'] != "delete") {
+                $authority_name = $idext["urlName"];
+                $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
+                if (!is_null($auth_query) && count($auth_query) > 0) {
+                    $authority = $auth_query[0];
+                    // drop base URL if present
+                    if ($authority_name == 'Wikipedia-Artikel') {
+                        $val_list = explode('/', $value);
+                        $value = array_slice($val_list, -1)[0];
+                    }
 
-        foreach($data as $key => $value) {
-            if (!is_null($value) && trim($value) != "") {
-                $authority_id = Authority::ID[$key];
+                    $id_external = $this->makeIdExternal($item, $authority, $value);
+                    $item_id_external_list->add($id_external);
 
-                $id_external = new IdExternal();
-                $item_id_external_list->add($id_external);
-                $id_external->setAuthorityId($authority_id);
-                $authority = $authorityRepository->find($authority_id);
-                $id_external->setAuthority($authority);
-                // drop base URL if present
-                if ($key == 'Wikipedia') {
-                    $val_list = explode('/', trim($value));
-                    $value = array_slice($val_list, -1)[0];
-                }
-                $id_external->setValue($value);
-                if ($item->getId() > 0) {
-                    $id_external->setItem($item);
-                    $this->entityManager->persist($id_external);
+                    // validate: avoid merge separator
+                    $separator = "|";
+                    if (str_contains($value, $separator)) {
+                        $msg = "Eine externe ID enthält '".$separator."'.";
+                        $person->getInputError()->add(new InputError('reference', $msg));
+                    }
+                    if ($item->getId() > 0) {
+                        $this->entityManager->persist($id_external);
+                    }
+                } else {
+                    $msg = "Keine Institution für '".$authority_name."' gefunden.";
+                    $person->getInputError()->add(new InputError('reference', $msg));
                 }
             }
         }
@@ -1554,7 +1562,9 @@ class PersonService {
         return $person;
     }
 
-
+    /**
+     * compose ID public
+     */
     public function makeIdPublic($item_type, $numeric_part)  {
         $width = Item::ITEM_TYPE_ID[$item_type]['numeric_field_width'];
         $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
@@ -1565,7 +1575,22 @@ class PersonService {
     }
 
     /**
-     * create person object
+     * create IdExternal object
+     */
+    public function makeIdExternal($item, $authority, $value) {
+        $id_external = new IdExternal();
+        if (!is_null($item->getId())) {
+            $id_external->setItemId($item->getId());
+        }
+        $id_external->setItem($item);
+        $id_external->setAuthorityId($authority->getId());
+        $id_external->setAuthority($authority);
+        $id_external->setValue($value);
+        return $id_external;
+    }
+
+    /**
+     * create Person object
      */
     public function makePersonScheme($id_in_source, $userWiagId) {
 
@@ -1599,17 +1624,18 @@ class PersonService {
     }
 
     /**
-     * updateMerged($form_data, $user_wiag_id)
+     * updateMergeMetaData($form_data, $user_wiag_id)
      *
-     * find merged entities; update meta data
+     * find merged entities; update merge meta data
      */
-    public function updateMerged($person, $user_wiag_id) {
-        $itemRepository = $this->entityManager->getRepository(Item::class);
+    public function updateMergeMetaData($person, $user_wiag_id) {
+        // parents
         $parent_list = $person->getItem()->getMergeParent();
         $child_id = $person->getId();
-        foreach ($parent_list as $parent) {
-            $parent->setMergedIntoId($child_id);
-            $parent->setMergeStatus('parent');
+        foreach ($parent_list as $item) {
+            $item->setMergedIntoId($child_id);
+            $item->setMergeStatus('parent');
+            $item->setIsOnline(0);
         }
     }
 

@@ -9,7 +9,6 @@
 		       style="max-width: 5em"
 		       value="{{ person.item.idinsource }}"
 		       aria-label="Kommentar Dublette">
-
 	    {% endif %}
 	    <span class="input-group-text">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
@@ -42,11 +41,8 @@
 		   style="max-width: 9em"
 		   value="{{ person.item.commentduplicate }}"
 		   aria-label="Kommentar Dublette">
-	    {% if person.item.mergeparenttxt %}
-		<span class="input-group-text ms-2">Zusammengesetzt aus: {{ person.item.mergeparenttxt }}</span>
-	    {% endif %}
+	    {# get parent IDs (hidden) #}
 	    {% for parent_item in person.item.mergeparent %}
-
 		<input type="text" id="{{ base_id }}_item_mergeParentId_{{ loop.index0 }}"
 		       name="{{ base_input_name}}[item][mergeParentId][{{ loop.index0 }}]"
 		       class="form-control form-control-sm d-none"
@@ -54,8 +50,10 @@
 		       value="{{ parent_item.id }}"
 		       aria-label="Zusammengesetzt aus">
 	    {% endfor %}
-	    <div class="dropdown ms-auto">
-		<button class="btn btn-sm btn-secondary dropdown-toggle"
+	    {% if not newEntry %}
+		{# dropdown "Aktion" #}
+		<div class="dropdown ms-auto">
+		    <button class="btn btn-sm btn-secondary dropdown-toggle"
 			    type="button"
 			    data-bs-toggle="dropdown"
 			    aria-expanded="false">Aktion</button>
@@ -67,11 +65,16 @@
 				    data-list-index="{{ index }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
 			{% if person.item.commentduplicate %}
-			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'index': index, 'second_id': person.item.commentduplicate }) }}">Zusammenführen mit {{ person.item.commentduplicate }}</a>
+			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentduplicate }) }}">Zusammenführen mit {{ person.item.commentduplicate }}</a>
+			    </li>
+			{% endif %}
+			{% if person.item.mergeparent and not mergeStep %}
+			    <li><a class="dropdown-item" href="{{ path('edit_bishop_split_item', { 'id': person.id }) }}">Eintrag aufteilen</a>
 			    </li>
 			{% endif %}
 		    </ul>
-	    </div>
+		</div>
+	    {% endif %}
 	</div>
     </div>
 

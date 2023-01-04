@@ -79,7 +79,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
 
-    public function bishopIds($model, $limit = 0, $offset = 0) {
+    public function bishopIds($model, $limit = 0, $offset = 0, $online_only = true) {
         $result = null;
 
         $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof']['id'];
@@ -93,8 +93,13 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('i')
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->andWhere('i.itemTypeId = :itemTypeBishop')
-                   ->setParameter(':itemTypeBishop', $itemTypeBishop);
+                   ->andWhere('i.mergeStatus <> :merged')
+                   ->setParameter(':itemTypeBishop', $itemTypeBishop)
+                   ->setParameter(':merged', 'parent');
 
+        if ($online_only) {
+            $qb->andWhere('i.isOnline = 1');
+        }
         $qb = $this->addBishopConditions($qb, $model);
         $qb = $this->addBishopFacets($qb, $model);
 
@@ -370,7 +375,7 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestBishopName($name, $hintSize, $edit_status = null) {
+    public function suggestBishopName($name, $hintSize, $edit_status = null, $only_online = true) {
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
@@ -386,6 +391,10 @@ class ItemRepository extends ServiceEntityRepository
         if (!is_null($edit_status)) {
             $qb->andWhere('i.editStatus = :edit_status')
                ->setParameter('edit_status', $edit_status);
+        }
+
+        if ($only_online) {
+            $qb->andWhere('i.isOnline = 1');
         }
 
         $qb->setMaxResults($hintSize);
@@ -789,6 +798,21 @@ class ItemRepository extends ServiceEntityRepository
         }
 
         return $n;
+    }
+
+    /**
+     * search field id_public and id_external.value
+     */
+    public function findByIdPublicOrIdExternal($id) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i')
+                   ->leftjoin('i.idExternal', 'idext')
+                   ->andWhere('i.idPublic = :id OR idext.value = :id')
+                   ->andWhere('i.isOnline = 1')
+                   ->setParameter('id', $id);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
     }
 
 

@@ -125,7 +125,7 @@ class Item {
     /**
      * @ORM\Column(type="string", length=31, nullable=true)
      *
-     * one of: original, parent, child
+     * one of: original, parent, child, orphan
      */
     private $mergeStatus;
 
@@ -170,9 +170,9 @@ class Item {
     private $idInSource;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="boolean", nullable=false)
      */
-    private $isOnline;
+    private $isOnline = 0;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -235,6 +235,19 @@ class Item {
 
     public function getIdExternal() {
         return $this->idExternal;
+    }
+
+    /**
+     * drop url_type 'Internal Identifier'
+     */
+    public function displayIdExternal() {
+        $display = $this->idExternal->toArray();
+        return array_filter(
+            $display,
+            function($v) {
+                return $v->getAuthority()->getUrlType() != "Internal Identifier";
+            }
+        );
     }
 
     public function getUrlExternal() {
@@ -505,7 +518,7 @@ class Item {
     public function getMergeParentTxt() {
         if (is_null($this->mergeParent) || count($this->mergeParent) < 1) {
             return null;
-        } else {			
+        } else {
             $id_list = array_map(
                 function ($v) {return $v->getIdInSource();},
                 $this->mergeParent);
@@ -521,12 +534,11 @@ class Item {
     }
 
     private function findAuthorityId($authorityIdOrName) {
-        if (is_int($authorityIdOrName)) {
-            $authorityId = $authorityIdOrName;
-        } else {
-            $authorityId = self::AUTHORITY_ID[$authorityIdOrName];
+        $authority_id = intval($authorityIdOrName, 10);
+        if ($authority_id == 0) {
+            $authority_id = self::AUTHORITY_ID[$authorityIdOrName];
         }
-        return $authorityId;
+        return $authority_id;
     }
 
 
@@ -637,6 +649,7 @@ class Item {
     public function mergeIdExternal(Item $candidate) {
         $this->mergeCollection('idExternal', $candidate);
 
+        // combine entries for the same authorities
         $list = $this->idExternal->toArray();
         // sort by authority
         usort($list, function($a, $b) {
