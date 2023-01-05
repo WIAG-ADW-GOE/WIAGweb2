@@ -109,9 +109,8 @@
 	</div>
 	<div class="ms-5 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id_role }}_note">
 	    <div class="input-group input-group-sm mb-1">
-		<div class="form-check">
-		    <input class="form-check-input" type="checkbox" value="1" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain %}checked="checked"{% endif %}>
-		    <label class="form-check-label" for="{{ base_id_role }}_uncertain">unsicher</label>
+		<div class="input-group-text wiag-input-text-blue">
+		    <input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the office data are uncertain" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain %}checked="checked"{% endif %}> unsicher
 		</div>
 		<span class="input-group-text wiag-input-text-blue ms-1">Bemerkung</span>
 		<input type="text"

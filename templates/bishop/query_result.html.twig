@@ -10,7 +10,7 @@
 {% block body %}
     {{ form_start(form, {
 	'attr': {
-	    'id': 'form',
+	    'id': form.vars.id,
 	    'data-controller': 'facet-state hide-on-input facet-submit',
 	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->facet-submit#submit'
 	}
@@ -22,7 +22,7 @@
 	    {{ include("bishop/_form_elements.html.twig") }}
 	    <div class="row mt-2 mx-2">
 		<div class="col-12">
-		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		    <button type="submit" form="{{ form.vars.id }}" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		    {# button data export #}
 		    {% if count > 0 %}
 			{% for fmtft in [
@@ -93,5 +93,4 @@
 	    </div>
 	</div>
     {{ form_end(form) }}
-
 {% endblock %}

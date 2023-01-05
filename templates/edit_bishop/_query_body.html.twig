@@ -1,6 +1,10 @@
 <div class="container-fluid"
      data-controller="hide-on-input">
-    {{ form_start(form) }}
+    {{ form_start(form, {
+	'attr': {
+	    'id': form.vars.id
+	}
+    }) }}
 	<div class="row ms-2 col-12">
 	    <span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	</div>

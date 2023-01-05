@@ -1,8 +1,9 @@
 <div class="d-inline-flex p-2">
-    {{ include('person/_button_page_backward.html.twig', {
-	value: offset - pageSize,
-	disabled: offset < pageSize,
-	text: 'zurück'}) }}
+    {% set b_value, b_disabled = offset - pageSize, offset < pageSize %}
+    <button type="submit"
+	    form ="{{ form.vars.id }}"
+	    class="btn btn-secondary"
+	    name="offset" value="{{ b_value }}" {% if b_disabled %}disabled="disabled"{% endif %}>{{ include('symbols/backward.svg') }} zurück</button>
     {# {{ offset // pageSize + 1 }} #}
     <input type="text"
 	   name="pageNumber"
@@ -13,8 +14,9 @@
 	   data-hide-on-input-target="pageNumber"
 	   data-sync-input-target="member"
 	   data-action="change->sync-input#sync">
-    {{ include('person/_button_page_forward.html.twig', {
-	value: offset + pageSize,
-	disabled: offset + pageSize >= count,
-	text: 'vor'}) }}
+    {% set f_value, f_disabled = offset + pageSize, offset + pageSize >= count %}
+    <button type="submit"
+	    form="{{ form.vars.id }}"
+	    class="btn btn-secondary"
+	    name="offset" value="{{ f_value }}" {% if f_disabled %}disabled="disabled"{% endif %}>vor {{ include('symbols/forward.svg') }}</button>
 </div>
