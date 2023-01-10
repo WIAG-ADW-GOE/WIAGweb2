@@ -47,7 +47,7 @@ class EditBishopController extends AbstractController {
     }
 
     /**
-     * display query form for bishops; handle query
+     * display query form for bishops;
      *
      * @Route("/edit/bischof/query", name="edit_bishop_query")
      */
@@ -96,6 +96,10 @@ class EditBishopController extends AbstractController {
             } elseif (!is_null($page_number) && $page_number > 0) {
                 $page_number = min($page_number, intdiv($count, $model->listSize) + 1);
                 $offset = ($page_number - 1) * $model->listSize;
+                // this may happen if elements were deleted
+                while ($offset >= $count) {
+                    $offset -= $model->listSize;
+                }
             } else {
                 $offset = 0;
             }
@@ -148,94 +152,43 @@ class EditBishopController extends AbstractController {
         $edit_form_id = 'edit_bishop_edit_form';
         $form_data = $request->request->get($edit_form_id);
 
-        /* map/validate form */
         $current_user_id = $this->getUser()->getId();
 
-        $personRepository = $this->entityManager->getRepository(Person::class);
-        $person_list = array();
+        /* map/validate form */
+        // fill person_list
+        $person_list = $this->personService->mapFormdata(
+            $form_data,
+            $current_user_id,
+        );
+
         $error_flag = false;
-        foreach($form_data as $data) {
-            $person_id = $data['item']['id'];
-            if ($person_id > 0) {
-                // get complete Person
-                $person = $personRepository->findList([$person_id])[0];
-                $person_list[] = $person;
-            } else {
-                // new entry
-                $item = Item::newItem($current_user_id, 'Bischof');
-                $person = Person::newPerson($item);
-                // map id and keep form open
-                $item->setIdInSource($data['item']['idInSource']);
-                $item->setFormIsExpanded(1);
-                $person_list[] = $person;
+        foreach($person_list as $person) {
+            if ($person->hasError('error')) {
+                $error_flag = true;
             }
-
-            if (isset($data['item']['formIsEdited'])) {
-                $this->personService->mapPerson($person, $data, $current_user_id);
-
-                if ($person->hasError('error')) {
-                    $error_flag = true;
-                }
-            }
-
-            // set form collapse state
-            $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
-            $person->getItem()->setFormIsExpanded($expanded_param);
         }
 
-        $new_entry = $request->query->get('newEntry');
+        $new_entry_flag = $request->query->get('newEntry');
 
-        // save data
+        /* save data */
         if (!$error_flag) {
-            $person_list = array();
+
             // otherwise previous data for roles show still up 2022-10-06
             $this->entityManager->clear();
+
             // save changes to database
             // any object that was retrieved via Doctrine is stored to the database
-
-            $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
-            $itemRepository = $this->entityManager->getRepository(Item::class);
-
-            // rebuild $person_list with persistent new entries
-            foreach($form_data as $data) {
-                $person_id = $data['item']['id'];
-                $edited_flag = isset($data['item']['formIsEdited']);
-                $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
-                $person = null;
-                if ($edited_flag) {
-                    if ($person_id < 1) { // new entry
-                        $person = $this->personService->makePersonPersist($current_user_id, 'Bischof');
-                    } else {
-                        // edited, no errors
-                        $person = $personRepository->findList([$person_id])[0];
-                    }
-                    $this->personService->mapPerson($person, $data, $current_user_id);
-                    if ($person_id < 1) {
-                        $this->personService->updateMergeMetaData($person, $current_user_id);
-                    }
-                    $person_list[] = $person;
-                    $person->getItem()->setFormIsExpanded($expanded_flag);
-
-                } elseif(!$new_entry) { // in edit/change-mode restore complete list
-                    $person = $personRepository->findList([$person_id])[0];
-                    $person_list[] = $person;
-                }
-                // do nothing for new elements that were not edited
-            }
-
-            foreach ($person_list as $person) {
-                if ($person->getItem()->getFormIsEdited()) {
-                    // update table name_lookup
-                    $nameLookupRepository->update($person);
-                    // reset edit flag
-                    $person->getItem()->setFormIsEdited(0);
-                }
-            }
+            // fill $person_list
+            $person_list = $this->personService->saveFormData(
+                $form_data,
+                $current_user_id,
+                $new_entry_flag,
+            );
 
             $this->entityManager->flush();
 
             // add an empty form in case the user wants to add more items
-            if ($new_entry) {
+            if ($new_entry_flag) {
                 $item_type_id = $this->itemTypeId;
                 $itemRepository = $this->entityManager->getRepository(Item::class);
                 $id_in_source = $itemRepository->findMaxIdInSource($this->itemTypeId) + 1;
@@ -254,7 +207,7 @@ class EditBishopController extends AbstractController {
 
         return $this->renderEditElements($template, [
             'personList' => $person_list,
-            'newEntry' => $new_entry,
+            'newEntry' => $new_entry_flag,
             'mergeStep' => false,
         ]);
 
@@ -286,6 +239,25 @@ class EditBishopController extends AbstractController {
 
         return $this->renderForm($template, $param_list_combined);
 
+    }
+
+    /**
+     *
+     * @Route("/edit/bischof/delete", name="edit_bishop_delete")
+     */
+    public function deleteEntry(Request $request) {
+
+
+        // the button name is 'delete-id'
+        $id = $request->request->get('delete-id');
+
+        // set the delete flag
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $item = $itemRepository->find($id);
+        $item->setIsDeleted(1);
+        $this->entityManager->flush();
+
+        return $this->query($request);
     }
 
     /**

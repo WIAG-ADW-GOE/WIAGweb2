@@ -82,6 +82,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->leftjoin('role.role', 'role_type')
                    ->leftjoin('role.institution', 'institution')
                    ->andWhere('p.id in (:id_list)')
+                   ->andWhere('i.isDeleted = 0')
                    ->addOrderBy('role.dateSortKey')
                    ->addOrderBy('role.id')
                    ->setParameter('id_list', $id_list);

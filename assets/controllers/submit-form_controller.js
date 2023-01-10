@@ -11,8 +11,9 @@ export default class extends Controller {
 	// console.log(this.element);
     }
 
-    async submit() {
-	// console.log('submit');
+    async submit(event) {
+	event.preventDefault();
+
 	// console.log('newEntry: ', this.newEntryValue);
 	var form_element = this.element;
 	var newEntry = this.hasNewEntryValue ? this.newEntryValue : 0;
@@ -20,15 +21,32 @@ export default class extends Controller {
 	    newEntry: newEntry,
 	    listOnly: true,
 	});
-	var url = form_element.action + '?' + get_params.toString();
+
+	const btn = event.target;
+	var formaction =
+	    btn.getAttribute('formaction') ||
+	    form_element.action;
+
+	if (btn.dataset.confirm) {
+	    console.log('confirm');
+	    return null;
+	}
+
+	var body = new URLSearchParams(new FormData(form_element));
+
+	// console.log(btn.name, btn.value);
+	// e.g. for pagination
+	if (btn.tagName == "BUTTON" && btn.name != "" && btn.value != "") {
+	    // console.log(btn.name);
+	    body.append(btn.name, btn.value);
+	}
+
+	var url = formaction + '?' + get_params.toString();
         const response = await fetch(url, {
             method: form_element.method,
-            body: new URLSearchParams(new FormData(form_element)),
+            body: body
         });
 
-        // this.dispatch('async:submitted', {
-        //     response,
-        // })
 	this.element.innerHTML = await response.text();
     }
 
@@ -36,7 +54,8 @@ export default class extends Controller {
      * submit form with only one selection element
      */
     onChange(event) {
-	console.log('on change');
+	// console.log('on change');
 	this.element.submit();
     }
+
 }

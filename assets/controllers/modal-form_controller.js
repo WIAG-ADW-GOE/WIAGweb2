@@ -55,7 +55,8 @@ export default class extends Controller {
 	    // include name - value pairs of page navigation buttons
 	    const btn = event.target;
 	    // console.log(btn.name, btn.value);
-	    if (btn.name == "offset" && btn.value != "") {
+	    if (btn.tagName == "BUTTON" && btn.name != "" && btn.value != "") {
+		// console.log(btn.name);
 		body.append(btn.name, btn.value);
 	    }
 

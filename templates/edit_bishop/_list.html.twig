@@ -4,7 +4,8 @@
 	  action="{{ path('edit_bishop_save') }}"
 	  method="post"
 	  data-controller="submit-form"
-	  data-submit-form-new-entry-value="{{ newEntry }}">
+	  data-submit-form-new-entry-value="{{ newEntry }}"
+	  data-action="submit-confirm:async:submit->submit-form#submit">
 	{% set body_id_list = personList|map(p => 'body'~attribute(p, "id"))|join(' ') %}
 	<div class="row mx-2">
 	    <div class="col">

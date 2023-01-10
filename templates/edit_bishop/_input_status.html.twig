@@ -61,7 +61,7 @@
 			<li><button class="dropdown-item"
 				    type="button"
 				    value="{{ base_id }}"
-				    data-person-id="{{ person.item.id }}"
+				    data-person-id="{{ person.id }}"
 				    data-list-index="{{ index }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
 			{% if person.item.commentduplicate %}
@@ -69,9 +69,39 @@
 			    </li>
 			{% endif %}
 			{% if person.item.mergeparent and not mergeStep %}
-			    <li><a class="dropdown-item" href="{{ path('edit_bishop_split_item', { 'id': person.id }) }}">Eintrag aufteilen</a>
+			    <li data-controller="submit-confirm"
+				data-submit-confirm-title-value="Eintrag aufteilen?"
+				data-submit-confirm-button-id-value="split_{{ person.id }}"
+				data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
+				data-submit-confirm-confirm-button-text-value="Aufteilen"
+				data-submit-confirm-cancel-button-text-value="Abbrechen">
+				{# use this hidden element to trigger the confirmed action #}
+				<a id="split_{{ person.id }}"
+				   class="d-none"
+				   href="{{ path('edit_bishop_split_item', {'id': person.id}) }}"></a>
+				<button type="button"
+					class="dropdown-item"
+					data-action="submit-confirm#confirm">Eintrag aufteilen</button>
 			    </li>
 			{% endif %}
+			<li data-controller="submit-confirm"
+			    data-submit-confirm-title-value="Eintrag löschen?"
+			    data-submit-confirm-button-id-value="delete_{{ person.id }}"
+			    data-submit-confirm-text-value="Der Eintrag wird gelöscht und ist nicht mehr zugänglich."
+			    data-submit-confirm-confirm-button-text-value="Löschen"
+			    data-submit-confirm-cancel-button-text-value="Abbrechen">
+			    {# use this hidden element to trigger the confirmed action #}
+			    <button type="submit"
+				    id="delete_{{ person.id }}"
+				    form="edit_bishop_form"
+				    formaction="{{ path('edit_bishop_delete') }}"
+				    class="d-none"
+				    value="{{ person.id }}"
+				    name="delete-id"></button>
+			    <button type="button"
+				    class="dropdown-item"
+				    data-action="submit-confirm#confirm">Eintrag löschen</button>
+			</li>
 		    </ul>
 		</div>
 	    {% endif %}

@@ -119,7 +119,7 @@ export default class extends Controller {
 		let first_child = new_home.item(0).firstElementChild;
 		if (first_child) {
 		    new_home.item(0).insertBefore(event.currentTarget, first_child)
-		    // insert whitspace to end up with the same structure as in the twig template
+		    // insert whitespace to end up with the same structure as in the twig template
 		    var text_node = document.createTextNode(" ");
 		    new_home.item(0).insertBefore(text_node, first_child)
 		} else {

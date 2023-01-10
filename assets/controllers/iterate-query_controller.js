@@ -32,10 +32,6 @@ export default class extends Controller {
 		method: 'GET'
             });
 
-            // this.dispatch('async:submitted', {
-            //     response,
-            // })
-
 	    if (response.status == '200' || response.status == '240') {
 		this.statusTarget.innerHTML = await response.text();
 	    } else {

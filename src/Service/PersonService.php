@@ -18,6 +18,7 @@ use App\Entity\Institution;
 use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
+use App\Entity\NameLookup;
 use App\Entity\InputError;
 
 use App\Service\UtilService;
@@ -930,6 +931,96 @@ class PersonService {
 
         return null;
 
+    }
+
+    /**
+     * map/validate content of form
+     *
+     * @return error_flag false if validation is successful
+     */
+    public function mapFormData($form_data, $current_user_id) {
+        $error_flag = false;
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $person_list = array();
+        foreach($form_data as $data) {
+            $person_id = $data['item']['id'];
+            if ($person_id > 0) {
+                // get complete Person
+                $person = $personRepository->findList([$person_id])[0];
+                $person_list[] = $person;
+            } else {
+                // new entry
+                $item = Item::newItem($current_user_id, 'Bischof');
+                $person = Person::newPerson($item);
+                // map id and keep form open
+                $item->setIdInSource($data['item']['idInSource']);
+                $item->setFormIsExpanded(1);
+                $person_list[] = $person;
+            }
+
+            if (isset($data['item']['formIsEdited'])) {
+                $this->mapPerson($person, $data, $current_user_id);
+
+
+            }
+
+            // set form collapse state
+            $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
+            $person->getItem()->setFormIsExpanded($expanded_param);
+        }
+
+        return $person_list;
+    }
+
+    /**
+     * save data in $form_data
+     *
+     * do not flush the entity manager
+     */
+    public function saveFormData($form_data, $current_user_id, $new_entry_flag) {
+
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        // rebuild $person_list with persistent new entries
+        $person_list = array();
+        foreach($form_data as $data) {
+            $person_id = $data['item']['id'];
+            $edited_flag = isset($data['item']['formIsEdited']);
+            $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
+            $person = null;
+            if ($edited_flag) {
+                if ($person_id < 1) { // new entry
+                    $person = $this->makePersonPersist($current_user_id, 'Bischof');
+                } else {
+                    // edited, no errors
+                    $person = $personRepository->findList([$person_id])[0];
+                }
+                $this->mapPerson($person, $data, $current_user_id);
+                if ($person_id < 1) {
+                    $this->updateMergeMetaData($person, $current_user_id);
+                }
+                $person_list[] = $person;
+                $person->getItem()->setFormIsExpanded($expanded_flag);
+
+            } elseif(!$new_entry_flag) { // in edit/change-mode restore complete list
+                $person = $personRepository->findList([$person_id])[0];
+                $person_list[] = $person;
+            }
+            // do nothing for new elements that were not edited
+        }
+
+        $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
+
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getFormIsEdited()) {
+                // update table name_lookup
+                $nameLookupRepository->update($person);
+                // reset edit flag
+                $person->getItem()->setFormIsEdited(0);
+            }
+        }
+
+        return $person_list;
     }
 
     /**
