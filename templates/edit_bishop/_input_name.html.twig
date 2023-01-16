@@ -119,6 +119,7 @@
 </div>
 {% for error_obj in person.inputError|filter(v => v.section == 'name') %}
     <div class="row">
-	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
     </div>
 {% endfor %}

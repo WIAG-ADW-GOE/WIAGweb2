@@ -19,27 +19,40 @@ class Item {
         'Domstift' => ['id' => 3],
         'Bischof' => [
             'id' => 4,
-            'id_public_mask' => 'WIAG-Pers-EPISCGatz-#-001',
-            'numeric_field_width' => 5,
         ],
         'Domherr' => [
             'id' => 5,
-            'id_public_mask' => 'WIAG-Pers-CANON-#-001',
-            'numeric_field_width' => 5,
         ],
-        'Domherr GS' => ['id' => 6, 'id_public_mask' => 'WIAG-Pers-CANON-#-001'],
+        'Domherr GS' => ['id' => 6],
         'Bischof GS' => ['id' => 9],
         'Priester Utrecht' => ['id' => 10],
     ];
 
-    // map online status
-    const ONLINE_STATUS = [
-        4 => 'fertig', # bishop
-        'Bischof' => 'fertig',
-        5 => 'online', # canon
-        'Domherr' => 'online',
-        6 => 'online', # canon gs; import only if online in Personendatenbank
-        9 => 'online', # bishop gs; import only if online in Personendatenbank
+    const ITEM_TYPE = [
+        4 => [
+            'name' => 'Bischof',
+            'id_public_mask' => 'WIAG-Pers-EPISCGatz-#-001',
+            'numeric_field_width' => 5,
+            'edit_status_default' => 'angelegt',
+            'online_status' => 'fertig',
+        ],
+        5 => [
+            'name' => 'Domherr',
+            'id_public_mask' => 'WIAG-Pers-CANON-#-001',
+            'numeric_field_width' => 5,
+            'edit_status_default' => 'angelegt',
+            'online_status' => 'online',
+        ],
+        6 => [
+            'name' => 'Domherr GS',
+            'id_public_mask' => 'WIAG-Pers-CANON-#-001',
+            'numeric_field_width' => 5,
+            'online_status' => 'online',
+        ],
+        9 => [
+            'name' => 'Bischof GS',
+            'online_status' => 'online',
+        ],
     ];
 
     // map authority name
@@ -207,13 +220,13 @@ class Item {
         $this->mergeParent = array();
     }
 
-    static public function newItem($userWiagId, $itemType) {
+    static public function newItem($item_type_id, $user_wiag_id) {
         $now = new \DateTimeImmutable('now');
         $item = new Item();
-        $item->setItemTypeId(self::ITEM_TYPE_ID[$itemType]['id']);
-        $item->setCreatedBy($userWiagId);
+        $item->setItemTypeId($item_type_id);
+        $item->setCreatedBy($user_wiag_id);
         $item->setDateCreated($now);
-        $item->setChangedBy($userWiagId);
+        $item->setChangedBy($user_wiag_id);
         $item->setDateChanged($now);
         return $item;
     }
@@ -238,7 +251,26 @@ class Item {
     }
 
     /**
-     * drop url_type 'Internal Identifier'
+     * return sorted ArrayCollection
+     */
+    public function getIdExternalSorted() {
+        if ($this->idExternal->isEmpty()) {
+            return $this->idExternal;
+        }
+        $idExternal_sorted = $this->idExternal->toArray();
+        uasort($idExternal_sorted, function($a, $b) {
+            $a_authority = $a->getAuthority();
+            $b_authority = $b->getAuthority();
+
+            $display_order_a = $a_authority ? $a_authority->getDisplayOrder() : 90000;
+            $display_order_b = $b_authority ? $b_authority->getDisplayOrder() : 90000;
+            return $display_order_a < $display_order_b ? -1 : ($display_order_a > $display_order_b ? 1 : 0);
+        });
+        return new ArrayCollection($idExternal_sorted);
+    }
+
+    /**
+     * exclude url_type 'Internal Identifier'
      */
     public function displayIdExternal() {
         $display = $this->idExternal->toArray();

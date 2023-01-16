@@ -24,7 +24,6 @@ class Person {
         'notePerson' => 'Bemerkung zur Person (online)'
     ];
 
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

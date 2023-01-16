@@ -1,7 +1,12 @@
 <?php
 namespace App\Form\Model;
 
+
 use App\Entity\FacetChoice;
+use App\Entity\InputError;
+use App\Service\UtilService;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Model for bishop form data
@@ -24,6 +29,22 @@ class BishopFormModel {
     public $listSize = null;
     public $facetDiocese = null;
     public $facetOffice = null;
+
+    /**
+     * collection of InputError
+     */
+    private $inputError;
+
+    public function __construct() {
+        $this->inputError = new ArrayCollection();
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        return $this->inputError;
+    }
 
     static public function makeChoices($data, $key) {
         $choices = [];
@@ -87,6 +108,36 @@ class BishopFormModel {
         }
 
         return $value;
+    }
+
+    public function isValid() {
+        // check dates
+        $format_msg = "Format: dd.mm.[20]yy oder Datum-Datum.";
+        $dateCreated = trim($this->dateCreated);
+        if ($dateCreated != "") {
+            $range = UtilService::dateRange($dateCreated);
+            foreach ($range as $range_elmt) {
+                $msg = "Ungültiges Datumsformat: ".$dateCreated."; ".$format_msg;
+                if ($range_elmt === false) {
+                    $this->inputError->add(new InputError('two', $msg, 'error'));
+                    break;
+                }
+            }
+        }
+
+        $dateChanged = trim($this->dateChanged);
+        if ($dateChanged != "") {
+            $range = UtilService::dateRange($dateChanged);
+            foreach ($range as $range_elmt) {
+                $msg = "Ungültiges Datumsformat: ".$dateChanged."; ".$format_msg;
+                if ($range_elmt === false) {
+                    $this->inputError->add(new InputError('two', $msg, 'error'));
+                    break;
+                }
+            }
+        }
+
+        return $this->inputError->isEmpty();
     }
 
 

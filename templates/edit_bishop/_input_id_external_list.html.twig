@@ -3,15 +3,24 @@
      data-insert-base-input-name-value="{{ base_input_name }}"
      data-insert-placeholder-value="~~~"
      data-insert-move-trigger-value=1>
-    {% for idext in person.item.idExternal %}
+    {% for idext in person.item.idExternalSorted %}
 	<div class="row"
 	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_id_external.html.twig', {
-		base_id: base_id,
-		base_input_name: base_input_name,
-		current_idx: loop.index0,
-		is_last: loop.last,
-	    }) }}
+	    {% if idext.authority and idext.authority.urltype == 'Internal Identifier' %}
+		{{ include('edit_bishop/_show_id_internal.html.twig', {
+		    base_id: base_id,
+		    base_input_name: base_input_name,
+		    current_idx: loop.index0,
+		    is_last: loop.last,
+		}) }}
+	    {% else %}
+		{{ include('edit_bishop/_input_id_external.html.twig', {
+		    base_id: base_id,
+		    base_input_name: base_input_name,
+		    current_idx: loop.index0,
+		    is_last: loop.last,
+		}) }}
+	    {% endif %}
 	</div>
     {% else %}
 	<div class="row"

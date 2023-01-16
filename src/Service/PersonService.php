@@ -33,10 +33,6 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PersonService {
-    const EDIT_STATUS_DEFAULT = [
-        'Bischof' => 'angelegt',
-    ];
-
     const URL_KLOSTERDATENBANK = 'https://klosterdatenbank.adw-goe.de/gsn/';
 
     const CONTENT_TYPE = [
@@ -938,7 +934,7 @@ class PersonService {
      *
      * @return error_flag false if validation is successful
      */
-    public function mapFormData($form_data, $current_user_id) {
+    public function mapFormData($item_type_id, $form_data, $current_user_id) {
         $error_flag = false;
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -951,16 +947,14 @@ class PersonService {
                 $person_list[] = $person;
             } else {
                 // new entry
-                $item = Item::newItem($current_user_id, 'Bischof');
+                $item = Item::newItem($item_type_id, $current_user_id);
                 $person = Person::newPerson($item);
-                // map id and keep form open
-                $item->setIdInSource($data['item']['idInSource']);
                 $item->setFormIsExpanded(1);
                 $person_list[] = $person;
             }
 
             if (isset($data['item']['formIsEdited'])) {
-                $this->mapPerson($person, $data, $current_user_id);
+                $this->mapPerson($item_type_id, $person, $data, $current_user_id);
 
 
             }
@@ -978,7 +972,7 @@ class PersonService {
      *
      * do not flush the entity manager
      */
-    public function saveFormData($form_data, $current_user_id, $new_entry_flag) {
+    public function saveFormData($item_type_id, $form_data, $current_user_id, $new_entry_flag) {
 
         $personRepository = $this->entityManager->getRepository(Person::class);
         // rebuild $person_list with persistent new entries
@@ -989,13 +983,13 @@ class PersonService {
             $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
             $person = null;
             if ($edited_flag) {
-                if ($person_id < 1) { // new entry
-                    $person = $this->makePersonPersist($current_user_id, 'Bischof');
+                if ($person_id == "" || $person_id < 1) { // new entry
+                    $person = $this->makePersonPersist($item_type_id, $current_user_id);
                 } else {
                     // edited, no errors
                     $person = $personRepository->findList([$person_id])[0];
                 }
-                $this->mapPerson($person, $data, $current_user_id);
+                $this->mapPerson($item_type_id, $person, $data, $current_user_id);
                 if ($person_id < 1) {
                     $this->updateMergeMetaData($person, $current_user_id);
                 }
@@ -1026,7 +1020,7 @@ class PersonService {
     /**
      * map content of $data to $obj_list
      */
-    public function mapPerson($person, $data, $user_id) {
+    public function mapPerson($item_type_id, $person, $data, $user_id) {
         // item
         $item = $person->getItem();
 
@@ -1039,7 +1033,7 @@ class PersonService {
             $person->getInputError()->add(new InputError('status', $msg));
         }
 
-        if ($edit_status == Item::ONLINE_STATUS['Bischof']) {
+        if ($edit_status == Item::ITEM_TYPE[$item_type_id]['online_status']) {
             $item->setIsOnline(1);
         } else {
             $item->setIsOnline(0);
@@ -1064,14 +1058,12 @@ class PersonService {
         }
 
         // idInSource
+        $id_in_source = "";
         if (array_key_exists('idInSource', $data['item'])) {
             $id_in_source = $data['item']['idInSource'];
-            # TODO 2022-12-13 use parameter instead of 'Bischof'
-            $id_public = $this->makeIdPublic('Bischof', $id_in_source);
-
-            $item->setIdInSource($id_in_source);
-            $item->setIdPublic($id_public);
-
+            if (trim($id_in_source) != "") {
+                $item->setIdInSource($id_in_source);
+            }
         }
 
         // item: status values, editorial notes
@@ -1270,7 +1262,7 @@ class PersonService {
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
-            $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+            $person->getInputError()->add(new InputError('role', $msg, 'error'));
         }
         $role->setRoleName($role_name);
 
@@ -1516,7 +1508,10 @@ class PersonService {
 
         foreach ($data as $idext) {
             $value = is_null($idext['value']) ? null : trim($idext['value']);
-            if (!is_null($value) && $value != "" && $idext['delete'] != "delete") {
+            if (is_null($value) || $value == "" ||
+                (array_key_exists('delete', $idext) && $idext['delete'] == "delete")) {
+                continue;
+            } else {
                 $authority_name = $idext["urlName"];
                 $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
                 if (!is_null($auth_query) && count($auth_query) > 0) {
@@ -1656,11 +1651,12 @@ class PersonService {
     /**
      * compose ID public
      */
-    public function makeIdPublic($item_type, $numeric_part)  {
-        $width = Item::ITEM_TYPE_ID[$item_type]['numeric_field_width'];
+    public function makeIdPublic($item_type_id, $numeric_part)  {
+
+        $width = Item::ITEM_TYPE[$item_type_id]['numeric_field_width'];
         $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
 
-        $mask = Item::ITEM_TYPE_ID[$item_type]['id_public_mask'];
+        $mask = Item::ITEM_TYPE[$item_type_id]['id_public_mask'];
         $id_public = str_replace("#", $numeric_field, $mask);
         return $id_public;
     }
@@ -1683,11 +1679,11 @@ class PersonService {
     /**
      * create Person object
      */
-    public function makePersonScheme($id_in_source, $userWiagId) {
+    public function makePersonScheme($item_type_id, $id_in_source, $user_wiag_id) {
 
-        $item = Item::newItem($userWiagId, 'Bischof');
+        $item = Item::newItem($item_type_id, $user_wiag_id);
         $person = Person::newPerson($item);
-        $item->setEditStatus(self::EDIT_STATUS_DEFAULT['Bischof']);
+        $item->setEditStatus(Item::ITEM_TYPE[$item_type_id]['edit_status_default']);
 
         $item->setIdInSource($id_in_source);
         $item->setFormIsExpanded(1);
@@ -1698,12 +1694,20 @@ class PersonService {
     /**
      * create person object and persist
      */
-    public function makePersonPersist($user_wiag_id, $item_type_name) {
+    public function makePersonPersist($item_type_id, $user_wiag_id) {
 
-        $item = Item::newItem($user_wiag_id, $item_type_name);
+        $item = Item::newItem($item_type_id, $user_wiag_id);
         $person = Person::newPerson($item);
 
-        $item->setEditStatus(self::EDIT_STATUS_DEFAULT[$item_type_name]);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
+        $id_in_source = strval($id_in_source);
+        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
+
+        $item->setIdInSource($id_in_source);
+        $item->setIdPublic($id_public);
+
+        $item->setEditStatus(Item::ITEM_TYPE[$item_type_id]['edit_status_default']);
         $this->entityManager->persist($person);
         $this->entityManager->flush();
         $person_id = $item->getId();

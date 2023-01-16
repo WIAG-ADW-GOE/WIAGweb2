@@ -8,8 +8,10 @@ class InputError {
         'error'   => ['error'],
     ];
 
-    // 2022-08-30: one of: 'status', 'name', 'person', 'role', 'reference'
-    private $section; 
+    // values
+    // 2022-08-30 Person: 'status', 'name', 'person', 'role', 'reference'
+    // 2023-01-16 BishpFormModel: 'two'
+    private $section;
     private $msg;
     private $level;
 

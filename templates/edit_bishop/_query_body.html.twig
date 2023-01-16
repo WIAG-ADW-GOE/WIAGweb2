@@ -19,6 +19,12 @@
 	    input_width_comment: 21,
 	    input_width_date: 18,
 	}) }}
+	{% for error_obj in error_list %}
+	    <div class="row mt-1 mx-2">
+		{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+		<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+	    </div>
+	{% endfor %}
 	<div class="row mt-2 mx-2">
 	    <div class="col-12">
 		<button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>

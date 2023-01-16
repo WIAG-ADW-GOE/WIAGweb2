@@ -34,6 +34,13 @@ class BishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
+    private $itemTypeId;
+
+    public function __construct() {
+
+        $this->itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
+    }
+
     /**
      * display query form for bishops; handle query
      *
@@ -77,7 +84,7 @@ class BishopController extends AbstractController {
             $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
 
             $itemRepository = $entityManager->getRepository(Item::class);
-            $model->editStatus = [Item::ONLINE_STATUS['Bischof']];
+            $model->editStatus = [Item::ITEM_TYPE[$this->itemTypeId]['online_status']];
             $id_all = $itemRepository->bishopIds($model);
             $count = count($id_all);
 
@@ -236,7 +243,7 @@ class BishopController extends AbstractController {
                                  String $field) {
         $name = $request->query->get('q');
 
-        $edit_status = Item::ONLINE_STATUS['Bischof'];
+        $edit_status = Item::ITEM_TYPE[$this->itemTypeId]['online_status'];
         return $this->handleAutocomplete($repository, $name, $field, $edit_status);
 
     }

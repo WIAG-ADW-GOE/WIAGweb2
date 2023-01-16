@@ -572,6 +572,29 @@ class UtilService {
         return null;
     }
 
+    static public function dateRange($s) {
+        $range = array();
+        if (is_null($s) || trim($s) == "") {
+            return $range;
+        }
+        $s_list = explode('-', $s);
+
+        foreach($s_list as $index => $date) {
+            $date = trim($date);
+            if ($date == "") {
+                $range[] = null;
+            }
+            else {
+                $d_obj = \DateTime::createFromFormat('d.m.y', $date);
+                if (!$d_obj) {
+                    $d_obj = \DateTime::createFromFormat('d.m.Y', $date);
+                }
+
+                $range[] = $d_obj;
+            }
+        }
+        return $range;
+    }
 
     /**
      * parse date or date range
@@ -579,38 +602,27 @@ class UtilService {
      * usually date of creation or date of last modification
      */
     static public function parseDateRange($s) {
-        if (is_null($s) || trim($s) == "") {
-            return null;
-        }
-        $s_list = explode('-', $s);
-
-        // TODO
-        // return null or a two element array
+        // return empty array or a two element array
         // only one value
         // first not null, second null
         // first null, second not null
-        // else null
-        $range = array();
-        foreach($s_list as $index => $date) {
-            $date = trim($date);
-            $d_obj = \DateTime::createFromFormat('d.m.y', $date);
-            if (!$d_obj) {
-                $d_obj = \DateTime::createFromFormat('d.m.Y', $date);
-            }
+        // else empty array
 
-            $range[] = $d_obj;
+        $range = UtilService::dateRange($s);
+        if (count($range) == 0) {
+            return $range;
         }
 
         if (count($range) > 1) {
             if (!$range[0] && !$range[1]) {
-                return null;
+                $range = array();
             } elseif (!$range[0] && $range[1]) {
                 $range[0] = \DateTimeImmutable::createFromFormat('d.m.Y', "01.01.1000");
             } elseif ($range[0] && !$range[1]) {
                 $range[1] = \DateTimeImmutable::createFromFormat('d.m.Y', "31.12.2999");
             }
         } elseif (!$range[0]) {
-            return null;
+            $range = array();
         } else {
             $range[1] = clone $range[0];
             $range[1]->modify('+1 day');
