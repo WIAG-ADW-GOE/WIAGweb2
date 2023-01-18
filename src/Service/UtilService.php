@@ -651,6 +651,21 @@ class UtilService {
      * set elements of $obj
      */
     public function setByKeys($obj, $data, $key_list) {
+        // 2023-01-17 debug
+        if (false) {
+            $missing_key_list = array();
+            $missing_flag = false;
+            foreach($key_list as $key) {
+                if (!array_key_exists($key, $data)) {
+                    $missing_key_list[] = $key;
+                    $missing_flag = true;
+                }
+            }
+            if ($missing_flag) {
+                dd($data, $missing_key_list);
+            }
+        }
+
         foreach($key_list as $key) {
             $value = trim($data[$key]);
             if (strlen($value) == 0) {

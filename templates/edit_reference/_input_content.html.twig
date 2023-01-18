@@ -1,0 +1,126 @@
+<div class="row">
+    <div class="col-12">
+	<div
+	    {{ stimulus_controller('toggle-arrow', {
+		state: 0,
+		imgOpen: 'down',
+		imgClosed: 'right'
+	    }) }}
+	    data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text" style="min-width: 5rem">Autor/Hrsg.</span>
+		<input type="text" id="{{ base_id }}_author_editor"
+		       name="{{ base_input_name}}[authorEditor]"
+		       class="form-control wiag-input"
+		       style="min-width: 20rem"
+		       value="{{ reference.authorEditor }}"
+		       spellcheck="false"
+		       aria-label="Autor oder Herausgeber">
+		<span class="input-group-text" style="min-width: 3rem">Jahr</span>
+		<input type="text" id="{{ base_id }}_year_publication"
+		       name="{{ base_input_name}}[yearPublication]"
+		       class="form-control wiag-input"
+		       style="max-width: 5rem"
+		       value="{{ reference.yearPublication }}"
+		       spellcheck="false"
+		       aria-label="Erscheinungsjahr">
+ 		<span class="input-group-text" style="min-width: 4rem">ISBN</span>
+		<input type="text" id="{{ base_id }}_isbn"
+		       name="{{ base_input_name}}[isbn]"
+		       class="form-control wiag-input"
+		       style="max-width: 11rem"
+		       value="{{ reference.isbn }}"
+		       spellcheck="false"
+		       aria-label="ISBN">
+		<span class="input-group-text" style="min-width: 5rem">RI OPAC</span>
+		<input type="text" id="{{ base_id }}_ri_opac_id"
+		       name="{{ base_input_name}}[riOpacId]"
+		       class="form-control wiag-input"
+		       style="max-width: 6rem"
+		       value="{{ reference.riOpacId }}"
+		       spellcheck="false"
+		       aria-label="RI OPAC">
+		<span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
+		<input type="text" id="{{ base_id }}_display_order"
+		       name="{{ base_input_name}}[displayOrder]"
+		       class="form-control wiag-input"
+		       style="max-width: 5rem"
+		       value="{{ reference.DisplayOrder }}"
+		       spellcheck="false"
+		       aria-label="Reihenfolge">
+	    </div>
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text" style="min-width: 10rem">Titel</span>
+		<textarea id="{{ base_id }}_full_citation"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[fullCitation]"
+			  aria-label="full citation"
+			  class="form-control form-control-sm wiag-input">{{ reference.fullcitation }}</textarea>
+	    </div>
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text" style="min-width: 10rem">Kurztitel</span>
+		<input type="text" id="{{ base_id }}_title_short"
+		       name="{{ base_input_name}}[titleShort]"
+		       class="form-control wiag-input"
+		       value="{{ reference.titleShort }}"
+		       spellcheck="false"
+		       aria-label="Kurztitel">
+		<span class="input-group-text" style="min-width: 5rem">Online</span>
+		<input type="text" id="{{ base_id }}_online_resource"
+		       name="{{ base_input_name}}[onlineResource]"
+		       class="form-control wiag-input"
+		       value="{{ reference.onlineResource }}"
+		       spellcheck="false"
+		       aria-label="Online Ressource">
+	    </div>
+ 	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text" style="min-width: 10rem">GS Nr., GS Titel</span>
+		<input type="text" id="{{ base_id }}_gs_volume_nr"
+		       name="{{ base_input_name}}[gsVolumeNr]"
+		       class="form-control wiag-input"
+		       value="{{ reference.gsVolumeNr }}"
+		       style="max-width: 9rem"
+		       spellcheck="false"
+		       aria-label="GS Nummer">
+		<textarea id="{{ base_id }}_gs_citation"
+			  name="{{ base_input_name}}[gsCitation]"
+			  class="form-control wiag-input"
+			  style="height: 3rem"
+			  spellcheck="false"
+			  aria-label="GS Titel">{{ reference.gsCitation }}</textarea>
+	    </div>
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text" style="min-width: 10rem">GS URL</span>
+		<input type="text" id="{{ base_id }}_gs_url"
+		       name="{{ base_input_name}}[gsUrl]"
+		       class="form-control wiag-input"
+		       value="{{ reference.gsUrl }}"
+		       spellcheck="false"
+		       aria-label="GS URL">
+		<span class="input-group-text" style="min-width: 5rem">GS DOI</span>
+		<input type="text" id="{{ base_id }}_gs_doi"
+		       name="{{ base_input_name}}[gsDoi]"
+		       class="form-control wiag-input"
+		       value="{{ reference.gsDoi }}"
+		       spellcheck="false"
+		       aria-label="GS DOI">
+	    </div>
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text" style="min-width: 10rem">Bemerkung (online)</span>
+		<textarea id="{{ base_id }}_note"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[note]"
+			  aria-label="Bemerkung"
+			  class="form-control form-control-sm wiag-input">{{ reference.note }}</textarea>
+	    </div>
+	</div>
+    </div>
+    {% if false %} {# 2023-17-01 12:07 handle errors #}
+    {% for error_obj in reference.inputError|filter(v => v.section == 'name') %}
+	<div class="row">
+	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+	    <div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+	</div>
+    {% endfor %}
+    {% endif %}
+</div>

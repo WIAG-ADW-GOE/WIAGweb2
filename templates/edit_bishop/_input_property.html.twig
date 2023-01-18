@@ -54,17 +54,5 @@
 		       data-autocomplete-target="results"
 		       style="max-width: 12rem;"></ul>
 	</div>
-	{# delete #}
-	{% if delete_by_button %}
-	    <div class="form_check ms-2 mt-1 align-middle">
-		<input class="form-check-input"
-		       type="checkbox"
-		       value=""
-		       id="{{ base_id_prop }}_delete"
-		       name="{{ base_input_name_prop }}[delete]"
-		       data-action="input-state#toggle">
-		<label class="form-check-label ms-1" for="{{ base_id_prop }}_delete">löschen</label>
-	    </div>
-	{% endif %}
     </div>
 </div>

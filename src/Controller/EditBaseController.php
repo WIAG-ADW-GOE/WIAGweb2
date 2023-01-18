@@ -35,11 +35,17 @@ class EditBaseController extends AbstractController {
         $model = ['itemType' => $item_type_id]; // set default
 
         $itemTypeRepository = $entityManager->getRepository(ItemType::class);
-        $itemType_list = $itemTypeRepository->findAll();
-        $choices = array();
-        foreach($itemType_list as $t_loop) {
-            $choices [$t_loop->getName()] = $t_loop->getId();
-        }
+
+        // 2023-01-17 at the moment only 'Bischof' and 'Domherr' are relevant
+        // $itemType_list = $itemTypeRepository->findAll();
+        // $choices = array();
+        // foreach($itemType_list as $t_loop) {
+        //     $choices [$t_loop->getName()] = $t_loop->getId();
+        // }
+        $choices = [
+            'Bischof' => Item::ITEM_TYPE_ID['Bischof']['id'],
+            'Domherr' => Item::ITEM_TYPE_ID['Domherr']['id'],
+        ];
 
         $form = $this->createFormBuilder($model)
                      ->add('itemType', ChoiceType::class, [
@@ -64,7 +70,6 @@ class EditBaseController extends AbstractController {
         return $this->renderForm('edit_base/property.html.twig', [
             'menuItem' => 'edit-menu',
             'form' => $form,
-            'controller_name' => 'EditBaseController',
             'editFormId' => $edit_form_id,
             'itemTypeId' => $item_type_id,
             'itemPropertyTypeList' => $item_property_type_list,

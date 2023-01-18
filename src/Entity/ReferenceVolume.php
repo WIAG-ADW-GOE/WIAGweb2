@@ -103,6 +103,19 @@ class ReferenceVolume
      */
     private $gsCitation;
 
+        /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsEdited = false;
+
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsExpanded = false;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -123,12 +136,22 @@ class ReferenceVolume
         return $this->itemTypeId;
     }
 
+    public function setItemTypeId($id): self
+    {
+        $this->itemTypeId = $id;
+        return $this;
+    }
+
     public function getReferenceId(): int
     {
         return $this->referenceId;
     }
 
-
+    public function setReferenceId($id): self
+    {
+        $this->referenceId = $id;
+        return $this;
+    }
 
     public function setComment(?string $comment): self
     {
@@ -280,6 +303,25 @@ class ReferenceVolume
 
         return $this;
     }
+
+    public function setFormIsEdited($value): self {
+        $this->formIsEdited = $value;
+        return $this;
+    }
+
+    public function getFormIsEdited() {
+        return $this->formIsEdited;
+    }
+
+    public function setFormIsExpanded($value): self {
+        $this->formIsExpanded = $value;
+        return $this;
+    }
+
+    public function getFormIsExpanded() {
+        return $this->formIsExpanded;
+    }
+
 
     /**
      * getIdExternalByAuthorityId($authorityId)

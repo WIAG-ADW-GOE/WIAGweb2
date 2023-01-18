@@ -12,8 +12,8 @@
 	   style="width:3em"
 	   autocomplete="off"
 	   data-hide-on-input-target="pageNumber"
-	   data-sync-input-target="member"
-	   data-action="change->sync-input#sync">
+	   data-sync-target="copy"
+	   data-action="change->sync#copy">
     {% set f_value, f_disabled = offset + pageSize, offset + pageSize >= count %}
     <button type="submit"
 	    form="{{ form.vars.id }}"

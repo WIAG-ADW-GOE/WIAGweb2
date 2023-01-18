@@ -1,0 +1,42 @@
+{% set base_id=editFormId~'_'~index %}
+{% set base_input_name=editFormId~'['~index~']' %}
+{# header #}
+<div class="container-fluid p-2 my-2 border border-2 border-success rounded"
+     id="{{ base_id }}">
+    <div data-controller="toggle-arrow on-input insert auth-search"
+	 data-toggle-arrow-state-value="true"
+	 data-toggle-arrow-img-open-value="down"
+	 data-toggle-arrow-img-closed-value="right"
+	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
+	{% set expanded = reference.formisexpanded %}
+	{# headline with collapse button#}
+	{{ include('edit_reference/_item_headline.html.twig') }}
+	{# body #}
+	<div class="collapse multi-collapse {% if expanded == 1 %}show{% endif %} pe-0"
+	     data-controller="sync"
+	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
+	     id={{ "body#{reference.id}" }}>
+	    {# insert display status (hidden) #}
+	    <input type="checkbox"
+		   id="{{ base_id }}_formIsExpanded"
+		   name="{{ base_input_name }}[formIsExpanded]"
+		   class="form-check-input d-none"
+		   {% if expanded %}checked="checked"{% endif %}
+		   data-sync-target="check">
+	    {# name #}
+	    {{ include('edit_reference/_input_content.html.twig') }}
+	    <hr class="my-2 border border-secondary border-2">
+	    <div class="row">
+		<div class="col-12">
+		    <div class="input-group input-group-sm">
+			<span class="input-group-text wiag-bg-internal" style="min-width: 10rem">Kommentar (red.)</span>
+			<textarea id="{{ base_id }}_comment"
+				  style="height: 3rem"
+				  name="{{ base_input_name }}[comment]"
+				  class="form-control form-control-sm wiag-input">{{ reference.comment }}</textarea>
+		    </div>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>

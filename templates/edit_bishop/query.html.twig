@@ -1,12 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    {{ parent() }}
-{% endblock %}
-{% block javascripts %}
-    {{ parent() }}
-{% endblock %}
-
 {% block body %}
     <div data-controller="modal-form"
 	 data-modal-form-query-url-value="{{ path('edit_bishop_merge_query') }}"

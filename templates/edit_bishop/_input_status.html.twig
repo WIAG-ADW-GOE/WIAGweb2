@@ -27,13 +27,12 @@
 		    style="max-width: 20rem;"></ul>
 	    </div>
 	    {# insert display status (hidden) #}
-	    <span><input type="checkbox"
-			 hidden="hidden"
+	    <input type="checkbox"
 			 id="{{ base_id }}_item_formIsExpanded"
 			 name="{{ base_input_name }}[item][formIsExpanded]"
-			 class="form-check-input"
+			 class="form-check-input d-none"
 			 {% if person.item.formIsExpanded %}checked="checked"{% endif %}
-			 data-save-collapse-target="carrier"></span>
+			 data-sync-target="check">
 	    <span class="input-group-text ms-2">identisch mit</span>
 	    <input type="text" id="{{ base_id }}_item_commentduplicate"
 		   name="{{ base_input_name}}[item][commentDuplicate]"

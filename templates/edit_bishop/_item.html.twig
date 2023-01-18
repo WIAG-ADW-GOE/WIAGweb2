@@ -1,4 +1,3 @@
-{% set delete_by_button=false %}
 {% set intern_collapsable=false %}
 {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
 {% set base_id=editFormId~'_'~index %}
@@ -17,8 +16,8 @@
 	{{ include('edit_bishop/_item_headline.html.twig') }}
 	{# body #}
 	<div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
-	     data-controller="save-collapse"
-	     data-action="shown.bs.collapse->save-collapse#set hidden.bs.collapse->save-collapse#set"
+	     data-controller="sync"
+	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
 	     id={{ "body#{person.item.id}" }}>
 	    {# status and name #}
 	    {{ include('edit_bishop/_input_status.html.twig') }}

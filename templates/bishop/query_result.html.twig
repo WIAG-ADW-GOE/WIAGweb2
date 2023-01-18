@@ -38,7 +38,7 @@
 		</div>
 	    </div>
 	    <div data-hide-on-input-target="result"
-		 data-controller="sync-input">
+		 data-controller="sync">
 		<div class="row mt-2 mx-2">
  		    <div class="col-12">
 			{% if count == 0 %}
@@ -86,7 +86,7 @@
 		{% endif %}
 		{% if count > pageSize %}
 		    <div class ="row col-12 mx-2">
-			{# forward/backward buttons; controllers: hide-on-input, sync-input #}
+			{# forward/backward buttons; controllers: hide-on-input, sync #}
 			{{ include('person/_page_browse.html.twig') }}
 		    </div>
 		{% endif %}

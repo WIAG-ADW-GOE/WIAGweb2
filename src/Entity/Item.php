@@ -15,12 +15,13 @@ use Doctrine\Common\Collections\Collection;
 class Item {
     // redundant to table item_type (simpler, faster than a query)
     const ITEM_TYPE_ID = [
-        'Kloster' => ['id' => 2],
-        'Domstift' => ['id' => 3],
-        'Bischof' => [
+        'Bistum'     => ['id' => 1],
+        'Kloster'    => ['id' => 2],
+        'Domstift'   => ['id' => 3],
+        'Bischof'    => [
             'id' => 4,
         ],
-        'Domherr' => [
+        'Domherr'    => [
             'id' => 5,
         ],
         'Domherr GS' => ['id' => 6],
