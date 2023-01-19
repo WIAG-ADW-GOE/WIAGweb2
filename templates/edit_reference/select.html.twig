@@ -14,7 +14,9 @@
 	    }) }}
 		<div class="w-20 mb-2">{{ form_widget(form.itemType) }}</div>
 	    {{ form_end(form) }}
-	    {{ include('edit_reference/_list.html.twig') }}
+	    {{ include('edit_reference/_list.html.twig', {
+		formType: 'list',
+	    }) }}
 	</div>
     </div>
 {% endblock %}

@@ -11,23 +11,32 @@
 		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
 		{# toggle collapse button #}
 		<button class="btn btn-sm btn-secondary float-start"
-			       type="button"
-			       data-bs-toggle="collapse"
-			       data-bs-target=".multi-collapse"
-			       aria-expanded="false"
-			       aria-controls="{{ body_id_list }}"
-			       {{ stimulus_controller('toggle-arrow', {
-				   state: true,
-				   imgOpen: 'down',
-				   imgClosed: 'right'
-			       }) }}
-			       data-action="toggle-arrow#toggle"
-			       data-value="down">öffnen/schließen</button>
+			type="button"
+			data-bs-toggle="collapse"
+			data-bs-target=".multi-collapse"
+			aria-expanded="false"
+			aria-controls="{{ body_id_list }}"
+			{{ stimulus_controller('toggle-arrow', {
+			    state: true,
+			    imgOpen: 'down',
+			    imgClosed: 'right'
+			}) }}
+			data-action="toggle-arrow#toggle"
+			data-value="down">öffnen/schließen</button>
 	    </div>
 	    <div class="col">
-		<button type="button"
-			data-action="submit-form#submit"
-			class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% if formType == "new_entry" %}
+		    <button type="submit"
+			    name="formType"
+			    value="{{ formType }}"
+			    class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% else %}
+		    <button type="button"
+			    name="formType"
+			    value="{{ formType }}"
+			    data-action="submit-form#submit"
+			    class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% endif %}
 	    </div>
 	</div>
 	<div class="row mx-0">
@@ -41,18 +50,21 @@
 	    </div>
 	</div>
 	{# submit #}
-	<div class="row mx-2">
+	<div class="row mx-2"
+	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    <div class="col">
-		{% set submit_debug=false %} {# submit directly for debugging#}
-		{% if submit_debug %}
+		{% if formType == "new_entry" %}
 		    <button type="submit"
-			    formaction="{{ path('edit_reference_save') }}"
-			    data-controller="submit-by-key"
+			    name="formType"
+			    value="{{ formType }}"
+			    data-submit-by-key-target="button"
 			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% else %} {# submit via Stimulus controller #}
+		{% else %}
 		    <button type="button"
+			    name="formType"
+			    value="{{ formType }}"
+			    data-submit-by-key-target="button"
 			    data-action="submit-form#submit"
-			    data-controller="submit-by-key"
 			    class="btn btn-primary btn-sm float-end">Speichern</button>
 		{% endif %}
 	    </div>

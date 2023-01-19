@@ -171,7 +171,7 @@ class EditBishopController extends AbstractController {
             }
         }
 
-        $new_entry_flag = $request->query->get('newEntry');
+        $form_display_type = $request->request->get('formType');
 
         /* save data */
         if (!$error_flag) {
@@ -186,29 +186,29 @@ class EditBishopController extends AbstractController {
                 $this->itemTypeId,
                 $form_data,
                 $current_user_id,
-                $new_entry_flag,
             );
 
             $this->entityManager->flush();
 
             // add an empty form in case the user wants to add more items
-            if ($new_entry_flag) {
+            if ($form_display_type == "new_entry") {
                 $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
                 $person_list[] = $person;
             }
         }
 
         $template = "";
-        if ($request->query->get('listOnly')) {
+        if ($form_display_type == 'list') {
             $template = 'edit_bishop/_list.html.twig';
         } else { // useful for debugging: dump output is accessible; see edit_bishop/_list.html.twig
-            $template = 'edit_bishop/edit_result.html.twig';
+            $template = 'edit_bishop/new_bishop.html.twig';
         }
 
         return $this->renderEditElements($template, [
             'personList' => $person_list,
-            'newEntry' => $new_entry_flag,
+            'count' => count($person_list),
             'mergeStep' => false,
+            'formType' => $form_display_type,
         ]);
 
     }

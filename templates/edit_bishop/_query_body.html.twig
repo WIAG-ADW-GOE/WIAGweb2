@@ -53,7 +53,7 @@
     {# use the same div because of the scope of hide-on-input #}
     {% if personList is defined and count > 0 %}
 	{{ include('edit_bishop/_list.html.twig', {
-	    newEntry: 0,
+	    formType: 'list',
 	}) }}
     {% endif %}
 </div>

@@ -972,7 +972,7 @@ class PersonService {
      *
      * do not flush the entity manager
      */
-    public function saveFormData($item_type_id, $form_data, $current_user_id, $new_entry_flag) {
+    public function saveFormData($item_type_id, $form_data, $current_user_id) {
 
         $personRepository = $this->entityManager->getRepository(Person::class);
         // rebuild $person_list with persistent new entries
@@ -996,7 +996,7 @@ class PersonService {
                 $person_list[] = $person;
                 $person->getItem()->setFormIsExpanded($expanded_flag);
 
-            } elseif(!$new_entry_flag) { // in edit/change-mode restore complete list
+            } elseif ($person_id > 0) { // skip empty (unedited) form
                 $person = $personRepository->findList([$person_id])[0];
                 $person_list[] = $person;
             }

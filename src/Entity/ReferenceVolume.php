@@ -8,8 +8,27 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ReferenceVolumeRepository::class)
  */
-class ReferenceVolume
-{
+class ReferenceVolume {
+
+    const EDIT_FIELD_LIST = [
+        'itemTypeId',
+        'authorEditor',
+        'yearPublication',
+        'isbn',
+        'riOpacId',
+        'displayOrder',
+        'fullCitation',
+        'titleShort',
+        'gsVolumeNr',
+        'gsCitation',
+        'gsUrl',
+        'gsDoi',
+        'onlineResource',
+        'note',
+        'comment',
+        'formIsExpanded',
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
