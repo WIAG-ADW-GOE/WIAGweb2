@@ -28,6 +28,7 @@ class EditReferenceController extends AbstractController {
                          EntityManagerInterface $entityManager): Response {
         $edit_form_id = 'reference_edit_form';
 
+        // default
         $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $model = ['itemType' => $item_type_id]; // set default
 
@@ -65,12 +66,17 @@ class EditReferenceController extends AbstractController {
             ['displayOrder' => 'ASC']
         );
 
+
+        $emptyReference = new ReferenceVolume();
+        $emptyReference->setItemTypeId($item_type_id);
+
         return $this->renderForm('edit_reference/select.html.twig', [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,
             'itemTypeId' => $item_type_id,
             'referenceList' => $reference_list,
+            'emptyReference' => $emptyReference,
         ]);
     }
 
@@ -78,91 +84,115 @@ class EditReferenceController extends AbstractController {
      * @Route("/edit/reference/save", name="edit_reference_save")
      */
     public function save(Request $request,
-                         EntityManagerInterface $entityManager,
-                         UtilService $utilService) {
+                         EntityManagerInterface $entityManager) {
 
         $edit_form_id = 'reference_edit_form';
         $form_data = $request->request->get($edit_form_id);
 
-        // validation?
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+
+        // validation
+
         $error_flag = false;
 
-        $form_display_type = $request->request->get('formType');
+        $reference_list = array();
+        foreach($form_data as $data) {
+            $id = $data['id'];
+            $item_type_id = $data['itemTypeId'];
+            $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
+            if ($id > 0) {
+                $reference = $referenceRepository->find($id);
+                $reference->setFormIsExpanded($formIsExpanded);
+                $reference_list[] = $reference;
+            }
+            if (isset($data['formIsEdited'])) {
+                if (!$id > 0) {
+                    // new entry
+                    $reference = new ReferenceVolume();
+                    $reference->setFormIsExpanded($formIsExpanded);
+                    $reference_list[] = $reference;
+                }
+                UtilService::setByKeys(
+                    $reference,
+                    $data,
+                    ReferenceVolume::EDIT_FIELD_LIST);
+                if (trim($reference->getFullCitation()) == "") {
+                    $msg = "Bitte das Feld 'Titel' ausfüllen.";
+                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $error_flag = true;
+                }
+            }
+        }
+
+        // dd(count($reference_list), $form_data);
+
+        // $form_display_type = $request->request->get('formType');
+
+        $max_reference_id = UtilService::maxInList($reference_list, 'referenceId', 0);
+
+        // 2023-01-20 leave it to the editors to set field display_order
+        // $max_display_order = UtilService::maxInList($reference_list, 'displayOrder', 0);
 
         // save data
+        // - default
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         if (!$error_flag) {
-            $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
             $reference_list = array();
             foreach($form_data as $data) {
                 $id = $data['id'];
+                $item_type_id = $data['itemTypeId'];
+                $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
                 if ($id > 0) {
                     $reference = $referenceRepository->find($id);
+                    $reference->setFormIsExpanded($formIsExpanded);
                     $reference_list[] = $reference;
                 }
                 if (isset($data['formIsEdited'])) {
                     if (!$id > 0) {
                         // new entry
                         $reference = new ReferenceVolume();
+                        $reference->setItemTypeId(0); // will be overwritten
+
+                        $reference->setReferenceId($max_reference_id + 1);
+                        $max_reference_id += 1;
+
                         $entityManager->persist($reference);
+                        $entityManager->flush();
+                        $id = $reference->getId();
+                        $reference = $referenceRepository->find($id);
+                        $reference->setFormIsExpanded($formIsExpanded);
                         $reference_list[] = $reference;
                     }
-                    $utilService->setByKeys(
+                    UtilService::setByKeys(
                         $reference,
                         $data,
                         ReferenceVolume::EDIT_FIELD_LIST);
                 }
-                $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
-                $reference->setFormIsExpanded($formIsExpanded);
             }
 
-            if ($form_display_type == "new_entry") {
-                $reference = new ReferenceVolume();
-                $reference_list[] = $reference;
-            }
+            $entityManager->flush();
         }
 
-        $entityManager->flush();
 
-        $template = "";
-        if ($form_display_type == 'list') {
-            $template = 'edit_reference/_list.html.twig';
-        } else { // useful for debugging: dump output is accessible
-            $template = 'edit_reference/select.html.twig';
+        // create empty template for new entries
+        $emptyReference = new ReferenceVolume();
+        $emptyReference->setItemTypeId($item_type_id);
+
+
+        $template = 'edit_reference/_list.html.twig';
+
+        $debug = $request->request->get('formType');
+        if (!is_null($debug) && $debug == "debug") {
+            $template = 'edit_reference/debug_list.html.twig';
         }
 
         return $this->renderForm($template, [
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'formType' => $form_display_type,
+            'emptyReference' => $emptyReference,
         ]);
 
     }
-
-    /**
-     * @Route("/edit/reference/new", name="edit_reference_new")
-     */
-    public function new(Request $request,
-                        EntityManagerInterface $entityManager,
-                        UtilService $utilService) {
-
-        $edit_form_id = 'reference_edit_form';
-
-
-        $reference_list = array(new ReferenceVolume());
-
-
-        return $this->renderForm('edit_reference/new_reference.html.twig', [
-            'menuItem' => 'edit-menu',
-            'editFormId' => $edit_form_id,
-            'referenceList' => $reference_list,
-            'formType' => 'new_entry',
-            'count' => count($reference_list),
-        ]);
-
-
-
-    }
-
 
 }

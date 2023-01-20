@@ -1,7 +1,8 @@
+{% set placeholder_index='_____' %}
 <div data-controller="insert input-state"
      data-insert-base-id-value="{{ base_id_role }}"
      data-insert-base-input-name-value="{{ base_input_name_role }}"
-     data-insert-placeholder-value="~~~"
+     data-insert-placeholder-value="{{ placeholder_index }}"
 >
     {% for role_prop in role.roleproperty %}
 	<div class="pe-1"> {# see template for new prop #}
@@ -19,7 +20,7 @@
 	{{ include('edit_bishop/_input_role_property.html.twig', {
 	    base_id: base_id_role,
 	    base_input_name: base_input_name_role,
-	    current_idx: '~~~'
+	    current_idx: placeholder_index,
 	}) }}
     </div>
     <div class="input-group input-group-sm mt-1 ">

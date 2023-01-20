@@ -5,6 +5,10 @@ namespace App\Entity;
 use App\Repository\ReferenceVolumeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
+
 /**
  * @ORM\Entity(repositoryClass=ReferenceVolumeRepository::class)
  */
@@ -55,22 +59,22 @@ class ReferenceVolume {
     /**
      * @ORM\Column(type="integer")
      */
-    private $referenceId;
+    private $referenceId = 0;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=false)
      */
-    private $fullCitation;
+    private $fullCitation = "";
 
     /**
      * @ORM\Column(type="string", length=63, nullable=true)
      */
-    private $titleShort;
+    private $titleShort = null;
 
     /**
      * @ORM\Column(type="string", length=127, nullable=true)
      */
-    private $authorEditor;
+    private $authorEditor = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -134,6 +138,14 @@ class ReferenceVolume {
      */
     private $formIsExpanded = false;
 
+    /**
+     * collection of InputError
+     */
+    private $inputError;
+
+    public function __construct() {
+        $this->inputError = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -367,6 +379,31 @@ class ReferenceVolume {
         $this->gsCitation = $gsCitation;
 
         return $this;
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
+    }
+
+    public function hasError($min_level): bool {
+        // the database is not aware of inputError and it's type
+        if (is_null($this->inputError)) {
+            return false;
+        }
+
+        foreach($this->inputError as $e_loop) {
+            $level = $e_loop->getLevel();
+            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

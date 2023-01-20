@@ -1,13 +1,6 @@
 {# parameter prop, base_id, base_input_name #}
 {% set base_id_prop=base_id~'_prop_'~current_idx %}
 {% set base_input_name_prop=base_input_name~'[prop]['~current_idx~']' %}
-{% if prop is not defined %}
-    {% set prop = {
-	id: null,
-	type: null,
-	value: null,
-    } %}
-{% endif %}
 <div class="my-1"
      data-controller="input-state set-v-attr"
      data-set-v-attr-to-value="delete"

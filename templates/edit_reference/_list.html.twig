@@ -1,10 +1,12 @@
+{% set index_placeholder = '_____' %}
 <div class="ps-0">
     <form id ="{{ editFormId }}"
 	  name="{{ editFormId }}"
 	  action="{{ path('edit_reference_save') }}"
 	  method="post"
 	  data-controller="submit-form">
-	{% set body_id_list = referenceList|map(r => 'body'~attribute(r, "id"))|join(' ') %}
+	{% set body_id_list = range(1,referenceList|length)|map(r => 'body'~r)|join(' ') %}
+	{# debug <span>{{ body_id_list }}</span>  #}
 	<div class="row mx-0">
 	    <div class="col">
 		{# disable submit via enter-key #}
@@ -22,47 +24,62 @@
 			    imgClosed: 'right'
 			}) }}
 			data-action="toggle-arrow#toggle"
+			aria-label="Listenelemente aufklappen oder schließen"
 			data-value="down">öffnen/schließen</button>
 	    </div>
 	    <div class="col">
-		{% if formType == "new_entry" %}
-		    <button type="submit"
-			    name="formType"
-			    value="{{ formType }}"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% else %}
-		    <button type="button"
-			    name="formType"
-			    value="{{ formType }}"
-			    data-action="submit-form#submit"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% endif %}
+		<button type="button"
+			name="formType"
+			value="list"
+			data-action="submit-form#submit"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
 	<div class="row mx-0">
 	    <div class="col-12">
-		{% for ref in referenceList %}
-		    {{ include('edit_reference/_item.html.twig', {
-			index: loop.index0,
-			reference: ref,
-		    }) }}
-		{% endfor %}
+		<div data-controller="insert"
+		     data-insert-placeholder-value="{{ index_placeholder }}">
+		    {% for ref in referenceList %}
+			{{ include('edit_reference/_item.html.twig', {
+			    index: loop.index,
+			    reference: ref,
+			}) }}
+		    {% endfor %}
+		    {# the server ignores the template if it contains no data #}
+		    <div class="pe-1 d-none"
+			 data-insert-target="template">
+			{{ include('edit_reference/_item.html.twig', {
+			    index: index_placeholder,
+			    reference: emptyReference,
+			    newEntry: true,
+			}) }}
+		    </div>
+		    <div class="input-group input-group-sm mt-1 ">
+			<button class="btn btn-sm btn-outline-secondary"
+				type="button"
+				       data-action="insert#insertTemplate"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+		    </div>
+		</div>
 	    </div>
 	</div>
 	{# submit #}
 	<div class="row mx-2"
 	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    <div class="col">
-		{% if formType == "new_entry" %}
-		    <button type="submit"
-			    name="formType"
-			    value="{{ formType }}"
-			    data-submit-by-key-target="button"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% set debug = false %}
+		{% if debug %}
+		    <div class="float-end">
+			<span class="me-2">debug mode</span>
+			<button type="submit"
+				name="formType"
+				value="debug"
+				data-submit-by-key-target="button"
+				class="btn btn-primary btn-sm float-end">Speichern</button>
+		    </div>
 		{% else %}
 		    <button type="button"
 			    name="formType"
-			    value="{{ formType }}"
+			    value="list"
 			    data-submit-by-key-target="button"
 			    data-action="submit-form#submit"
 			    class="btn btn-primary btn-sm float-end">Speichern</button>

@@ -11,13 +11,14 @@ export default class extends Controller {
     };
 
     connect() {
-	// console.log('connect new-element');
-	this.elmt_idx = 60;
+	// form index for element placeholders
+	this.elmt_idx = 6000;
 	if (this.hasTemplateTarget) {
 	    this.templateHTML = this.templateTarget.innerHTML;
 	}
     }
 
+    // 2023-01-19 seems no to be in use
     async insert(event) {
 	const insertId = event.currentTarget.dataset.idSansIdx;
 
@@ -99,10 +100,12 @@ export default class extends Controller {
      * copy (hidden) template
      */
     insertTemplate(event) {
+	console.log('insert#insertTemplate');
 	const template = this.templateTarget;
 
 	// replace placehoder with index
-	var inner_html = this.templateHTML;
+	// var inner_html = this.templateHTML;
+	var inner_html = template.innerHTML;
 	inner_html = inner_html.replaceAll(this.placeholderValue, this.elmt_idx++);
 
 	// build new element
@@ -110,6 +113,7 @@ export default class extends Controller {
 	wrap.innerHTML = inner_html;
 	const new_elmt = wrap.firstElementChild;
 	// console.log(inner_html, this.hasTemplateTarget);
+
 	template.parentNode.insertBefore(new_elmt, template)
 
 	// move trigger

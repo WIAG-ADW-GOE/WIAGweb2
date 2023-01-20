@@ -51,4 +51,13 @@ class HomeController extends AbstractController {
         return $this->render('home/data_service.html.twig', ['menuItem' => 'service']);
     }
 
+    /**
+     * @Route("/about/phpinfo", name="about_phpinfo")
+     */
+    public function phpinfo() {
+        dd(phpinfo());
+    }
+
+
+
 }

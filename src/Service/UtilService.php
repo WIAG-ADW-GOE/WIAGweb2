@@ -650,7 +650,7 @@ class UtilService {
      *
      * set elements of $obj
      */
-    public function setByKeys($obj, $data, $key_list) {
+    static public function setByKeys($obj, $data, $key_list) {
         // 2023-01-17 debug
         if (false) {
             $missing_key_list = array();
@@ -668,12 +668,24 @@ class UtilService {
 
         foreach($key_list as $key) {
             $value = trim($data[$key]);
+            // this is helpful to clear the value of a field
             if (strlen($value) == 0) {
                 $value = null;
             }
             $set_fnc = 'set'.ucfirst($key);
             $obj->$set_fnc($value);
         }
+    }
+
+    static public function maxInList($list, $attribute, $init) {
+        $get_fnc = 'get'.ucfirst($attribute);
+        $value = $init;
+        foreach($list as $elmt) {
+            if ($value < $elmt->$get_fnc()) {
+                $value = $elmt->$get_fnc();
+            }
+        }
+        return $value;
     }
 
     static public function offset($offset, $page_number, $count, $page_size) {

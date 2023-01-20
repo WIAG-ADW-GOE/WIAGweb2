@@ -1,7 +1,8 @@
+{% set placeholder_index='_____' %}
 <div data-controller="insert"
      data-insert-base-id-value="{{ base_id }}"
      data-insert-base-input-name-value="{{ base_input_name }}"
-     data-insert-placeholder-value="~~~">
+     data-insert-placeholder-value={{ placeholder_index }}>
     {% for prop in person.item.itemproperty %}
 	<div class="pe-1"> {# see template for new prop #}
 	    {{ include('edit_bishop/_input_property.html.twig', {
@@ -17,12 +18,17 @@
 	{{ include('edit_bishop/_input_property.html.twig', {
 	    base_id: base_id,
 	    base_input_name: base_input_name,
-	    current_idx: '~~~'
+	    current_idx: placeholder_index,
+	    prop: {
+		id: null,
+		type: null,
+		value: "",
+	    },
 	}) }}
     </div>
     <div class="input-group input-group-sm mt-1 ">
 	<button class="btn btn-sm btn-outline-secondary"
-		       type="button"
-		       data-action="insert#insertTemplate"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
+		type="button"
+		data-action="insert#insertTemplate"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
     </div>
 </div>
