@@ -73,7 +73,7 @@ class Item {
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $id = 0;
 
     /**
      * @ORM\OneToMany(targetEntity="ItemProperty", mappedBy="item")

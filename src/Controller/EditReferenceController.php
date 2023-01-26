@@ -63,9 +63,10 @@ class EditReferenceController extends AbstractController {
 
         $reference_list = $referenceRepository->findBy(
             ['itemTypeId' => $item_type_id],
-            ['displayOrder' => 'ASC']
         );
 
+        // sort null last
+        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder']);
 
         $emptyReference = new ReferenceVolume();
         $emptyReference->setItemTypeId($item_type_id);
@@ -96,20 +97,30 @@ class EditReferenceController extends AbstractController {
         $error_flag = false;
 
         $reference_list = array();
+
+        $id_list = array_column($form_data, 'id');
+        $query_result = $referenceRepository->findList($id_list);
+        foreach ($query_result as $reference) {
+            $reference_list[$reference->getId()] = $reference;
+        }
+
+        // - default
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
+
         foreach($form_data as $data) {
             $id = $data['id'];
             $item_type_id = $data['itemTypeId'];
             $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
-                $reference = $referenceRepository->find($id);
+                $reference = $reference_list[$id];
                 $reference->setFormIsExpanded($formIsExpanded);
-                $reference_list[] = $reference;
             }
             if (isset($data['formIsEdited'])) {
                 if (!$id > 0) {
                     // new entry
                     $reference = new ReferenceVolume();
                     $reference->setFormIsExpanded($formIsExpanded);
+                    $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
                 UtilService::setByKeys(
@@ -124,55 +135,24 @@ class EditReferenceController extends AbstractController {
             }
         }
 
-        // dd(count($reference_list), $form_data);
-
-        // $form_display_type = $request->request->get('formType');
-
+        // save
         $max_reference_id = UtilService::maxInList($reference_list, 'referenceId', 0);
 
-        // 2023-01-20 leave it to the editors to set field display_order
-        // $max_display_order = UtilService::maxInList($reference_list, 'displayOrder', 0);
-
-        // save data
-        // - default
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         if (!$error_flag) {
-            $reference_list = array();
-            foreach($form_data as $data) {
-                $id = $data['id'];
-                $item_type_id = $data['itemTypeId'];
-                $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
-                if ($id > 0) {
-                    $reference = $referenceRepository->find($id);
-                    $reference->setFormIsExpanded($formIsExpanded);
-                    $reference_list[] = $reference;
-                }
-                if (isset($data['formIsEdited'])) {
-                    if (!$id > 0) {
-                        // new entry
-                        $reference = new ReferenceVolume();
-                        $reference->setItemTypeId(0); // will be overwritten
-
-                        $reference->setReferenceId($max_reference_id + 1);
-                        $max_reference_id += 1;
-
-                        $entityManager->persist($reference);
-                        $entityManager->flush();
-                        $id = $reference->getId();
-                        $reference = $referenceRepository->find($id);
-                        $reference->setFormIsExpanded($formIsExpanded);
-                        $reference_list[] = $reference;
-                    }
-                    UtilService::setByKeys(
-                        $reference,
-                        $data,
-                        ReferenceVolume::EDIT_FIELD_LIST);
+            foreach ($reference_list as $reference) {
+                $id = $reference->getId();
+                if (!$id > 0) {
+                    $reference->setReferenceId($max_reference_id + 1);
+                    $max_reference_id += 1;
+                    $entityManager->persist($reference);
                 }
             }
-
             $entityManager->flush();
         }
 
+        // displayOrder may have been edited
+        // sort null last
+        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder']);
 
         // create empty template for new entries
         $emptyReference = new ReferenceVolume();
@@ -186,11 +166,30 @@ class EditReferenceController extends AbstractController {
             $template = 'edit_reference/debug_list.html.twig';
         }
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
             'emptyReference' => $emptyReference,
+        ]);
+
+    }
+
+    /**
+     * @Route("/edit/reference/item/{id}/{index}", name="edit_reference_item")
+     */
+    public function _item(int $id,
+                          int $index,
+                          EntityManagerInterface $entityManager): Response {
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+
+        $reference = $referenceRepository->find($id);
+        $reference->setFormIsExpanded(1);
+
+        return $this->render('edit_reference/_input_content.html.twig', [
+            'reference' => $reference,
+            'editFormId' => 'reference_edit_form',
+            'index' => $index,
         ]);
 
     }

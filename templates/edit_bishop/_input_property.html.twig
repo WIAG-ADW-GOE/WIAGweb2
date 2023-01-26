@@ -1,51 +1,46 @@
 {# parameter prop, base_id, base_input_name #}
 {% set base_id_prop=base_id~'_prop_'~current_idx %}
 {% set base_input_name_prop=base_input_name~'[prop]['~current_idx~']' %}
-<div class="my-1"
-     data-controller="input-state set-v-attr"
-     data-set-v-attr-to-value="delete"
-     data-set-v-attr-from-value="">
-    <div class="input-group input-group-sm">
-	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_prop, base_name_delete: base_input_name_prop }) }}
-	{# property name label #}
-	<label class="input-group-text" for="{{ base_id_prop }}_type">Attribut-Name</label>
-	{# - id (hidden) #}
-	<input type="text"
-	       id="{{ base_id_prop }}_id"
-	       name="{{ base_input_name_prop }}[id]"
-	       class="form-control form-control-sm"
-	       hidden="hidden"
-	       value="{{ person.item.id ? prop.id : null }}"> {# ID is null for new entry or merged entry #}
-	{# property name #}
-	<span class="w-20">
-	    <select class="form-select form-select-sm wiag-input"
-		    id="{{ base_id_prop }}_type"
-		    name="{{ base_input_name_prop }}[type]">
-		{% for type in itemPropertyTypeList %}
-		    {% if prop.type %}
-			<option {% if prop.type.id == type.id %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.label }}</option>
-		    {% else %}
-			<option value ="{{ type.id }}">{{ type.label }}</option>
-		    {% endif %}
-		{% endfor %}
-	    </select>
-	</span>
-	{# prop value #}
-	<span class="input-group-text">Attribut-Wert</span>
-	<div class="w-20"
-	      {{ stimulus_controller('autocomplete', {
-		  url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
-	      }) }}>
-	    <input type="text" id="{{ base_id_prop }}_value"
-		   name="{{ base_input_name_prop }}[value]"
-		   class="form-control form-control-sm rounded-0 wiag-input"
-		   value="{{ prop.value }}"
-		   spellcheck="false"
-		   aria-label="Wert"
-		   data-autocomplete-target="input">
-	    <ul class="list-group autocomplete-target"
-		       data-autocomplete-target="results"
-		       style="max-width: 12rem;"></ul>
-	</div>
+<div class="input-group input-group-sm">
+    {{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_prop, base_name_delete: base_input_name_prop }) }}
+    {# property name label #}
+    <label class="input-group-text" for="{{ base_id_prop }}_type">Attribut-Name</label>
+    {# - id (hidden) #}
+    <input type="text"
+	   id="{{ base_id_prop }}_id"
+	   name="{{ base_input_name_prop }}[id]"
+	   class="form-control form-control-sm"
+	   hidden="hidden"
+	   value="{{ person.item.id ? prop.id : null }}"> {# ID is null for new entry or merged entry #}
+    {# property name #}
+    <span class="w-20">
+	<select class="form-select form-select-sm wiag-input"
+		id="{{ base_id_prop }}_type"
+		name="{{ base_input_name_prop }}[type]">
+	    {% for type in itemPropertyTypeList %}
+		{% if prop.type %}
+		    <option {% if prop.type.id == type.id %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.label }}</option>
+		{% else %}
+		    <option value ="{{ type.id }}">{{ type.label }}</option>
+		{% endif %}
+	    {% endfor %}
+	</select>
+    </span>
+    {# prop value #}
+    <span class="input-group-text">Attribut-Wert</span>
+    <div class="w-20"
+	 {{ stimulus_controller('autocomplete', {
+	     url: path('person_suggest', { field: 'propertyValue', itemTypeId: itemTypeId }),
+	 }) }}>
+	<input type="text" id="{{ base_id_prop }}_value"
+	       name="{{ base_input_name_prop }}[value]"
+	       class="form-control form-control-sm rounded-0 wiag-input"
+	       value="{{ prop.value }}"
+	       spellcheck="false"
+	       aria-label="Wert"
+	       data-autocomplete-target="input">
+	<ul class="list-group autocomplete-target"
+	    data-autocomplete-target="results"
+	    style="max-width: 12rem;"></ul>
     </div>
 </div>

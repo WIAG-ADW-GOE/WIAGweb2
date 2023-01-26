@@ -9,24 +9,12 @@
 	authority: null,
 	authority_id: "",
 	value: ""
-	} %}
+    } %}
 {% endif %}
 
 {# col with add button and delete button #}
 <div class="col-1 text-end pe-0">
-    <div data-controller="set-v-attr"
-	 data-set-v-attr-to-value="delete"
-	 data-set-v-attr-from-value="">
-	{# insert button #}
-	<span class="text-nowrap">
-	    {% if is_last %}
-		<button class="btn btn-light btn-sm"
-			type="button"
-			data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
-	    {% endif %}
-	    {{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_idext, base_name_delete: base_input_name_idext }) }}
-	</span>
-    </div>
+    {{ include('edit_bishop/_insert_delete.html.twig', { base_id_delete: base_id_idext, base_name_delete: base_input_name_idext }) }}
 </div>
 <div class="col-11">
     <div class="input-group input-group-sm mb-1">

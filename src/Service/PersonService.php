@@ -939,24 +939,27 @@ class PersonService {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $person_list = array();
+        $id_list = array_filter(array_column($form_data, 'id'), function($id) {
+            return (!is_null($id) && trim($id) != "");
+        });
+        $query_result = $personRepository->findList($id_list);
+        foreach ($query_result as $person) {
+            $person_list[$person->getId()] = $person;
+        }
+
         foreach($form_data as $data) {
-            $person_id = $data['item']['id'];
-            if ($person_id > 0) {
-                // get complete Person
-                $person = $personRepository->findList([$person_id])[0];
-                $person_list[] = $person;
+            $id = $data['id'];
+            if ($id > 0) {
+                $person = $person_list[$id];
             } else {
                 // new entry
                 $item = Item::newItem($item_type_id, $current_user_id);
                 $person = Person::newPerson($item);
-                $item->setFormIsExpanded(1);
                 $person_list[] = $person;
             }
 
             if (isset($data['item']['formIsEdited'])) {
                 $this->mapPerson($item_type_id, $person, $data, $current_user_id);
-
-
             }
 
             // set form collapse state
@@ -972,49 +975,37 @@ class PersonService {
      *
      * do not flush the entity manager
      */
-    public function saveFormData($item_type_id, $form_data, $current_user_id) {
+    public function saveFormData($person_list, $item_type_id, $form_data, $current_user_id) {
 
         $personRepository = $this->entityManager->getRepository(Person::class);
-        // rebuild $person_list with persistent new entries
-        $person_list = array();
-        foreach($form_data as $data) {
-            $person_id = $data['item']['id'];
+
+        foreach ($form_data as $data) {
+            $id = $data['id'];
             $edited_flag = isset($data['item']['formIsEdited']);
             $expanded_flag = isset($data['item']['formIsExpanded']) ? 1 : 0;
-            $person = null;
+
+
             if ($edited_flag) {
-                if ($person_id == "" || $person_id < 1) { // new entry
-                    $person = $this->makePersonPersist($item_type_id, $current_user_id);
-                } else {
-                    // edited, no errors
-                    $person = $personRepository->findList([$person_id])[0];
-                }
-                $this->mapPerson($item_type_id, $person, $data, $current_user_id);
-                if ($person_id < 1) {
+                if (!$id > 0) { // new entry
+                    $person = $this->makePersonPersist($item_type_id, $current_user_id); // flush!
+                    $person_list[$person->getId()] = $person;
+                    $this->mapPerson($item_type_id, $person, $data, $current_user_id);
                     $this->updateMergeMetaData($person, $current_user_id);
+
+                    $person->getItem()->setFormIsExpanded($expanded_flag);
                 }
-                $person_list[] = $person;
-                $person->getItem()->setFormIsExpanded($expanded_flag);
-
-            } elseif ($person_id > 0) { // skip empty (unedited) form
-                $person = $personRepository->findList([$person_id])[0];
-                $person_list[] = $person;
-            }
-            // do nothing for new elements that were not edited
-        }
-
-        $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
-
-        foreach ($person_list as $person) {
-            if ($person->getItem()->getFormIsEdited()) {
-                // update table name_lookup
-                $nameLookupRepository->update($person);
-                // reset edit flag
-                $person->getItem()->setFormIsEdited(0);
+                // edited objects are mapped in the validation step
             }
         }
+
+        // remove empty entries
+        // $person_list = array_filter($person_list, function($p) {
+        //     $id = $p->getId();
+        //     return (!is_null($id) && $id > 0);
+        // });
 
         return $person_list;
+
     }
 
     /**
@@ -1025,7 +1016,7 @@ class PersonService {
         $item = $person->getItem();
 
         $edit_status = trim($data['item']['editStatus']);
-        $new_flag = ($data['item']['id'] == "");
+        $new_flag = ($data['id'] == "");
         $this->updateEditMetaData($item, $edit_status, $user_id, $new_flag);
 
         if ($edit_status == "") {
@@ -1038,17 +1029,6 @@ class PersonService {
         } else {
             $item->setIsOnline(0);
         }
-
-        // item: deleted TODO 2022-09-22 turned off for the moment
-        // $deleted_status = $data['item']['isDeleted'];
-        // $item->setIsDeleted($deleted_status);
-
-        // if ($deleted_status == 1) {
-        //     $this->setByKeys($person, $data, ['comment']);
-        //     // other elements are not accessible
-        //     return $person;
-        // }
-
 
         // item: checkboxes
         $key_list = ['formIsEdited'];
@@ -1090,7 +1070,9 @@ class PersonService {
                      'notePerson'];
         $this->utilService->setByKeys($person, $data, $key_list);
 
-        $this->validateSubstring($person, $key_list, Item::JOIN_DELIM);
+        // add error if $needle occurs in one of the fields
+        $needle = Item::JOIN_DELIM;
+        $this->complainSubstring($person, $key_list, Item::JOIN_DELIM);
 
         if (is_null($person->getGivenname())) {
             $msg = "Das Feld 'Vorname' kann nicht leer sein.";
@@ -1576,6 +1558,7 @@ class PersonService {
         }
 
         // delete?
+        // dd($data);
         if (!is_null($roleProperty) && $data['delete'] == "delete" || $no_data) {
             $role->getRoleProperty()->removeElement($roleProperty);
             $roleProperty->setPersonRole(null);
@@ -1762,7 +1745,7 @@ class PersonService {
      *
      * Set error if fields contain $substring
      */
-    public function validateSubstring($person, $key_list, $substring) {
+    public function complainSubstring($person, $key_list, $substring) {
         foreach($key_list as $key) {
             $get_fnc = 'get'.ucfirst($key);
             if (str_contains($person->$get_fnc(), $substring)) {

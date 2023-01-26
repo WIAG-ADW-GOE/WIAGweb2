@@ -6,7 +6,6 @@
 	  method="post"
 	  data-controller="submit-form">
 	{% set body_id_list = range(1,referenceList|length)|map(r => 'body'~r)|join(' ') %}
-	{# debug <span>{{ body_id_list }}</span>  #}
 	<div class="row mx-0">
 	    <div class="col">
 		{# disable submit via enter-key #}
@@ -25,6 +24,7 @@
 			}) }}
 			data-action="toggle-arrow#toggle"
 			aria-label="Listenelemente aufklappen oder schließen"
+			{% if referenceList|length > 20 %}disabled{% endif %}
 			data-value="down">öffnen/schließen</button>
 	    </div>
 	    <div class="col">

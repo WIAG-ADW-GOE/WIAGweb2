@@ -10,7 +10,7 @@
 {% block body %}
     {{ form_start(form, {
 	'attr': {
-	    'id': 'form',
+	    'id': form.vars.id,
 	    'data-controller': 'facet-state facet-submit hide-on-input',
 	    'data-action': 'shown.bs.collapse->facet-state#register hidden.bs.collapse->facet-state#register input->facet-state#clearFacet input->facet-submit#submit'
 	}

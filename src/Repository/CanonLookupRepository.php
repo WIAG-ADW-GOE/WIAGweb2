@@ -141,7 +141,7 @@ class CanonLookupRepository extends ServiceEntityRepository
             $sort_list = ['placeName', 'dateSortKey', 'familyname', 'givenname', 'personIdName'];
         }
 
-        $result = $this->utilService->sortByFieldList($result, $sort_list);
+        $result = UtilService::sortByFieldList($result, $sort_list);
 
         if ($limit > 0) {
             $result = array_slice($result, $offset, $limit);

@@ -30,7 +30,6 @@ class ReferenceVolume {
         'onlineResource',
         'note',
         'comment',
-        'formIsExpanded',
     ];
 
     /**

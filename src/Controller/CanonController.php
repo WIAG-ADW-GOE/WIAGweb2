@@ -141,7 +141,7 @@ class CanonController extends AbstractController {
 
         // extract Person object to be compatible with bishops
         $personName = $canon_list[0]->getPersonName();
-        $canon_list = $utilService->sortByFieldList($canon_list, ['prioRole']);
+        $canon_list = UtilService::sortByFieldList($canon_list, ['prioRole']);
         $personRole = array_map(function($el) {
             return $el->getPerson();
         }, $canon_list);
@@ -281,7 +281,7 @@ class CanonController extends AbstractController {
                     return $el->getPersonIdName() == $personIdName;
                 });
                 // sort by prioRole
-                $canon_personRole = $utilService->sortByFieldList($canon_personRole, ['prioRole']);
+                $canon_personRole = UtilService::sortByFieldList($canon_personRole, ['prioRole']);
 
                 // extract object of type person and sort roles
                 $personRole = array();
@@ -293,10 +293,10 @@ class CanonController extends AbstractController {
                         $role_list = $person->getRole()->toArray();
                     }
                     $crit_list = ['placeName', 'dateSortKey', 'id'];
-                    $role_list = $utilService->sortByFieldList($role_list, $crit_list );
+                    $role_list = UtilService::sortByFieldList($role_list, $crit_list );
                     if ($domstift) {
                         $crit_list = ['dateSortKey', 'placeName', 'dateSortKey', 'id'];
-                        $role_list = $utilService->sortByDomstift($role_list, $domstift);
+                        $role_list = UtilService::sortByDomstift($role_list, $domstift);
                      }
 
 

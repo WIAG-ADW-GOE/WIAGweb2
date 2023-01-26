@@ -27,6 +27,7 @@
 		       id="{{ base_id }}_formisedited"
 		       name="{{ base_input_name }}[formIsEdited]"
 		       data-on-input-target="checkbox"
+		       data-action="click->sync#fill"
 		       {% if reference.formisedited %}checked="checked"{% endif %}>
 	    </span>
 	    {% set head_line=newEntry is defined ? "Neuer Eintrag" : reference.fullcitation %}

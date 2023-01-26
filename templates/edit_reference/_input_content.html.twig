@@ -1,4 +1,6 @@
-<div class="row">
+{% set base_id=editFormId~'_'~index %}
+{% set base_input_name=editFormId~'['~index~']' %}
+<div class="row mt-1">
     <div class="col-12">
 	<div
 	    {{ stimulus_controller('toggle-arrow', {
@@ -115,12 +117,22 @@
 	    </div>
 	</div>
     </div>
-    {% if false %} {# 2023-17-01 12:07 handle errors #}
-    {% for error_obj in reference.inputError|filter(v => v.section == 'name') %}
-	<div class="row">
+</div>
+{% for error_obj in reference.inputError %}
+    <div class="row">
 	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
-	    <div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}
+<hr class="my-2 border border-secondary border-2">
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm">
+	    <span class="input-group-text wiag-bg-internal" style="min-width: 10rem">Kommentar (red.)</span>
+	    <textarea id="{{ base_id }}_comment"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[comment]"
+		      class="form-control form-control-sm wiag-input">{{ reference.comment }}</textarea>
 	</div>
-    {% endfor %}
-    {% endif %}
+    </div>
 </div>

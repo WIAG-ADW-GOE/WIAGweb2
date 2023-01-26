@@ -54,7 +54,15 @@
 	<div class="row mx-2"
 	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    <div class="col">
-		{% if formType == "new_entry" %}
+		{% set debug = false %}
+		{% if debug %}
+		    <button type="submit"
+			    name="formType"
+			    value="standalone"
+			    data-submit-by-key-target="button"
+			    class="btn btn-primary btn-sm float-end">Speichern (debug)</button>
+		{% endif %}
+		{% if formType == "new_entry"%}
 		    <button type="submit"
 			    name="formType"
 			    value="{{ formType }}"

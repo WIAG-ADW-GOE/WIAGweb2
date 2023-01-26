@@ -42,10 +42,10 @@
 	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
 	    {# insert internal id into the form (hidden) #}
 	    <input type="text"
-		   id="{{ base_id }}_item_id"
-		   name="{{ base_input_name }}[item][id]"
+		   id="{{ base_id }}_id"
+		   name="{{ base_input_name }}[id]"
 		   class="form-control form-control-sm d-none"
-		   value="{{ person.item.id }}">
+		   value="{{ person.id }}">
 	    <span class="vr ms-auto"></span>
 	    <span class="bg-light ms-1 px-2">{{ person.item.editstatus }}</span>
 	</div>

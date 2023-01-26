@@ -155,6 +155,7 @@ class EditBishopController extends AbstractController {
         $form_data = $request->request->get($edit_form_id);
 
         $current_user_id = $this->getUser()->getId();
+        $personRepository = $this->entityManager->getRepository(Person::class);
 
         /* map/validate form */
         // fill person_list
@@ -176,13 +177,14 @@ class EditBishopController extends AbstractController {
         /* save data */
         if (!$error_flag) {
 
-            // otherwise previous data for roles show still up 2022-10-06
-            $this->entityManager->clear();
+            // otherwise attributes for roles cannot be removed
+            // $this->entityManager->clear();
 
-            // save changes to database
+            // save changes to the database
             // any object that was retrieved via Doctrine is stored to the database
             // fill $person_list
             $person_list = $this->personService->saveFormData(
+                $person_list,
                 $this->itemTypeId,
                 $form_data,
                 $current_user_id,
@@ -190,17 +192,42 @@ class EditBishopController extends AbstractController {
 
             $this->entityManager->flush();
 
+            // read all entries from the database to update IDs
+            $id_list = UtilService::validPropertyList($person_list, 'id', 'positive');
+            $query_result = $personRepository->findList($id_list);
+            // 2023-01-26 why?
+            // $person_list = array();
+            // foreach ($query_result as $person) {
+            //     $person_list[$person->getId()] = $person;
+            // }
+            $person_list = $query_result;
+
+            $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
+
+            foreach ($person_list as $person) {
+                if ($person->getItem()->getFormIsEdited()) {
+                    // update table name_lookup
+                    $nameLookupRepository->update($person);
+                }
+            }
+
+            // reset edit flag
+            foreach ($person_list as $person) {
+                $person->getItem()->setFormIsEdited(0);
+            }
+
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
                 $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
                 $person_list[] = $person;
             }
+
         }
 
         $template = "";
         if ($form_display_type == 'list') {
             $template = 'edit_bishop/_list.html.twig';
-        } else { // useful for debugging: dump output is accessible; see edit_bishop/_list.html.twig
+        } else {
             $template = 'edit_bishop/new_bishop.html.twig';
         }
 
@@ -268,7 +295,6 @@ class EditBishopController extends AbstractController {
     public function newBishop(Request $request) {
 
         $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
-
         $person_list = array($person);
 
         $template = 'edit_bishop/new_bishop.html.twig';

@@ -8,7 +8,11 @@
 {% endblock %}
 
 {% block body %}
-    {{ form_start(form) }}
+    {{ form_start(form, {
+	'attr': {
+	    'id': form.vars.id,
+	}
+    }) }}
 	<div class="container-fluid">
 	    <div class="row ms-2 col-12">
 		<span class="topic-title">{{ priest_ut_title }}</span>

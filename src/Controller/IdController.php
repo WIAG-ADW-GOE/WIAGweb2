@@ -158,7 +158,7 @@ class IdController extends AbstractController {
         $canon_list = $canonLookupRepository->findList([$id_name], null);
 
         // extract Person object to be compatible with bishops
-        $canon_list = $this->utilService->sortByFieldList($canon_list, ['prioRole']);
+        $canon_list = UtilService::sortByFieldList($canon_list, ['prioRole']);
         $personName = $canon_list[0]->getPersonName();
         $personRole = array_map(function($el) {
             return $el->getPerson();

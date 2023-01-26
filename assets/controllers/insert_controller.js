@@ -46,10 +46,10 @@ export default class extends Controller {
 
 	    var new_element = document.createElement('div');
 	    new_element.className = insert_class_name;
-	    const url = event.currentTarget.dataset.url;
-	    const paramString = url + '?' + params.toString();
+	    var url = event.currentTarget.dataset.url;
+	    url = url + '?' + params.toString();
 
-	    const response = await fetch(paramString);
+	    const response = await fetch(url);
 	    const form_section = await response.text();
 	    new_element.innerHTML = form_section;
 	    current_insert[0].parentNode.insertBefore(new_element, current_insert[0]);

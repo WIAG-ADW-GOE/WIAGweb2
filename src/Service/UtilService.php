@@ -90,7 +90,7 @@ class UtilService {
     /**
      * use $crit_list to compare $a and $b
      */
-    static function cmpRoles($a, $b, $crit_list) {
+    static function compare($a, $b, $crit_list) {
         $cmp_val = 0;
         foreach ($crit_list as $field) {
             $getfnc = 'get'.ucfirst($field);
@@ -136,9 +136,9 @@ class UtilService {
     /**
      * use crit_list in $crit_list to sort $list (array of arrays)
      */
-    public function sortByFieldList($list, $crit_list) {
-        uasort($list, function($a, $b) use ($crit_list) {
-            return self::cmpRoles($a, $b, $crit_list);
+    static function sortByFieldList($list, $crit_list) {
+        usort($list, function($a, $b) use ($crit_list) {
+            return self::compare($a, $b, $crit_list);
         });
 
         return $list;
@@ -148,7 +148,7 @@ class UtilService {
     /**
      * use criteria in $crit_list to sort $list (array of PersonRole)
      */
-    public function sortByDomstift($list, $domstift) {
+   static function sortByDomstift($list, $domstift) {
         // for PHP 8.0.0 and later sorting is stable, until then use second criterion
         uasort($list, function($a, $b) use ($domstift) {
 
@@ -173,7 +173,7 @@ class UtilService {
                 if ($b_val == $domstift || $b_val == $domstift_long) {
                     $result = 0;
                     //
-                    $result = self::cmpRoles($a, $b, ['dateSortKey', 'id']);
+                    $result = self::compare($a, $b, ['dateSortKey', 'id']);
                 } else {
                     $result = -1;
                 }
@@ -185,7 +185,7 @@ class UtilService {
 
             // other criteria
             if ($result == 0) {
-                $result = self::cmpRoles($a, $b, ['placeName', 'dateSortKey', 'id']);
+                $result = self::compare($a, $b, ['placeName', 'dateSortKey', 'id']);
             }
 
             return $result;
@@ -203,6 +203,7 @@ class UtilService {
     public function reorder($list, $sorted, $field = "id") {
         // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
+        dump($sorted);
         $idx_map = array_flip($sorted);
 
         usort($list, function($a, $b) use ($idx_map, $getfnc) {
@@ -652,7 +653,7 @@ class UtilService {
      */
     static public function setByKeys($obj, $data, $key_list) {
         // 2023-01-17 debug
-        if (false) {
+        if (true) {
             $missing_key_list = array();
             $missing_flag = false;
             foreach($key_list as $key) {
@@ -677,6 +678,9 @@ class UtilService {
         }
     }
 
+    /**
+     * find max value for $attribute in a list of objects
+     */
     static public function maxInList($list, $attribute, $init) {
         $get_fnc = 'get'.ucfirst($attribute);
         $value = $init;
@@ -699,6 +703,57 @@ class UtilService {
         }
 
         return $offset;
+    }
+
+    /**
+     * find first object in $list where the content of $field equals $value .
+     */
+    static public function findFirst($list, $field, $value) {
+        $getfnc = 'get'.ucfirst($field);
+        $match = null;
+        foreach ($list as $item) {
+            if ($item->$getfnc() == $value) {
+                $match = $item;
+                break;
+            }
+        }
+
+        return $match;
+    }
+
+    /**
+     * replace object in $list where the value of $field matches
+     */
+    static public function replaceInList($list, $obj, $field) {
+        $getfnc = 'get'.ucfirst($field);
+        $match = false;
+        foreach ($list as $key => $item) {
+            if ($item->$getfnc() == $obj->$getfnc()) {
+                $list[$key] = $obj;
+                $match = true;
+                break;
+            }
+        }
+
+        return $match;
+    }
+
+    static public function validPropertyList($list, $field, $positive = 'positive') {
+        $prop_value_list = array();
+        $getfnc = 'get'.ucfirst($field);
+        foreach ($list as $item) {
+            $val = $item->$getfnc();
+            if (!is_null($val)) {
+                if ($positive == 'positive') {
+                    if ($val > 0) {
+                        $prop_value_list[] = $val;
+                    }
+                } else {
+                    $prop_value_list[] = $val;
+                }
+            }
+        }
+        return $prop_value_list;
     }
 
 }
