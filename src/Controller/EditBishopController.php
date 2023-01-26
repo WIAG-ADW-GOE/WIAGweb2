@@ -17,7 +17,7 @@ use App\Form\EditBishopFormType;
 use App\Form\Model\BishopFormModel;
 use App\Entity\Role;
 
-use App\Service\PersonService;
+use App\Service\EditPersonService;
 use App\Service\UtilService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,7 +39,7 @@ class EditBishopController extends AbstractController {
     private $itemTypeId;
     private $entityManager;
 
-    public function __construct(PersonService $personService,
+    public function __construct(EditPersonService $personService,
                                 EntityManagerInterface $entityManager) {
         $this->entityManager = $entityManager;
         $this->personService = $personService;
