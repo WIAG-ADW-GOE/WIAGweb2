@@ -47,4 +47,23 @@ class IdExternalRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /*
+     * BEACON export
+     */
+    public function findValues($authority_id) {
+        $qb = $this->createQueryBuilder('id')
+                   ->select('DISTINCT id.value')
+                   ->join('id.item', 'item')
+                   ->andWhere('id.value is not null')
+                   ->andWhere('item.isOnline = 1')
+                   ->andWhere('id.authorityId = :authority_id')
+                   ->setParameter('authority_id', $authority_id);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+
+    }
+
 }

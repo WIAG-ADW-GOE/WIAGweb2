@@ -378,8 +378,4 @@ class PersonRepository extends ServiceEntityRepository {
         return $suggestions;
     }
 
-
-
-
-
 }

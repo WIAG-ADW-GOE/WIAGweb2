@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+
+    {% set urldi="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/deutsche-inschriften/" %}
+    {% set urlgs="https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/" %}
+
+    <div class="container-sm">
+	<div class="row col-12 m-2">
+	    {% for line in data %}
+		<p>{{ line }}</p>
+	    {% endfor %}
+	</div>
+    </div>
+{% endblock %}

@@ -64,7 +64,7 @@
 		    <div class="row my-2 mx-2">
 			<div class="col-9">
 			    {# table  #}
-			    {{ include("canon/_results.html.twig") }}
+			    {{ include("canon/_results.html.twig", { form: form }) }}
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
