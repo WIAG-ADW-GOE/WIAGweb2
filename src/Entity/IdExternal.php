@@ -157,4 +157,15 @@ class IdExternal
 
         return $this;
     }
+
+    public function toArray(): array {
+        $arr = array();
+        $arr['id'] = $this->id;
+        $arr['itemId'] = $this->itemId;
+        $arr['authority'] = $this->authority; // obj
+        $arr['url'] = $this->getUrl();
+        $arr['value'] = $this->value;
+
+        return $arr;
+    }
 }

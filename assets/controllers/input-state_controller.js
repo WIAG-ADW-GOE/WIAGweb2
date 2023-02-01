@@ -1,5 +1,11 @@
 import { Controller } from 'stimulus';
 
+/**
+ * disable or enable inputs and buttons
+ * 2023-01-30 This controller was used to mark items that should be
+ * deleted.
+ * Now, deletion is done directly after a confirmation dialogue.
+ */
 export default class extends Controller {
     static targets = ['globalTrigger', 'disable'];
 

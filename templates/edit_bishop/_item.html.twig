@@ -3,7 +3,7 @@
 {% set base_id=editFormId~'_'~index %}
 {% set base_input_name=editFormId~'['~index~']' %}
 {# header #}
-{% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+{% set online_image = (person.item.editStatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
 <div class="container-fluid p-2 my-2 border border-2 border-success rounded"
      id="{{ base_id }}">
     <div data-controller="toggle-arrow on-input insert auth-search"
@@ -11,7 +11,7 @@
 	 data-toggle-arrow-img-open-value="down"
 	 data-toggle-arrow-img-closed-value="right"
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
-	{% set expanded = person.hasError('info') or person.item.formIsExpanded %}
+	{% set expanded = person.inputError or person.item.formIsExpanded %}
 	{# headline with collapse button#}
 	{{ include('edit_bishop/_item_headline.html.twig') }}
 	{# body #}
@@ -24,8 +24,9 @@
 		   id="{{ base_id }}_item_formIsExpanded"
 		   name="{{ base_input_name }}[item][formIsExpanded]"
 		   class="form-check-input d-none"
-		   {% if person.item.formIsExpanded %}checked="checked"{% endif %}
+		   {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
 		   data-sync-target="check">
+	    {# turn on loading via ajax #}
 	    {% if expanded or true %}
 		{{ include('edit_bishop/_item_content.html.twig') }}
 	    {% endif %}

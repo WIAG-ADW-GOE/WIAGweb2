@@ -203,7 +203,7 @@ class UtilService {
     public function reorder($list, $sorted, $field = "id") {
         // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
-        dump($sorted);
+
         $idx_map = array_flip($sorted);
 
         usort($list, function($a, $b) use ($idx_map, $getfnc) {
@@ -754,6 +754,15 @@ class UtilService {
             }
         }
         return $prop_value_list;
+    }
+
+    static public function nestedArray($iterator) {
+        $arr = array();
+        foreach ($iterator as $item) {
+            $arr[] = $item->toArray();
+        }
+
+        return $arr;
     }
 
 }

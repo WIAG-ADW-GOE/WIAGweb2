@@ -151,4 +151,15 @@ class ItemProperty
         return $this;
     }
 
+    public function toArray() {
+        $arr = array();
+        $arr['id'] = $this->id;
+        $arr['type'] = $this->type;
+        $arr['name'] = $this->name;
+        $arr['value'] = $this->value;
+
+        return $arr;
+    }
+
+
 }

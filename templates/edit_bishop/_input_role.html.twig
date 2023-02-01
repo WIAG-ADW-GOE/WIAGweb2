@@ -1,107 +1,82 @@
-{# parameter: role, base_id, base_input_name #}
+{# parameter: role, base_id, base_input_name, current_idx #}
+{% import "util.html.twig" as util %}
 {% set base_id_role=base_id~'_role_'~current_idx %}
 {% set base_input_name_role=base_input_name~'[role]['~current_idx~']' %}
 {% set input_institution_width=35 %}
-{% if role is not defined %}
-    {% set role = {
-	id: null,
-	source: "template",
-	diocese: null,
-	institution: null,
-	roleDisplayName: "",
-	institutionDisplayName: "",
-	dioceseDisplayName: "",
-	dateBegin: "",
-	dateEnd: "",
-	note: "",
-	uncertain: null,
-	roleproperty: [],
-    } %}
-{% endif %}
-{# insert/delete #}
-<div class="col-1 text-end pe-0">
-    {{ include('edit_bishop/_insert_delete.html.twig', {
-	base_id_delete: base_id_role,
-	base_name_delete: base_input_name_role })
-    }}
-</div>
-<div class="col-11">
-    <div data-controller="toggle-arrow select-institution"
-	 data-toggle-arrow-img-open-value="down"
-	 data-toggle-arrow-img-closed-value="right"
-	 data-input-state-target="disable"
-	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
-	<div class="input-group input-group-sm mb-1">
-	    <span class="input-group-text wiag-input-text-blue">Amt, Institution</span>
-	    {# id (hidden) #}
-	    <input type="text"
-		   id="{{ base_id_role }}_id"
-		   name="{{ base_input_name_role }}[id]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ person.item.id ? (role.id ?? null) : null }}"> {# id is null for new entry or merged entry #}
-	    {# role name #}
-	    <div class="w-15"
-    		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
-		 }) }}>
-		<input type="text" id="{{ base_id_role }}_role"
-		       name="{{ base_input_name_role }}[role]"
-		       class="form-control form-control-sm rounded-0 wiag-input"
-		       value="{{ role.roleDisplayName }}"
+<div class="row"
+     data-controller="input-state">
+    {# insert/delete #}
+    <div class="col-1 text-end pe-0">
+	{{ include('edit_bishop/_insert_delete.html.twig', {
+	    base_id_delete: base_id_role,
+	    base_name_delete: base_input_name_role })
+	}}
+    </div>
+    <div class="col-11">
+	{# store date sort key hidden #}
+	{{ role.dateSortKey }}{{ util.message("Hier beginnt ein Block für Amtsangaben") }}
+	<input type="text"
+	       class="d-none"
+	       id="{{ base_id_role }}_dateSortKey"
+	       name="{{ base_input_name_role }}[dateSortKey]"
+	       value="{{ role.dateSortKey }}">
+	<div data-controller="toggle-arrow select-institution"
+	     data-toggle-arrow-img-open-value="down"
+	     data-toggle-arrow-img-closed-value="right"
+	     data-input-state-target="disable"
+	     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text wiag-input-text-blue">Amt, Institution</span>
+		{# id (hidden) #}
+		<input type="text"
+		       id="{{ base_id_role }}_id"
+		       name="{{ base_input_name_role }}[id]"
+		       class="form-control form-control-sm d-none"
+		       value="{{ role.id }}">
+		{# role name #}
+		<div class="w-15"
+    		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest', {itemTypeId: '0', field: 'role'}),
+		     }) }}>
+		    <input type="text"
+			   class="d-none"
+			   id="{{ base_id_role }}_roleDisplayName"
+			   name="{{ base_input_name_role }}[roleDisplayName]"
+			   value="{{ role.roleDisplayName }}">
+		    <input type="text" id="{{ base_id_role }}_role"
+			   name="{{ base_input_name_role }}[role]"
+			   class="form-control form-control-sm rounded-0 wiag-input"
+			   value="{{ role.roleDisplayName }}"
+			   spellcheck="false"
+			   aria-label="Amt"
+			   data-autocomplete-target="input">
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 18rem;"></ul>
+		</div>
+		{# default for inst_type_id is '1' (diocese) #}
+		{{ include('edit_bishop/_input_institution.html.twig', {
+		    inst_type_id: role.getInstitutionTypeId ?? 1,
+		})  }}
+		<span class="input-group-text wiag-input-text-blue">von, bis</span>
+		<input type="text" id="{{ base_id_role }}_dateBegin"
+		       name="{{ base_input_name_role }}[dateBegin]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ role.dateBegin }}"
+		       style="min-width: 4rem; max-width: 7rem"
 		       spellcheck="false"
-		       aria-label="Amt"
-		       data-autocomplete-target="input">
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 18rem;"></ul>
+		       aria-label="Beginn">
+		<input type="text" id="{{ base_id_role }}_dateEnd"
+		       name="{{ base_input_name_role }}[dateEnd]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ role.dateEnd }}"
+		       style="min-width: 4rem; max-width: 7rem"
+		       spellcheck="false"
+		       aria-label="Ende">
 	    </div>
-	    {# default for inst_type_id is '1' (diocese) #}
-	    {{ include('edit_bishop/_input_institution.html.twig', {
-		inst_type_id: role.getInstitutionTypeId ?? 1,
-	    })  }}
-	    <span class="input-group-text wiag-input-text-blue">von, bis</span>
-	    <input type="text" id="{{ base_id_role }}_dateBegin"
-		   name="{{ base_input_name_role }}[dateBegin]"
-		   class="form-control form-control-sm wiag-input"
-		   value="{{ role.dateBegin }}"
-		   style="min-width: 4rem; max-width: 7rem"
-		   spellcheck="false"
-		   aria-label="Beginn">
-	    <input type="text" id="{{ base_id_role }}_dateEnd"
-		   name="{{ base_input_name_role }}[dateEnd]"
-		   class="form-control form-control-sm wiag-input"
-		   value="{{ role.dateEnd }}"
-		   style="min-width: 4rem; max-width: 7rem"
-		   spellcheck="false"
-		   aria-label="Ende">
-	    {% if intern_collapsable %}
-		{% if role.note or role.roleproperty|length > 0 %}
-		    {% set expanded = true %}
-		    <button class="btn btn-sm ms-1 pt-0 align-middle"
-			    type="button"
-			    data-bs-toggle="collapse"
-			    data-bs-target="#div_{{ base_id_role }}_note"
-			    aria-expanded="true"
-			    aria-controls="div_{{ base_id_role }}_note"
-			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
-		{% else %}
-		    {% set expanded = false %}
-		    <button class="btn btn-sm ms-1 pt-0 align-middle"
-			    type="button"
-			    data-bs-toggle="collapse"
-			    data-bs-target="#div_{{ base_id_role }}_note"
-			    aria-expanded="false"
-			    aria-controls="div_{{ base_id_role }}_note"
-			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
-		{% endif %}
-	    {% else %}
-		{% set expanded = true %}
-	    {% endif %}
-	</div>
-	<div class="ms-5 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id_role }}_note">
 	    <div class="input-group input-group-sm mb-1">
 		<div class="input-group-text wiag-input-text-blue">
-		    <input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the office data are uncertain" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain %}checked="checked"{% endif %}> unsicher
+		    <input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the office data are uncertain" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain ?? false %}checked="checked"{% endif %}> unsicher
 		</div>
 		<span class="input-group-text wiag-input-text-blue ms-1">Bemerkung</span>
 		<input type="text"

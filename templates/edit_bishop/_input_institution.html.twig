@@ -22,6 +22,16 @@
     1: role.dioceseDisplayName,
     2: role.institutionDisplayName,
 } %}
+<input type="text"
+       class="d-none"
+       id="{{ base_id_role }}_dioceseDisplayName"
+       name="{{ base_input_name_role }}[dioceseDisplayName]"
+       value="{{ role.dioceseDisplayName }}">
+<input type="text"
+       class="d-none"
+       id="{{ base_id_role }}_institutionDisplayName"
+       name="{{ base_input_name_role }}[institutionDisplayName]"
+       value="{{ role.institutionDisplayName }}">
 <div class="w-40"
      data-controller="autocomplete"
      data-autocomplete-url-value="{{ attribute(inst_ac_url, inst_type_id) }}"

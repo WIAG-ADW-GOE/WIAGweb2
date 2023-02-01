@@ -5,6 +5,7 @@ use App\Entity\Item;
 use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
+use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\InputError;
 use App\Entity\PersonRole;
@@ -104,8 +105,19 @@ class EditBishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 
+
+            // map to form_data
+            $person_form_list;
+            foreach ($person_list as $person) {
+                $person_form = $person->toArray();
+                $person_form['item']['formIsExpanded'] = false;
+                $person_form['item']['formIsEdited'] = false;
+                $person_form['inputError'] = array();
+                $person_form_list[] = $person_form;
+            }
+
             $template_params = [
-                'personList' => $person_list,
+                'personList' => $person_form_list,
                 'form' => $form,
                 'error_list' => $model->getInputError(),
                 'count' => $count,
@@ -152,7 +164,74 @@ class EditBishopController extends AbstractController {
     public function save(Request $request) {
 
         $edit_form_id = 'edit_bishop_edit_form';
-        $form_data = $request->request->get($edit_form_id);
+        $form_in = $request->request->get($edit_form_id);
+
+        // restore emtpy arrays; TODO move to UtilService?!
+        $form_data = array();
+        foreach ($form_in as $person_form) {
+            $array_keys = ['mergeParent', 'itemProperty'];
+            foreach ($array_keys as $key) {
+                if (!isset($person_form['item'][$key])) {
+                    $person_form['item'][$key] = array();
+                }
+            }
+
+            // restore empty reference
+            if (!isset($person_form['item']['reference'])) {
+                $reference = new ItemReference();
+                $person_form['item']['reference'] = [$reference];
+            }
+            // restore empty external ID
+            if (!isset($person_form['item']['idExternal'])) {
+                $idext = new IdExternal();
+                $person_form['item']['idExternal'] = [$idext->toArray()];
+            }
+
+            $array_keys = ['inputError', 'givenNameVariants', 'familyNameVariants'];
+            foreach ($array_keys as $key) {
+                if (!isset($person_form[$key])) {
+                    $person_form[$key] = array();
+                }
+            }
+
+            // restore empty role
+            if (!isset($person_form['role'])) {
+                $role = new PersonRole();
+                $person_form['role'] = [$role->toArray()];
+            }
+            $array_keys = ['roleProperty'];
+            foreach ($person_form['role'] as &$role) {
+                foreach ($array_keys as $key) {
+                    if (!isset($role[$key])) {
+                        $role[$key] = array();
+                    }
+                }
+            }
+
+            if (!isset($person_form['item']['formIsExpanded'])) {
+                $person_form['item']['formIsExpanded'] = false;
+            }
+
+            $form_data[] = $person_form;
+        }
+
+        $template = "";
+        $form_display_type = $request->request->get('formType');
+
+        if ($form_display_type == 'list') {
+            $template = 'edit_bishop/_list.html.twig';
+        } else {
+            $template = 'edit_bishop/new_bishop.html.twig';
+        }
+
+        return $this->renderEditElements($template, [
+            'personList' => $form_data,
+            'count' => count($form_data),
+            'mergeStep' => false,
+            'formType' => $form_display_type,
+        ]);
+
+
 
         $current_user_id = $this->getUser()->getId();
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -308,6 +387,32 @@ class EditBishopController extends AbstractController {
 
     }
 
+    /**
+     * @return template for new role
+     *
+     * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
+     */
+    public function newProperty(Request $request) {
+
+        $prop = new ItemProperty();
+
+        // property types
+        $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
+        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
+
+        return $this->render('edit_bishop/_input_property.html.twig', [
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
+            'prop' => $prop->toArray(),
+            'is_last' => true,
+            'itemPropertyTypeList' => $item_property_type_list,
+            'itemTypeId' => $this->itemTypeId,
+        ]);
+
+    }
+
 
     /**
      * @return template for new role
@@ -319,14 +424,47 @@ class EditBishopController extends AbstractController {
         $role = new PersonRole;
         $role->setId(0);
 
+        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
+
         return $this->render('edit_bishop/_input_role.html.twig', [
-            'base_id_role' => $request->query->get('base_id'),
-            'base_input_name_role' => $request->query->get('base_input_name'),
-            'intern_collapsable' => false,
-            'role' => $role,
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
+            'role' => $role->toArray(),
+            'is_last' => true,
+            'rolePropertyTypeList' => $role_property_type_list,
+            'itemTypeId' => $this->itemTypeId,
         ]);
 
     }
+
+    /**
+     * @return template for new role
+     *
+     * @Route("/edit/bischof/new-role-property", name="edit_bishop_new_role_property")
+     */
+    public function newRoleProperty(Request $request) {
+
+        $prop = new PersonRoleProperty;
+
+        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
+        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($this->itemTypeId);
+
+
+        return $this->render('edit_bishop/_input_role_property.html.twig', [
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
+            'prop' => $prop->toArray(),
+            'is_last' => true,
+            'rolePropertyTypeList' => $role_property_type_list,
+            'itemTypeId' => $this->itemTypeId,
+        ]);
+
+    }
+
 
     /**
      * @return template for new reference
@@ -337,7 +475,7 @@ class EditBishopController extends AbstractController {
 
         $reference = new ItemReference(0);
 
-        return $this->render('edit_bishop/_input_reference_core.html.twig', [
+        return $this->render('edit_bishop/_input_reference.html.twig', [
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
@@ -346,6 +484,26 @@ class EditBishopController extends AbstractController {
         ]);
 
     }
+
+    /**
+     * @return template for new external ID
+     *
+     * @Route("/edit/bischof/new-idexternal", name="edit_bishop_new_idexternal")
+     */
+    public function newIdExternal(Request $request) {
+
+        $idExternal = new IdExternal(0);
+
+        return $this->render('edit_bishop/_input_id_external.html.twig', [
+            'base_id' => $request->query->get('base_id'),
+            'base_input_name' => $request->query->get('base_input_name'),
+            'current_idx' => $request->query->get('current_idx'),
+            'ref' => $idExternal,
+            'itemTypeId' => $this->itemTypeId,
+        ]);
+
+    }
+
 
 
     /**

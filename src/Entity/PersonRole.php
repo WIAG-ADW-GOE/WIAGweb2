@@ -3,8 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\PersonRoleRepository;
-use Doctrine\ORM\Mapping as ORM;
+use App\Service\UtilService;
 
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -509,6 +510,28 @@ class PersonRole
         }
 
         return $description;
+    }
+
+    public function toArray() {
+        $arr = array();
+
+        $arr['id'] = $this->id;
+        $arr['dateSortKey'] = $this->dateSortKey;
+        $arr['roleName'] = $this->roleName;
+        $arr['role'] = $this->role; // obj!
+        $arr['roleDisplayName'] = $this->roleDisplayName();
+        $arr['institution'] = $this->institution; // obj!
+        $arr['institutionDisplayName'] = $this->institutionDisplayName();
+        $arr['diocese'] = $this->diocese; // obj!
+        $arr['dioceseName'] = $this->dioceseName;
+        $arr['dioceseDisplayName'] = $this->dioceseDisplayName();
+        $arr['dateBegin'] = $this->dateBegin;
+        $arr['dateEnd'] = $this->dateEnd;
+        $arr['uncertain'] = $this->uncertain;
+        $arr['note'] = $this->note;
+        $arr['roleProperty'] = UtilService::nestedArray($this->roleProperty);
+
+        return $arr;
     }
 
 }

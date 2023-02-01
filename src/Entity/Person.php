@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Item;
 use App\Entity\PersonRole;
 use App\Repository\PersonRepository;
+use App\Service\UtilService;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -161,12 +162,14 @@ class Person {
     /**
      * no DB-mapping
      * hold form input data
+     * obsolete? 2023-01-26
      */
     private $formGivennameVariants;
 
     /**
      * no DB-mapping
      * hold form input data
+     * obsolete? 2023-01-26
      */
     private $formFamilynameVariants;
 
@@ -463,7 +466,7 @@ class Person {
         return $this;
     }
 
-        public function getFormGivenNameVariants(): ?string {
+    public function getFormGivenNameVariants(): ?string {
         if ($this->formGivennameVariants) {
             return $this->formGivennameVariants;
         }
@@ -656,6 +659,7 @@ class Person {
         return $birth_info;
     }
 
+    // 2023-01-26 obsolete?
     public function hasError($min_level): bool {
         // the database is not aware of inputError and it's type
         if (is_null($this->inputError)) {
@@ -763,6 +767,39 @@ class Person {
         }
 
         return $this;
+    }
+
+    public function toArray() {
+        $arr = array();
+        $arr['id'] = $this->id;
+        $arr['item'] = $this->item->toArray();
+        $arr['role'] = UtilService::nestedArray($this->role);
+        // add empty form, if there is no role
+        if (count($arr['role']) < 1) {
+            $role = new PersonRole();
+            $arr['role'][] = $role->toArray();
+        }
+        $arr['givenname'] = $this->givenname;
+        $arr['prefixname'] = $this->prefixname;
+        $arr['familyname'] = $this->familyname;
+        $arr['comment'] = $this->comment;
+        $arr['notePerson'] = $this->notePerson;
+        $arr['noteName'] = $this->noteName;
+        $arr['dateBirth'] = $this->dateBirth;
+        $arr['dateDeath'] = $this->dateDeath;
+        $arr['id'] = $this->id;
+        $arr['religiousOrderId'] = $this->religiousOrderId;
+        $p = $this->religiousOrder;
+        $arr['religiousOrder'] = $p ? $p->toArray() : null;
+        $p = $this->givennameVariants ?? array();
+        $arr['givennameVariants'] = implode(", ", iterator_to_array($p));
+        $p = $this->familynameVariants ?? array();
+        $arr['familynameVariants'] = implode(", ", iterator_to_array($p));
+
+        $arr['describe'] = $this->describe();
+        $arr['describeRole'] = $this->describeRole(2);
+
+        return $arr;
     }
 
 

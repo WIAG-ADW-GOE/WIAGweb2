@@ -217,17 +217,6 @@ class BishopController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
-        // 2022-07-21 collect data in one db-query
-        // $node_list = array();
-        // foreach ($ids as $id) {
-
-        //     $person = $personRepository->find($id['personId']);
-
-        //     // collect office data in an array of Items
-        //     $item_list = $repository->getBishopOfficeData($person);
-        //     $node_list[] = $personService->personData($format, $person, $item_list);
-        // }
-
         return $personService->createResponse($format, $node_list);
 
     }

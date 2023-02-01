@@ -8,7 +8,7 @@
 		<input type="text" id="{{ base_id }}_item_editstatus"
 		       name="{{ base_input_name}}[item][editStatus]"
 		       class="form-control form-control-sm wiag-input"
-		       value="{{ person.item.editstatus }}"
+		       value="{{ person.item.editStatus }}"
 		       style="max-width: 12em"
 		       spellcheck="false"
 		       aria-label="Status"
@@ -22,10 +22,10 @@
 		   name="{{ base_input_name}}[item][commentDuplicate]"
 		   class="form-control form-control-sm wiag-input"
 		   style="max-width: 9em"
-		   value="{{ person.item.commentduplicate }}"
+		   value="{{ person.item.commentDuplicate }}"
 		   aria-label="Kommentar Dublette">
 	    {# get parent IDs (hidden) #}
-	    {% for parent_item in person.item.mergeparent %}
+	    {% for parent_item in person.item.mergeParent %}
 		<input type="text" id="{{ base_id }}_item_mergeParentId_{{ loop.index0 }}"
 		       name="{{ base_input_name}}[item][mergeParentId][{{ loop.index0 }}]"
 		       class="form-control form-control-sm d-none"
@@ -47,11 +47,11 @@
 				    data-person-id="{{ person.id }}"
 				    data-list-index="{{ index }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
-			{% if person.item.commentduplicate %}
-			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentduplicate }) }}">Zusammenführen mit {{ person.item.commentduplicate }}</a>
+			{% if person.item.commentDuplicate %}
+			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
 			    </li>
 			{% endif %}
-			{% if person.item.mergeparent and not mergeStep %}
+			{% if person.item.mergeParent is defined and not mergeStep %}
 			    <li data-controller="submit-confirm"
 				data-submit-confirm-title-value="Eintrag aufteilen?"
 				data-submit-confirm-button-id-value="split_{{ person.id }}"

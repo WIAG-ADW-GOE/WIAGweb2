@@ -1,29 +1,30 @@
 {% set placeholder_index='_____' %}
 <div data-controller="insert"
-     data-insert-base-id-value="{{ base_id }}"
-     data-insert-base-input-name-value="{{ base_input_name }}"
-     data-insert-placeholder-value={{ placeholder_index }}
-     data-insert-move-trigger-value=1>
-    {% for idext in person.item.idExternalSorted %}
-	<div class="row"
-	     data-controller="input-state">
-	    {% if idext.authority and idext.authority.urltype == 'Internal Identifier' %}
-		{{ include('edit_bishop/_show_id_internal.html.twig', {
-		    base_id: base_id,
-		    base_input_name: base_input_name,
-		    current_idx: loop.index0,
-		    is_last: loop.last,
-		}) }}
-	    {% else %}
-		{{ include('edit_bishop/_input_id_external.html.twig', {
-		    base_id: base_id,
-		    base_input_name: base_input_name,
-		    current_idx: loop.index0,
-		    is_last: loop.last,
-		}) }}
-	    {% endif %}
-	</div>
-    {% else %}
+     data-insert-url-value="{{ path('edit_bishop_new_idexternal', {
+			    base_id: base_id,
+			    base_input_name: base_input_name
+			    }) }}"
+     data-insert-hide-trigger-value="yes"
+     data-insert-point-value="last">
+    {% for idext in person.item.idExternal %}
+	{% if idext.authority and idext.authority.urltype == 'Internal Identifier' %}
+	    {{ include('edit_bishop/_show_id_internal.html.twig', {
+		base_id: base_id,
+		base_input_name: base_input_name,
+		current_idx: loop.index0,
+		is_last: loop.last,
+	    }) }}
+	{% else %}
+	    {{ include('edit_bishop/_input_id_external.html.twig', {
+		base_id: base_id,
+		base_input_name: base_input_name,
+		current_idx: loop.index0,
+		is_last: loop.last,
+	    }) }}
+	{% endif %}
+    {% endfor %}
+    {% if false %} {# 2023-01-30 obsolete? #}
+	{# {% else %} #}
 	<div class="row"
 	     data-controller="input-state">
 	    {{ include('edit_bishop/_input_id_external.html.twig', {
@@ -33,17 +34,18 @@
 		is_last: true,
 	    }) }}
 	</div>
-    {% endfor %}
-    {# the server ignores the template, if it contains no data #}
-    <div class="d-none" data-insert-target="template">
-	<div class="row"
-	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_id_external.html.twig', {
-		base_id: base_id,
-		base_input_name: base_input_name,
-		current_idx: placeholder_index,
-		is_last: false,
-	    }) }}
+	{# {% endfor %}  #}
+	{# the server ignores the template, if it contains no data #}
+	<div class="d-none" data-insert-target="template">
+	    <div class="row"
+		 data-controller="input-state">
+		{{ include('edit_bishop/_input_id_external.html.twig', {
+		    base_id: base_id,
+		    base_input_name: base_input_name,
+		    current_idx: placeholder_index,
+		    is_last: false,
+		}) }}
+	    </div>
 	</div>
-    </div>
+    {% endif %}
 </div>

@@ -1,18 +1,19 @@
-{% set placeholder_index='_____' %}
+{% set placeholder_index='_____' %} {# TODO delete when new edit-save cycle works 2023-01-30 #}
 <div data-controller="insert"
-     data-insert-base-id-value="{{ base_id }}"
-     data-insert-base-input-name-value="{{ base_input_name }}"
-     data-insert-placeholder-value={{ placeholder_index }}>
-    {% for prop in person.item.itemproperty %}
-	<div class="pe-1"> {# see template for new prop #}
-	    {{ include('edit_bishop/_input_property.html.twig', {
+     data-insert-url-value="{{ path('edit_bishop_new_property', {
+			    base_id: base_id,
+			    base_input_name: base_input_name,
+			    }) }}"
+     data-insert-point-value="lastButOne">
+    {% for prop in person.item.itemProperty %}
+	{{ include('edit_bishop/_input_property.html.twig', {
 		base_id: base_id,
 		base_input_name: base_input_name,
 		current_idx: loop.index0,
 	    }) }}
-	</div>
     {% endfor %}
-    {# the server ignores the template if it contains no data #}
+    {% if false %} {# TODO delete when new edit-save cycle works 2023-01-30 #}
+	{# the server ignores the template if it contains no data #}
     <div class="pe-1 d-none"
 	 data-insert-target="template">
 	{{ include('edit_bishop/_input_property.html.twig', {
@@ -26,9 +27,10 @@
 	    },
 	}) }}
     </div>
-    <div class="input-group input-group-sm mt-1 ">
+    {% endif %}
+    <div class="input-group input-group-sm mt-1">
 	<button class="btn btn-sm btn-outline-secondary"
 		type="button"
-		data-action="insert#insertTemplate"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
+		data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
     </div>
 </div>

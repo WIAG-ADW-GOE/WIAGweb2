@@ -20,7 +20,7 @@ class PersonRoleProperty
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $id = 0;
 
     /**
      * @ORM\OneToOne(targetEntity="RolePropertyType", fetch="EAGER")
@@ -165,5 +165,15 @@ class PersonRoleProperty
         $this->propertyTypeId = $propertyTypeId;
 
         return $this;
+    }
+
+    public function toArray() {
+        $arr = array();
+        $arr['id'] = $this->id;
+        $arr['type'] = $this->type;
+        $arr['name'] = $this->name;
+        $arr['value'] = $this->value;
+
+        return $arr;
     }
 }

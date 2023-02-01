@@ -3,6 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ItemRepository;
+use App\Service\UtilService;
+use App\Entity\IdExternal;
+use App\Entity\ItemReference;
+
 use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,7 +14,7 @@ use Doctrine\Common\Collections\Collection;
 
 
 /**
- * @ORM\Entity(repositoryClass=ItemRepository::class)
+ * @ORM\Entity(repositoryClass=ItemRepository::class)x
  */
 class Item {
     // redundant to table item_type (simpler, faster than a query)
@@ -104,7 +108,7 @@ class Item {
      * @ORM\OneToOne(targetEntity="Institution")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
-    private $institution;
+    private $institutionXX; // TODO
 
     /**
      * @ORM\Column(type="integer")
@@ -711,6 +715,45 @@ class Item {
         }
         $this->idExternal = $merged_list;
 
+    }
+
+    public function toArray() {
+        $arr = array();
+        $arr['id'] = $this->id;
+        $arr['itemTypeId'] = $this->itemTypeId;
+        $arr['idInSource'] = $this->idInSource;
+        $arr['idPublic'] = $this->idPublic;
+        $arr['mergedIntoId'] = $this->mergedIntoId;
+        $arr['editStatus'] = $this->editStatus;
+        $arr['isOnline'] = $this->isOnline;
+        $arr['comment'] = $this->comment;
+        $arr['commentDuplicate'] = $this->commentDuplicate;
+        $arr['createdBy'] = $this->createdBy;
+        $arr['dateCreated'] = $this->dateCreated;
+        $arr['changedBy'] = $this->changedBy;
+        $arr['dateChanged'] = $this->dateChanged;
+        $arr['urlExternal'] = $this->urlExternal->toArray();
+        $arr['reference'] = $this->reference->toArray();
+        // add empty form, if there is no reference
+        if (count($arr['reference']) < 1) {
+            $reference = new ItemReference();
+            $arr['reference'][] = $reference->toArray();
+        }
+
+        $arr['idExternal'] = $this->getIdExternalSorted()->toArray();
+        // add empty form, if there is external id
+        if (count($arr['idExternal']) < 1) {
+            $idExternal = new IdExternal();
+            $arr['idExternal'][] = $idExternal->toArray();
+        }
+
+        $arr['itemProperty'] = UtilService::nestedArray($this->itemProperty);
+
+
+        $arr['mergeStatus'] = $this->mergeStatus;
+        $arr['mergeParent'] = $this->mergeParent;
+
+        return $arr;
     }
 
 
