@@ -13,10 +13,10 @@
 		{% set displayname = person.combine('displayname') %}
 		{% set datebirth = person.combine('datebirth') %}
 		{% set datedeath = person.combine('datedeath') %}
-		{% macro single_btn(offset, content) %}
+		{% macro single_btn(offset, content, form) %}
 		    <button
 			type="submit"
-			form="form"
+			form="{{ form.vars.id }}"
 			formaction="{{ path('canon_list_detail')  }}"
 			class="btn btn-link p-0"
 			name="offset"
@@ -24,7 +24,7 @@
 		{% endmacro %}
 		<tr>
 		    <td class="align-top">
-			{{ _self.single_btn(offset + loop.index0, displayname) }}
+			{{ _self.single_btn(offset + loop.index0, displayname, form) }}
 			    {% if not datebirth and not datedeath %}
 			    {% elseif datebirth and not datedeath %}
 				<p class="ms-3">* {{ datebirth }}</p>
@@ -47,7 +47,7 @@
 			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
 			</small><br/>{% endfor %}
 			{% if c.otherSource %}
-			    {{ _self.single_btn(offset + loop.index0, "<small>&hellip;</small>") }}
+			    {{ _self.single_btn(offset + loop.index0, "<small>&hellip;</small>", form) }}
 			{% endif %}
 		    </td>
 		</tr>

@@ -8,6 +8,7 @@ use App\Entity\Person;
 use App\Entity\Diocese;
 use App\Entity\CanonLookup;
 use App\Entity\Authority;
+use App\Entity\IdExternal;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
 
@@ -23,6 +24,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -226,5 +228,90 @@ class IdController extends AbstractController {
         }
 
     }
+
+    /**
+     * return list of GND numbers for all bishops
+     *
+     * @Route("/beacon.txt", name="beacon")
+     */
+    public function beacon (Request $request) {
+        $response = new Response();
+        $data = "line1\nline2";
+        $mimeType = 'text/plain';
+        $filename = "beacon.txt";
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            $filename
+        );
+        $response->headers->set('Content-Type', $mimeType.'; charset=UTF-8');
+        // deliver beacon data directly
+        // $response->headers->set('Content-Disposition', $disposition);
+        // $baseurl = $request->getSchemeAndHttpHost();
+        $baseurl = 'https://'.$request->getHttpHost();
+        $cbeaconheader = [
+            "#FORMAT: BEACON",
+            "#VERSION: 0.1",
+            "#PREFIX: http://d-nb.info/gnd/",
+            "#TARGET: ".$baseurl."/gnd/{ID}",
+            "#FEED: ".$baseurl."/beacon.txt",
+            "#NAME: Wissensaggregator Mittelalter und Frühe Neuzeit",
+            "#DESCRIPTION: ",
+            "#INSTITUTION: Germania Sacra, Akademie der Wissenschaften zu Goettingen",
+            "#CONTACT: bkroege@gwdg.de",
+            "#TIMESTAMP: ".date(DATE_ATOM),
+        ];
+
+        $gnd_id = Authority::ID['GND'];
+
+        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+        $gnd_list = $idExternalRepository->findValues($gnd_id);
+
+
+        $cdata = array_merge($cbeaconheader, array_column($gnd_list, 'value'));
+
+        $data = implode($cdata, "\n")."\n";
+
+        $debug_flag = false;
+        if ($debug_flag) {
+            return $this->render('home/beacon.html.twig', [
+                'data' => $cdata,
+            ]);
+        }
+
+        $response->setContent($data);
+        return $response;
+    }
+
+    /**
+     * respond to beacon requests; find item by GND_ID; show details
+     *
+     * @Route("/gnd/{id}", name="gnd_id")
+     */
+    public function detailsByGndId(string $id, Request $request) {
+
+        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+        $gnd_id = Authority::ID['GND'];
+
+        $idext = $idExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
+
+        if (is_null($idext) || count($idext) < 1) {
+            throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
+        }
+
+        $id = $idext[0]->getItemId();
+
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+
+        $item = $itemRepository->find($id);
+
+        if (is_null($item)) {
+            throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
+        }
+
+        return $this->id($item->getIdPublic(), $request);
+
+    }
+
+
 
 }

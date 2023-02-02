@@ -203,7 +203,6 @@ class UtilService {
     public function reorder($list, $sorted, $field = "id") {
         // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
-
         $idx_map = array_flip($sorted);
 
         usort($list, function($a, $b) use ($idx_map, $getfnc) {
