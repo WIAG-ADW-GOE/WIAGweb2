@@ -59,6 +59,12 @@ class ItemProperty
      */
     private $propertyTypeId;
 
+    /**
+     * hold form input data
+     */
+    private $deleteFlag;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -147,6 +153,18 @@ class ItemProperty
     public function setPropertyTypeId(?int $propertyTypeId): self
     {
         $this->propertyTypeId = $propertyTypeId;
+
+        return $this;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
 
         return $this;
     }

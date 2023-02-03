@@ -140,6 +140,11 @@ class PersonRole
      */
     private $dateSortKey;
 
+    /**
+     * store form data
+     */
+    private $deleteFlag;
+
     public function __construct() {
         $this->roleProperty = new ArrayCollection();
     }
@@ -431,6 +436,18 @@ class PersonRole
     public function setDateSortKey(?int $dateSortKey): self
     {
         $this->dateSortKey = $dateSortKey;
+
+        return $this;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
 
         return $this;
     }

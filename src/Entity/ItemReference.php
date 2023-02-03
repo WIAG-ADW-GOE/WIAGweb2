@@ -66,11 +66,14 @@ class ItemReference
     private $referenceId;
 
     /**
-     * no DB-mapping
      * hold form input data
      */
     private $volumeTitleShort;
 
+    /**
+     * hold form input data
+     */
+    private $deleteFlag;
 
     public function __construct($id = 0) {
         $this->id = $id;
@@ -196,6 +199,18 @@ class ItemReference
     public function getVolumeTitleShort(): ?string
     {
         return $this->volumeTitleShort;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
     }
 
 

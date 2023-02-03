@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 <div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm">
@@ -39,7 +40,8 @@
 		{% endset %}
 	    {% endif %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
-	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
+	    <span class="ms-2">ID: {{ person.item.idInSource }}</span>
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.idInSource) }}
 	    {# insert internal id into the form (hidden) #}
 	    <input type="text"
 		   id="{{ base_id }}_id"

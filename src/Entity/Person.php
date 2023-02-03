@@ -200,9 +200,9 @@ class Person {
         return $this->id;
     }
 
-
     public function setItem($item) {
         $this->item = $item;
+        $this->id = $item->getId();
         return $this;
     }
 

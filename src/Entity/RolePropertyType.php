@@ -38,6 +38,11 @@ class RolePropertyType
      */
     private $itemTypeId;
 
+    /**
+     * store form data
+     */
+    private $deleteFlag;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,5 +95,18 @@ class RolePropertyType
 
         return $this;
     }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
 
 }

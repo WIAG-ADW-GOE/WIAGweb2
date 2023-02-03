@@ -35,14 +35,14 @@ class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
-    private $personService;
+    private $editService;
     private $itemTypeId;
     private $entityManager;
 
-    public function __construct(EditPersonService $personService,
+    public function __construct(EditPersonService $editService,
                                 EntityManagerInterface $entityManager) {
         $this->entityManager = $entityManager;
-        $this->personService = $personService;
+        $this->editService = $editService;
         $this->itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
     }
 
@@ -159,11 +159,26 @@ class EditBishopController extends AbstractController {
 
         /* map/validate form */
         // fill person_list
-        $person_list = $this->personService->mapFormdata(
+        $person_list = $this->editService->mapFormdata(
             $this->itemTypeId,
             $form_data,
-            $current_user_id,
         );
+
+        $form_display_type = $request->request->get('formType');
+
+        $template = "";
+        if ($form_display_type == 'list') {
+            $template = 'edit_bishop/_list.html.twig';
+        } else {
+            $template = 'edit_bishop/new_bishop.html.twig';
+        }
+
+        return $this->renderEditElements($template, [
+            'personList' => $person_list,
+            'count' => count($person_list),
+            'mergeStep' => false,
+            'formType' => $form_display_type,
+        ]);
 
         $error_flag = false;
         foreach($person_list as $person) {
@@ -183,7 +198,7 @@ class EditBishopController extends AbstractController {
             // save changes to the database
             // any object that was retrieved via Doctrine is stored to the database
             // fill $person_list
-            $person_list = $this->personService->saveFormData(
+            $person_list = $this->editService->saveFormData(
                 $person_list,
                 $this->itemTypeId,
                 $form_data,
@@ -218,7 +233,7 @@ class EditBishopController extends AbstractController {
 
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
-                $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
+                $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
                 $person_list[] = $person;
             }
 
@@ -294,7 +309,7 @@ class EditBishopController extends AbstractController {
      */
     public function newBishop(Request $request) {
 
-        $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
+        $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
         $person_list = array($person);
 
         $template = 'edit_bishop/new_bishop.html.twig';
@@ -450,7 +465,7 @@ class EditBishopController extends AbstractController {
 
         $id_in_source = $parent_list[0]->getIdInSource();
         $wiag_user_id = $this->getUser()->getId();
-        $person = $this->personService->makePersonScheme($this->itemTypeId, $id_in_source, $wiag_user_id);
+        $person = $this->editService->makePersonScheme($this->itemTypeId, $id_in_source, $wiag_user_id);
 
         $second = $itemRepository->findMergeCandidate($second_id, $item_type_id);
         if (is_null($second)) {
@@ -477,7 +492,7 @@ class EditBishopController extends AbstractController {
         $id_external_list = $item->getIdExternal();
         foreach ($parent_person_list as $parent) {
             $value = $parent->getItem()->getIdPublic();
-            $id_external = $this->personService->makeIdExternal($item, $authority, $value);
+            $id_external = $this->editService->makeIdExternal($item, $authority, $value);
             $id_external_list->add($id_external);
         }
 
