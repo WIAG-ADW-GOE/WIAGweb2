@@ -36,14 +36,14 @@ class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
-    private $personService;
+    private $editService;
     private $itemTypeId;
     private $entityManager;
 
-    public function __construct(EditPersonService $personService,
+    public function __construct(EditPersonService $editService,
                                 EntityManagerInterface $entityManager) {
         $this->entityManager = $entityManager;
-        $this->personService = $personService;
+        $this->editService = $editService;
         $this->itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
     }
 
@@ -105,19 +105,13 @@ class EditBishopController extends AbstractController {
             $id_list = array_slice($id_all, $offset, $model->listSize);
             $person_list = $personRepository->findList($id_list);
 
-
-            // map to form_data
-            $person_form_list;
+            // add empty role, reference and id external if not present
             foreach ($person_list as $person) {
-                $person_form = $person->toArray();
-                $person_form['item']['formIsExpanded'] = false;
-                $person_form['item']['formIsEdited'] = false;
-                $person_form['inputError'] = array();
-                $person_form_list[] = $person_form;
+                $person->addEmptyDefaultElements();
             }
 
             $template_params = [
-                'personList' => $person_form_list,
+                'personList' => $person_list,
                 'form' => $form,
                 'error_list' => $model->getInputError(),
                 'count' => $count,
@@ -164,60 +158,24 @@ class EditBishopController extends AbstractController {
     public function save(Request $request) {
 
         $edit_form_id = 'edit_bishop_edit_form';
-        $form_in = $request->request->get($edit_form_id);
+        $form_data = $request->request->get($edit_form_id);
 
-        // restore emtpy arrays; TODO move to UtilService?!
-        $form_data = array();
-        foreach ($form_in as $person_form) {
-            $array_keys = ['mergeParent', 'itemProperty'];
-            foreach ($array_keys as $key) {
-                if (!isset($person_form['item'][$key])) {
-                    $person_form['item'][$key] = array();
-                }
-            }
+        /* map/validate form */
+        // dump($form_data);
+        // fill person_list
+        $person_list = $this->editService->mapFormdata(
+            $this->itemTypeId,
+            $form_data,
+        );
+        // dd($person_list);
 
-            // restore empty reference
-            if (!isset($person_form['item']['reference'])) {
-                $reference = new ItemReference();
-                $person_form['item']['reference'] = [$reference];
-            }
-            // restore empty external ID
-            if (!isset($person_form['item']['idExternal'])) {
-                $idext = new IdExternal();
-                $person_form['item']['idExternal'] = [$idext->toArray()];
-            }
-
-            $array_keys = ['inputError', 'givenNameVariants', 'familyNameVariants'];
-            foreach ($array_keys as $key) {
-                if (!isset($person_form[$key])) {
-                    $person_form[$key] = array();
-                }
-            }
-
-            // restore empty role
-            if (!isset($person_form['role'])) {
-                $role = new PersonRole();
-                $person_form['role'] = [$role->toArray()];
-            }
-            $array_keys = ['roleProperty'];
-            foreach ($person_form['role'] as &$role) {
-                foreach ($array_keys as $key) {
-                    if (!isset($role[$key])) {
-                        $role[$key] = array();
-                    }
-                }
-            }
-
-            if (!isset($person_form['item']['formIsExpanded'])) {
-                $person_form['item']['formIsExpanded'] = false;
-            }
-
-            $form_data[] = $person_form;
+        foreach ($person_list as $person) {
+            $person->addEmptyDefaultElements();
         }
 
-        $template = "";
         $form_display_type = $request->request->get('formType');
 
+        $template = "";
         if ($form_display_type == 'list') {
             $template = 'edit_bishop/_list.html.twig';
         } else {
@@ -225,24 +183,11 @@ class EditBishopController extends AbstractController {
         }
 
         return $this->renderEditElements($template, [
-            'personList' => $form_data,
-            'count' => count($form_data),
+            'personList' => $person_list,
+            'count' => count($person_list),
             'mergeStep' => false,
             'formType' => $form_display_type,
         ]);
-
-
-
-        $current_user_id = $this->getUser()->getId();
-        $personRepository = $this->entityManager->getRepository(Person::class);
-
-        /* map/validate form */
-        // fill person_list
-        $person_list = $this->personService->mapFormdata(
-            $this->itemTypeId,
-            $form_data,
-            $current_user_id,
-        );
 
         $error_flag = false;
         foreach($person_list as $person) {
@@ -254,6 +199,7 @@ class EditBishopController extends AbstractController {
         $form_display_type = $request->request->get('formType');
 
         /* save data */
+        $personRepository = $this->entityManager->getRepository(Person::class);
         if (!$error_flag) {
 
             // otherwise attributes for roles cannot be removed
@@ -262,7 +208,7 @@ class EditBishopController extends AbstractController {
             // save changes to the database
             // any object that was retrieved via Doctrine is stored to the database
             // fill $person_list
-            $person_list = $this->personService->saveFormData(
+            $person_list = $this->editService->saveFormData(
                 $person_list,
                 $this->itemTypeId,
                 $form_data,
@@ -297,7 +243,7 @@ class EditBishopController extends AbstractController {
 
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
-                $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
+                $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
                 $person_list[] = $person;
             }
 
@@ -373,7 +319,7 @@ class EditBishopController extends AbstractController {
      */
     public function newBishop(Request $request) {
 
-        $person = $this->personService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
+        $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
         $person_list = array($person);
 
         $template = 'edit_bishop/new_bishop.html.twig';
@@ -405,7 +351,7 @@ class EditBishopController extends AbstractController {
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
-            'prop' => $prop->toArray(),
+            'prop' => $prop,
             'is_last' => true,
             'itemPropertyTypeList' => $item_property_type_list,
             'itemTypeId' => $this->itemTypeId,
@@ -432,7 +378,7 @@ class EditBishopController extends AbstractController {
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
-            'role' => $role->toArray(),
+            'role' => $role,
             'is_last' => true,
             'rolePropertyTypeList' => $role_property_type_list,
             'itemTypeId' => $this->itemTypeId,
@@ -457,7 +403,7 @@ class EditBishopController extends AbstractController {
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
-            'prop' => $prop->toArray(),
+            'prop' => $prop,
             'is_last' => true,
             'rolePropertyTypeList' => $role_property_type_list,
             'itemTypeId' => $this->itemTypeId,
@@ -498,7 +444,7 @@ class EditBishopController extends AbstractController {
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
-            'ref' => $idExternal,
+            'idext' => $idExternal,
             'itemTypeId' => $this->itemTypeId,
         ]);
 
@@ -608,7 +554,7 @@ class EditBishopController extends AbstractController {
 
         $id_in_source = $parent_list[0]->getIdInSource();
         $wiag_user_id = $this->getUser()->getId();
-        $person = $this->personService->makePersonScheme($this->itemTypeId, $id_in_source, $wiag_user_id);
+        $person = $this->editService->makePersonScheme($this->itemTypeId, $id_in_source, $wiag_user_id);
 
         $second = $itemRepository->findMergeCandidate($second_id, $item_type_id);
         if (is_null($second)) {
@@ -635,7 +581,7 @@ class EditBishopController extends AbstractController {
         $id_external_list = $item->getIdExternal();
         foreach ($parent_person_list as $parent) {
             $value = $parent->getItem()->getIdPublic();
-            $id_external = $this->personService->makeIdExternal($item, $authority, $value);
+            $id_external = $this->editService->makeIdExternal($item, $authority, $value);
             $id_external_list->add($id_external);
         }
 

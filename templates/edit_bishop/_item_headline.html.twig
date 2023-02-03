@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 <div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm">
@@ -40,34 +41,10 @@
 		{% endset %}
 	    {% endif %}
 	    {# store data in the form #}
-	    <input type ="text"
-		   class="d-none"
-		   id ="{{ base_id }}_describe"
-		   name="{{ base_input_name }}[describe]"
-		   value="{{ person.describe}}">
-	    <input type ="text"
-		   class="d-none"
-		   id ="{{ base_id }}_describeRole"
-		   name="{{ base_input_name }}[describeRole]"
-		   value="{{ person.describeRole}}">
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    <span class="ms-2">ID: {{ person.item.idInSource }}</span>
-	    {# store IDs and in the form (hidden) #}
-	    <input type="text"
-		   id="{{ base_id }}_id"
-		   name="{{ base_input_name }}[id]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ person.id }}">
-	    <input type="text"
-		   id="{{ base_id }}_item_id"
-		   name="{{ base_input_name }}[item][id]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ person.item.id }}">
-	    <input type ="text"
-		   class="d-none"
-		   id ="{{ base_id }}_item_idIdSource"
-		   name="{{ base_input_name }}[item][idInSource]"
-		   value="{{ person.item.idInSource }}">
+	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.idInSource) }}
 	    <span class="vr ms-auto"></span>
 	    <span class="bg-light ms-1 px-2">{{ person.item.editStatus }}</span>
 	</div>

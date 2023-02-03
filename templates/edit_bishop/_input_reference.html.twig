@@ -3,18 +3,9 @@
 {% if is_last is not defined %}
     {% set is_last = true %}
 {% endif %}
-{% if ref is not defined %}
-    {% set ref = {
-	id: "",
-	referencevolume: null,
-	volumetitleshort: "",
-	page: "",
-	idinreference: "",
-    } %}
-{% endif %}
 <div class="row">
     <div class="col-1 text-end pe-0">
-	{{ include('edit_bishop/_insert_delete.html.twig', { base_id_delete: base_id_ref, base_name_delete: base_input_name_ref }) }}
+	{{ include('edit_bishop/_insert_delete.html.twig', { obj: ref, base_id_delete: base_id_ref, base_name_delete: base_input_name_ref }) }}
     </div>
     <div class="col-11">
 	<div class="input-group input-group-sm mb-1">

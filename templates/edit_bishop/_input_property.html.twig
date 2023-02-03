@@ -3,7 +3,7 @@
 {% set base_input_name_prop=base_input_name~'[prop]['~current_idx~']' %}
 <div class="mt-1 pe-1"> {# see template for new prop #}
     <div class="input-group input-group-sm">
-	{{ include('edit_bishop/_delete_button.html.twig', { base_id_delete: base_id_prop, base_name_delete: base_input_name_prop }) }}
+	{{ include('edit_bishop/_delete_button.html.twig', { obj: prop, base_id_delete: base_id_prop, base_name_delete: base_input_name_prop }) }}
 	{# property name label #}
 	<label class="input-group-text" for="{{ base_id_prop }}_type">Attribut-Name</label>
 	{# - id (hidden) #}

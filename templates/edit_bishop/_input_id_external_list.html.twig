@@ -1,4 +1,3 @@
-{% set placeholder_index='_____' %}
 <div data-controller="insert"
      data-insert-url-value="{{ path('edit_bishop_new_idexternal', {
 			    base_id: base_id,
@@ -23,29 +22,4 @@
 	    }) }}
 	{% endif %}
     {% endfor %}
-    {% if false %} {# 2023-01-30 obsolete? #}
-	{# {% else %} #}
-	<div class="row"
-	     data-controller="input-state">
-	    {{ include('edit_bishop/_input_id_external.html.twig', {
-		base_id: base_id,
-		base_input_name: base_input_name,
-		current_idx: loop.index0,
-		is_last: true,
-	    }) }}
-	</div>
-	{# {% endfor %}  #}
-	{# the server ignores the template, if it contains no data #}
-	<div class="d-none" data-insert-target="template">
-	    <div class="row"
-		 data-controller="input-state">
-		{{ include('edit_bishop/_input_id_external.html.twig', {
-		    base_id: base_id,
-		    base_input_name: base_input_name,
-		    current_idx: placeholder_index,
-		    is_last: false,
-		}) }}
-	    </div>
-	</div>
-    {% endif %}
 </div>

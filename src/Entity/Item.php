@@ -105,12 +105,6 @@ class Item {
     private $reference;
 
     /**
-     * @ORM\OneToOne(targetEntity="Institution")
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
-    private $institutionXX; // TODO
-
-    /**
      * @ORM\Column(type="integer")
      */
     private $itemTypeId;
@@ -716,45 +710,5 @@ class Item {
         $this->idExternal = $merged_list;
 
     }
-
-    public function toArray() {
-        $arr = array();
-        $arr['id'] = $this->id;
-        $arr['itemTypeId'] = $this->itemTypeId;
-        $arr['idInSource'] = $this->idInSource;
-        $arr['idPublic'] = $this->idPublic;
-        $arr['mergedIntoId'] = $this->mergedIntoId;
-        $arr['editStatus'] = $this->editStatus;
-        $arr['isOnline'] = $this->isOnline;
-        $arr['comment'] = $this->comment;
-        $arr['commentDuplicate'] = $this->commentDuplicate;
-        $arr['createdBy'] = $this->createdBy;
-        $arr['dateCreated'] = $this->dateCreated;
-        $arr['changedBy'] = $this->changedBy;
-        $arr['dateChanged'] = $this->dateChanged;
-        $arr['urlExternal'] = $this->urlExternal->toArray();
-        $arr['reference'] = $this->reference->toArray();
-        // add empty form, if there is no reference
-        if (count($arr['reference']) < 1) {
-            $reference = new ItemReference();
-            $arr['reference'][] = $reference->toArray();
-        }
-
-        $arr['idExternal'] = $this->getIdExternalSorted()->toArray();
-        // add empty form, if there is external id
-        if (count($arr['idExternal']) < 1) {
-            $idExternal = new IdExternal();
-            $arr['idExternal'][] = $idExternal->toArray();
-        }
-
-        $arr['itemProperty'] = UtilService::nestedArray($this->itemProperty);
-
-
-        $arr['mergeStatus'] = $this->mergeStatus;
-        $arr['mergeParent'] = $this->mergeParent;
-
-        return $arr;
-    }
-
 
 }

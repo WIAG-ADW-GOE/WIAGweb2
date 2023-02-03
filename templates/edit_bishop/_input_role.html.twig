@@ -1,5 +1,4 @@
 {# parameter: role, base_id, base_input_name, current_idx #}
-{% import "util.html.twig" as util %}
 {% set base_id_role=base_id~'_role_'~current_idx %}
 {% set base_input_name_role=base_input_name~'[role]['~current_idx~']' %}
 {% set input_institution_width=35 %}
@@ -8,13 +7,13 @@
     {# insert/delete #}
     <div class="col-1 text-end pe-0">
 	{{ include('edit_bishop/_insert_delete.html.twig', {
+	    obj: role,
 	    base_id_delete: base_id_role,
 	    base_name_delete: base_input_name_role })
 	}}
     </div>
     <div class="col-11">
 	{# store date sort key hidden #}
-	{{ role.dateSortKey }}{{ util.message("Hier beginnt ein Block für Amtsangaben") }}
 	<input type="text"
 	       class="d-none"
 	       id="{{ base_id_role }}_dateSortKey"

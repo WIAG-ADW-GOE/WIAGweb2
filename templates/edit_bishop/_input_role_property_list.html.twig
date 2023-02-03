@@ -1,4 +1,3 @@
-{% set placeholder_index='_____' %} {# TODO delete if edit-save cycle is established 2023-01-30 #}
 <div data-controller="insert input-state"
      data-insert-url-value="{{ path('edit_bishop_new_role_property', {
 			    base_id: base_id_role,
@@ -13,17 +12,6 @@
 	    current_idx: loop.index0
 	}) }}
     {% endfor %}
-    {% if false %} {# TODO delete if edit-save cycle is established 2023-01-30 #}
-    {# the server ignores the template if it contains no data #}
-    <div class="pe-1 d-none"
-	 data-insert-target="templateHide">
-	{{ include('edit_bishop/_input_role_property.html.twig', {
-	    base_id: base_id_role,
-	    base_input_name: base_input_name_role,
-	    current_idx: placeholder_index,
-	}) }}
-    </div>
-    {% endif %}
     <div class="input-group input-group-sm mt-1">
 	<button class="btn btn-sm btn-outline-secondary"
 		       type="button"

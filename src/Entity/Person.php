@@ -203,9 +203,9 @@ class Person {
         return $this->id;
     }
 
-
     public function setItem($item) {
         $this->item = $item;
+        $this->id = $item->getId();
         return $this;
     }
 
@@ -769,38 +769,20 @@ class Person {
         return $this;
     }
 
-    public function toArray() {
-        $arr = array();
-        $arr['id'] = $this->id;
-        $arr['item'] = $this->item->toArray();
-        $arr['role'] = UtilService::nestedArray($this->role);
-        // add empty form, if there is no role
-        if (count($arr['role']) < 1) {
-            $role = new PersonRole();
-            $arr['role'][] = $role->toArray();
+    public function addEmptyDefaultElements() {
+        $role_list = $this->getRole();
+        if (count($role_list) < 1) {
+            $role_list->add(new PersonRole());
         }
-        $arr['givenname'] = $this->givenname;
-        $arr['prefixname'] = $this->prefixname;
-        $arr['familyname'] = $this->familyname;
-        $arr['comment'] = $this->comment;
-        $arr['notePerson'] = $this->notePerson;
-        $arr['noteName'] = $this->noteName;
-        $arr['dateBirth'] = $this->dateBirth;
-        $arr['dateDeath'] = $this->dateDeath;
-        $arr['id'] = $this->id;
-        $arr['religiousOrderId'] = $this->religiousOrderId;
-        $p = $this->religiousOrder;
-        $arr['religiousOrder'] = $p ? $p->toArray() : null;
-        $p = $this->givennameVariants ?? array();
-        $arr['givennameVariants'] = implode(", ", iterator_to_array($p));
-        $p = $this->familynameVariants ?? array();
-        $arr['familynameVariants'] = implode(", ", iterator_to_array($p));
+        $reference_list = $this->getItem()->getReference();
+        if (count($reference_list) < 1) {
+            $reference_list->add(new ItemReference());
+        }
 
-        $arr['describe'] = $this->describe();
-        $arr['describeRole'] = $this->describeRole(2);
-
-        return $arr;
+        $id_external_list = $this->getItem()->getIdExternal();
+        if (count($id_external_list) < 1) {
+            $id_external_list->add(new IdExternal());
+        }
     }
-
 
 }

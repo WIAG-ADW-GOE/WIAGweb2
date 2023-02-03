@@ -51,14 +51,14 @@
 		<input type="text" id="{{ base_id }}_givennamevariants"
 		       name="{{ base_input_name}}[givennameVariants]"
 		       class="form-control wiag-input"
-		       value="{{ person.givennameVariants }}"
+		       value="{{ person.formGivennameVariants }}"
 		       spellcheck="false"
 		       aria-label="Vornamenvarianten">
 		<span class="input-group-text ms-2">Familiennamenvarianten</span>
 		<input type="text" id="{{ base_id }}_familynamevariants"
 		       name="{{ base_input_name}}[familynameVariants]"
 		       class="form-control wiag-input"
-		       value="{{ person.familynameVariants }}"
+		       value="{{ person.formFamilynameVariants }}"
 		       spellcheck="false"
 		       aria-label="Familiennamenvarianten">
 		{% if  intern_collapsable %}

@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 {# status and name #}
 {{ include('edit_bishop/_input_status.html.twig') }}
 {{ include('edit_bishop/_input_name.html.twig') }}
@@ -45,5 +46,9 @@
 		   name="{{ base_input_name }}[item][changedBy]"
 		   value="{{ person.item.changedBy }}">
 	</div>
+	{# store data into the form #}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], person.item.changedBy) }}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'dateChanged'], person.item.dateChanged|format_datetime()) }}
     </div>
 {% endif %}

@@ -53,6 +53,11 @@ class IdExternal
      */
     private $note;
 
+    /**
+     * hold form data
+     */
+    private $deleteFlag;
+
     public function setItem($item): self {
         $this->item = $item;
         return $this;
@@ -158,14 +163,17 @@ class IdExternal
         return $this;
     }
 
-    public function toArray(): array {
-        $arr = array();
-        $arr['id'] = $this->id;
-        $arr['itemId'] = $this->itemId;
-        $arr['authority'] = $this->authority; // obj
-        $arr['url'] = $this->getUrl();
-        $arr['value'] = $this->value;
-
-        return $arr;
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
     }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
+
 }

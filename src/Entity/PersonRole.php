@@ -141,6 +141,11 @@ class PersonRole
      */
     private $dateSortKey;
 
+    /**
+     * store form data
+     */
+    private $deleteFlag;
+
     public function __construct() {
         $this->roleProperty = new ArrayCollection();
     }
@@ -436,6 +441,18 @@ class PersonRole
         return $this;
     }
 
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
     public function roleDisplayName(): ?string {
         $name = null;
         if($this->role && $this->role->getName()) {
@@ -510,28 +527,6 @@ class PersonRole
         }
 
         return $description;
-    }
-
-    public function toArray() {
-        $arr = array();
-
-        $arr['id'] = $this->id;
-        $arr['dateSortKey'] = $this->dateSortKey;
-        $arr['roleName'] = $this->roleName;
-        $arr['role'] = $this->role; // obj!
-        $arr['roleDisplayName'] = $this->roleDisplayName();
-        $arr['institution'] = $this->institution; // obj!
-        $arr['institutionDisplayName'] = $this->institutionDisplayName();
-        $arr['diocese'] = $this->diocese; // obj!
-        $arr['dioceseName'] = $this->dioceseName;
-        $arr['dioceseDisplayName'] = $this->dioceseDisplayName();
-        $arr['dateBegin'] = $this->dateBegin;
-        $arr['dateEnd'] = $this->dateEnd;
-        $arr['uncertain'] = $this->uncertain;
-        $arr['note'] = $this->note;
-        $arr['roleProperty'] = UtilService::nestedArray($this->roleProperty);
-
-        return $arr;
     }
 
 }

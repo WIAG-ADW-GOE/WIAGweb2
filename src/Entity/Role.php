@@ -73,4 +73,5 @@ class Role
 
         return $this;
     }
+
 }

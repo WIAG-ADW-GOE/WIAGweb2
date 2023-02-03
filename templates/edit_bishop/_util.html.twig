@@ -1,0 +1,8 @@
+{% macro hiddenInput(base_id, base_input_name, path, value) %}
+    <input type="text"
+	   id="{{ base_id }}_{{ path|join('_') }}"
+	   class="d-none"
+	   name="{{ base_input_name }}[{{ path|join('][') }}]"
+	   value="{{ value }}">
+
+{% endmacro %}
