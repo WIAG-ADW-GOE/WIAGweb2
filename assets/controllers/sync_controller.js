@@ -4,7 +4,6 @@ export default class extends Controller {
     static targets = ['copy', 'check', 'fill', 'toggle'];
     static values = {
 	fillUrl: String,
-	fillIndex: String,
 	toggleFirst: String,
 	toggleSecond: String,
     };

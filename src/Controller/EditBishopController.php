@@ -334,7 +334,7 @@ class EditBishopController extends AbstractController {
     }
 
     /**
-     * @return template for new role
+     * @return template for new item property
      *
      * @Route("/edit/bischof/new-property", name="edit_bishop_new_property")
      */

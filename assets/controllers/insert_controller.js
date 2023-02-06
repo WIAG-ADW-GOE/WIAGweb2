@@ -17,7 +17,7 @@ export default class extends Controller {
      * insert empty form for office data etc.
      */
     async insert(event) {
-	console.log('insert#append');
+	console.log('insert#insert');
 	// this changes after the ajax call!?
 	const currentTarget = event.currentTarget;
 
@@ -38,6 +38,8 @@ export default class extends Controller {
 
 	const wrap = document.createElement("div");
 	wrap.innerHTML = await response.text();
+
+	// console.log(this.pointValue);
 
 	if (this.pointValue == "last") {
 	    this.element.appendChild(wrap.firstElementChild);

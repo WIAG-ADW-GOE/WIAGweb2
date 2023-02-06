@@ -1,4 +1,3 @@
-{% set index_placeholder = '_____' %}
 <div class="ps-0">
     <form id ="{{ editFormId }}"
 	  name="{{ editFormId }}"
@@ -29,35 +28,30 @@
 	    </div>
 	    <div class="col">
 		<button type="button"
-			name="formType"
-			value="list"
-			data-action="submit-form#submit"
-			class="btn btn-primary btn-sm float-end">Speichern</button>
+			      name="formType"
+			      value="list"
+			      data-action="submit-form#submit"
+			      class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
 	<div class="row mx-0">
 	    <div class="col-12">
 		<div data-controller="insert"
-		     data-insert-placeholder-value="{{ index_placeholder }}">
+		     data-insert-url-value="{{ path('edit_reference_new_reference', {
+					    edit_form_id: editFormId,
+					    item_type_id: itemTypeId,
+					    }) }}"
+		     data-insert-point-value="lastButOne">
 		    {% for ref in referenceList %}
 			{{ include('edit_reference/_item.html.twig', {
-			    index: loop.index,
 			    reference: ref,
+			    current_idx: loop.index,
 			}) }}
 		    {% endfor %}
-		    {# the server ignores the template if it contains no data #}
-		    <div class="pe-1 d-none"
-			 data-insert-target="template">
-			{{ include('edit_reference/_item.html.twig', {
-			    index: index_placeholder,
-			    reference: emptyReference,
-			    newEntry: true,
-			}) }}
-		    </div>
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
 				type="button"
-				       data-action="insert#insertTemplate"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+				data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
 		    </div>
 		</div>
 	    </div>
