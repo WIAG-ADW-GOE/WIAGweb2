@@ -5,21 +5,12 @@
 			    }) }}"
      data-insert-hide-trigger-value="yes"
      data-insert-point-value="last">
-    {% for idext in person.item.idExternal %}
-	{% if idext.authority and idext.authority.urltype == 'Internal Identifier' %}
-	    {{ include('edit_bishop/_show_id_internal.html.twig', {
-		base_id: base_id,
-		base_input_name: base_input_name,
-		current_idx: loop.index0,
-		is_last: loop.last,
-	    }) }}
-	{% else %}
-	    {{ include('edit_bishop/_input_id_external.html.twig', {
-		base_id: base_id,
-		base_input_name: base_input_name,
-		current_idx: loop.index0,
-		is_last: loop.last,
-	    }) }}
-	{% endif %}
+    {% for idext in person.item.idExternalExternal %}
+	{{ include('edit_bishop/_input_id_external.html.twig', {
+	    base_id: base_id,
+	    base_input_name: base_input_name,
+	    current_idx: loop.index0,
+	    is_last: loop.last,
+	}) }}
     {% endfor %}
 </div>

@@ -167,27 +167,6 @@ class EditBishopController extends AbstractController {
             $this->itemTypeId,
             $form_data,
         );
-        // dd($person_list);
-
-        foreach ($person_list as $person) {
-            $person->addEmptyDefaultElements();
-        }
-
-        $form_display_type = $request->request->get('formType');
-
-        $template = "";
-        if ($form_display_type == 'list') {
-            $template = 'edit_bishop/_list.html.twig';
-        } else {
-            $template = 'edit_bishop/new_bishop.html.twig';
-        }
-
-        return $this->renderEditElements($template, [
-            'personList' => $person_list,
-            'count' => count($person_list),
-            'mergeStep' => false,
-            'formType' => $form_display_type,
-        ]);
 
         $error_flag = false;
         foreach($person_list as $person) {
@@ -199,54 +178,47 @@ class EditBishopController extends AbstractController {
         $form_display_type = $request->request->get('formType');
 
         /* save data */
-        $personRepository = $this->entityManager->getRepository(Person::class);
         if (!$error_flag) {
-
-            // otherwise attributes for roles cannot be removed
-            // $this->entityManager->clear();
-
-            // save changes to the database
-            // any object that was retrieved via Doctrine is stored to the database
-            // fill $person_list
-            $person_list = $this->editService->saveFormData(
-                $person_list,
-                $this->itemTypeId,
-                $form_data,
-                $current_user_id,
-            );
-
-            $this->entityManager->flush();
-
-            // read all entries from the database to update IDs
-            $id_list = UtilService::validPropertyList($person_list, 'id', 'positive');
-            $query_result = $personRepository->findList($id_list);
-            // 2023-01-26 why?
-            // $person_list = array();
-            // foreach ($query_result as $person) {
-            //     $person_list[$person->getId()] = $person;
-            // }
-            $person_list = $query_result;
-
+            $current_user_id = $this->getUser()->getId();
+            $personRepository = $this->entityManager->getRepository(Person::class);
             $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
-
-            foreach ($person_list as $person) {
+            foreach ($person_list as $key => $person) {
                 if ($person->getItem()->getFormIsEdited()) {
-                    // update table name_lookup
-                    $nameLookupRepository->update($person);
+                    $person_id = $person->getId();
+                    if ($person_id == 0) { // new entry
+                        $this->editService->initMetaData($person, $this->itemTypeId, $current_user_id);
+                        $this->entityManager->persist($person);
+                        $this->entityManager->flush();
+                        $person_id = $person->getItem()->getId();
+                    }
+                    // read complete tree to perform deletions if necessary
+                    $query_result = $personRepository->findList([$person_id]);
+                    $target = $query_result[0];
+                    $this->editService->update($target, $person, $current_user_id);
+                    $nameLookupRepository->update($target);
+                    $target->getItem()->setFormIsEdited(0);
+
+                    $person_list[$key] = $target; // show
                 }
             }
 
-            // reset edit flag
-            foreach ($person_list as $person) {
-                $person->getItem()->setFormIsEdited(0);
-            }
+            $this->entityManager->flush();
+
 
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
-                $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
+                $person = $this->editService->makePerson($this->itemTypeId, $this->getUser()->getId());
+                // add empty elements for blank form sections
+                $person->addEmptyDefaultElements();
+                $person->getItem()->setFormIsExpanded(true);
                 $person_list[] = $person;
             }
 
+        }
+
+        // add empty elements for blank form sections
+        foreach ($person_list as $person) {
+            $person->addEmptyDefaultElements();
         }
 
         $template = "";
@@ -319,13 +291,15 @@ class EditBishopController extends AbstractController {
      */
     public function newBishop(Request $request) {
 
-        $person = $this->editService->makePersonScheme($this->itemTypeId, "", $this->getUser()->getId());
-        $person_list = array($person);
+        $person = $this->editService->makePerson($this->itemTypeId, $this->getUser()->getId());
+        // add empty elements for blank form sections
+        $person->addEmptyDefaultElements();
+        $person->getItem()->setFormIsExpanded(true);
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
         return $this->renderEditElements($template, [
-            'personList' => $person_list,
+            'personList' => array($person),
             'form' => null,
             'count' => 1,
             'mergeStep' => false,

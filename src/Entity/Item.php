@@ -215,6 +215,8 @@ class Item {
         $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
+        $this->idPublic = "";
+        $this->idInSource = "";
         $this->mergeStatus = 'original';
         $this->mergeParent = array();
     }
@@ -247,6 +249,16 @@ class Item {
 
     public function getIdExternal() {
         return $this->idExternal;
+    }
+
+    public function getIdExternalExternal() {
+        return $this->idExternal->filter(function($idext) {
+            $auth = $idext->getAuthority();
+            if (is_null($auth)) {
+                return true;
+            }
+            return ($auth->getUrlType() != "Internal Identifier");
+        });
     }
 
     /**

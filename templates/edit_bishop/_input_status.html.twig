@@ -29,10 +29,20 @@
 		<input type="text" id="{{ base_id }}_item_mergeParentId_{{ loop.index0 }}"
 		       name="{{ base_input_name}}[item][mergeParentId][{{ loop.index0 }}]"
 		       class="form-control form-control-sm d-none"
-		       style="max-width: 9em"
-		       value="{{ parent_item.id }}"
-		       aria-label="Zusammengesetzt aus">
+		       value="{{ parent_item.id  }}">
 	    {% endfor %}
+	    {# show parent IDs #}
+	    {% if person.item.mergeParent|length > 0 %}
+		<span class="input-group-text ms-2">zusammengesetzt aus</span>
+		{% for parent_item in person.item.mergeParent %}
+		    <input type="text"
+			   class="form-control form-control-sm"
+			   style="max-width: 5em"
+			   value="{{ parent_item.idInSource }}"
+			   disabled="disabled"
+			   aria-label="Zusammengesetzt aus">
+		{% endfor %}
+	    {% endif %}
 	    {% if formType == 'list' %}
 		{# dropdown "Aktion" #}
 		<div class="dropdown ms-auto">

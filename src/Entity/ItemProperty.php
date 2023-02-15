@@ -64,7 +64,6 @@ class ItemProperty
      */
     private $deleteFlag;
 
-
     public function getId(): ?int
     {
         return $this->id;

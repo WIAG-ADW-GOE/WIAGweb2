@@ -99,6 +99,10 @@ class EditPersonService {
 
         foreach($form_data as $data) {
             $id = $data['id'];
+            // skip blank forms
+            if ($id == 0 && !isset($data['item']['formIsEdited'])) {
+                continue;
+            }
             $item = new Item();
             $item->setId($id);
             $item->setItemTypeId($item_type_id);
@@ -117,8 +121,112 @@ class EditPersonService {
         return $person_list;
     }
 
+    /**
+     *
+     */
+    public function update($target, $person, $current_user_id) {
+
+        $this->copyItem($target, $person, $current_user_id);
+
+        // item property
+        $target_item = $target->getItem();
+        $target_prop = $target_item->getItemProperty();
+        $source_prop = $person->getItem()->getItemProperty();
+        $this->setItemAttributeList($target_item, $target_prop, $source_prop);
+        // reference
+        $target_ref = $target_item->getReference();
+        $source_ref = $person->getItem()->getReference();
+        $this->setItemAttributeList($target_item, $target_ref, $source_ref);
+        // id external
+        $target_ref = $target_item->getIdExternal();
+        $source_ref = $person->getItem()->getIdExternal();
+        $this->setItemAttributeList($target_item, $target_ref, $source_ref);
+
+        $this->copyCore($target, $person);
+        // name variants
+        $this->setPersonAttributeList(
+            $target,
+            $target->getGivennameVariants(),
+            $person->getGivennameVariants(),
+        );
+        $this->setPersonAttributeList(
+            $target,
+            $target->getFamilynameVariants(),
+            $person->getFamilynameVariants(),
+        );
+
+        // roles
+        $this->setRole($target, $person);
+
+        $expanded = $person->getItem()->getFormIsExpanded();
+        $target->getItem()->setFormIsExpanded($expanded);
+
+    }
 
     /**
+     * copy collection
+     */
+    private function setItemAttributeList($target, $target_list, $source_list) {
+
+        // - remove entries
+        // $target_ref = $target->getItem()->getReference();
+        foreach ($target_list as $t) {
+            $target_list->removeElement($t);
+            $t->setItem(null);
+            $this->entityManager->remove($t);
+        }
+
+        // - set new entries
+        foreach ($source_list as $i) {
+            if (!$i->getDeleteFlag()) {
+                $target_list->add($i);
+                $i->setItem($target);
+                $this->entityManager->persist($i);
+            }
+        }
+    }
+
+
+    private function copyItem($target, $source, $current_user_id) {
+        $field_list = [
+            'editStatus',
+            'commentDuplicate',
+            'mergeParent',
+        ];
+
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field);
+            $set_fnc = 'set'.ucfirst($field);
+            $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
+        }
+
+
+        $this->updateChangedMetaData($target->getItem(), $current_user_id);
+
+    }
+
+    private function copyCore($target, $source) {
+        $field_list = [
+            'givenname',
+            'familyname',
+            'prefixname',
+            'dateBirth',
+            'dateDeath',
+            'comment',
+            'noteName',
+            'notePerson',
+        ];
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field);
+            $set_fnc = 'set'.ucfirst($field);
+            $target->$set_fnc($source->$get_fnc());
+        }
+
+        return $target;
+    }
+
+    /**
+     * obsolete 2023-02-13 ?
      * save data in $form_data
      *
      * do not flush the entity manager
@@ -157,6 +265,7 @@ class EditPersonService {
     }
 
     /**
+     * 2023-02-14 obsolete
      * map content of $data to $obj_list
      */
     public function mapPerson($item_type_id, $person, $data, $user_id) {
@@ -286,6 +395,61 @@ class EditPersonService {
 
         return $person;
     }
+
+    /**
+     * move elements from $source_list to $target_list
+     */
+    private function setPersonAttributeList($target, $target_list, $source_list) {
+        foreach($target_list as $r) {
+            $target_list->removeElement($r);
+            $r->setPerson(null);
+            $this->entityManager->persist($r);
+        }
+
+        foreach($source_list as $s) {
+            $target_list->add($s);
+            $s->setPerson($target);
+            $this->entityManager->persist($s);
+        }
+    }
+
+    /**
+     * move role and role properties from $source to $target
+     */
+    private function setRole($target, $source) {
+
+        $target_list = $target->getRole();
+        foreach($target_list as $r) {
+            $r_prop = $r->getRoleProperty();
+            foreach($r_prop as $r_p) {
+                $r_prop->removeElement($r_p);
+                $this->entityManager->remove($r_p);
+            }
+            $target_list->removeElement($r);
+            $r->setPerson(null);
+            $this->entityManager->remove($r);
+        }
+
+        $source_list = $source->getRole();
+        foreach($source_list as $s) {
+            if (!$s->getDeleteFlag()) {
+                $s_prop = $s->getRoleProperty();
+                foreach($s_prop as $s_p) {
+                    if (!$s_p->getDeleteFlag()) {
+                        $this->entityManager->persist($s_p);
+                    } else {
+                        $s_prop->removeElement($s_p);
+                    }
+                }
+                $target_list->add($s);
+                $s->setPerson($target);
+                $this->entityManager->persist($s);
+            }
+        }
+    }
+
+
+
 
     // 2022-02-02 split mapping and mark as persistent?!
     private function mapNameVariants_persist($person, $data) {
@@ -812,16 +976,18 @@ class EditPersonService {
      * create Person object
      */
     public function makePerson($item_type_id, $user_wiag_id) {
-
         $item = Item::newItem($item_type_id, $user_wiag_id);
         $person = Person::newPerson($item);
+        $edit_status_default = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
+        $person->getItem()->setEditStatus($edit_status_default);
+
         return $person;
     }
 
     /**
      * create person object and persist
      */
-    public function makePersonPersist($item_type_id, $user_wiag_id) {
+    public function makePersonPersist_legacy($item_type_id, $user_wiag_id) {
 
         $item = Item::newItem($item_type_id, $user_wiag_id);
         $person = Person::newPerson($item);
@@ -846,6 +1012,34 @@ class EditPersonService {
     }
 
     /**
+     * create person object and persist
+     */
+    public function initMetaData($person, $item_type_id, $user_wiag_id) {
+
+        $item = $person->getItem();
+        $item->setItemTypeId($item_type_id);
+        $person->setItemTypeId($item_type_id);
+
+        $now_date = new \DateTimeImmutable('now');
+        $item->setCreatedBy($user_wiag_id);
+        $item->setDateCreated($now_date);
+
+        // redundant but neccessary to meet DB constraints
+        $this->updateChangedMetaData($item, $user_wiag_id);
+
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
+        $id_in_source = strval($id_in_source);
+        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
+
+        $item->setIdInSource($id_in_source);
+        $item->setIdPublic($id_public);
+
+        return $person;
+    }
+
+
+    /**
      * updateMergeMetaData($form_data, $user_wiag_id)
      *
      * find merged entities; update merge meta data
@@ -862,26 +1056,16 @@ class EditPersonService {
     }
 
     /**
-     * updateEditMetaData($item, $edit_status, $user_wiag_id, $child_id, $new_flag = false)
+     * updateEditMetaData($item, $edit_status, $user_wiag_id, $child_id)
      *
      * update meta data for $item
      */
-    public function updateEditMetaData($item, $edit_status, $user_wiag_id, $new_flag = false) {
+    public function updateChangedMetaData($item, $user_wiag_id) {
 
         $now_date = new \DateTimeImmutable('now');
         $item->setChangedBy($user_wiag_id);
         $item->setDateChanged($now_date);
-
-        // new item
-        if ($new_flag) {
-            $item->setCreatedBy($user_wiag_id);
-            $item->setDateCreated($now_date);
-        }
-
-        $item->setEditStatus($edit_status);
-
         return($item);
-
     }
 
     /**
@@ -900,7 +1084,7 @@ class EditPersonService {
         }
     }
 
-        /**
+    /**
      * map content of $data to $obj_list
      */
     public function mapAndValidatePerson($person, $data) {
@@ -920,8 +1104,12 @@ class EditPersonService {
             $item->$set_fnc(isset($data['item'][$key]));
         }
 
+        // copy meta data even if they are still empty (new entry)
+        $item->setIdPublic($data['item']['idPublic']);
+        $item->setIdInSource($data['item']['idInSource']);
+
         // item: status values, editorial notes
-        $key_list = ['editStatus', 'changedBy', 'commentDuplicate', 'idInSource', 'idPublic'];
+        $key_list = ['editStatus', 'changedBy', 'commentDuplicate'];
         UtilService::setByKeys($item, $data['item'], $key_list);
 
 
@@ -932,7 +1120,6 @@ class EditPersonService {
         }
 
         // person
-
         $key_list = ['givenname',
                      'prefixname',
                      'familyname',
@@ -1021,11 +1208,13 @@ class EditPersonService {
 
         // - remove entries
         $person_gnv = $person->getGivennameVariants();
-        foreach ($person_gnv as $gnv_remove) {
-            $person_gnv->removeElement($gnv_remove);
-            $gnv_remove->setPerson(null);
-            $this->entityManager->remove($gnv_remove);
-        }
+
+        // person is always a new object 2023-02-13
+        // foreach ($person_gnv as $gnv_remove) {
+        //     $person_gnv->removeElement($gnv_remove);
+        //     $gnv_remove->setPerson(null);
+        //     $this->entityManager->remove($gnv_remove);
+        // }
 
         // - set new entries
         // -- ';' is an alternative separator
@@ -1045,11 +1234,13 @@ class EditPersonService {
         $person->setFormFamilynameVariants($fnv_data);
 
         // - remove entries
+        // person is always a new object 2023-02-13
+
         $person_fnv = $person->getFamilynameVariants();
-        foreach ($person_fnv as $fnv_remove) {
-            $person_fnv->removeElement($fnv_remove);
-            $fnv_remove->setPerson(null);
-        }
+        // foreach ($person_fnv as $fnv_remove) {
+        //     $person_fnv->removeElement($fnv_remove);
+        //     $fnv_remove->setPerson(null);
+        // }
 
         // - set new entries
         $fnv_list = explode(',', $fnv_data);
@@ -1288,7 +1479,6 @@ class EditPersonService {
     }
 
     private function mapItemProperty($person, $data) {
-        // $itemPropertyRepository = $this->entityManager->getRepository(ItemProperty::class);
 
         $id = $data['id'];
         $item = $person->getItem();
@@ -1303,8 +1493,8 @@ class EditPersonService {
             return null;
         } else {
             $itemProperty = new ItemProperty();
-            $item->getItemProperty()->add($itemProperty);
             $itemProperty->setItem($item);
+            $item->getItemProperty()->add($itemProperty);
         }
 
         // set data
