@@ -102,6 +102,11 @@ class EditPersonService {
         $source_ref = $person->getItem()->getIdExternal();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
 
+        // merging?
+        if ($target_item->getMergeStatus() == 'merging') {
+            $this->updateMergeMetaData($target, $person);
+        }
+
         $this->copyCore($target, $person);
         // name variants
         $this->setPersonAttributeList(
@@ -114,6 +119,10 @@ class EditPersonService {
             $target->getFamilynameVariants(),
             $person->getFamilynameVariants(),
         );
+        // errors (relevant for warnings)
+        foreach($person->getInputError() as $e) {
+            $target->getInputError()->add($e);
+        }
 
         // roles
         $this->setRole($target, $person);
@@ -147,11 +156,14 @@ class EditPersonService {
     }
 
 
+    /**
+     * copy (validated) data from $source to $target
+     */
     private function copyItem($target, $source, $current_user_id) {
         $field_list = [
             'editStatus',
             'commentDuplicate',
-            'mergeParent',
+            'mergeStatus',
         ];
 
         foreach ($field_list as $field) {
@@ -344,23 +356,34 @@ class EditPersonService {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
         $id_in_source = strval($id_in_source);
-        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
-
         $item->setIdInSource($id_in_source);
+
+        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
         $item->setIdPublic($id_public);
 
         return $person;
     }
 
     /**
-     * updateMergeMetaData($form_data, $user_wiag_id)
+     * updateMergeMetaData($person)
      *
      * find merged entities; update merge meta data
      */
-    public function updateMergeMetaData($person, $user_wiag_id) {
+    public function updateMergeMetaData($target, $person) {
+        $parent_id = $person->getItem()->getMergeParent();
+
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+
+        $parent_list = array();
+        foreach($parent_id as $p_id) {
+            $parent_list[] = $itemRepository->find($p_id);
+        }
+
+        // child
+        $target->getItem()->setMergeStatus('child');
+        $target->getItem()->setIdPublic($parent_list[0]->getIdPublic());
         // parents
-        $parent_list = $person->getItem()->getMergeParent();
-        $child_id = $person->getId();
+        $child_id = $target->getId();
         foreach ($parent_list as $item) {
             $item->setMergedIntoId($child_id);
             $item->setMergeStatus('parent');
@@ -422,13 +445,19 @@ class EditPersonService {
         $item->setIdInSource($data['item']['idInSource']);
 
         // item: status values, editorial notes
-        $key_list = ['editStatus', 'changedBy', 'commentDuplicate'];
+        $key_list = ['editStatus', 'mergeStatus', 'changedBy', 'commentDuplicate'];
         UtilService::setByKeys($item, $data['item'], $key_list);
 
+        $collect_merge_parent = array();
+        if (array_key_exists('mergeParent', $data['item'])) {
+            foreach ($data['item']['mergeParent'] as $parent_id) {
+                $collect_merge_parent[] = $parent_id;
+            }
+        }
+        $item->setMergeParent($collect_merge_parent);
 
         if (isset($data['item']['dateChanged'])) {
             $dateChanged = new \DateTimeImmutable($data['item']['dateChanged']);
-            // dd($dateChanged);
             $item->setDateChanged($dateChanged);
         }
 
@@ -673,7 +702,7 @@ class EditPersonService {
                 $diocese = $dioceseRepository->findOneByName($inst_name);
                 if (is_null($diocese)) {
                     $msg = "Das Bistum '{$inst_name}' ist nicht in der Liste der Bistümer eingetragen.";
-                    $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $input_error->add(new InputError('role', $msg, 'warning'));
                     $role->setDiocese(null);
                     $role->setDioceseName($inst_name);
                 } else {
@@ -689,7 +718,7 @@ class EditPersonService {
                 ]);
                 if (count($query_result) < 1) {
                     $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
-                    $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+                    $inputError->add(new InputError('role', $msg, 'warning'));
                     $role->setInstitution(null);
                     $role->setInstitutionName($inst_name);
                 } else {

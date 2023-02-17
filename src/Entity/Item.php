@@ -12,9 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-
 /**
- * @ORM\Entity(repositoryClass=ItemRepository::class)x
+ * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
 class Item {
     // redundant to table item_type (simpler, faster than a query)

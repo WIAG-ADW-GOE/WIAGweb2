@@ -688,11 +688,16 @@ class Person {
         return $key;
     }
 
-    public function merge($parent_list, $parent_person_list) {
-        $this->getItem()->setMergeParent($parent_list);
+    /**
+     * read data from $parent_person_list
+     */
+    public function merge($parent_person_list) {
+        $parent_item_list = array();
         foreach ($parent_person_list as $p) {
+            $parent_item_list[] = $p->getItem();
             $this->mergeData($p);
         }
+        $this->getItem()->setMergeParent($parent_item_list);
         return $this;
     }
 

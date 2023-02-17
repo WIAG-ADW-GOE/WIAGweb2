@@ -186,10 +186,12 @@ class EditBishopController extends AbstractController {
                 if ($person->getItem()->getFormIsEdited()) {
                     $person_id = $person->getId();
                     if ($person_id == 0) { // new entry
-                        $this->editService->initMetaData($person, $this->itemTypeId, $current_user_id);
-                        $this->entityManager->persist($person);
+                        // start out with a new object to avoid cascade errors
+                        $person_new = $this->editService->makePerson($this->itemTypeId, $current_user_id);
+                        $this->editService->initMetaData($person_new, $this->itemTypeId, $current_user_id);
+                        $this->entityManager->persist($person_new);
                         $this->entityManager->flush();
-                        $person_id = $person->getItem()->getId();
+                        $person_id = $person_new->getItem()->getId();
                     }
                     // read complete tree to perform deletions if necessary
                     $query_result = $personRepository->findList([$person_id]);
@@ -198,16 +200,15 @@ class EditBishopController extends AbstractController {
                     $nameLookupRepository->update($target);
                     $target->getItem()->setFormIsEdited(0);
 
-                    $person_list[$key] = $target; // show
+                    $person_list[$key] = $target; // show updated object
                 }
             }
 
             $this->entityManager->flush();
 
-
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
-                $person = $this->editService->makePerson($this->itemTypeId, $this->getUser()->getId());
+                $person = $this->editService->makePerson($this->itemTypeId, $current_user_id);
                 // add empty elements for blank form sections
                 $person->addEmptyDefaultElements();
                 $person->getItem()->setFormIsExpanded(true);
@@ -231,7 +232,7 @@ class EditBishopController extends AbstractController {
         return $this->renderEditElements($template, [
             'personList' => $person_list,
             'count' => count($person_list),
-            'mergeStep' => false,
+            'mergeStep' => false, // TODO 2023-02-15 drop?
             'formType' => $form_display_type,
         ]);
 
@@ -258,7 +259,7 @@ class EditBishopController extends AbstractController {
             'authBaseUrlList' => $auth_base_url_list,
             'itemPropertyTypeList' => $item_property_type_list,
             'rolePropertyTypeList' => $role_property_type_list,
-            'mergeStep' => false,
+            'mergeStep' => false, // TODO 2023-02-15 drop?
         ]);
 
         return $this->renderForm($template, $param_list_combined);
@@ -302,7 +303,7 @@ class EditBishopController extends AbstractController {
             'personList' => array($person),
             'form' => null,
             'count' => 1,
-            'mergeStep' => false,
+            'mergeStep' => false, // TODO 2023-02-15 drop?
         ]);
 
     }
@@ -493,7 +494,7 @@ class EditBishopController extends AbstractController {
                 'personList' => $person_list,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
-                'mergeSelectFormId' => 'merge_select',
+                'mergeSelectFormId' => 'merge_select', // 2023-02-15 drop?
             ];
 
         }
@@ -521,16 +522,11 @@ class EditBishopController extends AbstractController {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
 
-        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
-
-        // create new person
+        // get parent data
         $parent_list = $itemRepository->findById($first);
-
         $id_in_source = $parent_list[0]->getIdInSource();
-        $wiag_user_id = $this->getUser()->getId();
-        $person = $this->editService->makePersonScheme($this->itemTypeId, $id_in_source, $wiag_user_id);
 
-        $second = $itemRepository->findMergeCandidate($second_id, $item_type_id);
+        $second = $itemRepository->findMergeCandidate($second_id, $this->itemTypeId);
         if (is_null($second)) {
             $msg = "Zu {$second_id} wurde keine Person gefunden.";
             $person->getInputError()->add(new InputError("status", $msg));
@@ -547,17 +543,31 @@ class EditBishopController extends AbstractController {
             $parent_list);
         $parent_person_list = $personRepository->findList($id_list);
 
-        $person->merge($parent_list, $parent_person_list);
+        // create new person
+        $current_user = $this->getUser()->getId();
+        $person = $this->editService->makePerson($this->itemTypeId, $current_user);
+
+        $person->merge($parent_person_list);
+        $person->getItem()->setMergeStatus('merging');
+
+        // set public id
+        $person->getItem()->setIdPublic($parent_list[0]->getIdPublic());
+        $person->addEmptyDefaultElements();
+
+        $person->getItem()->setFormIsExpanded(true);
+        $person->getItem()->setFormIsEdited(true);
+
         // child should be findable by its parents IDs
-        $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $authority = $authorityRepository->find(Authority::ID['WIAG-ID']);
-        $item = $person->getItem();
-        $id_external_list = $item->getIdExternal();
-        foreach ($parent_person_list as $parent) {
-            $value = $parent->getItem()->getIdPublic();
-            $id_external = $this->editService->makeIdExternal($item, $authority, $value);
-            $id_external_list->add($id_external);
-        }
+        // 2023-02-15 use item.merged_into_id instead
+        // $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        // $authority = $authorityRepository->find(Authority::ID['WIAG-ID']);
+        // $item = $person->getItem();
+        // $id_external_list = $item->getIdExternal();
+        // foreach ($parent_person_list as $parent) {
+        //     $value = $parent->getItem()->getIdPublic();
+        //     $id_external = $this->editService->makeIdExternal($item, $authority, $value);
+        //     $id_external_list->add($id_external);
+        // }
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
@@ -565,7 +575,7 @@ class EditBishopController extends AbstractController {
             'personList' => array($person),
             'form' => null,
             'count' => 1,
-            'mergeStep' => true,
+            'mergeStep' => true, // TODO 2023-02-15 drop ?
         ]);
 
     }
