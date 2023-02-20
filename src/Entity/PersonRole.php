@@ -146,8 +146,15 @@ class PersonRole
      */
     private $deleteFlag;
 
+    /**
+     * store form input errors
+     */
+    private $inputError;
+
+
     public function __construct() {
         $this->roleProperty = new ArrayCollection();
+        $this->inputError = new ArrayCollection();
     }
 
     public function getRoleProperty()
@@ -451,6 +458,16 @@ class PersonRole
         $this->deleteFlag = $deleteFlag;
 
         return $this;
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
     }
 
     public function roleDisplayName(): ?string {

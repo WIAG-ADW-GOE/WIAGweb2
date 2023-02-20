@@ -616,16 +616,15 @@ class EditPersonService {
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
-            $person->getInputError()->add(new InputError('role', $msg, 'error'));
+            $role->getInputError()->add(new InputError('role', $msg, 'error'));
         }
         $role->setRoleName($role_name);
 
         // set institution or diocese
-        $input_error = $person->getInputError();
         $inst_name = substr(trim($data['institution']), 0, 255);
         $inst_type_id = $data['instTypeId'];
         if ($inst_name != "") {
-            $this->setInstitution($role, $input_error, $inst_name, $inst_type_id);
+            $this->setInstitution($role, $inst_name, $inst_type_id);
         }
 
         // other fields
@@ -644,7 +643,7 @@ class EditPersonService {
                 $role->setNumDateBegin($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
-                $person->getInputError()->add(new InputError('role', $msg));
+                $role->getInputError()->add(new InputError('role', $msg));
             }
         } else {
             $role->setNumDateBegin(null);
@@ -659,7 +658,7 @@ class EditPersonService {
                 $role->setNumDateEnd($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
-                $person->getInputError()->add(new InputError('role', $msg));
+                $role->getInputError()->add(new InputError('role', $msg));
             }
         } else {
             $role->setNumDateEnd(null);
@@ -684,15 +683,24 @@ class EditPersonService {
             }
         }
 
+        // copy input errors
+        if ($data['deleteFlag'] != "delete") {
+            foreach($role->getInputError() as $r_e) {
+                $person->getInputError()->add($r_e);
+            }
+        }
+
         return $role;
     }
 
     /**
      *
      */
-    private function setInstitution($role, $input_error, $inst_name, $inst_type_id) {
+    private function setInstitution($role, $inst_name, $inst_type_id) {
         $dioceseRepository = $this->entityManager->getRepository(Diocese::class);
         $institutionRepository = $this->entityManager->getRepository(Institution::class);
+
+        $inst_type_id = intval($inst_type_id);
 
         $institution = null;
         $diocese = null;
@@ -704,7 +712,7 @@ class EditPersonService {
                 $diocese = $dioceseRepository->findOneByName($inst_name);
                 if (is_null($diocese)) {
                     $msg = "Das Bistum '{$inst_name}' ist nicht in der Liste der Bistümer eingetragen.";
-                    $input_error->add(new InputError('role', $msg, 'warning'));
+                    $role->getInputError()->add(new InputError('role', $msg, 'warning'));
                     $role->setDiocese(null);
                     $role->setDioceseName($inst_name);
                 } else {
@@ -716,11 +724,11 @@ class EditPersonService {
                 $role->setDioceseName(null);
                 $query_result = $institutionRepository->findBy([
                     'name' => $inst_name,
-                    'itemTypeId' => $inst_type_id
                 ]);
+                // dd($inst_name, $inst_type_id, $query_result);
                 if (count($query_result) < 1) {
                     $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
-                    $inputError->add(new InputError('role', $msg, 'warning'));
+                    $role->getInput_error()->add(new InputError('role', $msg, 'warning'));
                     $role->setInstitution(null);
                     $role->setInstitutionName($inst_name);
                 } else {
