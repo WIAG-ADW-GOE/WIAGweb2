@@ -63,7 +63,7 @@
 			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
 			    </li>
 			{% endif %}
-			{% if person.item.mergeParent is defined and not mergeStep %}
+			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"
 				data-submit-confirm-title-value="Eintrag aufteilen?"
 				data-submit-confirm-button-id-value="split_{{ person.id }}"

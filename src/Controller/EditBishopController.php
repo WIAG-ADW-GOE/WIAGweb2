@@ -116,7 +116,6 @@ class EditBishopController extends AbstractController {
                 'count' => $count,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
-                'mergeStep' => false,
             ];
         } else {
             $template_params = [
@@ -231,7 +230,6 @@ class EditBishopController extends AbstractController {
         return $this->renderEditElements($template, [
             'personList' => $person_list,
             'count' => count($person_list),
-            'mergeStep' => false, // TODO 2023-02-15 drop?
             'formType' => $form_display_type,
         ]);
 
@@ -258,7 +256,6 @@ class EditBishopController extends AbstractController {
             'authBaseUrlList' => $auth_base_url_list,
             'itemPropertyTypeList' => $item_property_type_list,
             'rolePropertyTypeList' => $role_property_type_list,
-            'mergeStep' => false, // TODO 2023-02-15 drop?
         ]);
 
         return $this->renderForm($template, $param_list_combined);
@@ -302,7 +299,6 @@ class EditBishopController extends AbstractController {
             'personList' => array($person),
             'form' => null,
             'count' => 1,
-            'mergeStep' => false, // TODO 2023-02-15 drop?
         ]);
 
     }
@@ -520,6 +516,9 @@ class EditBishopController extends AbstractController {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
 
+        // create new person
+        $current_user = $this->getUser()->getId();
+        $person = $this->editService->makePerson($this->itemTypeId, $current_user);
 
         // get parent data
         $parent_list = $itemRepository->findById($first);
@@ -527,7 +526,7 @@ class EditBishopController extends AbstractController {
 
         $second = $itemRepository->findMergeCandidate($second_id, $this->itemTypeId);
         if (is_null($second)) {
-            $msg = "Zu {$second_id} wurde keine Person gefunden.";
+            $msg = "Zu {$second_id} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
             $person->getInputError()->add(new InputError("status", $msg));
         } else {
             $parent_list[] = $second;
@@ -542,9 +541,6 @@ class EditBishopController extends AbstractController {
             $parent_list);
         $parent_person_list = $personRepository->findList($id_list);
 
-        // create new person
-        $current_user = $this->getUser()->getId();
-        $person = $this->editService->makePerson($this->itemTypeId, $current_user);
 
         $person->merge($parent_person_list);
         $person->getItem()->setMergeStatus('merging');
@@ -564,7 +560,6 @@ class EditBishopController extends AbstractController {
             'personList' => array($person),
             'form' => null,
             'count' => 1,
-            'mergeStep' => true, // TODO 2023-02-15 drop ?
         ]);
 
     }
@@ -615,7 +610,6 @@ class EditBishopController extends AbstractController {
             'personList' => $person_list,
             'form' => null,
             'count' => count($person_list),
-            'mergeStep' => false,
         ]);
 
     }

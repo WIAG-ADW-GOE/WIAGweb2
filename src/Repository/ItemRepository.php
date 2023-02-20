@@ -757,42 +757,6 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * setMergeParent($item_list)
-     *
-     * set merge ancestors
-     * obsolete 2023-02-20
-     */
-    public function setMergeParent_legacy($item_list) {
-
-        $id_list = array_map(function($v){
-            return $v->getId();
-        }, $item_list);
-
-        $qb = $this->createQueryBuilder('i')
-                   ->select('i')
-                   ->andWhere('i.mergedIntoId in (:item_list)')
-                   ->setParameter('item_list', $item_list);
-
-        $query = $qb->getQuery();
-
-        $result = $query->getResult();
-
-        $n = 0;
-        if (count($result) > 0) {
-            foreach ($item_list as $item) {
-                $n += 1;
-                $id = $item->getId();
-                $parent_list = array_filter($result, function($el) use ($id) {
-                    return ($el->getMergedIntoId() == $id);
-                });
-                $item->setMergeParent($parent_list);
-            }
-        }
-
-        return $n;
-    }
-
-    /**
      * search field id_public and id_external.value
      */
     public function findByIdPublicOrIdExternal($id) {

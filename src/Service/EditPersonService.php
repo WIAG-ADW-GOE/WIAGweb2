@@ -424,6 +424,8 @@ class EditPersonService {
      * map content of $data to $obj_list
      */
     public function mapAndValidatePerson($person, $data) {
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+
         // item
         $item = $person->getItem();
 
@@ -451,7 +453,7 @@ class EditPersonService {
         $collect_merge_parent = array();
         if (array_key_exists('mergeParent', $data['item'])) {
             foreach ($data['item']['mergeParent'] as $parent_id) {
-                $collect_merge_parent[] = $parent_id;
+                $collect_merge_parent[] = $itemRepository->find($parent_id);
             }
         }
         $item->setMergeParent($collect_merge_parent);
