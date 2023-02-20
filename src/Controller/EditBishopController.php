@@ -72,7 +72,6 @@ class EditBishopController extends AbstractController {
         $form->handleRequest($request);
         $model = $form->getData();
 
-
         $person_list = array();
         if ($form->isSubmitted() && $form->isValid() && $model->isValid()) {
 
@@ -557,17 +556,7 @@ class EditBishopController extends AbstractController {
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormIsEdited(true);
 
-        // child should be findable by its parents IDs
-        // 2023-02-15 use item.merged_into_id instead
-        // $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        // $authority = $authorityRepository->find(Authority::ID['WIAG-ID']);
-        // $item = $person->getItem();
-        // $id_external_list = $item->getIdExternal();
-        // foreach ($parent_person_list as $parent) {
-        //     $value = $parent->getItem()->getIdPublic();
-        //     $id_external = $this->editService->makeIdExternal($item, $authority, $value);
-        //     $id_external_list->add($id_external);
-        // }
+        // child should be findable by its parents IDs : use item.merged_into_id
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
@@ -595,14 +584,14 @@ class EditBishopController extends AbstractController {
         // set status values for parents and child
         $person_list = array();
         if (!is_null($item)) {
-            $itemRepository->setMergeParent(array($item));
+            $parent_list = $itemRepository->findBy(['mergedIntoId' => $item->getId()]);
+            // dd ($parent_list);
 
             $item->setIsDeleted(1);
             $item->setMergeStatus('orphan');
             $item->setIsOnline(0);
 
             $online_status = Item::ITEM_TYPE[$item->getItemTypeId()]['online_status'];
-            $parent_list = $item->getMergeParent();
             $id_list = array();
             foreach($parent_list as $parent_item) {
                 if ($parent_item->getEditStatus() == $online_status) {

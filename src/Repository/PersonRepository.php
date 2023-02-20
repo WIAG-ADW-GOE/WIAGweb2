@@ -100,7 +100,6 @@ class PersonRepository extends ServiceEntityRepository {
             $itemRepository->setSibling($person);
         }
 
-
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 

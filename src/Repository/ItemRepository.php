@@ -178,9 +178,16 @@ class ItemRepository extends ServiceEntityRepository
 
         $someid = $model->someid;
         if ($someid) {
+            // search for idPublic in merging ancestors
             $qb->leftjoin('i.idExternal', 'ixt')
+               ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'ip1.mergedIntoId = i.id')
+               ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
+               ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
                ->andWhere("i.idPublic LIKE :q_id ".
-                          "OR ixt.value LIKE :q_id")
+                          "OR ixt.value LIKE :q_id ".
+                          "OR ip1.idPublic LIKE :q_id ".
+                          "OR ip2.idPublic LIKE :q_id ".
+                          "OR ip3.idPublic LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
         }
 
@@ -620,22 +627,6 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * 2022-07-21 obsolete?
-     */
-    // public function addReferenceVolumes($item) {
-    //     $em = $this->getEntityManager();
-    //     # add reference volumes (combined key)
-    //     $repository = $em->getRepository(ReferenceVolume::class);
-    //     foreach ($item->getReference() as $reference) {
-    //         $itemTypeId = $reference->getItemTypeId();
-    //         $referenceId = $reference->getReferenceId();
-    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-    //         $reference->setReferenceVolume($referenceVolume);
-    //     }
-    //     return $item;
-    // }
-
-    /**
      * countPriestUtOrder($model)
      *
      * return array of religious orders
@@ -769,8 +760,9 @@ class ItemRepository extends ServiceEntityRepository
      * setMergeParent($item_list)
      *
      * set merge ancestors
+     * obsolete 2023-02-20
      */
-    public function setMergeParent($item_list) {
+    public function setMergeParent_legacy($item_list) {
 
         $id_list = array_map(function($v){
             return $v->getId();
