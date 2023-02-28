@@ -61,48 +61,23 @@
 		       value="{{ person.formFamilynameVariants }}"
 		       spellcheck="false"
 		       aria-label="Familiennamenvarianten">
-		{% if  intern_collapsable %}
-		    {% if person.notePerson or person.noteName or person.item.itemProperty|length > 0%}
-			{% set expanded = true %}
-			<button class="btn btn-sm ms-1 pt-0 align-middle"
-				type="button"
-				data-bs-toggle="collapse"
-				data-bs-target="#div_{{ base_id }}_notePerson"
-				aria-expanded="true"
-				aria-controls="div_{{ base_id }}_notePerson"
-				data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
-		    {% else %}
-			{% set expanded = false %}
-			<button class="btn btn-sm ms-1 pt-0 align-middle"
-				type="button"
-				data-bs-toggle="collapse"
-				data-bs-target="#div_{{ base_id }}_notePerson"
-				aria-expanded="false"
-				aria-controls="div_{{ base_id }}_notePerson"
-				data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
-		    {% endif %}
-		{% else %}
-		    {% set expanded = true %}
-		{% endif %}
 	    </div>
-	    <div class="ms-4 collapse {% if expanded %}show{% endif %}" id ="div_{{ base_id }}_notePerson">
-		<div class="input-group input-group-sm mt-1 ">
-		    <span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
-		    <input type="text"
-			   id="{{ base_id }}_noteName"
-			   name="{{ base_input_name }}[noteName]"
-			   class="form-control form-control-sm wiag-input"
-			   value="{{ person.noteName }}">
-		</div>
-		<div class="input-group input-group-sm mt-1">
-		    <span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
-		    <textarea id="{{ base_id }}_notePerson"
-			      style="height: 3rem"
-			      name="{{ base_input_name }}[notePerson]"
-			      class="form-control form-control-sm wiag-input">{{ person.notePerson }}</textarea>
-		</div>
-		{{ include('edit_bishop/_input_property_list.html.twig') }}
+	    <div class="input-group input-group-sm mt-1 ">
+		<span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
+		<input type="text"
+		       id="{{ base_id }}_noteName"
+		       name="{{ base_input_name }}[noteName]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.noteName }}">
 	    </div>
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
+		<textarea id="{{ base_id }}_notePerson"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[notePerson]"
+			  class="form-control form-control-sm wiag-input">{{ person.notePerson }}</textarea>
+	    </div>
+	    {{ include('edit_bishop/_input_property_list.html.twig') }}
 	</div>
     </div>
 </div>

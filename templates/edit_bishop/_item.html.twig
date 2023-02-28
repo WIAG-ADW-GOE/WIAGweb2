@@ -1,4 +1,3 @@
-{% set intern_collapsable=false %}
 {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
 {% set base_id=editFormId~'_'~index %}
 {% set base_input_name=editFormId~'['~index~']' %}
@@ -17,7 +16,9 @@
 	{# body #}
 	<div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
 	     data-controller="sync"
-	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
+	     data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
+	     data-sync-fill-url-value="{{ path('edit_bishop_item_content', { id: person.id, index: index }) }}"
+	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
 	     id={{ "body#{person.id}" }}>
 	    {# insert display status (hidden) #}
 	    <input type="checkbox"
@@ -27,9 +28,12 @@
 		   {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
 		   data-sync-target="check">
 	    {# turn on loading via ajax #}
-	    {% if expanded or true %}
-		{{ include('edit_bishop/_item_content.html.twig') }}
-	    {% endif %}
+	    <div data-sync-target="fill"
+		 id="{{ base_id }}_content">
+		{% if expanded %}
+		    {{ include('edit_bishop/_item_content.html.twig') }}
+		{% endif %}
+	    </div>
 	</div>
     </div>
 </div>

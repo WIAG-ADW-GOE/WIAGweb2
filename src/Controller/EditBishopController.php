@@ -35,6 +35,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class EditBishopController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
+    const EDIT_FORM_ID = 'edit_bishop_edit_form';
 
     private $editService;
     private $itemTypeId;
@@ -155,8 +156,7 @@ class EditBishopController extends AbstractController {
      */
     public function save(Request $request) {
 
-        $edit_form_id = 'edit_bishop_edit_form';
-        $form_data = $request->request->get($edit_form_id);
+        $form_data = $request->request->get(self::EDIT_FORM_ID);
 
         /* map/validate form */
         // dump($form_data);
@@ -236,7 +236,6 @@ class EditBishopController extends AbstractController {
     }
 
     private function renderEditElements($template, $param_list = array()) {
-        $edit_form_id = 'edit_bishop_edit_form';
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -251,7 +250,7 @@ class EditBishopController extends AbstractController {
 
         $param_list_combined = array_merge($param_list, [
             'menuItem' => 'edit-menu',
-            'editFormId' => $edit_form_id,
+            'editFormId' => self::EDIT_FORM_ID,
             'userWiagRepository' => $userWiagRepository,
             'authBaseUrlList' => $auth_base_url_list,
             'itemPropertyTypeList' => $item_property_type_list,
@@ -282,7 +281,7 @@ class EditBishopController extends AbstractController {
     }
 
     /**
-     * display query form for bishops; handle query
+     * display edit form for new bishop
      *
      * @Route("/edit/bischof/new", name="edit_bishop_new")
      */
@@ -301,6 +300,29 @@ class EditBishopController extends AbstractController {
             'count' => 1,
         ]);
 
+    }
+
+    /**
+     *
+     * @Route("/edit/bischof/item-content/{id}/{index}", name="edit_bishop_item_content")
+     */
+    public function _itemContent(Request $request,
+                                 int $id,
+                                 int $index) {
+
+        $person_repository = $this->entityManager->getRepository(Person::class);
+        $query_result = $person_repository->findList([$id]);
+        $person = $query_result[0];
+        $person->addEmptyDefaultElements();
+
+        return $this->renderEditElements("edit_bishop/_item_content.html.twig", [
+            'person' => $person,
+            'base_id' => self::EDIT_FORM_ID.'_'.$index,
+            'base_input_name' => self::EDIT_FORM_ID.'['.$index.']',
+            'itemTypeId' => $this->itemTypeId,
+            'index' => $index,
+            'formType' => 'list',
+        ]);
     }
 
     /**

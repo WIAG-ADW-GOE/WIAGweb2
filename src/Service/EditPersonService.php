@@ -55,25 +55,31 @@ class EditPersonService {
      */
     public function mapFormData($item_type_id, $form_data) {
 
+        $person_repository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
 
         foreach($form_data as $data) {
             $id = $data['id'];
             // skip blank forms
+            $person = null;
             if ($id == 0 && !isset($data['item']['formIsEdited'])) {
                 continue;
+            } elseif (!isset($data['item']['formIsEdited'])) {
+                $query_result = $person_repository->findList([$id]);
+                $person = $query_result[0];
+            } else {
+                $item = new Item();
+                $item->setId($id);
+                $item->setItemTypeId($item_type_id);
+                $person = new Person();
+                $person->setItem($item); // sets ID
+
+                $this->mapAndValidatePerson($person, $data);
+
+                // set form collapse state
+                $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
+                $person->getItem()->setFormIsExpanded($expanded_param);
             }
-            $item = new Item();
-            $item->setId($id);
-            $item->setItemTypeId($item_type_id);
-            $person = new Person();
-            $person->setItem($item); // sets ID
-
-            $this->mapAndValidatePerson($person, $data);
-
-            // set form collapse state
-            $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
-            $person->getItem()->setFormIsExpanded($expanded_param);
 
             $person_list[] = $person;
         }

@@ -10,6 +10,7 @@
 	 data-toggle-arrow-img-open-value="down"
 	 data-toggle-arrow-img-closed-value="right"
 	 data-sync-fill-url-value="{{ fill_url }}"
+	 data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
 	{# headline with collapse button#}
 	{{ include('edit_reference/_item_headline.html.twig') }}

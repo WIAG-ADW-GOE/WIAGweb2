@@ -3,12 +3,11 @@ import { Controller } from 'stimulus';
 export default class extends Controller {
     static targets = ['copy', 'check', 'fill', 'toggle'];
     static values = {
+	fillStatus: String,
 	fillUrl: String,
 	toggleFirst: String,
 	toggleSecond: String,
     };
-
-    is_filled = false;
 
     connect() {
 	// console.log('sync connected')
@@ -41,12 +40,14 @@ export default class extends Controller {
 	console.log('sync#fill');
 	// console.log(this.fillTarget.id);
 
-	if (!this.is_filled && this.fillUrlValue != "") {
+	console.log(this.fillStatusValue);
+
+	if (this.fillStatusValue == 'empty' && this.fillUrlValue != "") {
 	    const response = await fetch(this.fillUrlValue);
 	    const new_html = await response.text();
 
 	    this.fillTarget.innerHTML = new_html;
-	    this.is_filled = true;
+	    this.fillStatusValue = 'filled';
 	}
 
     }
