@@ -421,24 +421,6 @@ class Person {
         return $this->birthplace;
     }
 
-    /**
-     * get external id for `authority_id`
-     */
-    // 2022-09-26 obsolete ? see $item->getIdExternalByAuthorityId
-    // public function getIdExternal(int $authorityId) {
-    //     $item = $this->getItem();
-    //     if (is_null($item)) return null;
-    //     $idExternal = $item->getIdExternal();
-    //     if (is_null($idExternal) || count($idExternal) == 0) return null;
-
-    //     foreach ($idExternal as $id) {
-    //         if ($id->getAuthorityId() == $authorityId) {
-    //             return $id->getValue();
-    //         }
-    //     }
-    //     return null;
-    // }
-
     public function getItemTypeId(): ?int
     {
         return $this->itemTypeId;
