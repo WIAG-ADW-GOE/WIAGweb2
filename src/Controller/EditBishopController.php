@@ -106,8 +106,10 @@ class EditBishopController extends AbstractController {
             $person_list = $personRepository->findList($id_list);
 
             // add empty role, reference and id external if not present
+            $authorityRepository = $this->entityManager->getRepository(Authority::class);
+            $auth_list = $authorityRepository->findList(Authority::coreIDs());
             foreach ($person_list as $person) {
-                $person->addEmptyDefaultElements();
+                $person->addEmptyDefaultElements($auth_list);
             }
 
             $template_params = [
@@ -208,7 +210,9 @@ class EditBishopController extends AbstractController {
             if ($form_display_type == "new_entry") {
                 $person = $this->editService->makePerson($this->itemTypeId, $current_user_id);
                 // add empty elements for blank form sections
-                $person->addEmptyDefaultElements();
+                $authorityRepository = $this->entityManager->getRepository(Authority::class);
+                $auth_list = $authorityRepository->findList(Authority::coreIDs());
+                $person->addEmptyDefaultElements($auth_list);
                 $person->getItem()->setFormIsExpanded(true);
                 $person_list[] = $person;
             }
@@ -216,8 +220,10 @@ class EditBishopController extends AbstractController {
         }
 
         // add empty elements for blank form sections
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::coreIDs());
         foreach ($person_list as $person) {
-            $person->addEmptyDefaultElements();
+            $person->addEmptyDefaultElements($auth_list);
         }
 
         $template = "";
@@ -240,7 +246,12 @@ class EditBishopController extends AbstractController {
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
-        $auth_base_url_list = $authorityRepository->baseUrlList(array_values(Authority::ID));
+        $auth_query_result = $authorityRepository->findList(array_values(Authority::ID));
+
+        $auth_base_url_list = array();
+        foreach($auth_query_result as $auth) {
+            $auth_base_url_list[$auth->getId()] = $auth->getUrl();
+        }
 
         // property types
         $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
@@ -289,7 +300,9 @@ class EditBishopController extends AbstractController {
 
         $person = $this->editService->makePerson($this->itemTypeId, $this->getUser()->getId());
         // add empty elements for blank form sections
-        $person->addEmptyDefaultElements();
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $person->addEmptyDefaultElements($auth_list);
         $person->getItem()->setFormIsExpanded(true);
 
         $template = 'edit_bishop/new_bishop.html.twig';
@@ -313,7 +326,9 @@ class EditBishopController extends AbstractController {
         $person_repository = $this->entityManager->getRepository(Person::class);
         $query_result = $person_repository->findList([$id]);
         $person = $query_result[0];
-        $person->addEmptyDefaultElements();
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $person->addEmptyDefaultElements($auth_list);
 
         return $this->renderEditElements("edit_bishop/_item_content.html.twig", [
             'person' => $person,
@@ -569,7 +584,9 @@ class EditBishopController extends AbstractController {
 
         // set public id
         $person->getItem()->setIdPublic($parent_list[0]->getIdPublic());
-        $person->addEmptyDefaultElements();
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $person->addEmptyDefaultElements($auth_list);
 
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormIsEdited(true);

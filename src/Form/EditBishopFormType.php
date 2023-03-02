@@ -95,11 +95,11 @@ class EditBishopFormType extends AbstractType
                 'choices' => $options['status_choices'],
             ])
             ->add('commentDuplicate', TextType::class, [
-                'label' => 'Identisch mit',
+                'label' => 'identisch mit',
                 'required' => false,
             ])
             ->add('comment', TextType::class, [
-                'label' => 'Kommentar Person',
+                'label' => 'Kommentar (red.)',
                 'required' => false,
             ])
             ->add('dateCreated', TextType::class, [

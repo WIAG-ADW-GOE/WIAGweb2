@@ -1,3 +1,4 @@
+{{ include('edit_bishop/_input_id_external_essential.html.twig') }}
 <div data-controller="insert"
      data-insert-url-value="{{ path('edit_bishop_new_idexternal', {
 			    base_id: base_id,
@@ -5,8 +6,9 @@
 			    }) }}"
      data-insert-hide-trigger-value="yes"
      data-insert-point-value="last">
-    {% for idext in person.item.idExternalExternal %}
+    {% for id_ext in person.item.idexternalnoncore %}
 	{{ include('edit_bishop/_input_id_external.html.twig', {
+	    idext: id_ext,
 	    base_id: base_id,
 	    base_input_name: base_input_name,
 	    current_idx: loop.index0,

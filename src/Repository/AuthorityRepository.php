@@ -48,6 +48,18 @@ class AuthorityRepository extends ServiceEntityRepository
     }
     */
 
+
+    public function findByNameAndIDRange($name, $id_max) {
+        return $this->createQueryBuilder('a')
+                    ->andWhere('a.urlNameFormatter = :name')
+                    ->andWhere('a.id < :id_max')
+                    ->setParameter('name', $name)
+                    ->setParameter('id_max', $id_max)
+                    ->getQuery()
+                    ->getResult();
+    }
+
+
     /**
      * set authority for external IDs in $person_list
      */
@@ -98,7 +110,7 @@ class AuthorityRepository extends ServiceEntityRepository
     /**
      *
      */
-    public function baseUrlList($id_list) {
+    public function baseUrlList_legacy($id_list) {
         $qb = $this->createQueryBuilder('a')
                    ->select('a.id, a.url')
                    ->andWhere('a.id in (:auth_id_list)')
@@ -118,19 +130,52 @@ class AuthorityRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-03-02 obsolete?
+     */
+    public function baseUrlList($id_list) {
+        $qb = $this->createQueryBuilder('a')
+                   ->select('a.id, a.url')
+                   ->andWhere('a.id in (:auth_id_list)')
+                   ->setParameter('auth_id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $query_result = $query->getResult();
+
+        $result = array();
+        foreach($query_result as $r) {
+            $result[$r['id']] = $r['url'];
+        }
+
+        return $result;
+    }
+
+    public function findList($id_list) {
+        $qb = $this->createQueryBuilder('a')
+                   ->andWhere('a.id in (:auth_id_list)')
+                   ->setParameter('auth_id_list', $id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestUrlName($name, $hint_size) {
+    public function suggestUrlName($name, $hint_size, $exclude_ids) {
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')
                          ->select("DISTINCT a.urlNameFormatter AS suggestion")
                          ->andWhere('a.urlNameFormatter LIKE :name')
                          ->addOrderBy('a.urlNameFormatter')
-                         ->setParameter('name', '%'.$name.'%');
+                         ->setParameter('name', '%'.$name.'%')
+                         ->andWhere('a.id not in (:exclude_ids)')
+                         ->andWhere('a.id < 1000')
+                         ->setParameter('exclude_ids', $exclude_ids);
 
         $qb->setMaxResults($hint_size);
 
         $query = $qb->getQuery();
+
         $suggestions = $query->getResult();
 
         return $suggestions;

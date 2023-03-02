@@ -10,6 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Authority {
 
+    const CORE = [
+        'GND',
+        'GS',
+        'Wikidata',
+        'Wikipedia',
+    ];
+
     const ID = [
         'GND' => 1,
         'Wikidata' => 2,
@@ -19,6 +26,12 @@ class Authority {
         'GS' => 200,
         'World Historical Gazetteer' => 54,
     ];
+
+    static public function coreIDs() {
+        return array_map(function($v) {
+            return self::ID[$v];
+        }, self::CORE);
+    }
 
     /**
      * @ORM\Id

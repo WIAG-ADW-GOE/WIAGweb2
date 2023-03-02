@@ -774,7 +774,7 @@ class Person {
         return $this;
     }
 
-    public function addEmptyDefaultElements() {
+    public function addEmptyDefaultElements($auth_list) {
         $role_list = $this->getRole();
         if (count($role_list) < 1) {
             $role_list->add(new PersonRole());
@@ -784,9 +784,40 @@ class Person {
             $reference_list->add(new ItemReference());
         }
 
-        $id_external_list = $this->getItem()->getIdExternal();
-        if (count($id_external_list) < 1) {
-            $id_external_list->add(new IdExternal());
+        $id_ext_list = $this->getItem()->getIdExternal();
+
+        // placeholder for all essential authorities
+        $id_ext_e_list = $this->getItem()->getIdExternalCore();
+
+        $core_ids = Authority::coreIDs();
+
+        foreach ($core_ids as $auth_id) {
+            $flag_found = false;
+            foreach ($id_ext_list as $id_ext_e) {
+                if ($id_ext_e->getAuthority()->getId() == $auth_id) {
+                    $flag_found = true;
+                    break;
+                }
+            }
+            if (!$flag_found) {
+                // dd($auth_id, $auth_list);
+                $auth = null;
+                foreach($auth_list as $a) {
+                    if ($a->getId() == $auth_id) {
+                        $auth = $a;
+                        break;
+                    }
+                }
+                $id_ext_new = new IdExternal();
+                $id_ext_new->setAuthority($auth);
+                $id_ext_list->add($id_ext_new);
+            }
+        }
+
+        // there should be at least one non-essential external id
+        $id_ext_ne_list = $this->getItem()->getIdExternalNonCore();
+        if (count($id_ext_ne_list) < 1) {
+            $id_ext_list->add(new IdExternal());
         }
     }
 
