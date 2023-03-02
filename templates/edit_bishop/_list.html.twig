@@ -11,19 +11,22 @@
 		{# disable submit via enter-key #}
 		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
 		{# toggle collapse button #}
-		<button class="btn btn-sm btn-secondary float-start"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target=".multi-collapse"
-			aria-expanded="false"
-			aria-controls="{{ body_id_list }}"
-			{{ stimulus_controller('toggle-arrow', {
-			    state: true,
-			    imgOpen: 'down',
-			    imgClosed: 'right'
-			}) }}
-			data-action="toggle-arrow#toggle"
-			data-value="down">öffnen/schließen</button>
+		{# observe limit of 1000 input fields #}
+		{% if personList|length <= 40 %}
+		    <button class="btn btn-sm btn-secondary float-start"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target=".multi-collapse"
+			    aria-expanded="false"
+			    aria-controls="{{ body_id_list }}"
+			    {{ stimulus_controller('toggle-arrow', {
+				state: true,
+				imgOpen: 'down',
+				imgClosed: 'right'
+			    }) }}
+			    data-action="toggle-arrow#toggle"
+			    data-value="down">öffnen/schließen</button>
+		    {% endif %}
 	    </div>
 	    <div class="col">
 		{% if formType == "new_entry" %}

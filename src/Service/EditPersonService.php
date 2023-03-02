@@ -67,6 +67,9 @@ class EditPersonService {
             } elseif (!isset($data['item']['formIsEdited'])) {
                 $query_result = $person_repository->findList([$id]);
                 $person = $query_result[0];
+                // set form collapse state
+                $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
+                $person->getItem()->setFormIsExpanded($expanded_param);
             } else {
                 $item = new Item();
                 $item->setId($id);
@@ -888,7 +891,7 @@ class EditPersonService {
             return $id_external;
             } else {
             $authority_name = $data["urlName"];
-            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
+            $auth_query = $authorityRepository->findByNameAndIDRange($authority_name, 1000);
             if (!is_null($auth_query) && count($auth_query) > 0) {
                 $authority = $auth_query[0];
                 // drop base URL if present
@@ -909,7 +912,8 @@ class EditPersonService {
                     $person->getInputError()->add(new InputError('reference', $msg));
                 }
             } else {
-                $msg = "Keine Institution für '".$authority_name."' gefunden.";
+                dd($data);
+                $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
                 $person->getInputError()->add(new InputError('reference', $msg));
             }
         }

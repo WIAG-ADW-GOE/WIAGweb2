@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ItemRepository;
 use App\Service\UtilService;
 use App\Entity\IdExternal;
+use App\Entity\Authority;
 use App\Entity\ItemReference;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -250,6 +251,9 @@ class Item {
         return $this->idExternal;
     }
 
+    /**
+     * 2023-03-01 obsolete?
+     */
     public function getIdExternalExternal() {
         return $this->idExternal->filter(function($idext) {
             $auth = $idext->getAuthority();
@@ -259,6 +263,43 @@ class Item {
             return ($auth->getUrlType() != "Internal Identifier");
         });
     }
+
+    /**
+     *
+     */
+    public function getIdExternalCore() {
+        $id_ext_list = $this->getIdExternalSorted();
+
+        $core_ids = Authority::coreIDs();
+
+        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+            $auth = $id_ext->getAuthority();
+            if (is_null($auth)) {
+                return false;
+            } else {
+                return array_search($auth->getId(), $core_ids) !== false;
+            }
+        });
+    }
+
+    /**
+     *
+     */
+    public function getIdExternalNonCore() {
+        $id_ext_list = $this->getIdExternalSorted();
+
+        $core_ids = Authority::coreIDs();
+
+        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+            $auth = $id_ext->getAuthority();
+            if (is_null($auth)) {
+                return true;
+            } else {
+                return array_search($auth->getId(), $core_ids) === false;
+            }
+        });
+    }
+
 
     /**
      * return sorted ArrayCollection
