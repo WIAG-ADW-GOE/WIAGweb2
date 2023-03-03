@@ -19,24 +19,6 @@ class ReferenceVolumeController extends AbstractController {
     const HINT_SIZE = 12;
 
     /**
-     * display a list of references by item type
-     * 2022-06-17 obsolete?
-     *
-     * @Route("/referenz/liste-type/{itemTypeId}", name="reference_list_type")
-     */
-    // public function listByType(int $itemTypeId, Request $request) {
-
-    //     $repository = $this->getDoctrine()
-    //                        ->getRepository(Item::class);
-
-    //     $result = $repository->referenceByItemType($itemTypeId);
-
-    //     return $this->renderForm('reference/list.html.twig', [
-    //         'references' => $result,
-    //     ]);
-    // }
-
-    /**
      * display the list of references
      *
      * @Route("/referenz/liste", name="reference_list")

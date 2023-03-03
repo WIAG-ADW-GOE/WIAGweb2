@@ -191,6 +191,14 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('q_id', '%'.$someid.'%');
         }
 
+        $reference = $model->reference;
+        if ($reference) {
+            $qb->leftjoin('i.reference', 'ref')
+               ->leftjoin('\App\Entity\ReferenceVolume', 'vol', 'WITH', 'vol.referenceId = ref.referenceId AND vol.itemTypeId = i.itemTypeId')
+               ->andWhere('vol.titleShort LIKE :q_ref')
+               ->setParameter('q_ref', '%'.$reference.'%');
+        }
+
         $isDeleted = $model->isDeleted;
         if ($isDeleted) {
             $qb->andWhere("i.isDeleted = 1");

@@ -128,7 +128,6 @@ class EditBishopController extends AbstractController {
             ];
         }
 
-
         $template = 'edit_bishop/query.html.twig';
         return $this->renderEditElements($template, $template_params);
 
