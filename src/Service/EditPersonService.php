@@ -117,6 +117,7 @@ class EditPersonService {
         }
 
         $this->copyCore($target, $person);
+
         // name variants
         $this->setPersonAttributeList(
             $target,

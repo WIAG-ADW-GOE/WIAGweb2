@@ -109,6 +109,7 @@ class EditBishopController extends AbstractController {
             $authorityRepository = $this->entityManager->getRepository(Authority::class);
             $auth_list = $authorityRepository->findList(Authority::coreIDs());
             foreach ($person_list as $person) {
+                $person->extractSeeAlso();
                 $person->addEmptyDefaultElements($auth_list);
             }
 
@@ -223,6 +224,7 @@ class EditBishopController extends AbstractController {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::coreIDs());
         foreach ($person_list as $person) {
+            $person->extractSeeAlso();
             $person->addEmptyDefaultElements($auth_list);
         }
 
@@ -309,6 +311,7 @@ class EditBishopController extends AbstractController {
 
         return $this->renderEditElements($template, [
             'personList' => array($person),
+            'title' => 'Neue Einträge',
             'form' => null,
             'count' => 1,
         ]);
@@ -328,6 +331,7 @@ class EditBishopController extends AbstractController {
         $person = $query_result[0];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
 
         return $this->renderEditElements("edit_bishop/_item_content.html.twig", [
@@ -586,22 +590,69 @@ class EditBishopController extends AbstractController {
         $person->getItem()->setIdPublic($parent_list[0]->getIdPublic());
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
 
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormIsEdited(true);
 
-        // child should be findable by its parents IDs : use item.merged_into_id
+        // child should be searchable via the IDs of its parents: use item.merged_into_id
 
         $template = 'edit_bishop/new_bishop.html.twig';
 
         return $this->renderEditElements($template, [
             'personList' => array($person),
+            'title' => 'Einträge zusammenführen',
             'form' => null,
             'count' => 1,
         ]);
 
     }
+
+    /**
+     * edit a single entry
+     *
+     * @Route("/edit/bischof/edit-single/{someid}", name="edit_bishop_edit_single")
+     */
+    public function editSingle(Request $request,
+                               $someid) {
+
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $model = new BishopFormModel;
+        $model->someid = $someid;
+
+        $online_only = false;
+        $limit = null;
+        $offset = null;
+        $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
+
+        $person_list = $personRepository->findList($id_all);
+
+        // add empty role, reference and id external if not present
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        foreach ($person_list as $person) {
+            $person->addEmptyDefaultElements($auth_list);
+        }
+
+        if (count($person_list) == 1) {
+            $person_list[0]->getItem()->setFormIsExpanded(1);
+        }
+
+
+        $template = 'edit_bishop/new_bishop.html.twig';
+
+        return $this->renderEditElements($template, [
+            'personList' => $person_list,
+            'form' => null,
+            'title' => null,
+            'count' => count($person_list)
+        ]);
+
+    }
+
 
     /**
      * split merged item, show parents in edit forms

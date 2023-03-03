@@ -162,23 +162,21 @@ class Person {
     /**
      * no DB-mapping
      * hold form input data
-     * obsolete? 2023-01-26
      */
     private $formGivennameVariants;
 
     /**
      * no DB-mapping
      * hold form input data
-     * obsolete? 2023-01-26
      */
     private $formFamilynameVariants;
 
     /**
      * no DB-mapping
-     * flag for new entry
+     * hold IDs of other persons
      */
-    // 2022-12-14 obsolete
-    //private $isNew;
+    private $seeAlso;
+
 
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
@@ -187,7 +185,8 @@ class Person {
         $this->birthPlace = new ArrayCollection();
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
-        # TODO $this-urlByType;
+        $this->seeAlso = new ArrayCollection();
+        # TODO $this->urlByType;
     }
 
     static public function newPerson(Item $item) {
@@ -538,6 +537,10 @@ class Person {
         return $this->inputError;
     }
 
+    public function getSeeAlso() {
+        return $this->seeAlso;
+    }
+
     /**
      * concatenate name variants and comments
      */
@@ -641,7 +644,6 @@ class Person {
         return $birth_info;
     }
 
-    // 2023-01-26 obsolete?
     public function hasError($min_level): bool {
         // the database is not aware of inputError and it's type
         if (is_null($this->inputError)) {
@@ -801,6 +803,23 @@ class Person {
         if (count($id_ext_ne_list) < 1) {
             $id_ext_list->add(new IdExternal());
         }
+    }
+
+    public function extractSeeAlso() {
+        if (is_null($this->comment)) {
+            return null;
+        }
+        $matches = array();
+        preg_match_all("/WIAG-Pers-EPISCGatz-([0-9]{3}[0-9]?[0-9]?-[0-9]{3})/",
+                       $this->comment,
+                       $matches);
+        if (is_null($this->seeAlso)) {
+            $this->seeAlso = new ArrayCollection();
+        }
+        foreach($matches[0] as $see_also) {
+            $this->seeAlso->add($see_also);
+        }
+
     }
 
 }

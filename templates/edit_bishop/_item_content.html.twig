@@ -24,6 +24,16 @@
 	</div>
     </div>
 </div>
+{% if person.seealso|length > 0 %}
+    <div class="row">
+	<div class="col-12">
+	    <span>siehe auch</span>
+	    {% for seealso in person.seealso %}
+		<span> <a href="{{ path('edit_bishop_edit_single', {'someid': seealso}) }}" target="_blank" rel="noopener">{{ seealso }}</a>{% if not loop.last %},{% endif %}</span>
+	    {% endfor %}
+	</div>
+    </div>
+{% endif %}
 {% set user=userWiagRepository.find(person.item.changedBy) %}
 <div class="row">
     <div class="col-12">
