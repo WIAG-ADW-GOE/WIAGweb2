@@ -910,12 +910,11 @@ class EditPersonService {
                 $separator = "|";
                 if (str_contains($value, $separator)) {
                     $msg = "Eine externe ID enthält '".$separator."'.";
-                    $person->getInputError()->add(new InputError('reference', $msg));
+                    $person->getInputError()->add(new InputError('external id', $msg));
                 }
             } else {
-                dd($data);
                 $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
-                $person->getInputError()->add(new InputError('reference', $msg));
+                $person->getInputError()->add(new InputError('external id', $msg));
             }
         }
 
