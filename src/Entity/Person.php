@@ -95,6 +95,12 @@ class Person {
     private $noteName;
 
     /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $academicTitle;
+
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $religiousOrderId;
@@ -289,6 +295,18 @@ class Person {
     public function setNoteName(?string $noteName): self
     {
         $this->noteName = $noteName;
+
+        return $this;
+    }
+
+    public function getAcademicTitle(): ?string
+    {
+        return $this->academicTitle;
+    }
+
+    public function setAcademicTitle(?string $title): self
+    {
+        $this->academicTitle = $title;
 
         return $this;
     }
@@ -547,6 +565,8 @@ class Person {
     public function commentLine($flag_names = true) {
 
         $academic_title = $this->combineProperty('academic_title');
+        $academic_title = "";
+        $academic_title = $this->combine('academicTitle');
 
         $str_gn_variants = null;
         $str_fn_variants = null;

@@ -198,6 +198,10 @@ class EditBishopController extends AbstractController {
                     $target = $query_result[0];
                     $this->editService->update($target, $person, $current_user_id);
                     $nameLookupRepository->update($target);
+                    // online?
+                    $online_status = Item::ITEM_TYPE[$this->itemTypeId]['online_status'];
+                    $is_online = $target->getItem()->getEditStatus() == $online_status ? 1 : 0;
+                    $target->getItem()->setIsOnline($is_online);
                     $target->getItem()->setFormIsEdited(0);
 
                     $person_list[$key] = $target; // show updated object

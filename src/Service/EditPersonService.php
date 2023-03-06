@@ -194,6 +194,7 @@ class EditPersonService {
             'dateDeath',
             'comment',
             'noteName',
+            'academicTitle',
             'notePerson',
         ];
         foreach ($field_list as $field) {
@@ -402,7 +403,7 @@ class EditPersonService {
     }
 
     /**
-     * updateEditMetaData($item, $edit_status, $user_wiag_id, $child_id)
+     * updateEditMetaData($item, $user_wiag_id)
      *
      * update meta data for $item
      */
@@ -481,6 +482,7 @@ class EditPersonService {
                      'dateDeath',
                      'comment',
                      'noteName',
+                     'academicTitle',
                      'notePerson'];
         UtilService::setByKeys($person, $data, $key_list);
 
