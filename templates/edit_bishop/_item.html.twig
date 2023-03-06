@@ -28,10 +28,17 @@
 		   {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
 		   data-sync-target="check">
 	    {# turn on loading via ajax #}
+	    <!-- regular style -->
 	    <div data-sync-target="fill"
 		 id="{{ base_id }}_content">
 		{% if expanded %}
 		    {{ include('edit_bishop/_item_content.html.twig') }}
+		{% else %}
+		    <div class="row">
+			<div class="col-12">
+			    <span><i class="mt-2 ms-2 fa-solid fa-rotate fa-spin"></i></span>
+			</div>
+		    </div>
 		{% endif %}
 	    </div>
 	</div>
