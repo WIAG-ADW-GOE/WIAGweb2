@@ -765,15 +765,19 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * search field id_public and id_external.value
+     * @return entry matching $id or having $id as a parent (merging)
      */
-    public function findByIdPublicOrIdExternal($id) {
+    public function findByIdPublicOrParent($id) {
         $qb = $this->createQueryBuilder('i')
-                   ->select('i')
-                   ->leftjoin('i.idExternal', 'idext')
-                   ->andWhere('i.idPublic = :id OR idext.value = :id')
+                   ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'ip1.mergedIntoId = i.id')
+                   ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
+                   ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
+                   ->andWhere("i.idPublic = :q_id ".
+                          "OR ip1.idPublic = :q_id ".
+                          "OR ip2.idPublic = :q_id ".
+                          "OR ip3.idPublic = :q_id")
                    ->andWhere('i.isOnline = 1')
-                   ->setParameter('id', $id);
+                   ->setParameter('q_id', $id);
 
         $query = $qb->getQuery();
         return $query->getResult();
