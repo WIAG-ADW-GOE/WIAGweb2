@@ -390,7 +390,7 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestBishopName($name, $hintSize, $edit_status = null, $only_online = true) {
+    public function suggestBishopName($name, $hintSize, $only_online = true, $edit_status = null) {
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".

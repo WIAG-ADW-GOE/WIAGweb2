@@ -232,8 +232,8 @@ class BishopController extends AbstractController {
                                  String $field) {
         $name = $request->query->get('q');
 
-        $edit_status = Item::ITEM_TYPE[$this->itemTypeId]['online_status'];
-        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+        $online_only = true;
+        return $this->handleAutocomplete($repository, $name, $field, $online_only);
 
     }
 
@@ -247,19 +247,19 @@ class BishopController extends AbstractController {
                                     String $field) {
         $name = $request->query->get('q');
 
-        $edit_status = null;
-        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+        $online_only = false;
+        return $this->handleAutocomplete($repository, $name, $field, $online_only);
     }
 
 
     private function handleAutocomplete($repository,
                                         $name,
                                         $field,
-                                        $edit_status) {
+                                        $online_only){
 
         $fnName = 'suggestBishop'.ucfirst($field);
         if ($field == 'name') {
-            $suggestions = $repository->$fnName($name, self::HINT_SIZE, $edit_status);
+            $suggestions = $repository->$fnName($name, self::HINT_SIZE, $online_only);
         } else {
             $suggestions = $repository->$fnName($name, self::HINT_SIZE);
         }

@@ -192,7 +192,6 @@ class Person {
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
-        # TODO $this->urlByType;
     }
 
     static public function newPerson(Item $item) {

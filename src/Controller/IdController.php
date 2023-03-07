@@ -74,7 +74,9 @@ class IdController extends AbstractController {
             return $this->$typeName($itemId, $format);
 
         } else {
-            throw $this->createNotFoundException('ID is nicht gültig: '.$id);
+            return $this->render('home\message.html.twig', [
+                'message' => 'Kein Eintrag für ID '.$id.' vorhanden.'
+            ]);
         }
 
 
