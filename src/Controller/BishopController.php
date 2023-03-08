@@ -167,7 +167,6 @@ class BishopController extends AbstractController {
             'hassuccessor' => $hassuccessor,
         ]);
 
-
     }
 
     /**

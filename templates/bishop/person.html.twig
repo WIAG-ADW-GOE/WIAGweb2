@@ -38,12 +38,16 @@
 	</div>
 	{% endset %}
 	<div class="container-fluid"
-	     data-controller="hide-on-input">
+	     data-controller="hide-on-input facet-state">
 	    <div class="row ms-2 col-12">
 		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	    </div>
 	    {% if form is defined %}
-		{{ form_start(form, {'attr': {'id':'form', 'action':path('bishop_query')} }) }}
+		{{ form_start(form, {'attr': {
+		    'id':'form',
+		    'action':path('bishop_query'),
+		    'data-action': 'input->facet-state#clearFacet',
+		} }) }}
 		    {{ include('bishop/_form_elements.html.twig', {hide_facets: true}) }}
 		    <div class="row mt-2 mx-2">
 			<div class="col-12">

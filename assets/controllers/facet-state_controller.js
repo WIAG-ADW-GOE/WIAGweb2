@@ -37,6 +37,7 @@ export default class extends Controller {
      * clear and collapse facets when a new search is prepared
      */
     clearFacet(event) {
+	console.log('facet-state#clearFacet');
 	// exclude page browsing
 	const target_name = event.target.getAttribute('name');
 	if (target_name == 'pageNumber') {
