@@ -285,6 +285,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.dioceseName IS NOT NULL");
 
         $this->addBishopConditions($qb, $model);
@@ -311,6 +312,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.roleName IS NOT NULL");
 
         $this->addBishopConditions($qb, $model);
