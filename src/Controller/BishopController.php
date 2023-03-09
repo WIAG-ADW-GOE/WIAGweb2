@@ -143,6 +143,7 @@ class BishopController extends AbstractController {
 
         // collect office data in Person[] from different sources
         $personRole = $itemRepository->getBishopOfficeData($person_id);
+        // set person
         $person = null;
         foreach($personRole as $person_loop) {
             if ($person_loop->getId() == $person_id) {

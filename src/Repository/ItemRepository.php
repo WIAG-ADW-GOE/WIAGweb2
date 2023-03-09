@@ -327,7 +327,6 @@ class ItemRepository extends ServiceEntityRepository
             $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
             $bishopGs = $this->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $item = array_merge($item, $bishopGs);
-
         }
 
         // get item from Domherrendatenbank
@@ -608,9 +607,10 @@ class ItemRepository extends ServiceEntityRepository
                    ->setParameter(':authId', $authId);
 
         if ($isonline) {
-            $online_status = Item::ITEM_TYPE[$itemTypeId]['online_status'];
-            $qb->andWhere('i.editStatus = :online_status')
-               ->setParameter('online_status', $online_status);
+            $qb->andWhere('i.isOnline = 1');
+            // $online_status = Item::ITEM_TYPE[$itemTypeId]['online_status'];
+            // $qb->andWhere('i.editStatus = :online_status')
+            //    ->setParameter('online_status', $online_status);
         }
 
         $query = $qb->getQuery();
