@@ -7,18 +7,18 @@
 			    type="button"
 			    data-bs-toggle="collapse"
 			    value="open"
-			    data-bs-target="#body{{ index }}"
+			    data-bs-target="#body{{ current_idx }}"
 			    aria-expanded="true"
-			    aria-controls={{ "body#{reference.id}" }}
+			    aria-controls="body#{{ current_idx }}"
 			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
 		{% else %}
 		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
 			    type="button"
 			    value="closed"
 			    data-bs-toggle="collapse"
-			    data-bs-target="#body{{ index }}"
+			    data-bs-target="#body{{ current_idx }}"
 			    aria-expanded="false"
-			    aria-controls="body#{{ index }}"
+			    aria-controls="body{{ current_idx }}"
 			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
 		{% endif %}
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
@@ -30,7 +30,7 @@
 		       data-action="click->sync#fill"
 		       {% if reference.formisedited %}checked="checked"{% endif %}>
 	    </span>
-	    {% set head_line=newEntry is defined ? "Neuer Eintrag" : reference.fullcitation %}
+	    {% set head_line= reference.fullcitation|length > 0 ? reference.fullcitation : "Neuer Eintrag" %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    {# insert internal id, reference_id and item_type_id into the form (hidden) #}
 	    <input type="text"
@@ -39,7 +39,7 @@
 		   class="form-control form-control-sm d-none"
 		   value="{{ reference.id }}">
 	    <input type="text"
-		   id="{{ base_id }}_id"
+		   id="{{ base_id }}_referenceId"
 		   name="{{ base_input_name }}[referenceId]"
 		   class="form-control form-control-sm d-none"
 		   value="{{ reference.referenceId }}">

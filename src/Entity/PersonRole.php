@@ -3,8 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\PersonRoleRepository;
-use Doctrine\ORM\Mapping as ORM;
+use App\Service\UtilService;
 
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -140,8 +141,20 @@ class PersonRole
      */
     private $dateSortKey;
 
+    /**
+     * store form data
+     */
+    private $deleteFlag;
+
+    /**
+     * store form input errors
+     */
+    private $inputError;
+
+
     public function __construct() {
         $this->roleProperty = new ArrayCollection();
+        $this->inputError = new ArrayCollection();
     }
 
     public function getRoleProperty()
@@ -433,6 +446,28 @@ class PersonRole
         $this->dateSortKey = $dateSortKey;
 
         return $this;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
     }
 
     public function roleDisplayName(): ?string {

@@ -3,11 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\ItemRepository;
+use App\Service\UtilService;
+use App\Entity\IdExternal;
+use App\Entity\Authority;
+use App\Entity\ItemReference;
+
 use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
 
 /**
  * @ORM\Entity(repositoryClass=ItemRepository::class)
@@ -99,12 +103,6 @@ class Item {
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $reference;
-
-    /**
-     * @ORM\OneToOne(targetEntity="Institution")
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
-    private $institution;
 
     /**
      * @ORM\Column(type="integer")
@@ -217,6 +215,8 @@ class Item {
         $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
+        $this->idPublic = "";
+        $this->idInSource = "";
         $this->mergeStatus = 'original';
         $this->mergeParent = array();
     }
@@ -250,6 +250,56 @@ class Item {
     public function getIdExternal() {
         return $this->idExternal;
     }
+
+    /**
+     * 2023-03-01 obsolete?
+     */
+    public function getIdExternalExternal() {
+        return $this->idExternal->filter(function($idext) {
+            $auth = $idext->getAuthority();
+            if (is_null($auth)) {
+                return true;
+            }
+            return ($auth->getUrlType() != "Internal Identifier");
+        });
+    }
+
+    /**
+     *
+     */
+    public function getIdExternalCore() {
+        $id_ext_list = $this->getIdExternalSorted();
+
+        $core_ids = Authority::coreIDs();
+
+        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+            $auth = $id_ext->getAuthority();
+            if (is_null($auth)) {
+                return false;
+            } else {
+                return array_search($auth->getId(), $core_ids) !== false;
+            }
+        });
+    }
+
+    /**
+     *
+     */
+    public function getIdExternalNonCore() {
+        $id_ext_list = $this->getIdExternalSorted();
+
+        $core_ids = Authority::coreIDs();
+
+        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+            $auth = $id_ext->getAuthority();
+            if (is_null($auth)) {
+                return true;
+            } else {
+                return array_search($auth->getId(), $core_ids) === false;
+            }
+        });
+    }
+
 
     /**
      * return sorted ArrayCollection
@@ -592,6 +642,9 @@ class Item {
         return $result;
     }
 
+    /**
+     * 2023-03-02 obsolete?
+     */
     public function getIdExternalByAuthority($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
         return $this->getIdExternalByAuthorityId($authorityId);
@@ -712,6 +765,5 @@ class Item {
         $this->idExternal = $merged_list;
 
     }
-
 
 }

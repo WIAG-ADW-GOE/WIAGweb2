@@ -1,5 +1,4 @@
 {# params: field width values #}
-{% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof'] %}
 <div class="row {{ indent_class }}">
     <div class="col-12">
 	<div class="d-flex flex-wrap"
@@ -74,6 +73,32 @@
     </div>
 </div>
 {# second row #}
+<div class="row mt-1 {{ indent_class }}">
+    <div class="col-12">
+	<div class="d-flex flex-wrap"
+	     data-action="input->hide-on-input#hideResults">
+	    {# name #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'titleShort', 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.reference) }}
+		{{ form_errors(form.reference) }}
+		{{ form_widget(form.reference, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_reference,
+			'class': 'wiag-input'
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
+	    </div>
+	</div>
+    </div>
+</div>
+{# third row #}
 <div class="row mt-1 {{ indent_class }}">
     <div class="col-12">
 	<div class="d-flex flex-wrap"

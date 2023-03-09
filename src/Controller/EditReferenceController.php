@@ -66,7 +66,7 @@ class EditReferenceController extends AbstractController {
         );
 
         // sort null last
-        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder']);
+        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder', 'id']);
 
         $emptyReference = new ReferenceVolume();
         $emptyReference->setItemTypeId($item_type_id);
@@ -152,7 +152,7 @@ class EditReferenceController extends AbstractController {
 
         // displayOrder may have been edited
         // sort null last
-        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder']);
+        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder', 'id']);
 
         // create empty template for new entries
         $emptyReference = new ReferenceVolume();
@@ -170,12 +170,13 @@ class EditReferenceController extends AbstractController {
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'emptyReference' => $emptyReference,
+            'itemTypeId' => $item_type_id,
         ]);
 
     }
 
     /**
+     * get data for item with ID $id and pass $index
      * @Route("/edit/reference/item/{id}/{index}", name="edit_reference_item")
      */
     public function _item(int $id,
@@ -185,13 +186,39 @@ class EditReferenceController extends AbstractController {
 
         $reference = $referenceRepository->find($id);
         $reference->setFormIsExpanded(1);
+        $edit_form_id = 'reference_edit_form';
 
         return $this->render('edit_reference/_input_content.html.twig', [
             'reference' => $reference,
-            'editFormId' => 'reference_edit_form',
-            'index' => $index,
+            'editFormId' => $edit_form_id,
+            'current_idx' => $index,
+            'base_id' => $edit_form_id.'_'.$index,
+            'base_input_name' => $edit_form_id.'['.$index.']',
         ]);
 
     }
+
+    /**
+     * @return template for new reference
+     *
+     * @Route("/edit/reference/new-reference", name="edit_reference_new_reference")
+     */
+    public function newReference(Request $request) {
+
+        $item_type_id = $request->query->get('item_type_id');
+        $ref = new ReferenceVolume();
+        $ref->setItemTypeId($item_type_id);
+        $ref->setFormIsExpanded(true);
+
+        // property types
+
+        return $this->render('edit_reference/_item.html.twig', [
+            'editFormId' => $request->query->get('edit_form_id'),
+            'current_idx' => $request->query->get('current_idx'),
+            'reference' => $ref,
+        ]);
+
+    }
+
 
 }

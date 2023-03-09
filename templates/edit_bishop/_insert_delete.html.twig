@@ -7,22 +7,8 @@
 	{% if is_last %}
 	    <button class="btn btn-light btn-sm"
 		    type="button"
-		    data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
+		    data-action="insert#insert"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
 	{% endif %}
-	{# delete button, do not include _delete_button (with extra div) #}
-	<input type="text"
-	       id="{{ base_id_delete }}_delete"
-	       name="{{ base_name_delete }}[delete]"
-	       class="form-control form-control-sm d-none"
-	       data-sync-target="toggle"
-	       value="">
-	<button class="btn btn-light btn-sm"
-		type="button"
-		data-value="up"
-		data-controller="toggle-arrow"
-		data-toggle-arrow-target="button"
-		data-toggle-arrow-img-closed-value="3-fill"
-		data-toggle-arrow-img-open-value="3"
-		data-action="toggle-arrow#toggle click->on-input#mark click->sync#toggle"><img width="20" height="20" src="{{ asset('images/symbols/trash3.svg') }}" alt="Mülleimer"></button>
+	{{ include('edit_bishop/_delete_button_sans_div.html.twig') }}
     </span>
 </div>

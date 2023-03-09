@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 {# status and name #}
 {{ include('edit_bishop/_input_status.html.twig') }}
 {{ include('edit_bishop/_input_name.html.twig') }}
@@ -23,12 +24,39 @@
 	</div>
     </div>
 </div>
-{% if person.item.idPublic %}
-    {% set user=userWiagRepository.find(person.item.changedby) %}
+{% if person.seealso|length > 0 %}
     <div class="row">
 	<div class="col-12">
-	    <span class="ms-1">{{ person.item.idPublic }}</span>
-	    <span class="wiag-log text-nowrap float-end me-1">geändert: {{ person.item.datechanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+	    <span>siehe auch</span>
+	    {% for seealso in person.seealso %}
+		<span> <a href="{{ path('edit_bishop_edit_single', {'someid': seealso}) }}" target="_blank" rel="noopener">{{ seealso }}</a>{% if not loop.last %},{% endif %}</span>
+	    {% endfor %}
 	</div>
     </div>
 {% endif %}
+{% set user=userWiagRepository.find(person.item.changedBy) %}
+<div class="row">
+    <div class="col-12">
+	<span class="ms-1">{{ person.item.idPublic }}</span>
+	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ person.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+	<input type="text"
+	       class="d-none"
+	       id="{{ base_id }}_item_idPublic"
+	       name="{{ base_input_name }}[item][idPublic]"
+	       value="{{ person.item.idPublic }}">
+	<input type="text"
+	       class="d-none"
+	       id="{{ base_id }}_item_dateChanged"
+	       name="{{ base_input_name }}[item][dateChanged]"
+	       value="{{ person.item.dateChanged|format_datetime() }}">
+	<input type="text"
+	       class="d-none"
+	       id="{{ base_id }}_item_changedBy"
+	       name="{{ base_input_name }}[item][changedBy]"
+	       value="{{ person.item.changedBy }}">
+    </div>
+    {# store data into the form #}
+    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}
+    {{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], person.item.changedBy) }}
+    {{ util.hiddenInput(base_id, base_input_name, ['item', 'dateChanged'], person.item.dateChanged|format_datetime()) }}
+</div>

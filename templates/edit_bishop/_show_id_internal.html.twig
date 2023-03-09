@@ -9,57 +9,60 @@
 	authority: null,
 	authority_id: "",
 	value: ""
-	} %}
+    } %}
 {% endif %}
 
 {# col with add button and delete button #}
-<div class="col-1 text-end pe-0">
-    <div data-controller="set-v-attr"
-	 data-set-v-attr-to-value="delete"
-	 data-set-v-attr-from-value="">
-	{# insert button #}
-	<span class="text-nowrap">
-	    {% if is_last %}
-		<button class="btn btn-light btn-sm"
-			type="button"
-			data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
-	    {% endif %}
-	</span>
+<div class="row"
+     data-controller="input-state">
+    <div class="col-1 text-end pe-0">
+	<div data-controller="set-v-attr"
+	     data-set-v-attr-to-value="delete"
+	     data-set-v-attr-from-value="">
+	    {# insert button #}
+	    <span class="text-nowrap">
+		{% if is_last %}
+		    <button class="btn btn-light btn-sm"
+				   type="button"
+				   data-action="insert#insertTemplate"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
+		{% endif %}
+	    </span>
+	</div>
     </div>
-</div>
-<div class="col-11">
-    <div class="input-group input-group-sm mb-1">
-	<span class="input-group-text">URL Name</span>
-	{# id (hidden) #}
-	<input type="text"
-	       id="{{ base_id_idext }}_id"
-	       name="{{ base_input_name_idext }}[id]"
-	       class="form-control form-control-sm d-none"
-	       value="{{ idext.authority.id }}">
-	<div class="w-50"
-	     {{ stimulus_controller('autocomplete', {
-		 url: path('authority_suggest', { field: 'urlName' }),
-	     }) }}>
- 	    <input type="text" id="{{ base_id_idext }}_urlName"
-		   name="{{ base_input_name_idext}}[urlName]"
+    <div class="col-11">
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text">URL Name</span>
+	    {# id (hidden) #}
+	    <input type="text"
+		   id="{{ base_id_idext }}_id"
+		   name="{{ base_input_name_idext }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ idext.authority.id }}">
+	    <div class="w-50"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('authority_suggest', { field: 'urlName' }),
+		 }) }}>
+ 		<input type="text" id="{{ base_id_idext }}_urlName"
+		       name="{{ base_input_name_idext}}[urlName]"
+		       class="form-control form-control-sm wiag-input"
+		       readonly
+		       value="{{ idext.authority.urlNameFormatter }}"
+		       spellcheck="false"
+		       aria-label="Institution/Katalog"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+			   data-autocomplete-target="results"
+			   style="max-width: 30rem;"></ul>
+	    </div>
+	    <span class="input-group-text"><a href="{{ idext.url }}" target="_blank" rel="noopener">ID/Nr.</a></span>
+	    <input type="text" id="{{ base_id_idext }}_value"
+		   name="{{ base_input_name_idext}}[value]"
 		   class="form-control form-control-sm wiag-input"
 		   readonly
-		   value="{{ idext.authority.urlNameFormatter }}"
+		   value="{{ idext.value }}"
+		   style="min-width: 15rem; max-width: 22%"
 		   spellcheck="false"
-		   aria-label="Institution/Katalog"
-		   data-autocomplete-target="input">
-	    <ul class="list-group autocomplete-target"
-		data-autocomplete-target="results"
-		style="max-width: 30rem;"></ul>
+		   aria-label="Id/Nummer">
 	</div>
-	<span class="input-group-text"><a href="{{ idext.url }}" target="_blank" rel="noopener">ID/Nr.</a></span>
-	<input type="text" id="{{ base_id_idext }}_value"
-	       name="{{ base_input_name_idext}}[value]"
-	       class="form-control form-control-sm wiag-input"
-	       readonly
-	       value="{{ idext.value }}"
-	       style="min-width: 15rem; max-width: 22%"
-	       spellcheck="false"
-	       aria-label="Id/Nummer">
     </div>
 </div>

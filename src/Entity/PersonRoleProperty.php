@@ -20,7 +20,7 @@ class PersonRoleProperty
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $id = 0;
 
     /**
      * @ORM\OneToOne(targetEntity="RolePropertyType", fetch="EAGER")
@@ -63,6 +63,11 @@ class PersonRoleProperty
      * @ORM\Column(type="integer", nullable=true)
      */
     private $propertyTypeId;
+
+    /**
+     * hold form data
+     */
+    private $deleteFlag = "";
 
     public function getId(): ?int
     {
@@ -166,4 +171,17 @@ class PersonRoleProperty
 
         return $this;
     }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
 }

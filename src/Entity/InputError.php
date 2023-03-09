@@ -9,7 +9,7 @@ class InputError {
     ];
 
     // values
-    // 2022-08-30 Person: 'status', 'name', 'person', 'role', 'reference'
+    // 2022-08-30 Person: 'status', 'name', 'person', 'role', 'reference', 'external id'
     // 2023-01-16 BishpFormModel: 'two'
     private $section;
     private $msg;

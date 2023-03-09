@@ -24,6 +24,7 @@ class BishopFormModel {
     public $editStatus = [];
     public $commentDuplicate = null;
     public $comment = null;
+    public $reference = null;
     public $dateCreated = null;
     public $dateChanged = null;
     public $listSize = null;

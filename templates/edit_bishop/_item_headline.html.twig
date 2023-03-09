@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 <div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm">
@@ -26,28 +27,26 @@
 		       id="{{ base_id }}_item_formisedited"
 		       name="{{ base_input_name }}[item][formIsEdited]"
 		       data-on-input-target="checkbox"
-		       {% if person.item.formisedited %}checked="checked"{% endif %}>
+		       {% if person.item.formIsEdited ?? false %}checked="checked"{% endif %}>
 		<img class="align-middle" src="{{ asset(online_image) }}" alt="Farbsymbol online">
 	    </span>
-	    {% if person.describerole(2) %}
+	    {# headline #}
+	    {% if person.describeRole %}
 		{% set head_line %}
-		<strong>{{ person.describe }}</strong>, {{ person.describerole(2) }}
+		<strong>{{ person.describe }}</strong>, {{ person.describeRole }}
 		{% endset %}
 	    {% else %}
 		{% set head_line %}
 		<strong>{{ person.describe }}</strong>
 		{% endset %}
 	    {% endif %}
+	    {# store data in the form #}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
-	    <span class="ms-2">ID: {{ person.item.idinsource }}</span>
-	    {# insert internal id into the form (hidden) #}
-	    <input type="text"
-		   id="{{ base_id }}_id"
-		   name="{{ base_input_name }}[id]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ person.id }}">
+	    <span class="ms-2">ID: {{ person.item.idInSource }}</span>
+	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.idInSource) }}
 	    <span class="vr ms-auto"></span>
-	    <span class="bg-light ms-1 px-2">{{ person.item.editstatus }}</span>
+	    <span class="bg-light ms-1 px-2">{{ person.item.editStatus }}</span>
 	</div>
     </div>
 </div>

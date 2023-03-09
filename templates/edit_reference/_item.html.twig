@@ -1,7 +1,7 @@
-{% set base_id=editFormId~'_'~index %}
-{% set base_input_name=editFormId~'['~index~']' %}
 {% set expanded = reference.formisexpanded or reference.hasError('info') or newEntry is defined %}
-{% set fill_url = reference.id ? path('edit_reference_item', { id: reference.id, index: index }) : "" %}
+{% set fill_url = reference.id ? path('edit_reference_item', { id: reference.id, index: current_idx }) : "" %}
+{% set base_id=editFormId~'_'~current_idx %}
+{% set base_input_name=editFormId~'['~current_idx~']' %}
 {# header #}
 <div class="container-fluid p-2 my-2 border border-2 border-success rounded"
      id="{{ base_id }}">
@@ -10,13 +10,14 @@
 	 data-toggle-arrow-img-open-value="down"
 	 data-toggle-arrow-img-closed-value="right"
 	 data-sync-fill-url-value="{{ fill_url }}"
+	 data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
 	{# headline with collapse button#}
 	{{ include('edit_reference/_item_headline.html.twig') }}
 	{# body #}
 	<div class="collapse multi-collapse {% if expanded == 1 %}show{% endif %} pe-0"
 	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
-	     id="body{{ index }}">
+	     id="body{{ current_idx }}">
 	    {# insert display status (hidden) #}
 	    <input type="checkbox"
 		   id="{{ base_id }}_formIsExpanded"

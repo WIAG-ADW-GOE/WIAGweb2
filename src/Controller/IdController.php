@@ -60,7 +60,7 @@ class IdController extends AbstractController {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $itemTypeRepository = $this->entityManager->getRepository(ItemType::class);
 
-        $itemResult = $itemRepository->findByIdPublicOrIdExternal($id);
+        $itemResult = $itemRepository->findByIdPublicOrParent($id);
         if (!is_null($itemResult) && count($itemResult) > 0) {
             $item = $itemResult[0];
             $itemTypeId = $item->getItemTypeId();
@@ -74,7 +74,9 @@ class IdController extends AbstractController {
             return $this->$typeName($itemId, $format);
 
         } else {
-            throw $this->createNotFoundException('ID is nicht gültig: '.$id);
+            return $this->render('home\message.html.twig', [
+                'message' => 'Kein Eintrag für ID '.$id.' vorhanden.'
+            ]);
         }
 
 

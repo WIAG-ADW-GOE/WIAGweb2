@@ -755,4 +755,13 @@ class UtilService {
         return $prop_value_list;
     }
 
+    static public function nestedArray($iterator) {
+        $arr = array();
+        foreach ($iterator as $item) {
+            $arr[] = $item->toArray();
+        }
+
+        return $arr;
+    }
+
 }

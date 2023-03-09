@@ -1,9 +1,8 @@
-{% set intern_collapsable=false %}
 {% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
 {% set base_id=editFormId~'_'~index %}
 {% set base_input_name=editFormId~'['~index~']' %}
 {# header #}
-{% set online_image = (person.item.editstatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+{% set online_image = (person.item.editStatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
 <div class="container-fluid p-2 my-2 border border-2 border-success rounded"
      id="{{ base_id }}">
     <div data-controller="toggle-arrow on-input insert auth-search"
@@ -11,24 +10,37 @@
 	 data-toggle-arrow-img-open-value="down"
 	 data-toggle-arrow-img-closed-value="right"
 	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
-	{% set expanded = person.hasError('info') or person.item.formIsExpanded %}
+	{% set expanded = person.inputError|length > 0 or person.item.formIsExpanded %}
 	{# headline with collapse button#}
 	{{ include('edit_bishop/_item_headline.html.twig') }}
 	{# body #}
 	<div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
 	     data-controller="sync"
-	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
+	     data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
+	     data-sync-fill-url-value="{{ path('edit_bishop_item_content', { id: person.id, index: index }) }}"
+	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
 	     id={{ "body#{person.id}" }}>
 	    {# insert display status (hidden) #}
 	    <input type="checkbox"
 		   id="{{ base_id }}_item_formIsExpanded"
 		   name="{{ base_input_name }}[item][formIsExpanded]"
 		   class="form-check-input d-none"
-		   {% if person.item.formIsExpanded %}checked="checked"{% endif %}
+		   {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
 		   data-sync-target="check">
-	    {% if expanded or true %}
-		{{ include('edit_bishop/_item_content.html.twig') }}
-	    {% endif %}
+	    {# turn on loading via ajax #}
+	    <!-- regular style -->
+	    <div data-sync-target="fill"
+		 id="{{ base_id }}_content">
+		{% if expanded %}
+		    {{ include('edit_bishop/_item_content.html.twig') }}
+		{% else %}
+		    <div class="row">
+			<div class="col-12">
+			    <span><i class="mt-2 ms-2 fa-solid fa-rotate fa-spin"></i></span>
+			</div>
+		    </div>
+		{% endif %}
+	    </div>
 	</div>
     </div>
 </div>

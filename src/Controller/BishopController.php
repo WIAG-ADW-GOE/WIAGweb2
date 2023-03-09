@@ -168,7 +168,6 @@ class BishopController extends AbstractController {
             'hassuccessor' => $hassuccessor,
         ]);
 
-
     }
 
     /**
@@ -218,17 +217,6 @@ class BishopController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
-        // 2022-07-21 collect data in one db-query
-        // $node_list = array();
-        // foreach ($ids as $id) {
-
-        //     $person = $personRepository->find($id['personId']);
-
-        //     // collect office data in an array of Items
-        //     $item_list = $repository->getBishopOfficeData($person);
-        //     $node_list[] = $personService->personData($format, $person, $item_list);
-        // }
-
         return $personService->createResponse($format, $node_list);
 
     }
@@ -244,8 +232,8 @@ class BishopController extends AbstractController {
                                  String $field) {
         $name = $request->query->get('q');
 
-        $edit_status = Item::ITEM_TYPE[$this->itemTypeId]['online_status'];
-        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+        $online_only = true;
+        return $this->handleAutocomplete($repository, $name, $field, $online_only);
 
     }
 
@@ -259,19 +247,19 @@ class BishopController extends AbstractController {
                                     String $field) {
         $name = $request->query->get('q');
 
-        $edit_status = null;
-        return $this->handleAutocomplete($repository, $name, $field, $edit_status);
+        $online_only = false;
+        return $this->handleAutocomplete($repository, $name, $field, $online_only);
     }
 
 
     private function handleAutocomplete($repository,
                                         $name,
                                         $field,
-                                        $edit_status) {
+                                        $online_only){
 
         $fnName = 'suggestBishop'.ucfirst($field);
         if ($field == 'name') {
-            $suggestions = $repository->$fnName($name, self::HINT_SIZE, $edit_status);
+            $suggestions = $repository->$fnName($name, self::HINT_SIZE, $online_only);
         } else {
             $suggestions = $repository->$fnName($name, self::HINT_SIZE);
         }

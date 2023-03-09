@@ -1,3 +1,4 @@
+{% import "edit_bishop/_util.html.twig" as util %}
 <div class="row"> {# empty div to have the same structure for all sections #}
     <div class="col-12">
 	<div class="input-group input-group-sm mb-1 mt-1">
@@ -8,7 +9,7 @@
 		<input type="text" id="{{ base_id }}_item_editstatus"
 		       name="{{ base_input_name}}[item][editStatus]"
 		       class="form-control form-control-sm wiag-input"
-		       value="{{ person.item.editstatus }}"
+		       value="{{ person.item.editStatus }}"
 		       style="max-width: 12em"
 		       spellcheck="false"
 		       aria-label="Status"
@@ -22,17 +23,28 @@
 		   name="{{ base_input_name}}[item][commentDuplicate]"
 		   class="form-control form-control-sm wiag-input"
 		   style="max-width: 9em"
-		   value="{{ person.item.commentduplicate }}"
+		   value="{{ person.item.commentDuplicate }}"
 		   aria-label="Kommentar Dublette">
 	    {# get parent IDs (hidden) #}
-	    {% for parent_item in person.item.mergeparent %}
-		<input type="text" id="{{ base_id }}_item_mergeParentId_{{ loop.index0 }}"
-		       name="{{ base_input_name}}[item][mergeParentId][{{ loop.index0 }}]"
-		       class="form-control form-control-sm d-none"
-		       style="max-width: 9em"
-		       value="{{ parent_item.id }}"
-		       aria-label="Zusammengesetzt aus">
+	    {% for parent_item in person.item.mergeParent %}
+		{{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeParent', loop.index0], parent_item.id) }}
 	    {% endfor %}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeStatus'], person.item.mergeStatus) }}
+	    {% if person.item.mergeStatus == 'child' %}
+		<span class="input-group-text ms-2">zusammengesetzter Eintrag</span>
+	    {% endif %}
+	    {# show parent IDs in the merging process #}
+	    {% if person.item.mergeParent|length > 0 %}
+		<span class="input-group-text ms-2">zusammengesetzt aus</span>
+		{% for parent_item in person.item.mergeParent %}
+		    <input type="text"
+			   class="form-control form-control-sm"
+			   style="max-width: 5em"
+			   value="{{ parent_item.idInSource }}"
+			   disabled="disabled"
+			   aria-label="Zusammengesetzt aus">
+		{% endfor %}
+	    {% endif %}
 	    {% if formType == 'list' %}
 		{# dropdown "Aktion" #}
 		<div class="dropdown ms-auto">
@@ -47,11 +59,11 @@
 				    data-person-id="{{ person.id }}"
 				    data-list-index="{{ index }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
-			{% if person.item.commentduplicate %}
-			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentduplicate }) }}">Zusammenführen mit {{ person.item.commentduplicate }}</a>
+			{% if person.item.commentDuplicate %}
+			    <li><a class="dropdown-item" href="{{ path('edit_bishop_merge_item', { 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
 			    </li>
 			{% endif %}
-			{% if person.item.mergeparent and not mergeStep %}
+			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"
 				data-submit-confirm-title-value="Eintrag aufteilen?"
 				data-submit-confirm-button-id-value="split_{{ person.id }}"

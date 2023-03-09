@@ -77,16 +77,14 @@ class EditBishopFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            // 2022-09-21 delete via button?
-            // ->add('isDeleted', ChoiceType::class, [
-            //     'label' => 'Anzeige',
-            //     'choices' => [
-            //         'aktiv' => 0,
-            //         'inaktiv (gelöscht)' => 1,
-            //     ],
-            //     'expanded' => true,
-            //     'multiple' => false,
-            // ])
+            ->add('reference', TextType::class, [
+                'label' => 'Referenz',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Band',
+                    'size' => '45',
+                ],
+            ])
             ->add('editStatus', ChoiceType::class, [
                 'required' => false,
                 'label' => 'Status',
@@ -95,11 +93,11 @@ class EditBishopFormType extends AbstractType
                 'choices' => $options['status_choices'],
             ])
             ->add('commentDuplicate', TextType::class, [
-                'label' => 'Identisch mit',
+                'label' => 'identisch mit',
                 'required' => false,
             ])
             ->add('comment', TextType::class, [
-                'label' => 'Kommentar Person',
+                'label' => 'Kommentar (red.)',
                 'required' => false,
             ])
             ->add('dateCreated', TextType::class, [

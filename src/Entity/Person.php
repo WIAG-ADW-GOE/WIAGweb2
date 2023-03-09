@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Item;
 use App\Entity\PersonRole;
 use App\Repository\PersonRepository;
+use App\Service\UtilService;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -94,6 +95,12 @@ class Person {
     private $noteName;
 
     /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $academicTitle;
+
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $religiousOrderId;
@@ -172,10 +179,10 @@ class Person {
 
     /**
      * no DB-mapping
-     * flag for new entry
+     * hold IDs of other persons
      */
-    // 2022-12-14 obsolete
-    //private $isNew;
+    private $seeAlso;
+
 
     public function __construct() {
         $this->givennameVariants = new ArrayCollection();
@@ -184,7 +191,7 @@ class Person {
         $this->birthPlace = new ArrayCollection();
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
-        # TODO $this-urlByType;
+        $this->seeAlso = new ArrayCollection();
     }
 
     static public function newPerson(Item $item) {
@@ -200,9 +207,9 @@ class Person {
         return $this->id;
     }
 
-
     public function setItem($item) {
         $this->item = $item;
+        $this->id = $item->getId();
         return $this;
     }
 
@@ -287,6 +294,18 @@ class Person {
     public function setNoteName(?string $noteName): self
     {
         $this->noteName = $noteName;
+
+        return $this;
+    }
+
+    public function getAcademicTitle(): ?string
+    {
+        return $this->academicTitle;
+    }
+
+    public function setAcademicTitle(?string $title): self
+    {
+        $this->academicTitle = $title;
 
         return $this;
     }
@@ -418,24 +437,6 @@ class Person {
         return $this->birthplace;
     }
 
-    /**
-     * get external id for `authority_id`
-     */
-    // 2022-09-26 obsolete ? see $item->getIdExternalByAuthorityId
-    // public function getIdExternal(int $authorityId) {
-    //     $item = $this->getItem();
-    //     if (is_null($item)) return null;
-    //     $idExternal = $item->getIdExternal();
-    //     if (is_null($idExternal) || count($idExternal) == 0) return null;
-
-    //     foreach ($idExternal as $id) {
-    //         if ($id->getAuthorityId() == $authorityId) {
-    //             return $id->getValue();
-    //         }
-    //     }
-    //     return null;
-    // }
-
     public function getItemTypeId(): ?int
     {
         return $this->itemTypeId;
@@ -463,7 +464,7 @@ class Person {
         return $this;
     }
 
-        public function getFormGivenNameVariants(): ?string {
+    public function getFormGivenNameVariants(): ?string {
         if ($this->formGivennameVariants) {
             return $this->formGivennameVariants;
         }
@@ -553,12 +554,18 @@ class Person {
         return $this->inputError;
     }
 
+    public function getSeeAlso() {
+        return $this->seeAlso;
+    }
+
     /**
      * concatenate name variants and comments
      */
     public function commentLine($flag_names = true) {
 
         $academic_title = $this->combineProperty('academic_title');
+        $academic_title = "";
+        $academic_title = $this->combine('academicTitle');
 
         $str_gn_variants = null;
         $str_fn_variants = null;
@@ -684,11 +691,16 @@ class Person {
         return $key;
     }
 
-    public function merge($parent_list, $parent_person_list) {
-        $this->getItem()->setMergeParent($parent_list);
+    /**
+     * read data from $parent_person_list
+     */
+    public function merge($parent_person_list) {
+        $parent_item_list = array();
         foreach ($parent_person_list as $p) {
+            $parent_item_list[] = $p->getItem();
             $this->mergeData($p);
         }
+        $this->getItem()->setMergeParent($parent_item_list);
         return $this;
     }
 
@@ -765,5 +777,68 @@ class Person {
         return $this;
     }
 
+    public function addEmptyDefaultElements($auth_list) {
+        $role_list = $this->getRole();
+        if (count($role_list) < 1) {
+            $role_list->add(new PersonRole());
+        }
+        $reference_list = $this->getItem()->getReference();
+        if (count($reference_list) < 1) {
+            $reference_list->add(new ItemReference());
+        }
+
+        $id_ext_list = $this->getItem()->getIdExternal();
+
+        // placeholder for all essential authorities
+        $id_ext_e_list = $this->getItem()->getIdExternalCore();
+
+        $core_ids = Authority::coreIDs();
+
+        foreach ($core_ids as $auth_id) {
+            $flag_found = false;
+            foreach ($id_ext_list as $id_ext_e) {
+                if ($id_ext_e->getAuthority()->getId() == $auth_id) {
+                    $flag_found = true;
+                    break;
+                }
+            }
+            if (!$flag_found) {
+                // dd($auth_id, $auth_list);
+                $auth = null;
+                foreach($auth_list as $a) {
+                    if ($a->getId() == $auth_id) {
+                        $auth = $a;
+                        break;
+                    }
+                }
+                $id_ext_new = new IdExternal();
+                $id_ext_new->setAuthority($auth);
+                $id_ext_list->add($id_ext_new);
+            }
+        }
+
+        // there should be at least one non-essential external id
+        $id_ext_ne_list = $this->getItem()->getIdExternalNonCore();
+        if (count($id_ext_ne_list) < 1) {
+            $id_ext_list->add(new IdExternal());
+        }
+    }
+
+    public function extractSeeAlso() {
+        if (is_null($this->comment)) {
+            return null;
+        }
+        $matches = array();
+        preg_match_all("/WIAG-Pers-EPISCGatz-([0-9]{3}[0-9]?[0-9]?-[0-9]{3})/",
+                       $this->comment,
+                       $matches);
+        if (is_null($this->seeAlso)) {
+            $this->seeAlso = new ArrayCollection();
+        }
+        foreach($matches[0] as $see_also) {
+            $this->seeAlso->add($see_also);
+        }
+
+    }
 
 }

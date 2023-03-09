@@ -1,3 +1,4 @@
+{% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
 <div class="container-fluid"
      data-controller="hide-on-input">
     {{ form_start(form, {
@@ -7,7 +8,7 @@
 	}
     }) }}
 	<div class="row ms-2 col-12">
-	    <span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 1}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	    <span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': itemTypeId }) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	</div>
 	{{ include("edit_bishop/_form_elements.html.twig", {
 	    indent_class: "ms-2",
@@ -15,6 +16,7 @@
 	    input_width_diocese: 16,
 	    input_width_office: 18,
 	    input_width_id: 26,
+	    input_width_reference: 45,
 	    input_width_duplicate: 8,
 	    input_width_comment: 21,
 	    input_width_date: 18,

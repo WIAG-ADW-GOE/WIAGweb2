@@ -178,10 +178,25 @@ class ItemRepository extends ServiceEntityRepository
 
         $someid = $model->someid;
         if ($someid) {
+            // search for idPublic in merging ancestors
             $qb->leftjoin('i.idExternal', 'ixt')
+               ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'ip1.mergedIntoId = i.id')
+               ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
+               ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
                ->andWhere("i.idPublic LIKE :q_id ".
-                          "OR ixt.value LIKE :q_id")
+                          "OR ixt.value LIKE :q_id ".
+                          "OR ip1.idPublic LIKE :q_id ".
+                          "OR ip2.idPublic LIKE :q_id ".
+                          "OR ip3.idPublic LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
+        }
+
+        $reference = $model->reference;
+        if ($reference) {
+            $qb->leftjoin('i.reference', 'ref')
+               ->leftjoin('\App\Entity\ReferenceVolume', 'vol', 'WITH', 'vol.referenceId = ref.referenceId AND vol.itemTypeId = i.itemTypeId')
+               ->andWhere('vol.titleShort LIKE :q_ref')
+               ->setParameter('q_ref', '%'.$reference.'%');
         }
 
         $isDeleted = $model->isDeleted;
@@ -270,6 +285,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.dioceseName IS NOT NULL");
 
         $this->addBishopConditions($qb, $model);
@@ -296,6 +312,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('p.role', 'prcount')
                    ->join('p.role', 'pr') # for form conditions
                    ->andWhere("i.itemTypeId = ${itemTypeId}")
+                   ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.roleName IS NOT NULL");
 
         $this->addBishopConditions($qb, $model);
@@ -374,7 +391,7 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestBishopName($name, $hintSize, $edit_status = null, $only_online = true) {
+    public function suggestBishopName($name, $hintSize, $only_online = true, $edit_status = null) {
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
@@ -620,22 +637,6 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * 2022-07-21 obsolete?
-     */
-    // public function addReferenceVolumes($item) {
-    //     $em = $this->getEntityManager();
-    //     # add reference volumes (combined key)
-    //     $repository = $em->getRepository(ReferenceVolume::class);
-    //     foreach ($item->getReference() as $reference) {
-    //         $itemTypeId = $reference->getItemTypeId();
-    //         $referenceId = $reference->getReferenceId();
-    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-    //         $reference->setReferenceVolume($referenceVolume);
-    //     }
-    //     return $item;
-    // }
-
-    /**
      * countPriestUtOrder($model)
      *
      * return array of religious orders
@@ -766,50 +767,19 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * setMergeParent($item_list)
-     *
-     * set merge ancestors
+     * @return entry matching $id or having $id as a parent (merging)
      */
-    public function setMergeParent($item_list) {
-
-        $id_list = array_map(function($v){
-            return $v->getId();
-        }, $item_list);
-
+    public function findByIdPublicOrParent($id) {
         $qb = $this->createQueryBuilder('i')
-                   ->select('i')
-                   ->andWhere('i.mergedIntoId in (:item_list)')
-                   ->setParameter('item_list', $item_list);
-
-        $query = $qb->getQuery();
-
-        $result = $query->getResult();
-
-        $n = 0;
-        if (count($result) > 0) {
-            foreach ($item_list as $item) {
-                $n += 1;
-                $id = $item->getId();
-                $parent_list = array_filter($result, function($el) use ($id) {
-                    return ($el->getMergedIntoId() == $id);
-                });
-                $item->setMergeParent($parent_list);
-            }
-        }
-
-        return $n;
-    }
-
-    /**
-     * search field id_public and id_external.value
-     */
-    public function findByIdPublicOrIdExternal($id) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select('i')
-                   ->leftjoin('i.idExternal', 'idext')
-                   ->andWhere('i.idPublic = :id OR idext.value = :id')
+                   ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'ip1.mergedIntoId = i.id')
+                   ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
+                   ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
+                   ->andWhere("i.idPublic = :q_id ".
+                          "OR ip1.idPublic = :q_id ".
+                          "OR ip2.idPublic = :q_id ".
+                          "OR ip3.idPublic = :q_id")
                    ->andWhere('i.isOnline = 1')
-                   ->setParameter('id', $id);
+                   ->setParameter('q_id', $id);
 
         $query = $qb->getQuery();
         return $query->getResult();
