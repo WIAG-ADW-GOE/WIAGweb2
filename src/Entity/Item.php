@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\ItemRepository;
 use App\Service\UtilService;
-use App\Entity\IdExternal;
 use App\Entity\Authority;
 use App\Entity\ItemReference;
 
@@ -268,8 +267,8 @@ class Item {
      * 2023-03-21 obsolete
      */
     public function getUrlExternalExternal_legacy() {
-        return $this->urlExternal->filter(function($idext) {
-            $auth = $idext->getAuthority();
+        return $this->urlExternal->filter(function($urlext) {
+            $auth = $urlext->getAuthority();
             if (is_null($auth)) {
                 return true;
             }
@@ -278,9 +277,9 @@ class Item {
     }
 
     /**
-     * 2023-03-21 obsolete
+     *
      */
-    public function getUrlExternalCore_legacy() {
+    public function getUrlExternalCore() {
         $id_ext_list = $this->getUrlExternalSorted();
 
         $core_ids = Authority::coreIDs();
@@ -298,7 +297,7 @@ class Item {
     /**
      *
      */
-    public function getUrlExternalNonCore_legacy() {
+    public function getUrlExternalNonCore() {
         $id_ext_list = $this->getUrlExternalSorted();
 
         $core_ids = Authority::coreIDs();
@@ -317,7 +316,7 @@ class Item {
     /**
      * return sorted ArrayCollection
      */
-    public function getUrlExternalSorted_legacy() {
+    public function getUrlExternalSorted() {
         if ($this->urlExternal->isEmpty()) {
             return $this->urlExternal;
         }

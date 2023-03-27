@@ -54,6 +54,11 @@ class UrlExternal
      */
     private $comment;
 
+    /**
+     * hold form data
+     */
+    private $deleteFlag;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -77,6 +82,11 @@ class UrlExternal
     {
         $this->itemId = $itemId;
 
+        return $this;
+    }
+
+    public function setItem($item): self {
+        $this->item = $item;
         return $this;
     }
 
@@ -150,6 +160,18 @@ class UrlExternal
         $prettyValue = str_replace('_', ' ', $prettyValue);
 
         return $prettyValue;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
     }
 
 }

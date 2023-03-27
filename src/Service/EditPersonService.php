@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
@@ -15,6 +14,7 @@ use App\Entity\ReferenceVolume;
 use App\Entity\Role;
 use App\Entity\Diocese;
 use App\Entity\Institution;
+use App\Entity\UrlExternal;
 use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
@@ -106,9 +106,9 @@ class EditPersonService {
         $target_ref = $target_item->getReference();
         $source_ref = $person->getItem()->getReference();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
-        // id external
-        $target_ref = $target_item->getIdExternal();
-        $source_ref = $person->getItem()->getIdExternal();
+        // url external
+        $target_ref = $target_item->getUrlExternal();
+        $source_ref = $person->getItem()->getUrlExternal();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
 
         // merging?
@@ -323,17 +323,17 @@ class EditPersonService {
     }
 
     /**
-     * create IdExternal object
+     * create UrlExternal object
      */
-    public function makeIdExternal($item, $authority) {
-        $id_external = new IdExternal();
+    public function makeUrlExternal($item, $authority) {
+        $url_external = new UrlExternal();
         if (!is_null($item->getId())) {
-            $id_external->setItemId($item->getId());
+            $url_external->setItemId($item->getId());
         }
-        $id_external->setItem($item);
-        $id_external->setAuthorityId($authority->getId());
-        $id_external->setAuthority($authority);
-        return $id_external;
+        $url_external->setItem($item);
+        $url_external->setAuthorityId($authority->getId());
+        $url_external->setAuthority($authority);
+        return $url_external;
     }
 
     /**
@@ -530,7 +530,7 @@ class EditPersonService {
             'role'  => 'mapRole',
             'ref'   => 'mapReference',
             'prop'  => 'mapItemProperty',
-            'idext' => 'mapIdExternal'
+            'urlext' => 'mapUrlExternal'
         ];
 
         foreach($section_map as $key => $mapFunction) {
@@ -880,18 +880,18 @@ class EditPersonService {
     }
 
     /**
-     * fill id external with $data
+     * fill url external with $data
      */
-    private function mapIdExternal($person, $data) {
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+    private function mapUrlExternal($person, $data) {
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         $item = $person->getItem();
-        $id_external_list = $item->getIdExternal();
-        $id_external = null;
+        $url_external_list = $item->getUrlExternal();
+        $url_external = null;
         $value = is_null($data['value']) ? null : trim($data['value']);
         if (is_null($value) || $value == "") {
-            return $id_external;
+            return $url_external;
             } else {
             $authority_name = $data["urlName"];
             $auth_query = $authorityRepository->findByNameAndIDRange($authority_name, 1000);
@@ -903,10 +903,10 @@ class EditPersonService {
                     $value = array_slice($val_list, -1)[0];
                 }
 
-                $id_external = $this->makeIdExternal($item, $authority);
-                UtilService::setByKeys($id_external, $data, ['deleteFlag', 'value']);
+                $url_external = $this->makeUrlExternal($item, $authority);
+                UtilService::setByKeys($url_external, $data, ['deleteFlag', 'value']);
 
-                $id_external_list->add($id_external);
+                $url_external_list->add($url_external);
 
                 // validate: avoid merge separator
                 $separator = "|";
@@ -920,7 +920,7 @@ class EditPersonService {
             }
         }
 
-        return $id_external;
+        return $url_external;
     }
 
 }

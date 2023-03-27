@@ -215,7 +215,7 @@ class DioceseService {
             if ($key == 'Wikipedia') {
                 $fv = $item->getUriExtByAuthId($auth);
             } else {
-                $fv = $item->getIdExternalByAuthorityId($auth);
+                $fv = $item->getUrlExternalByAuthorityId($auth);
             }
             if ($fv) $nd[$key] = $fv;
         }
@@ -316,7 +316,7 @@ class DioceseService {
         // external identifiers
         $item = $diocese->getItem();
 
-        $fv = $item->getIdExternal();
+        $fv = $item->getUrlExternal();
         if($fv) {
             $cei = array();
             foreach($fv as $extid) {
@@ -410,7 +410,7 @@ class DioceseService {
         // external identifiers
         $item = $diocese->getItem();
 
-        $fv = $item->getIdExternal();
+        $fv = $item->getUrlExternal();
         if($fv) {
             $cei = array();
             foreach($fv as $extid) {

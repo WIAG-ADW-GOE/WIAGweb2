@@ -5,7 +5,7 @@ use App\Entity\Item;
 use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\IdExternal;
+use App\Entity\UrlExternal;
 use App\Entity\Person;
 use App\Entity\InputError;
 use App\Entity\PersonRole;
@@ -448,23 +448,21 @@ class EditBishopController extends AbstractController {
     /**
      * @return template for new external ID
      *
-     * @Route("/edit/bischof/new-idexternal", name="edit_bishop_new_idexternal")
+     * @Route("/edit/bischof/new-url-external", name="edit_bishop_new_urlexternal")
      */
-    public function newIdExternal(Request $request) {
+    public function newUrlExternal(Request $request) {
 
-        $idExternal = new IdExternal(0);
+        $urlExternal = new urlExternal();
 
-        return $this->render('edit_bishop/_input_id_external.html.twig', [
+        return $this->render('edit_bishop/_input_url_external.html.twig', [
             'base_id' => $request->query->get('base_id'),
             'base_input_name' => $request->query->get('base_input_name'),
             'current_idx' => $request->query->get('current_idx'),
-            'idext' => $idExternal,
+            'urlext' => $urlExternal,
             'itemTypeId' => $this->itemTypeId,
         ]);
 
     }
-
-
 
     /**
      * display query form for bishops; handle query

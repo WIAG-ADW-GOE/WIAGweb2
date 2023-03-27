@@ -284,16 +284,16 @@ class IdController extends AbstractController {
      */
     public function detailsByGndId(string $id, Request $request) {
 
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+        $urlExternalRepository = $this->entityManager->getRepository(urlExternal::class);
         $gnd_id = Authority::ID['GND'];
 
-        $idext = $idExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
+        $urlext = $urlExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
 
-        if (is_null($idext) || count($idext) < 1) {
+        if (is_null($urlext) || count($urlext) < 1) {
             throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
         }
 
-        $id = $idext[0]->getItemId();
+        $id = $urlext[0]->getItemId();
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
 

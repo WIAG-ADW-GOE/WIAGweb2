@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Item;
 use App\Entity\PersonRole;
+use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Service\UtilService;
 use Doctrine\ORM\Mapping as ORM;
@@ -724,7 +725,7 @@ class Person {
             $this->item->mergeCollection($item_collection_name, $candidate->getItem());
         }
 
-        $this->item->mergeIdExternal($candidate->getItem());
+        $this->item->mergeUrlExternal($candidate->getItem());
 
         return $this;
     }
@@ -772,17 +773,17 @@ class Person {
             $reference_list->add(new ItemReference());
         }
 
-        $id_ext_list = $this->getItem()->getIdExternal();
+        $url_ext_list = $this->getItem()->getUrlExternal();
 
         // placeholder for all essential authorities
-        $id_ext_e_list = $this->getItem()->getIdExternalCore();
+        $url_ext_e_list = $this->getItem()->getUrlExternalCore();
 
         $core_ids = Authority::coreIDs();
 
         foreach ($core_ids as $auth_id) {
             $flag_found = false;
-            foreach ($id_ext_list as $id_ext_e) {
-                if ($id_ext_e->getAuthority()->getId() == $auth_id) {
+            foreach ($url_ext_list as $url_ext_e) {
+                if ($url_ext_e->getAuthority()->getId() == $auth_id) {
                     $flag_found = true;
                     break;
                 }
@@ -796,16 +797,16 @@ class Person {
                         break;
                     }
                 }
-                $id_ext_new = new IdExternal();
-                $id_ext_new->setAuthority($auth);
-                $id_ext_list->add($id_ext_new);
+                $url_ext_new = new UrlExternal();
+                $url_ext_new->setAuthority($auth);
+                $url_ext_list->add($url_ext_new);
             }
         }
 
-        // there should be at least one non-essential external id
-        $id_ext_ne_list = $this->getItem()->getIdExternalNonCore();
-        if (count($id_ext_ne_list) < 1) {
-            $id_ext_list->add(new IdExternal());
+        // there should be at least one non-essential external url
+        $url_ext_ne_list = $this->getItem()->getUrlExternalNonCore();
+        if (count($url_ext_ne_list) < 1) {
+            $url_ext_list->add(new UrlExternal());
         }
     }
 
