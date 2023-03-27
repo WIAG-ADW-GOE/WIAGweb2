@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
@@ -223,10 +222,10 @@ class PersonService {
         // external identifiers
         $nd = array();
 
-        $id_external = $person->getItem()->getIdExternal();
-        foreach ($id_external as $id_loop) {
-            $auth = $id_loop->getAuthority();
-            $nd[$auth->getUrlNameFormatter()] = $id_loop->getUrl();
+        $url_external = $person->getItem()->getUrlExternal();
+        foreach ($url_external as $uext_loop) {
+            $auth = $uext_loop->getAuthority();
+            $nd[$auth->getUrlNameFormatter()] = $uext_loop->getUrl();
         }
 
         if ($nd) {
@@ -399,26 +398,58 @@ class PersonService {
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
-        if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
+        // 2023-03-24
+        // neue Version siehe unten
+        // $fv = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GND']);
+        // if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
 
 
+        // $exids = array();
+
+        // foreach ($person->getItem()->getUrlExternal() as $id) {
+        //     $exids[] = [
+        //         '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
+        //     ];
+        // }
+
+        // if(count($exids) > 0) {
+        //     $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
+        // }
+
+        // $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
+        // if($fv) {
+        //     $pld[$foaffx.'page'] = $fv;
+        // }
+
+        // external IDs/URLs
         $exids = array();
-
-        foreach ($person->getItem()->getIdExternal() as $id) {
-            $exids[] = [
-                '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
-            ];
+        $wikipedia = null;
+        $gnd = null;
+        foreach ($person->getItem()->getUrlExternal() as $id) {
+            $url_complete = $id->getAuthority()->getUrlFormatter().$id->getValue();
+            $auth_name_formatter = $id->getAuthority()->getUrlNameFormatter();
+            if ($auth_name_formatter == 'Wikipedia-Artikel') {
+                $wikipedia = $url_complete;
+            } elseif ($auth_name_formatter == 'Gemeinsame Normdatei (GND) ID') {
+                $gnd = $id->getValue();
+            }
+            else {
+                $exids[] = [
+                    '@rdf:resource' => $url_complete
+                ];
+            }
         }
 
+        if($gnd) {
+            $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($gnd);
+        }
+        if($wikipedia) {
+            $pld[$foaffx.'page'] = $wikipedia;
+        }
         if(count($exids) > 0) {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
-        if($fv) {
-            $pld[$foaffx.'page'] = $fv;
-        }
 
         // birthplace
         $nd = array();
@@ -715,24 +746,33 @@ class PersonService {
             $pld[$scafx.'birthPlace'] = $fv;
         }
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
-        if($fv) $pld[$gfx.'gndIdentifier'] = $fv;
-
-
+        // external IDs/URLs
         $exids = array();
-
-        foreach ($person->getItem()->getIdExternal() as $id) {
-            $exids[] = $id->getAuthority()->getUrlFormatter().$id->getValue();
+        $wikipedia = null;
+        $gnd = null;
+        foreach ($person->getItem()->getUrlExternal() as $id) {
+            $url_complete = $id->getAuthority()->getUrlFormatter().$id->getValue();
+            $auth_name_formatter = $id->getAuthority()->getUrlNameFormatter();
+            if ($auth_name_formatter == 'Wikipedia-Artikel') {
+                $wikipedia = $url_complete;
+            } elseif ($auth_name_formatter == 'Gemeinsame Normdatei (GND) ID') {
+                $gnd = $id->getValue();
+            }
+            else {
+                $exids[] = $url_complete;
+            }
         }
 
+        if($gnd) {
+            $pld[$gfx.'gndIdentifier'] = $gnd;
+        }
+        if($wikipedia) {
+            $pld[$foaffx.'page'] = $wikipedia;
+        }
         if(count($exids) > 0) {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
-        if($fv) {
-            $pld[$foaffx.'page'] = $fv;
-        }
 
         // roles (offices)
 

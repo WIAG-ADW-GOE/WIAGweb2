@@ -61,19 +61,19 @@ class AuthorityRepository extends ServiceEntityRepository
 
 
     /**
-     * set authority for external IDs in $person_list
+     * set authority for external URLs in $person_list
      */
     public function setAuthority($item_list) {
         // an entry in id_external belongs to one item at most
-        $id_external_list_meta = array();
+        $url_external_list_meta = array();
         foreach ($item_list as $item_loop) {
-            $id_external_list_meta[] = $item_loop->getIdExternal()->toArray();
+            $url_external_list_meta[] = $item_loop->getUrlExternal()->toArray();
         }
-        $id_external_list = array_merge(...$id_external_list_meta);
+        $url_external_list = array_merge(...$url_external_list_meta);
 
         $auth_id_list = array();
-        foreach ($id_external_list as $id_loop) {
-            $auth_id_list[] = $id_loop->getAuthorityId();
+        foreach ($url_external_list as $url_loop) {
+            $auth_id_list[] = $url_loop->getAuthorityId();
         }
         $auth_id_list = array_unique($auth_id_list);
 
@@ -94,13 +94,13 @@ class AuthorityRepository extends ServiceEntityRepository
         // match authorities by id
         // the result list is not large so the filter is no performance problem
         $id_loop = null;
-        foreach ($id_external_list as $id_loop) {
-            $auth_id = $id_loop->getAuthorityId();
+        foreach ($url_external_list as $url_loop) {
+            $auth_id = $url_loop->getAuthorityId();
             $auth = array_filter($result, function($el) use ($auth_id) {
                 return ($el->getId() == $auth_id);
             });
-            $auth_obj = !is_null($auth) ? array_values($auth)[0] : null;
-            $id_loop->setAuthority($auth_obj);
+            $auth_obj = (!is_null($auth) && count($auth) > 0) ? array_values($auth)[0] : null;
+            $url_loop->setAuthority($auth_obj);
         }
 
         return null;

@@ -73,10 +73,10 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findList($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, bp, role, role_type, institution, idext')
+                   ->select('p, i, bp, role, role_type, institution, urlext')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.itemProperty', 'ip')
-                   ->leftjoin('i.idExternal', 'idext')
+                   ->leftjoin('i.urlExternal', 'urlext')
                    ->leftjoin('p.birthplace', 'bp')
                    ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
@@ -129,6 +129,30 @@ class PersonRepository extends ServiceEntityRepository {
         return $role_list;
     }
 
+    /**
+     * set sibling (only for bishops)
+     */
+    public function setSibling($person_list) {
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        foreach($person_list as $person) {
+            $itemRepository->setSibling($person);
+
+            $sibling = $person->getSibling();
+            // add external url, if not yet present
+            if (!is_null($sibling)) {
+                $person_url_external = $person->getItem()->getUrlExternal();
+                $url_value_list = array();
+                foreach($person_url_external as $uext) {
+                    $url_value_list[] = $uext->getValue();
+                }
+                foreach($sibling->getItem()->getUrlExternal() as $uext) {
+                    if (false === array_search($uext->getValue(), $url_value_list)) {
+                        $person_url_external->add($uext);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * setPersonName($canon_list)
@@ -136,8 +160,8 @@ class PersonRepository extends ServiceEntityRepository {
      * set personName foreach element of `$canon_list`.
      */
     public function setPersonName($canon_list) {
-
         $id_list = array_map(function($el) {return $el->getPersonIdName();}, $canon_list);
+        $id_list = array_unique($id_list);
 
         $qb = $this->createQueryBuilder('p')
                    ->select('p')
@@ -152,27 +176,12 @@ class PersonRepository extends ServiceEntityRepository {
             $id_person_map[$r->getId()] = $r;
         }
 
-        // set personName, personName->sibling, personName->urlByType, personName->sibling->urlByType
+        // set sibling in an extra call to PersonRepository->setSibling
         $em = $this->getEntityManager();
-        $itemRepository = $em->getRepository(Item::class);
         $urlExternalRepository = $em->getRepository(UrlExternal::class);
         foreach($canon_list as $canon) {
             $person_id_name = $canon->getPersonIdName();
             $person = $id_person_map[$person_id_name];
-            // set sibling (only relevant for bishops)
-            if ($person->getItem()->getSource() == 'Bischof') {
-                $itemRepository->setSibling($person);
-            }
-
-            $urlByType = $urlExternalRepository->groupByType($person_id_name);
-            $person->setUrlByType($urlByType);
-
-            $sibling = $person->getSibling();
-            if ($sibling) {
-                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-                $sibling->setUrlByType($urlByType);
-            }
-
             $canon->setPersonName($person);
         }
 

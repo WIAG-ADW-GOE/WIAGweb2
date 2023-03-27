@@ -63,6 +63,11 @@ class UrlExternal
         return $this->authority;
     }
 
+    public function setAuthority($authority): self {
+        $this->authority = $authority;
+        return $this;
+    }
+
     public function getItemId(): ?int
     {
         return $this->itemId;
@@ -99,8 +104,7 @@ class UrlExternal
         return $this;
     }
 
-    public function getValue(): ?string
-    {
+    public function getValue(): ?string {
         return $this->value;
     }
 
@@ -121,6 +125,31 @@ class UrlExternal
         $this->comment = $comment;
 
         return $this;
+    }
+
+    public function getUrl(): ?string {
+        if (!$this->value) {
+            return null;
+        }
+        // check if the complete URL is stored in `value`.
+        if (str_starts_with($this->value, "http")) {
+            return $this->value;
+        } else {
+            return $this->authority->getUrlFormatter().$this->value;
+        }
+    }
+
+    public function getPrettyValue(): ?string
+    {
+        if (!$this->value) {
+            return null;
+        }
+        $val_elts = explode('/',$this->value);
+        $value = end($val_elts);
+        $prettyValue = urldecode($value);
+        $prettyValue = str_replace('_', ' ', $prettyValue);
+
+        return $prettyValue;
     }
 
 }

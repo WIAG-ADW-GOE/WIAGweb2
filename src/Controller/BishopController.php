@@ -152,13 +152,7 @@ class BishopController extends AbstractController {
             }
         }
 
-        $itemRepository->setSibling($person);
-        // find external URLs for sibling (Domherr GS)
-        $sibling = $person->getSibling();
-        if (!is_null($sibling)) {
-            $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-            $sibling->setUrlByType($urlByType);
-        }
+        $personRepository->setSibling([$person]);
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),

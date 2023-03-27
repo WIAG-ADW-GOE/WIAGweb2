@@ -8,7 +8,6 @@ use App\Entity\Person;
 use App\Entity\Diocese;
 use App\Entity\CanonLookup;
 use App\Entity\Authority;
-use App\Entity\IdExternal;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
 
@@ -95,13 +94,7 @@ class IdController extends AbstractController {
 
         if ($format == 'html') {
 
-            $itemRepository->setSibling($person);
-            // find external URLs for sibling (Domherr GS)
-            $sibling = $person->getSibling();
-            if (!is_null($sibling)) {
-                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-                $sibling->setUrlByType($urlByType);
-            }
+            $personRepository->setSibling([$person]);
 
             return $this->render('bishop/person.html.twig', [
                 'personName' => $person,
@@ -265,8 +258,8 @@ class IdController extends AbstractController {
 
         $gnd_id = Authority::ID['GND'];
 
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
-        $gnd_list = $idExternalRepository->findValues($gnd_id);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+        $gnd_list = $urlExternalRepository->findValues($gnd_id);
 
 
         $cdata = array_merge($cbeaconheader, array_column($gnd_list, 'value'));

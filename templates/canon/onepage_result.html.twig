@@ -55,7 +55,7 @@
 			<div custom-style="WiagId" class="d-flex"><a class="ms-auto" href={{ permalink }}>{{ id_public }}</a></div>
 			{# name #}
 			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
-			{% set academic_title=person.combineProperty('academic_title') %}
+			{% set academic_title=person.combine('academicTitle') %}
 			{% if academic_title %}
 			    <div custom-style="AkadTitel">{{ academic_title }}</div>
 			{% endif %}
@@ -70,7 +70,7 @@
 		    {# offices, parameter: item #}
 		    <div class="row col-12 mx-2">
 			{% if person_loop.itemTypeID == 6 %}
-			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ person_loop.item.uriextbyauthid(200) }}"> GSN {{ person_loop.item.IdExternalByAuthorityId(200) }}</a></h4></div>
+			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ person_loop.item.geturiextbyauthid(200) }}"> GSN {{ person_loop.item.UrlExternalByAuthorityId(200) }}</a></h4></div>
 			{% endif %}
 			{% if person_loop.itemTypeID == 4 %}
 			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ path('id', {id: person_loop.item.idPublic}) }}">{{ person_loop.item.idPublic}}</a></h4></div>

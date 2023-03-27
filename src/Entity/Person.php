@@ -151,11 +151,6 @@ class Person {
     private $itemTypeId;
 
     /**
-     * external urls grouped by authority type
-     */
-    private $urlByType;
-
-    /**
      * data from alternative source (canon)
      */
     private ?Person $sibling = null;
@@ -446,16 +441,6 @@ class Person {
     {
         $this->itemTypeId = $itemTypeId;
 
-        return $this;
-    }
-
-    public function getUrlByType(): ?array
-    {
-        return $this->urlByType;
-    }
-
-    public function setUrlByType(?array $urlByType): self {
-        $this->urlByType = $urlByType;
         return $this;
     }
 

@@ -114,8 +114,7 @@ class IdExternal
         return $this->authority;
     }
 
-    public function getValue(): ?string
-    {
+    public function getValue(): ?string {
         return $this->value;
     }
 

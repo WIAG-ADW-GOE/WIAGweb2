@@ -86,7 +86,18 @@ class CanonController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
 
             $canonLookupRepository = $em->getRepository(CanonLookup::class);
-            $canon_list = $canonLookupRepository->findList($id_list, 1);
+            $prio_role = 1;
+            $canon_list = $canonLookupRepository->findList($id_list, $prio_role);
+            // set siblings for bishops
+            $bishop_list = array();
+            foreach($canon_list as $canon) {
+                $personName = $canon->getPersonName();
+                if ($personName->getItem()->getSource() == 'Bischof') {
+                    $bishop_list[] = $personName;
+                }
+            }
+            $personRepository = $em->getRepository(Person::class);
+            $personRepository->setSibling($bishop_list);
 
             return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
@@ -137,15 +148,24 @@ class CanonController extends AbstractController {
         $person_id = $ids[$idx];
 
         $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+        $personRepository = $entityManager->getRepository(Person::class);
         $canon_list = $canonLookupRepository->findList([$person_id], null);
 
         // extract Person object to be compatible with bishops
         $personName = $canon_list[0]->getPersonName();
+        $personRepository->setSibling([$personName]);
+
         $canon_list = UtilService::sortByFieldList($canon_list, ['prioRole']);
         $personRole = array_map(function($el) {
             return $el->getPerson();
         }, $canon_list);
-
+        $personUrl = null;
+        foreach($personRole as $person) {
+            if (count($person->getItem()->getUrlExternal()) > 0) {
+                $personUrl = $person;
+                break;
+            }
+        }
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
@@ -306,12 +326,6 @@ class CanonController extends AbstractController {
 
                 $node['personRole'] = $personRole;
                 $canon_node_list[] = $node;
-
-                // debug
-                // if ($node['personName']->getPerson()->getFamilyname() == "Ketelhod") {
-                //      dump($node);
-                // }
-
             }
 
             $chunk_offset += $limit;

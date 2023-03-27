@@ -86,17 +86,10 @@ class Item {
     private $itemProperty;
 
     /**
-     * @ORM\OneToMany(targetEntity="IdExternal", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
-    private $idExternal;
-
-    /**
      * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $urlExternal;
-
 
     /**
      * @ORM\OneToMany(targetEntity="ItemReference", mappedBy="item")
@@ -212,7 +205,6 @@ class Item {
     public function __construct() {
         $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
-        $this->idExternal = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
         $this->idPublic = "";
@@ -247,15 +239,36 @@ class Item {
         return $this->itemProperty;
     }
 
-    public function getIdExternal() {
-        return $this->idExternal;
+    public function getUrlExternal() {
+        return $this->urlExternal;
+    }
+
+    /**
+     * filter external URLs by $authority->urlType
+     */
+    public function getUrlExternalByType(string $url_type) {
+        $url_filter = $this->urlExternal->filter(function ($u) use ($url_type) {
+            return $u->getAuthority()->getUrlType() == $url_type;
+        });
+
+        $url_list = $url_filter->toArray();
+
+        usort($url_list, function($a, $b) {
+            $a_key = $a->getAuthority()->getDisplayOrder();
+            $b_key = $b->getAuthority()->getDisplayOrder();
+
+            return $a_key == $b_key ? 0 : ($a_key < $b_key ? -1 : 1);
+        });
+
+        return $url_list;
     }
 
     /**
      * 2023-03-01 obsolete?
+     * 2023-03-21 obsolete
      */
-    public function getIdExternalExternal() {
-        return $this->idExternal->filter(function($idext) {
+    public function getUrlExternalExternal_legacy() {
+        return $this->urlExternal->filter(function($idext) {
             $auth = $idext->getAuthority();
             if (is_null($auth)) {
                 return true;
@@ -265,10 +278,10 @@ class Item {
     }
 
     /**
-     *
+     * 2023-03-21 obsolete
      */
-    public function getIdExternalCore() {
-        $id_ext_list = $this->getIdExternalSorted();
+    public function getUrlExternalCore_legacy() {
+        $id_ext_list = $this->getUrlExternalSorted();
 
         $core_ids = Authority::coreIDs();
 
@@ -285,8 +298,8 @@ class Item {
     /**
      *
      */
-    public function getIdExternalNonCore() {
-        $id_ext_list = $this->getIdExternalSorted();
+    public function getUrlExternalNonCore_legacy() {
+        $id_ext_list = $this->getUrlExternalSorted();
 
         $core_ids = Authority::coreIDs();
 
@@ -304,12 +317,12 @@ class Item {
     /**
      * return sorted ArrayCollection
      */
-    public function getIdExternalSorted() {
-        if ($this->idExternal->isEmpty()) {
-            return $this->idExternal;
+    public function getUrlExternalSorted_legacy() {
+        if ($this->urlExternal->isEmpty()) {
+            return $this->urlExternal;
         }
-        $idExternal_sorted = $this->idExternal->toArray();
-        uasort($idExternal_sorted, function($a, $b) {
+        $urlExternal_sorted = $this->urlExternal->toArray();
+        uasort($urlExternal_sorted, function($a, $b) {
             $a_authority = $a->getAuthority();
             $b_authority = $b->getAuthority();
 
@@ -317,24 +330,20 @@ class Item {
             $display_order_b = $b_authority ? $b_authority->getDisplayOrder() : 90000;
             return $display_order_a < $display_order_b ? -1 : ($display_order_a > $display_order_b ? 1 : 0);
         });
-        return new ArrayCollection($idExternal_sorted);
+        return new ArrayCollection($urlExternal_sorted);
     }
 
     /**
      * exclude url_type 'Internal Identifier'
      */
-    public function displayIdExternal() {
-        $display = $this->idExternal->toArray();
+    public function displayUrlExternal_legacy() {
+        $display = $this->urlExternal->toArray();
         return array_filter(
             $display,
             function($v) {
                 return $v->getAuthority()->getUrlType() != "Internal Identifier";
             }
         );
-    }
-
-    public function getUrlExternal() {
-        return $this->urlExternal;
     }
 
     public function getReference() {
@@ -626,13 +635,13 @@ class Item {
 
 
     /**
-     * @return object of type IdExternal for $authorityIdOrName
+     * @return object of type UrlExternal for $authorityIdOrName
      */
-    public function getIdExternalObj($authorityIdOrName) {
+    public function getUrlExternalObj($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
 
         $result = null;
-        foreach ($this->idExternal as $id) {
+        foreach ($this->urlExternal as $id) {
             if ($id->getAuthorityId() == $authorityId) {
                 $result = $id;
                 break;
@@ -642,27 +651,24 @@ class Item {
         return $result;
     }
 
-    /**
-     * 2023-03-02 obsolete?
-     */
-    public function getIdExternalByAuthority($authorityIdOrName) {
+    public function getUrlExternalByAuthority($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
-        return $this->getIdExternalByAuthorityId($authorityId);
+        return $this->getUrlExternalByAuthorityId($authorityId);
     }
 
-    public function getIdExternalByAuthorityId($authorityId) {
-        $id = $this->getIdExternalObj($authorityId);
+    public function getUrlExternalByAuthorityId($authorityId) {
+        $id = $this->getUrlExternalObj($authorityId);
         return $id ? $id->getValue() : null;
     }
 
     public function getUriExtByAuth($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
-        $id = $this->getIdExternalObj($authorityId);
+        $id = $this->getUrlExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
 
     public function getUriExtByAuthId($authorityId) {
-        $id = $this->getIdExternalObj($authorityId);
+        $id = $this->getUrlExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
     }
 
@@ -732,11 +738,11 @@ class Item {
         return $this;
     }
 
-    public function mergeIdExternal(Item $candidate) {
-        $this->mergeCollection('idExternal', $candidate);
+    public function mergeUrlExternal(Item $candidate) {
+        $this->mergeCollection('urlExternal', $candidate);
 
         // combine entries for the same authorities
-        $list = $this->idExternal->toArray();
+        $list = $this->urlExternal->toArray();
         // sort by authority
         usort($list, function($a, $b) {
             $cmp = 0;
@@ -762,7 +768,7 @@ class Item {
                 }
             }
         }
-        $this->idExternal = $merged_list;
+        $this->urlExternal = $merged_list;
 
     }
 

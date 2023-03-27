@@ -78,16 +78,6 @@ class UrlExternalRepository extends ServiceEntityRepository
      *
      */
     public function groupByType($item_id) {
-        // 2022-06-17 old version: allow missing authority
-        // $qb = $this->createQueryBuilder('u')
-        //            ->select('auth.urlType, u')
-        //            ->addSelect("(CASE WHEN u.authorityId IS NULL THEN 0 ELSE 1 END) AS HIDDEN sortHasAuth")
-        //            ->leftJoin('u.authority', 'auth')
-        //            ->andWhere('u.itemId = :itemId')
-        //            ->addOrderBy('sortHasAuth', 'DESC')
-        //            ->addOrderBy('auth.displayOrder')
-        //            ->addOrderBy('u.note', 'DESC')
-        //            ->setParameter('itemId', $item_id);
 
         $qb = $this->createQueryBuilder('u')
                    ->select('auth.urlType, u')
@@ -96,7 +86,6 @@ class UrlExternalRepository extends ServiceEntityRepository
                    ->addOrderBy('auth.displayOrder')
                    ->addOrderBy('u.note', 'DESC')
                    ->setParameter('itemId', $item_id);
-
 
         $query = $qb->getQuery();
         $query_result = $query->getResult();
@@ -119,5 +108,22 @@ class UrlExternalRepository extends ServiceEntityRepository
         return $url_by_type;
     }
 
+    /**
+     * BEACON export
+     */
+    public function findValues($authority_id) {
+        $qb = $this->createQueryBuilder('id')
+                   ->select('DISTINCT id.value')
+                   ->join('id.item', 'item')
+                   ->andWhere('id.value is not null')
+                   ->andWhere('item.isOnline = 1')
+                   ->andWhere('id.authorityId = :authority_id')
+                   ->setParameter('authority_id', $authority_id);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+
+    }
 
 }

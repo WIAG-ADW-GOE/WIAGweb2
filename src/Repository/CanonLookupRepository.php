@@ -215,9 +215,10 @@ class CanonLookupRepository extends ServiceEntityRepository
             $qb->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdRole');
             if ($someid) {
                 $qb->join('p.item', 'item')
-                   ->leftJoin('item.idExternal', 'ixt')
+                   ->leftJoin('item.urlExternal', 'uxt')
+                   ->join('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
                    ->andWhere("item.idPublic LIKE :q_id ".
-                               "OR ixt.value LIKE :q_id")
+                               "OR uxt.value LIKE :q_id")
                    ->setParameter('q_id', '%'.$someid.'%');
             }
             if ($year) {
@@ -290,11 +291,11 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function findList($id_list, $prio_role = null) {
         $qb = $this->createQueryBuilder('c')
-                   ->select('c, p, i, ref, idext, i_prop, role, role_type, institution')
+                   ->select('c, p, i, ref, urlext, i_prop, role, role_type, institution')
                    ->join('c.person', 'p')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.reference', 'ref')
-                   ->leftjoin('i.idExternal', 'idext')
+                   ->leftjoin('i.urlExternal', 'urlext')
                    ->leftjoin('i.itemProperty', 'i_prop')
                    ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
@@ -410,26 +411,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
 
         $result = $query->getResult();
-
-        // set canon->personName
-        // $canon_list = array();
-        // $canon_last = null;
-        // foreach($result as $res_loop) {
-        //     if (is_a($res_loop, Person::class)) {
-        //         if (!is_null($canon_last) && $canon_last->getPrioRole() == 1) {
-        //             $canon_last->setPersonName($res_loop);
-        //             // set sibling
-        //             if ($res_loop->getId() != $canon_last->getPerson()->getId()) {
-        //                 $canon_last->getPersonName()->setSibling($canon_last->getPerson());
-        //             }
-        //             $canon_list[] = $canon_last;
-        //             $canon_lost = null;
-        //         }
-        //     } else {
-        //         $canon_last = $res_loop;
-        //     }
-        // }
-
     }
 
     public function getRoleIds($id) {

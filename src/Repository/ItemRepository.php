@@ -179,12 +179,13 @@ class ItemRepository extends ServiceEntityRepository
         $someid = $model->someid;
         if ($someid) {
             // search for idPublic in merging ancestors
-            $qb->leftjoin('i.idExternal', 'ixt')
+            $qb->leftjoin('i.urlExternal', 'uxt')
+               ->join('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
                ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'i.isOnline = 1 AND ip1.mergedIntoId = i.id')
                ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
                ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
                ->andWhere("i.idPublic LIKE :q_id ".
-                          "OR ixt.value LIKE :q_id ".
+                          "OR uxt.value LIKE :q_id ".
                           "OR ip1.idPublic LIKE :q_id ".
                           "OR ip2.idPublic LIKE :q_id ".
                           "OR ip3.idPublic LIKE :q_id")
@@ -333,16 +334,16 @@ class ItemRepository extends ServiceEntityRepository
         $item = array($this->find($person_id));
         // get item from Germania Sacra
         $authorityGs = Authority::ID['GS'];
-        $gsn = $item[0]->getIdExternalByAuthorityId($authorityGs);
+        $gsn = $item[0]->getUrlExternalByAuthorityId($authorityGs);
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with its GSN.
             // If data are up to date at most one of these requests is successful.
             $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-            $canonGs = $this->findByIdExternal($itemTypeCanonGs, $gsn, $authorityGs);
+            $canonGs = $this->findByUrlExternal($itemTypeCanonGs, $gsn, $authorityGs);
             $item = array_merge($item, $canonGs);
 
             $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
-            $bishopGs = $this->findByIdExternal($itemTypeBishopGs, $gsn, $authorityGs);
+            $bishopGs = $this->findByUrlExternal($itemTypeBishopGs, $gsn, $authorityGs);
             $item = array_merge($item, $bishopGs);
         }
 
@@ -351,7 +352,7 @@ class ItemRepository extends ServiceEntityRepository
         $wiagid = $item[0]->getIdPublic();
         if (!is_null($wiagid)) {
             $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
-            $canon = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            $canon = $this->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             $item = array_merge($item, $canon);
         }
 
@@ -601,21 +602,21 @@ class ItemRepository extends ServiceEntityRepository
         $f_found = false;
         if (!is_null($wiagid) && $wiagid != "") {
             $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
-            $item = $this->findByIdExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+            $item = $this->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             if ($item) {
                 $personRepository = $this->getEntityManager()->getRepository(Person::class);
-                $sibling = $personRepository->find($item[0]->getId());
-                $person->setSibling($sibling);
+                $sibling_no_list = $personRepository->findList([$item[0]->getId()]);
+                $person->setSibling($sibling_no_list[0]);
                 $f_found = true;
             }
         }
         return $f_found;
     }
 
-    public function findByIdExternal($itemTypeId, $value, $authId, $isonline = true) {
+    public function findByUrlExternal($itemTypeId, $value, $authId, $isonline = true) {
         $qb = $this->createQueryBuilder('i')
                    ->addSelect('i')
-                   ->join('i.idExternal', 'ext')
+                   ->join('i.urlExternal', 'ext')
                    ->andWhere('i.itemTypeId = :itemTypeId')
                    ->andWhere('ext.value = :value')
                    ->andWhere('ext.authorityId = :authId')

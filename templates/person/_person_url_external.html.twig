@@ -1,23 +1,37 @@
-{# parameters: urltype, urls #}
-<div class="card">
-    {# 2022-06-17 urls without a reference to an authority are excluded, so this case is obsolete #}
-    {% if not urltype %}
-	{% set urltype="Weitere Online Ressourcen" %}
+{% set url_type_list = ['Normdaten', 'Referenzdatenbanken', 'Onlinearchivalien', 'Deutsche Inschriften', 'Externe Online-Ressourcen'] %}
+{% for url_type in url_type_list %}
+    {% set url_list= personName.item.getUrlExternalByType(url_type) %}
+    {% if url_list|length > 0 %}
+	<div class="row mx-2 mt-3 mb-2">
+	    <div class="col-12">
+		<div class="card">
+		    {% set card_header=url_type %}
+		    {% if url_type == "Normdaten" %}
+			{% set card_header="Externe Identifier" %}
+		    {% endif %}
+		    <span class="card-header"><strong>{{ card_header }}</strong></span>
+		    <div class="card-body">
+			<ul class="list-unstyled mb-0">
+			    {% for url_ext in url_list %}
+				{% if url_ext.authority.urlnameformatter == "Wikipedia-Artikel" or url_type == "Normdaten" %}
+				    {% set display_url=url_ext.prettyvalue %}
+				{% else %}
+				    {% set display_url=url_ext.url %}
+				{% endif %}
+				<li>
+				    <ul class="list-inlined list-unstyled">
+					{% if url_ext.authority.urlnameformatter == "Die Deutschen Inschriften Online (DIO)" and url_ext.note%}
+					    <li class="list-inline-item">{{ url_ext.note }}.</li>
+					{% endif %}
+					<li class="list-inline-item">{{ url_ext.authority.urlnameformatter }}</li>
+					<li class="list-inline-item"><a href="{{ url_ext.url }}" target="_blank" rel="noopener">{{ display_url }}</a></li>
+				    </ul>
+				</li>
+			    {% endfor %}
+			</ul>
+		    </div>
+		</div>
+	    </div>
+	</div>
     {% endif %}
-    <span class="card-header"><strong>{{ urltype }}</strong></span>
-    <div class="card-body">
-	<ul class="list-unstyled mb-0">
-	    {% for url in urls|filter(u => u.authority) %}
-		<li>
-		    <ul class="list-inlined list-unstyled">
-			{% if url.note %}
-			    <li class="list-inline-item">{{ url.note }}.</li>
-			{% endif %}
-			<li class="list-inline-item">{{ url.authority.urlnameformatter }}</li>
-			<li class="list-inline-item"><a href="{{ url.authority.urlformatter~url.value }}" target="_blank" rel="noopener">{{ url.authority.urlformatter~url.value }}</a></li>
-		    </ul>
-		</li>
-	    {% endfor %}
-	</ul>
-    </div>
-</div>
+{% endfor %}
