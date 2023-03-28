@@ -1,10 +1,10 @@
 <div class="ps-0">
     <form id ="{{ editFormId }}"
 	  name="{{ editFormId }}"
-	  action="{{ path('edit_reference_save') }}"
+	  action="{{ path('edit_authority_save') }}"
 	  method="post"
 	  data-controller="submit-form">
-	{% set body_id_list = range(1,referenceList|length)|map(r => 'body'~r)|join(' ') %}
+	{% set body_id_list = range(1,authorityList|length)|map(r => 'body'~r)|join(' ') %}
 	<div class="row mx-0">
 	    <div class="col">
 		{# disable submit via enter-key #}
@@ -24,7 +24,7 @@
 			data-action="toggle-arrow#toggle"
 			aria-label="Listenelemente aufklappen oder schließen"
 			{# avoid overflow of the number of input field elements #}
-			{% if referenceList|length > 20 %}disabled{% endif %}
+			{% if authorityList|length > 20 %}disabled{% endif %}
 			data-value="down">öffnen/schließen</button>
 	    </div>
 	    <div class="col">
@@ -38,14 +38,15 @@
 	<div class="row mx-0">
 	    <div class="col-12">
 		<div data-controller="insert"
-		     data-insert-url-value="{{ path('edit_reference_new_reference', {
+		     {% if false %} {# 2023-03-27 TODO #}
+		     data-insert-url-value="{{ path('edit_authority_new_authority', {
 					    edit_form_id: editFormId,
-					    item_type_id: itemTypeId,
 					    }) }}"
+		     {% endif %}
 		     data-insert-point-value="lastButOne">
-		    {% for ref in referenceList %}
-			{{ include('edit_reference/_item.html.twig', {
-			    reference: ref,
+		    {% for auth in authorityList %}
+			{{ include('edit_authority/_item.html.twig', {
+			    authority: auth,
 			    current_idx: loop.index,
 			}) }}
 		    {% endfor %}

@@ -125,7 +125,7 @@ class ReferenceVolume {
      */
     private $gsCitation;
 
-        /**
+    /**
      * no DB-mapping
      * hold form input data
      */
@@ -351,7 +351,6 @@ class ReferenceVolume {
     public function getFormIsExpanded() {
         return $this->formIsExpanded;
     }
-
 
     /**
      * getIdExternalByAuthorityId($authorityId)

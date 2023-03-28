@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\AuthorityRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 /**
  * @ORM\Entity(repositoryClass=AuthorityRepository::class)
  */
@@ -26,6 +29,17 @@ class Authority {
         'GS' => 200,
         'World Historical Gazetteer' => 54,
     ];
+
+    const EDIT_FIELD_LIST = [
+        'urlNameFormatter',
+        'urlType',
+        'urlFormatter',
+        'urlValueExample',
+        'url',
+        'displayOrder',
+        'comment'
+    ];
+
 
     static public function coreIDs() {
         return array_map(function($v) {
@@ -81,6 +95,27 @@ class Authority {
      */
     private $displayOrder;
 
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsEdited = false;
+
+    /**
+     * no DB-mapping
+     * hold form input data
+     */
+    private $formIsExpanded = false;
+
+    /**
+     * collection of InputError
+     */
+    private $inputError;
+
+    public function __construct() {
+        $this->inputError = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -115,7 +150,7 @@ class Authority {
         return $this->urlFormatter;
     }
 
-    public function setUrlFormatter(string $urlFormatter): self
+    public function setUrlFormatter(?string $urlFormatter): self
     {
         $this->urlFormatter = $urlFormatter;
 
@@ -169,4 +204,49 @@ class Authority {
 
         return $this;
     }
+
+    public function setFormIsEdited($value): self {
+        $this->formIsEdited = $value;
+        return $this;
+    }
+
+    public function getFormIsEdited() {
+        return $this->formIsEdited;
+    }
+
+    public function setFormIsExpanded($value): self {
+        $this->formIsExpanded = $value;
+        return $this;
+    }
+
+    public function getFormIsExpanded() {
+        return $this->formIsExpanded;
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
+    }
+
+    public function hasError($min_level): bool {
+        // the database is not aware of inputError and it's type
+        if (is_null($this->inputError)) {
+            return false;
+        }
+
+        foreach($this->inputError as $e_loop) {
+            $level = $e_loop->getLevel();
+            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
