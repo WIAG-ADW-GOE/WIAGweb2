@@ -4,7 +4,7 @@ export default class extends Controller {
     static targets = ['status', 'result'];
     static values = {
 	url: String,
-	chunkSize: String
+	chunkSize: String,
     };
 
     connect() {
@@ -20,7 +20,7 @@ export default class extends Controller {
 
 	// debug
 	// this.chunkSizeValue = 10;
-	const max_offset = 10000;
+	const max_offset = 20000;
 
 	while(true) {
 	    var url_params = new URLSearchParams({
@@ -47,12 +47,11 @@ export default class extends Controller {
 		break;
 	    }
 
-	    // e.g. application specific status 240
+	    // e.g. application specific status 240 (success)
 	    if (response.status > 200) {
 		break;
 	    }
 	}
-
     }
 
     accumulateByClassName(total, class_name) {

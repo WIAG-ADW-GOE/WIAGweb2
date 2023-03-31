@@ -39,7 +39,7 @@ class EditReferenceController extends AbstractController {
             'Domherr'    => Item::ITEM_TYPE_ID['Domherr']['id'],
             'Bistum'     => Item::ITEM_TYPE_ID['Bistum']['id'],
             'Bischof GS' => Item::ITEM_TYPE_ID['Bischof GS']['id'],
-            'Domherr GS' => Item::ITEM_TYPE_ID['Domherr GS']['id'],
+            'GS-Bände' => Item::ITEM_TYPE_ID['Domherr GS']['id'],
             'Priester Utrecht' => Item::ITEM_TYPE_ID['Priester Utrecht']['id'],
         ];
 

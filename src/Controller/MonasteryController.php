@@ -76,7 +76,9 @@ class MonasteryController extends AbstractController {
                     $service->update($monastery_list[0]);
                     $updated_n += 1;
                 } else {
-                    $new_item = Item::newItem($this->getUser()->getId(), 'Kloster');
+                    $user_id = intval($this->getUser()->getId());
+                    $item_type_id = Item::ITEM_TYPE_ID['Kloster']['id'];
+                    $new_item = Item::newItem($item_type_id, $user_id);
                     $new_monastery = Institution::newInstitution($new_item);
                     $new_monastery->setIdGsn($gsn);
                     $service->update($new_monastery);
