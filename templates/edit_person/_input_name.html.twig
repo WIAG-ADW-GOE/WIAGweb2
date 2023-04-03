@@ -1,0 +1,96 @@
+<div class="row">
+    <div class="col-12">
+	<div {{ stimulus_controller('toggle-arrow', {
+	     state: 0,
+	     imgOpen: 'down',
+	     imgClosed: 'right'
+	     }) }}
+     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text">Vorname, Präfix, Familienname</span>
+		<input type="text" id="{{ base_id }}_givenname"
+		       name="{{ base_input_name}}[givenname]"
+		       class="form-control wiag-input"
+		       value="{{ person.givenname }}"
+		       spellcheck="false"
+		       aria-label="Vorname">
+		<input type="text" id="{{ base_id }}_prefix"
+		       name="{{ base_input_name}}[prefixname]"
+		       class="form-control wiag-input"
+		       value="{{ person.prefixname }}"
+		       style="max-width: 10rem"
+		       spellcheck="false"
+		       aria-label="Präfix">
+		<input type="text" id="{{ base_id }}_familyname"
+		       name="{{ base_input_name}}[familyname]"
+		       class="form-control wiag-input"
+		       value="{{ person.familyname }}"
+		       spellcheck="false"
+		       aria-label="Familienname"
+		       data-controller="move-cursor"
+		       data-action="blur->move-cursor#moveStart">
+	    </div>
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text">geboren</span>
+		<input type="text" id="{{ base_id }}_datebirth"
+		       name="{{ base_input_name}}[dateBirth]"
+		       class="form-control wiag-input"
+		       value="{{ person.dateBirth }}"
+		       style="max-width: 10em"
+		       spellcheck="false"
+		       aria-label="Geburtsdatum">
+		<span class="input-group-text">gestorben</span>
+		<input type="text" id="{{ base_id }}_datedeath"
+		       name="{{ base_input_name}}[dateDeath]"
+		       class="form-control wiag-input"
+		       value="{{ person.dateDeath }}"
+		       style="max-width: 10em"
+		       spellcheck="false"
+		       aria-label="Sterbedatum">
+		<span class="input-group-text ms-2">Vornamenvarianten</span>
+		<input type="text" id="{{ base_id }}_givennamevariants"
+		       name="{{ base_input_name}}[givennameVariants]"
+		       class="form-control wiag-input"
+		       value="{{ person.formGivennameVariants }}"
+		       spellcheck="false"
+		       aria-label="Vornamenvarianten">
+		<span class="input-group-text ms-2">Familiennamenvarianten</span>
+		<input type="text" id="{{ base_id }}_familynamevariants"
+		       name="{{ base_input_name}}[familynameVariants]"
+		       class="form-control wiag-input"
+		       value="{{ person.formFamilynameVariants }}"
+		       spellcheck="false"
+		       aria-label="Familiennamenvarianten">
+	    </div>
+	    <div class="input-group input-group-sm mt-1 ">
+		<span class="input-group-text" style="min-width: 14rem">Namenszusätze</span>
+		<input type="text"
+		       id="{{ base_id }}_noteName"
+		       name="{{ base_input_name }}[noteName]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.noteName }}">
+		<span class="input-group-text" style="min-width: 8rem">Akademischer Titel</span>
+		<input type="text"
+		       id="{{ base_id }}_academicTitle"
+		       name="{{ base_input_name }}[academicTitle]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.academicTitle }}">
+
+	    </div>
+	    <div class="input-group input-group-sm mt-1">
+		<span class="input-group-text" style="min-width: 14rem">Bemerkung zur Person (online)</span>
+		<textarea id="{{ base_id }}_notePerson"
+			  style="height: 3rem"
+			  name="{{ base_input_name }}[notePerson]"
+			  class="form-control form-control-sm wiag-input">{{ person.notePerson }}</textarea>
+	    </div>
+	    {{ include('edit_person/_input_property_list.html.twig') }}
+	</div>
+    </div>
+</div>
+{% for error_obj in person.inputError|filter(v => v.section == 'name') %}
+    <div class="row">
+	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

@@ -3,7 +3,7 @@ namespace App\Form;
 
 use App\Entity\Item;
 use App\Entity\FacetChoice;
-use App\Form\Model\CanonFormModel;
+use App\Form\Model\PersonFormModel;
 use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
 
@@ -36,7 +36,7 @@ class CanonFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
-            'data_class' => CanonFormModel::class,
+            'data_class' => PersonFormModel::class,
             'forceFacets' => false,
         ]);
 
@@ -54,7 +54,7 @@ class CanonFormType extends AbstractType
                     'placeholder' => 'Vor- oder Nachname',
                 ],
             ])
-            ->add('domstift', TextType::class, [
+            ->add('institution', TextType::class, [
                 'label' => 'Domstift',
                 'required' => false,
                 'attr' => [
@@ -92,7 +92,7 @@ class CanonFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('stateFctDmt', HiddenType::class, [
+            ->add('stateFctInst', HiddenType::class, [
                 'mapped' => false,
             ])
             ->add('stateFctOfc', HiddenType::class, [
@@ -107,7 +107,7 @@ class CanonFormType extends AbstractType
 
 
         if ($forceFacets) {
-            $this->createFacetDomstift($builder, $model);
+            $this->createFacetInstitution($builder, $model);
             $this->createFacetOffice($builder, $model);
             $this->createFacetPlace($builder, $model);
             $this->createFacetUrl($builder, $model);
@@ -118,9 +118,9 @@ class CanonFormType extends AbstractType
             FormEvents::PRE_SUBMIT,
             function($event) {
                 $data = $event->getData();
-                $model = CanonFormModel::newByArray($data);
+                $model = PersonFormModel::newByArray($data);
 
-                $this->createFacetDomstift($event->getForm(), $model);
+                $this->createFacetInstitution($event->getForm(), $model);
                 $this->createFacetOffice($event->getForm(), $model);
                 $this->createFacetPlace($event->getForm(), $model);
                 $this->createFacetUrl($event->getForm(), $model);
@@ -128,10 +128,10 @@ class CanonFormType extends AbstractType
 
     }
 
-    public function createFacetDomstift($form, $modelIn) {
+    public function createFacetInstitution($form, $modelIn) {
         // do not filter by filter domstift itsself
         $model = clone $modelIn;
-        $model->facetDomstift = null;
+        $model->facetInstitution = null;
 
         $domstifte = $this->repository->countCanonDomstift($model);
 
@@ -141,12 +141,12 @@ class CanonFormType extends AbstractType
         }
 
         // add selected fields, that are not contained in $choices
-        $choicesIn = $modelIn->facetDomstift;
+        $choicesIn = $modelIn->facetInstitution;
         FacetChoice::mergeByName($choices, $choicesIn);
 
 
         if ($domstifte) {
-            $form->add('facetDomstift', ChoiceType::class, [
+            $form->add('facetInstitution', ChoiceType::class, [
                 'label' => 'Filter Domstift',
                 'expanded' => true,
                 'multiple' => true,

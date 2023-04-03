@@ -14,7 +14,7 @@ use App\Repository\ItemRepository;
 use App\Repository\CanonLookupRepository;
 use App\Service\UtilService;
 use App\Form\CanonFormType;
-use App\Form\Model\CanonFormModel;
+use App\Form\Model\PersonFormModel;
 
 use App\Service\PersonService;
 
@@ -45,8 +45,9 @@ class CanonController extends AbstractController {
                           CanonLookupRepository $repository,
                           UtilService $utilService) {
 
-        // we need to pass an instance of CanonFormModel, because facets depend on it's data
-        $model = new CanonFormModel;
+        // we need to pass an instance of PersonFormModel, because facets depend on it's data
+        // $model = new PersonFormModel;
+        $model = new PersonFormModel;
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -119,7 +120,7 @@ class CanonController extends AbstractController {
     public function canonListDetail(Request $request,
                                     EntityManagerInterface $entityManager,
                                     UtilService $utilService) {
-        $model = new CanonFormModel;
+        $model = new PersonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
@@ -188,11 +189,11 @@ class CanonController extends AbstractController {
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = CanonFormModel::newByArray($request->request->get('canon_form'));
+            $model = PersonFormModel::newByArray($request->request->get('canon_form'));
             $format = $request->request->get('format') ?? 'json';
 
         } else {
-            $model = CanonFormModel::newByArray($request->query->all());
+            $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
 
@@ -254,7 +255,7 @@ class CanonController extends AbstractController {
                             EntityManagerInterface $entityManager,
                             UtilService $utilService) {
 
-        $model = new CanonFormModel();
+        $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
@@ -397,7 +398,7 @@ class CanonController extends AbstractController {
     public function onepage_legacy (Request $request,
                                     EntityManagerInterface $entityManager) {
 
-        $model = new CanonFormModel();
+        $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
@@ -455,7 +456,7 @@ class CanonController extends AbstractController {
         // 6 references GS
         // 5 other references
 
-        $model = new CanonFormModel();
+        $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 

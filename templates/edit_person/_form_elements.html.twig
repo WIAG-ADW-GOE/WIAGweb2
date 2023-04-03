@@ -1,0 +1,200 @@
+{# params: field width values #}
+<div class="row {{ indent_class }}">
+    <div class="col-12">
+	<div class="d-flex flex-wrap"
+	     data-action="input->hide-on-input#hideResults">
+	    {# name #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'name', 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.name) }}
+		{{ form_errors(form.name) }}
+		{{ form_widget(form.name, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_name,
+			'class': 'wiag-input'
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    {# institution #}
+	    {% set autocomplete_field = { '4': 'diocese', '5': 'institution' } %}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest_base', {
+			 'field': autocomplete_field[itemTypeId],
+			 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.institution) }}
+		{{ form_errors(form.institution) }}
+		{{ form_widget(form.institution, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_institution,
+			'class': 'wiag-input'
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 25em;"></ul>
+	    </div>
+	    {# office #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'office', 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.office) }}
+		{{ form_errors(form.office) }}
+		{{ form_widget(form.office, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_office,
+			'class': 'wiag-input'
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 12em;"></ul>
+	    </div>
+	    {{  form_row(form.year, {
+		'row_attr': {'class': 'me-2 mt-1'},
+		'attr': {
+		    'class': 'wiag-input'}
+	    }) }}
+	    {{  form_row(form.someid, {
+		row_attr: {class: 'mt-1'},
+		'attr': {
+		    'class': 'wiag-input',
+		    'size': input_width_id,
+		}
+	    }) }}
+	</div>
+    </div>
+</div>
+{# second row #}
+<div class="row mt-1 {{ indent_class }}">
+    <div class="col-12">
+	<div class="d-flex flex-wrap"
+	     data-action="input->hide-on-input#hideResults">
+	    {% if itemTypeId == 5 %} {# canons #}
+		{# place #}
+		<div class="me-2 mt-1"
+		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest', { 'field': 'place', 'itemTypeId': itemTypeId }),
+		     }) }}>
+		    {{ form_label(form.place) }}
+		    {{ form_errors(form.place) }}
+		    {{ form_widget(form.place, {
+			'attr': {
+			    'data-autocomplete-target': "input",
+			    'size': input_width_place,
+			    'class': 'wiag-input'
+			}
+		    }) }}
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 30rem;"></ul>
+		</div>
+	    {% endif %}
+	    {# reference #}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'titleShort', 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.reference) }}
+		{{ form_errors(form.reference) }}
+		{{ form_widget(form.reference, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_reference,
+			'class': 'wiag-input'
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
+	    </div>
+	</div>
+    </div>
+</div>
+{# third row #}
+<div class="row mt-1 {{ indent_class }}">
+    <div class="col-12">
+	<div class="d-flex flex-wrap"
+	     data-action="input->hide-on-input#hideResults">
+	    <div class="me-2 mt-1">
+		{{ form_label(form.editStatus) }}
+		{{ form_errors(form.editStatus) }}
+		{{ form_widget(form.editStatus, {
+		    'attr': {
+			'size': 3,
+			'class': 'wiag-input',
+			'style': 'min-width: 9rem',
+		    }
+		}) }}
+	    </div>
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'commentduplicate', 'itemTypeId': itemTypeId }),
+		 }) }}>
+		{{ form_label(form.commentDuplicate) }}
+		{{ form_errors(form.commentDuplicate) }}
+		{{ form_widget(form.commentDuplicate, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_duplicate,
+			'class': 'wiag-input',
+		    }
+		}) }}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 12em;"></ul>
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.comment) }}
+		{{ form_errors(form.comment) }}
+		{{ form_widget(form.comment, {
+		    'attr': {
+			'class': 'wiag-input',
+			'size': input_width_comment
+		    }
+		}) }}
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.dateCreated) }}
+		{{ form_errors(form.dateCreated) }}
+		{{ form_widget(form.dateCreated, {
+		    'attr': {
+			'class': 'wiag-input',
+			'size': input_width_date
+		    }
+		}) }}
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.dateChanged) }}
+		{{ form_errors(form.dateChanged) }}
+		{{ form_widget(form.dateChanged, {
+		    'attr': {
+			'class': 'wiag-input',
+			'size': input_width_date
+		    }
+		}) }}
+	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.listSize) }}
+		{{ form_errors(form.listSize) }}
+		{{ form_widget(form.listSize, {
+		    'attr': {
+			'class': 'wiag-input',
+		    }
+		}) }}
+	    </div>
+	    {{ form_rest(form) }}
+	</div>
+    </div>
+</div>
+{# {{ form_end(form) }} #}

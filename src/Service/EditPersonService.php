@@ -53,13 +53,14 @@ class EditPersonService {
      *
      * @return list of persons containing the data in $form_data
      */
-    public function mapFormData($item_type_id, $form_data) {
+    public function mapFormData($form_data) {
 
         $person_repository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
 
         foreach($form_data as $data) {
             $id = $data['id'];
+            $item_type_id = $data['item']['itemTypeId'];
             // skip blank forms
             $person = null;
             if ($id == 0 && !isset($data['item']['formIsEdited'])) {

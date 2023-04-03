@@ -76,7 +76,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
         $office = $model->office;
         $place = $model->place;
         $year = $model->year;
@@ -84,7 +84,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         // c (group by and query conditions)
-        // p, r (sort) use person with prioRole 1
+        // p_prio, r (sort) use person with prioRole 1
         // p_name with c.prioRole = 1: we need each person only once
         $qb = $this->createQueryBuilder('c')
                    ->join('App\Entity\CanonLookup', 'c_prio', 'WITH', 'c_prio.personIdName = c.personIdName AND c_prio.prioRole = 1')
@@ -151,10 +151,40 @@ class CanonLookupRepository extends ServiceEntityRepository
 
     }
 
+    public function canonIdsAll($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
+        $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
+
+        $domstift = $model->institution;
+        $office = $model->office;
+        $place = $model->place;
+        $year = $model->year;
+        $name = $model->name;
+        $someid = $model->someid;
+
+        $repository = $this->getEntityManager()->getRepository(Person::class);
+        $qb = $repository->createQueryBuilder('p')
+                         ->select('p.id')
+                         ->andWhere('p.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id);
+
+        // 2023-03-30 TODO: Sortieren, je nach Abfrageparametern
+
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        return array_column($result, 'id');
+
+    }
+
+
     public function addCanonConditions($qb, $model, $add_joins = true) {
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
         $office = $model->office;
         $name = $model->name;
         $place = $model->place;
@@ -238,7 +268,7 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     private function addCanonFacets($qb, $model) {
 
-        $facetDomstift = $model->facetDomstift;
+        $facetDomstift = $model->facetInstitution;
         if ($facetDomstift) {
             $valFctDft = array_column($facetDomstift, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctdft', 'WITH', 'prfctdft.personId = c.personIdRole')
@@ -575,7 +605,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c')
                    ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
-            // ->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
+            //->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.role', 'role_count');
 
@@ -648,85 +678,90 @@ class CanonLookupRepository extends ServiceEntityRepository
 
 
     /**
+     * 2023-03-30 obsolete: see PersonRepository
      * AJAX
      */
-    public function suggestCanonName($name, $hintSize) {
-        // join name_lookup via personIdRole (all canons)
-        // show version with prefix if present!
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
-                            "AS suggestion")
-                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-                   ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
-                   ->setParameter('name', '%'.$name.'%');
+    // public function suggestCanonName($name, $hintSize) {
+    //     // join name_lookup via personIdRole (all canons)
+    //     // show version with prefix if present!
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
+    //                         "THEN n.gnPrefixFn ELSE n.gnFn END ".
+    //                         "AS suggestion")
+    //                ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
+    //                ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
+    //                ->setParameter('name', '%'.$name.'%');
 
-        $qb->setMaxResults($hintSize);
+    //     $qb->setMaxResults($hintSize);
 
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
 
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
+
+    /**
+     * 2023-03-30 see PersonRepository
+     * AJAX
+     */
+    // public function suggestCanonDomstift($name, $hintSize) {
+    //     $itemTypeIdDomstift = 3;
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select("DISTINCT inst.name AS suggestion")
+    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
+    //                ->join('pr.institution', 'inst')
+    //                ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
+    //                ->andWhere('inst.name like :name')
+    //                ->setParameter('name', '%'.$name.'%');
+
+    //     $qb->setMaxResults($hintSize);
+
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
+
+    //     return $suggestions;
+    // }
 
     /**
      * AJAX
+     *
+     * 2023-03-30 see PersonRepository
      */
-    public function suggestCanonDomstift($name, $hintSize) {
-        $itemTypeIdDomstift = 3;
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT inst.name AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->join('pr.institution', 'inst')
-                   ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
-                   ->andWhere('inst.name like :name')
-                   ->setParameter('name', '%'.$name.'%');
+    // public function suggestCanonOffice($name, $hintSize) {
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select("DISTINCT pr.roleName AS suggestion")
+    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
+    //                ->andWhere('pr.roleName like :name')
+    //                ->setParameter('name', '%'.$name.'%');
 
-        $qb->setMaxResults($hintSize);
+    //     $qb->setMaxResults($hintSize);
 
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
 
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
 
     /**
      * AJAX
+     *
+     * 2023-03-30 see PersonRepository
      */
-    public function suggestCanonOffice($name, $hintSize) {
-        $itemTypeIdDomstift = 3;
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT pr.roleName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->andWhere('pr.roleName like :name')
-                   ->setParameter('name', '%'.$name.'%');
+    // public function suggestCanonPlace($name, $hintSize) {
+    //     $qb = $this->createQueryBuilder('c')
+    //                ->select("DISTINCT ip.placeName AS suggestion")
+    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
+    //                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
+    //                ->andWhere('ip.placeName like :name')
+    //                ->setParameter('name', '%'.$name.'%');
 
-        $qb->setMaxResults($hintSize);
+    //     $qb->setMaxResults($hintSize);
 
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
 
-        return $suggestions;
-    }
-
-    /**
-     * AJAX
-     */
-    public function suggestCanonPlace($name, $hintSize) {
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT ip.placeName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
-                   ->andWhere('ip.placeName like :name')
-                   ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
 
 
 

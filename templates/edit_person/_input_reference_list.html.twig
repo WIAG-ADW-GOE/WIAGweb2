@@ -1,0 +1,19 @@
+<div data-controller="insert sync"
+     data-insert-url-value="{{ path('edit_person_new_reference', {
+			    'itemTypeId': itemTypeId,
+			    'personIndex': personIndex
+			    }) }}"
+     data-insert-point-value="last"
+     data-insert-hide-trigger-value="yes">
+	{% for ref in person.item.reference %}
+	{{ include('edit_person/_input_reference.html.twig', {
+		current_idx: loop.index0,
+		is_last: loop.last,
+	}) }}
+    {% endfor %}
+</div>
+{% for error_obj in person.inputError|filter(v => v.section == 'reference') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

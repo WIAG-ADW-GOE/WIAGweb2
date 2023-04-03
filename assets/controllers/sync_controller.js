@@ -40,8 +40,7 @@ export default class extends Controller {
 	console.log('sync#fill');
 	// console.log(this.fillTarget.id);
 
-	console.log(this.fillStatusValue);
-
+	// change HTML only once
 	if (this.fillStatusValue == 'empty' && this.fillUrlValue != "") {
 	    const response = await fetch(this.fillUrlValue);
 	    const new_html = await response.text();

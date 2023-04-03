@@ -51,9 +51,11 @@ class EditBishopController extends AbstractController {
     /**
      * display query form for bishops;
      *
-     * @Route("/edit/bischof/query", name="edit_bishop_query")
+     * @Route("/edit/bischof/query/", name="edit_bishop_query")
      */
     public function query(Request $request) {
+
+        $this->itemTypeId = $itemTypeId;
 
         $model = new BishopFormModel;
         // set defaults
@@ -142,6 +144,7 @@ class EditBishopController extends AbstractController {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
+        dump($suggestions);
         $status_list = array_column($suggestions, 'suggestion');
 
         $status_choices = ['- alle -' => null];

@@ -1,0 +1,112 @@
+{% import "edit_person/_util.html.twig" as util %}
+<div class="row"> {# empty div to have the same structure for all sections #}
+    <div class="col-12">
+	<div class="input-group input-group-sm mb-1 mt-1">
+	    <span class="input-group-text">Status</span>
+	    <div {{ stimulus_controller('autocomplete', {
+		 url: path('person_suggest', {itemTypeId: itemTypeId, field: 'editStatus'}),
+		 }) }} >
+		<input type="text" id="{{ base_id }}_item_editstatus"
+		       name="{{ base_input_name}}[item][editStatus]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.item.editStatus }}"
+		       style="max-width: 12em"
+		       spellcheck="false"
+		       aria-label="Status"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    <span class="input-group-text ms-2">identisch mit</span>
+	    <input type="text" id="{{ base_id }}_item_commentduplicate"
+		   name="{{ base_input_name}}[item][commentDuplicate]"
+		   class="form-control form-control-sm wiag-input"
+		   style="max-width: 9em"
+		   value="{{ person.item.commentDuplicate }}"
+		   aria-label="Kommentar Dublette">
+	    {# get parent IDs (hidden) #}
+	    {% for parent_item in person.item.mergeParent %}
+		{{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeParent', loop.index0], parent_item.id) }}
+	    {% endfor %}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeStatus'], person.item.mergeStatus) }}
+	    {% if person.item.mergeStatus == 'child' %}
+		<span class="input-group-text ms-2">zusammengesetzter Eintrag</span>
+	    {% endif %}
+	    {# show parent IDs in the merging process #}
+	    {% if person.item.mergeParent|length > 0 %}
+		<span class="input-group-text ms-2">zusammengesetzt aus</span>
+		{% for parent_item in person.item.mergeParent %}
+		    <input type="text"
+			   class="form-control form-control-sm"
+			   style="max-width: 5em"
+			   value="{{ parent_item.idInSource }}"
+			   disabled="disabled"
+			   aria-label="Zusammengesetzt aus">
+		{% endfor %}
+	    {% endif %}
+	    {% if formType == 'list' %}
+		{# dropdown "Aktion" #}
+		<div class="dropdown ms-auto">
+		    <button class="btn btn-sm btn-secondary dropdown-toggle"
+			    type="button"
+			    data-bs-toggle="dropdown"
+			    aria-expanded="false">Aktion</button>
+		    <ul class="dropdown-menu">
+			<li><button class="dropdown-item"
+				    type="button"
+				    value="{{ base_id }}"
+				    data-person-id="{{ person.id }}"
+				    data-list-index="{{ personIndex }}"
+				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
+			{% if person.item.commentDuplicate %}
+			    <li><a class="dropdown-item" href="{{ path('edit_person_merge_item', { 'itemTypeId': itemTypeId, 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
+			    </li>
+			{% endif %}
+			{% if person.item.mergeStatus == 'child' %}
+			    <li data-controller="submit-confirm"
+				data-submit-confirm-title-value="Eintrag aufteilen?"
+				data-submit-confirm-button-id-value="split_{{ person.id }}"
+				data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
+				data-submit-confirm-confirm-button-text-value="Aufteilen"
+				data-submit-confirm-cancel-button-text-value="Abbrechen">
+				{# use this hidden element to trigger the confirmed action #}
+				<a id="split_{{ person.id }}"
+				   class="d-none"
+				   href="{{ path('edit_person_split_item', {'id': person.id}) }}"></a>
+				<button type="button"
+					class="dropdown-item"
+					data-action="submit-confirm#confirm">Eintrag aufteilen</button>
+			    </li>
+			{% endif %}
+			<li data-controller="submit-confirm"
+			    data-submit-confirm-title-value="Eintrag löschen?"
+			    data-submit-confirm-button-id-value="delete_{{ person.id }}"
+			    data-submit-confirm-text-value="Der Eintrag wird gelöscht und ist nicht mehr zugänglich."
+			    data-submit-confirm-confirm-button-text-value="Löschen"
+			    data-submit-confirm-cancel-button-text-value="Abbrechen">
+			    {# use this hidden element to trigger the confirmed action #}
+			    <button type="submit"
+				    id="delete_{{ person.id }}"
+				    form="{{ editFormId }}"
+				    formaction="{{ path('edit_person_delete') }}"
+				    class="d-none"
+				    value="{{ person.id }}"
+				    name="delete-id"></button>
+			    <button type="button"
+				    class="dropdown-item"
+				    data-action="submit-confirm#confirm">Eintrag löschen</button>
+			</li>
+		    </ul>
+		</div>
+	    {% endif %}
+	</div>
+    </div>
+
+</div>
+{# validation messages #}
+{% for error_obj in person.inputError|filter(v => v.section == 'status') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

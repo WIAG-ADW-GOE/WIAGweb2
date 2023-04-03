@@ -84,7 +84,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof']['id'];
 
-        $diocese = $model->diocese;
+        $diocese = $model->institution;
         $office = $model->office;
         $year = $model->year;
         $name = $model->name;
@@ -142,7 +142,7 @@ class ItemRepository extends ServiceEntityRepository
 
 
     private function addBishopConditions($qb, $model) {
-        $diocese = $model->diocese;
+        $diocese = $model->institution;
         $office = $model->office;
 
         if ($diocese) {
@@ -249,7 +249,7 @@ class ItemRepository extends ServiceEntityRepository
     private function addBishopFacets($qb, $model) {
         $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
-        $facetDiocese = isset($model->facetDiocese) ? $model->facetDiocese : null;
+        $facetDiocese = isset($model->facetInstitution) ? $model->facetInstitution : null;
         if ($facetDiocese) {
             $valFctDioc = array_column($facetDiocese, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
@@ -390,97 +390,67 @@ class ItemRepository extends ServiceEntityRepository
 
 
     /**
+     * 2023-03-30 obsolete see Person Repository
      * usually used for asynchronous JavaScript request
      */
-    public function suggestBishopName($name, $hintSize, $only_online = true, $edit_status = null) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
-                            "AS suggestion")
-                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->leftjoin('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
-                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId OR clu.personIdRole = n.personId')
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
-                   ->setParameter(':name', '%'.$name.'%');
+    // public function suggestBishopDiocese($name, $hintSize) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select("DISTINCT pr.dioceseName AS suggestion")
+    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'i.id = pr.personId')
+    //                ->andWhere('i.itemTypeId = :itemType')
+    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
+    //                ->andWhere('pr.dioceseName like :name')
+    //                ->setParameter(':name', '%'.$name.'%');
 
-        if (!is_null($edit_status)) {
-            $qb->andWhere('i.editStatus = :edit_status')
-               ->setParameter('edit_status', $edit_status);
-        }
+    //     $qb->setMaxResults($hintSize);
 
-        if ($only_online) {
-            $qb->andWhere('i.isOnline = 1');
-        }
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
 
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
 
     /**
      * usually used for asynchronous JavaScript request
+     * 2023-03-31 see AutocompleteService
      */
-    public function suggestBishopDiocese($name, $hintSize) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT pr.dioceseName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'i.id = pr.personId')
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-                   ->andWhere('pr.dioceseName like :name')
-                   ->setParameter(':name', '%'.$name.'%');
+    // public function suggestBishopOffice($name, $hintSize) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select("DISTINCT pr.roleName AS suggestion")
+    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
+    //                ->andWhere('i.itemTypeId = :itemType')
+    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
+    //                ->andWhere('pr.roleName like :name')
+    //                ->setParameter(':name', '%'.$name.'%');
 
-        $qb->setMaxResults($hintSize);
+    //     $qb->setMaxResults($hintSize);
 
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
+    //     // dd($suggestions);
 
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
 
     /**
      * usually used for asynchronous JavaScript request
+     * 2023-03-21 see AutocompleteService
      */
-    public function suggestBishopOffice($name, $hintSize) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT pr.roleName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-                   ->andWhere('pr.roleName like :name')
-                   ->setParameter(':name', '%'.$name.'%');
+    // public function suggestBishopCommentDuplicate($name, $hintSize) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select("DISTINCT i.commentDuplicate AS suggestion")
+    //                ->andWhere('i.itemTypeId = :itemType')
+    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
+    //                ->andWhere('i.commentDuplicate like :name')
+    //                ->setParameter(':name', '%'.$name.'%');
 
-        $qb->setMaxResults($hintSize);
+    //     $qb->setMaxResults($hintSize);
 
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-        // dd($suggestions);
+    //     $query = $qb->getQuery();
+    //     $suggestions = $query->getResult();
 
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestBishopCommentDuplicate($name, $hintSize) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT i.commentDuplicate AS suggestion")
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-                   ->andWhere('i.commentDuplicate like :name')
-                   ->setParameter(':name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
+    //     return $suggestions;
+    // }
 
     public function priestUtIds($model, $limit = 0, $offset = 0) {
         $result = null;

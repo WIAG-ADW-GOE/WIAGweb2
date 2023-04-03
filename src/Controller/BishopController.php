@@ -8,7 +8,7 @@ use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
-use App\Form\Model\BishopFormModel;
+use App\Form\Model\PersonFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
@@ -52,8 +52,8 @@ class BishopController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
 
-        // we need to pass an instance of BishopFormModel, because facets depend on it's data
-        $model = new BishopFormModel;
+        // we need to pass an instance of PersonFormModel, because facets depend on it's data
+        $model = new PersonFormModel;
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -114,7 +114,7 @@ class BishopController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
-        $model = new BishopFormModel;
+        $model = new PersonFormModel;
 
         $form = $this->createForm(BishopFormType::class, $model);
         $form->handleRequest($request);
@@ -175,10 +175,10 @@ class BishopController extends AbstractController {
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = BishopFormModel::newByArray($request->request->get('bishop_form'));
+            $model = PersonFormModel::newByArray($request->request->get('bishop_form'));
             $format = $request->request->get('format') ?? 'json';
         } else {
-            $model = BishopFormModel::newByArray($request->query->all());
+            $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
 
@@ -214,7 +214,6 @@ class BishopController extends AbstractController {
         return $personService->createResponse($format, $node_list);
 
     }
-
 
     /**
      * usually used for asynchronous JavaScript request

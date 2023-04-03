@@ -5,8 +5,9 @@
 	<a class="nav-link dropdown-toggle fw-bold" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
-	<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_bishop_new') }}">Bischöfe anlegen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '4'}) }}">Bischöfe</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '5'}) }}">Domherren</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '4' }) }}">Bischöfe anlegen</a></li>
 	<li><hr class="dropdown-divider"></li>
 	<li><span class="dropdown-header">Basisdaten</span></li>
 	<li><a class="dropdown-item" href="{{ path('edit_reference') }}">Referenzen</a></li>

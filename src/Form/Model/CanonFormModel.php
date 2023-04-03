@@ -10,12 +10,12 @@ use App\Entity\FacetChoice;
  */
 class CanonFormModel {
     public $name = null;
-    public $domstift = null;
+    public $institution = null;
     public $office = null;
     public $place = null;
     public $year = null;
     public $someid = null;
-    public $facetDomstift = null;
+    public $facetInstitution = null;
     public $facetOffice = null;
     public $facetPlace = null;
     public $facetUrl = null;
@@ -36,12 +36,12 @@ class CanonFormModel {
     public static function newByArray($data) {
         $model = new self();
 
-        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid'];
+        $keys = ['name', 'institution', 'office', 'place', 'year', 'someid'];
         foreach($keys as $key) {
             $model->$key = $data[$key];
         }
 
-        $model->facetDomstift = self::makeChoices($data, 'facetDomstift');
+        $model->facetInstitution = self::makeChoices($data, 'facetInstitution');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
         $model->facetPlace = self::makeChoices($data, 'facetPlace');
         $model->facetUrl = self::makeChoices($data, 'facetUrl');
@@ -50,7 +50,7 @@ class CanonFormModel {
 
     public function isEmpty() {
         $result = true;
-        $keys = ['name', 'domstift', 'office', 'place', 'year', 'someid'];
+        $keys = ['name', 'institution', 'office', 'place', 'year', 'someid'];
         foreach($keys as $key) {
             $result = $result && !$this->$key;
         }

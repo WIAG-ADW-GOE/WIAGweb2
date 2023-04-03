@@ -11,7 +11,6 @@ export default class extends Controller {
 	// console.log('this is update-db');
     }
 
-
     async start() {
 	var offset = 0;
 	var total_count = 0;
