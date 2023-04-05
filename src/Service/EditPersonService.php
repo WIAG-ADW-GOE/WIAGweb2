@@ -18,7 +18,7 @@ use App\Entity\UrlExternal;
 use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
-use App\Entity\NameLookup;
+use App\Entity\CanonLookup;
 use App\Entity\InputError;
 
 use App\Service\UtilService;
@@ -53,13 +53,14 @@ class EditPersonService {
      *
      * @return list of persons containing the data in $form_data
      */
-    public function mapFormData($item_type_id, $form_data) {
+    public function mapFormData($form_data) {
 
         $person_repository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
 
         foreach($form_data as $data) {
             $id = $data['id'];
+            $item_type_id = $data['item']['itemTypeId'];
             // skip blank forms
             $person = null;
             if ($id == 0 && !isset($data['item']['formIsEdited'])) {
@@ -383,27 +384,31 @@ class EditPersonService {
     public function updateMergeMetaData($target, $person) {
         $parent_id = $person->getItem()->getMergeParent();
 
-        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
         $parent_list = array();
         foreach($parent_id as $p_id) {
-            $parent_list[] = $itemRepository->find($p_id);
+            $parent_list[] = $personRepository->find($p_id);
         }
 
         // child
         $target->getItem()->setMergeStatus('child');
-        $target->getItem()->setIdPublic($parent_list[0]->getIdPublic());
+        $target->getItem()->setIdPublic($parent_list[0]->getItem()->getIdPublic());
         // parents
         $child_id = $target->getId();
-        foreach ($parent_list as $item) {
-            $item->setMergedIntoId($child_id);
-            $item->setMergeStatus('parent');
-            $item->setIsOnline(0);
+        foreach ($parent_list as $p) {
+            $p->getItem()->setMergedIntoId($child_id);
+            $p->getItem()->setMergeStatus('parent');
+            $p->getItem()->setIsOnline(0);
+            if ($person->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+                $canonLookupRepository->update($person);
+            }
         }
     }
 
     /**
-     * updateEditMetaData($item, $user_wiag_id)
+     * updateChangeMetaData($item, $user_wiag_id)
      *
      * update meta data for $item
      */
@@ -523,6 +528,16 @@ class EditPersonService {
             }
         } else {
             $person->setNumDateDeath(null);
+        }
+
+        // reference to a bishop is stored as an external url
+        if (array_key_exists('bishop', $data)) {
+            $data['urlext'][] = [
+                'deleteFlag' => "",
+                'urlName' => "WIAG-ID",
+                'value' => $data['bishop'],
+                'note' => "",
+            ];
         }
 
         // roles, reference, free properties
@@ -904,7 +919,8 @@ class EditPersonService {
                 }
 
                 $url_external = $this->makeUrlExternal($item, $authority);
-                UtilService::setByKeys($url_external, $data, ['deleteFlag', 'value']);
+                $key_list = ['deleteFlag', 'value', 'note'];
+                UtilService::setByKeys($url_external, $data, $key_list);
 
                 $url_external_list->add($url_external);
 

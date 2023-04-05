@@ -3,7 +3,7 @@ namespace App\Form;
 
 use App\Entity\Item;
 use App\Entity\FacetChoice;
-use App\Form\Model\BishopFormModel;
+use App\Form\Model\PersonFormModel;
 use App\Repository\ItemRepository;
 
 use Symfony\Component\Form\AbstractType;
@@ -35,7 +35,7 @@ class BishopFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
-            'data_class' => BishopFormModel::class,
+            'data_class' => PersonFormModel::class,
             'forceFacets' => false,
         ]);
 
@@ -53,7 +53,7 @@ class BishopFormType extends AbstractType
                     'placeholder' => 'Vor- oder Nachname',
                 ],
             ])
-            ->add('diocese', TextType::class, [
+            ->add('institution', TextType::class, [
                 'label' => 'Erzbistum/Bistum',
                 'required' => false,
                 'attr' => [
@@ -83,7 +83,7 @@ class BishopFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('stateFctDioc', HiddenType::class, [
+            ->add('stateFctInst', HiddenType::class, [
                 'mapped' => false,
             ])
             ->add('stateFctOfc', HiddenType::class, [
@@ -91,7 +91,7 @@ class BishopFormType extends AbstractType
             ]);
 
         if ($forceFacets) {
-            $this->createFacetDiocese($builder, $model);
+            $this->createFacetInstitution($builder, $model);
             $this->createFacetOffice($builder, $model);
         }
 
@@ -101,20 +101,20 @@ class BishopFormType extends AbstractType
             function ($event) {
                 $data = $event->getData();
                 if (!$data) {
-                    $model = new BishopFormModel();
+                    $model = new PersonFormModel();
                 } else {
-                    $model = BishopFormModel::newByArray($data);
+                    $model = PersonFormModel::newByArray($data);
                 }
 
-                $this->createFacetDiocese($event->getForm(), $model);
+                $this->createFacetInstitution($event->getForm(), $model);
                 $this->createFacetOffice($event->getForm(), $model);
             });
     }
 
-    public function createFacetDiocese($form, $modelIn) {
+    public function createFacetInstitution($form, $modelIn) {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
-        $model->facetDiocese = null;
+        $model->facetInstitution = null;
 
         $dioceses = $this->repository->countBishopDiocese($model);
 
@@ -124,11 +124,11 @@ class BishopFormType extends AbstractType
         }
 
         // add selected fields, that are not contained in $choices
-        $choicesIn = $modelIn->facetDiocese;
+        $choicesIn = $modelIn->facetInstitution;
         FacetChoice::mergeByName($choices, $choicesIn);
 
         if ($dioceses) {
-            $form->add('facetDiocese', ChoiceType::class, [
+            $form->add('facetInstitution', ChoiceType::class, [
                 'label' => 'Filter Bistum',
                 'expanded' => true,
                 'multiple' => true,

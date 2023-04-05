@@ -1,0 +1,50 @@
+{% import "edit_person/_util.html.twig" as util %}
+{% set base_id=editFormId~'_'~personIndex %}
+{% set base_input_name=editFormId~'['~personIndex~']' %}
+
+{# status and name #}
+{{ include('edit_person/_input_status.html.twig') }}
+{{ include('edit_person/_input_name.html.twig') }}
+<hr class="my-2 border border-secondary border-2">
+{# roles #}
+{# - using surrounding div with class="overflow-auto" is not compatible with auto-complete #}
+{{ include('edit_person/_input_role_list.html.twig') }}
+<hr class="my-2 border border-secondary border-2">
+{# references #}
+{{ include('edit_person/_input_reference_list.html.twig') }}
+<hr class="mt-1 mb-2 border border-secondary border-2">
+{# norm data and external references #}
+{{ include('edit_person/_input_url_external_list.html.twig') }}
+{# comment person #}
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm">
+	    <span class="input-group-text wiag-bg-internal" style="min-width: 12rem">Kommentar (red.)</span>
+	    <textarea id="{{ base_id }}_comment"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[comment]"
+		      class="form-control form-control-sm wiag-input">{{ person.comment }}</textarea>
+	</div>
+    </div>
+</div>
+{% if person.seealso|length > 0 %}
+    <div class="row">
+	<div class="col-12">
+	    <span>siehe auch</span>
+	    {% for seealso in person.seealso %}
+		<span> <a href="{{ path('edit_person_edit_single', {'someid': seealso}) }}" target="_blank" rel="noopener">{{ seealso }}</a>{% if not loop.last %},{% endif %}</span>
+	    {% endfor %}
+	</div>
+    </div>
+{% endif %}
+{% set user=userWiagRepository.find(person.item.changedBy) %}
+<div class="row">
+    <div class="col-12">
+	<span class="ms-1">{{ person.item.idPublic }}</span>
+	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ person.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
+	{# store data into the form #}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], person.item.changedBy) }}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'dateChanged'], person.item.dateChanged|format_datetime()) }}
+    </div>
+</div>

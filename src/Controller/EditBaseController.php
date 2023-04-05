@@ -199,12 +199,7 @@ class EditBaseController extends AbstractController {
 
         }
 
-        $template = "";
-        if ($request->query->get('listOnly')) {
-            $template = 'edit_base/_edit_prop_form.html.twig';
-        } else { // useful for debugging: dump output is accessible
-            $template = 'edit_base/edit_property_list.html.twig';
-        }
+        $template = 'edit_base/_edit_prop_form.html.twig';
 
         return $this->renderForm($template, [
             'menuItem' => 'edit-menu',

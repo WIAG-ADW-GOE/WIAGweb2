@@ -160,26 +160,30 @@ class AuthorityRepository extends ServiceEntityRepository
 
     /**
      * usually used for asynchronous JavaScript request
+     * 2023-03-30 see PersonRepository
      */
-    public function suggestUrlName($name, $hint_size, $exclude_ids) {
-        $repository = $this->getEntityManager()->getRepository(Authority::class);
-        $qb = $repository->createQueryBuilder('a')
-                         ->select("DISTINCT a.urlNameFormatter AS suggestion")
-                         ->andWhere('a.urlNameFormatter LIKE :name')
-                         ->addOrderBy('a.urlNameFormatter')
-                         ->setParameter('name', '%'.$name.'%')
-                         ->andWhere('a.id not in (:exclude_ids)')
-                         ->andWhere('a.id < 1000')
-                         ->setParameter('exclude_ids', $exclude_ids);
+    // public function suggestUrlName($name, $hint_size, $exclude_ids = null) {
+    //     $repository = $this->getEntityManager()->getRepository(Authority::class);
+    //     $qb = $repository->createQueryBuilder('a')
+    //                      ->select("DISTINCT a.urlNameFormatter AS suggestion")
+    //                      ->andWhere('a.urlNameFormatter LIKE :name')
+    //                      ->addOrderBy('a.urlNameFormatter')
+    //                      ->setParameter('name', '%'.$name.'%')
+    //                      ->andWhere('a.id < 1000');
 
-        $qb->setMaxResults($hint_size);
+    //     if (!is_null($exclude_ids)) {
+    //         $qb->andWhere('a.id not in (:exclude_ids)')
+    //            ->setParameter('exclude_ids', $exclude_ids);
+    //     }
 
-        $query = $qb->getQuery();
+    //     $qb->setMaxResults($hint_size);
 
-        $suggestions = $query->getResult();
+    //     $query = $qb->getQuery();
 
-        return $suggestions;
-    }
+    //     $suggestions = $query->getResult();
+
+    //     return $suggestions;
+    // }
 
     /**
      * usually used for asynchronous JavaScript request

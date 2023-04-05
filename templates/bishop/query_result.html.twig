@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 4 %}
     {{ form_start(form, {
 	'attr': {
 	    'id': form.vars.id,
@@ -55,7 +56,7 @@
 		    </div>
 		</div>
 		{# show facets if they cause an empty result list #}
-		{% if count > 0 or form.facetDiocese is defined or form.facetOffice is defined %}
+		{% if count > 0 or form.facetInstitution is defined or form.facetOffice is defined %}
 		    <div class="row my-2 mx-2">
 			<div class="col-9">
 			    {# table #}
@@ -63,14 +64,14 @@
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    {% if form.facetDiocese is defined %}
+			    {% if form.facetInstitution is defined %}
 				{{ include('bishop/_facet.html.twig', {
-				    facet: form.facetDiocese,
+				    facet: form.facetInstitution,
 				    facetTitle: 'Filter Bistum',
-				    facetState: form.stateFctDioc.vars.value,
-				    facetShort: 'Dioc'
+				    facetState: form.stateFctInst.vars.value,
+				    facetShort: 'Inst'
 				}) }}
-				{{ form_row(form.stateFctDioc) }}
+				{{ form_row(form.stateFctInst) }}
 			    {% endif %}
 			    {% if form.facetOffice is defined %}
 				{{ include('bishop/_facet.html.twig', {

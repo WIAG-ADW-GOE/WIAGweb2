@@ -30,6 +30,8 @@ class Authority {
         'World Historical Gazetteer' => 54,
     ];
 
+    const CORE_ID_LIST = [1, 2, 3, 200];
+
     const EDIT_FIELD_LIST = [
         'urlNameFormatter',
         'urlType',

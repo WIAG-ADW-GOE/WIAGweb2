@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
-{% set menuItem='collections' %}
+{% set menuItem = 'collections' %}
 
 {% block javascripts %}
     {{ parent() }}
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 5 %}
     {% if not personName %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <p class="em">Domherr nicht gefunden.</p>

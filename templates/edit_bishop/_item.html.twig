@@ -1,8 +1,7 @@
-{% set itemTypeId=constant('App\\Entity\\Item::ITEM_TYPE_ID')['Bischof']['id'] %}
 {% set base_id=editFormId~'_'~index %}
 {% set base_input_name=editFormId~'['~index~']' %}
 {# header #}
-{% set online_image = (person.item.editStatus == 'fertig') ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+{% set status_image = person.item.isOnline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
 <div class="container-fluid p-2 my-2 border border-2 border-success rounded"
      id="{{ base_id }}">
     <div data-controller="toggle-arrow on-input insert auth-search"
@@ -28,7 +27,6 @@
 		   {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
 		   data-sync-target="check">
 	    {# turn on loading via ajax #}
-	    <!-- regular style -->
 	    <div data-sync-target="fill"
 		 id="{{ base_id }}_content">
 		{% if expanded %}

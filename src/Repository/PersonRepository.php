@@ -3,24 +3,16 @@
 namespace App\Repository;
 
 use App\Entity\Item;
-use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
-use App\Entity\Role;
-use App\Entity\Diocese;
-use App\Entity\Institution;
 use App\Entity\ReferenceVolume;
-use App\Entity\InstitutionPlace;
 use App\Entity\Authority;
-use App\Entity\PlaceIdExternal;
 use App\Entity\UrlExternal;
-use App\Form\Model\BishopFormModel;
+
 use App\Service\UtilService;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\Tools\Pagination\Paginator;
-
 
 /**
  * @method Person|null find($id, $lockMode = null, $lockVersion = null)
@@ -186,201 +178,6 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         return null;
-    }
-
-
-    /**
-     * usually used for asynchronous JavaScript request
-     *
-     * $item_type_id is not used here (needed for uniform signature)
-     */
-    public function suggestRole($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Role::class);
-        $qb = $repository->createQueryBuilder('r')
-                             ->select("DISTINCT r.name AS suggestion")
-                             ->andWhere('r.name LIKE :name')
-                             ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hint_size);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     *
-     * $item_type is not used here (needed for uniform signature)
-     */
-    public function suggestDiocese($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Diocese::class);
-        $qb = $repository->createQueryBuilder('d')
-                         ->select("DISTINCT d.name AS suggestion")
-                         ->andWhere('d.name LIKE :name')
-                         ->orderBy('d.name')
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hint_size);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestInstitution($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Institution::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT i.name AS suggestion")
-                         ->andWhere('i.name LIKE :name')
-                         ->andWhere('i.itemTypeId in (:item_type_id)')
-                         ->addOrderBy('i.name')
-                         ->setParameter('name', '%'.$name.'%')
-                         ->setParameter('item_type_id', $item_type_id);
-
-        $qb->setMaxResults($hint_size);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-
-    /**
-     * autocomplete for references
-     *
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestTitleShort($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
-        $qb = $repository->createQueryBuilder('v')
-                         ->select("DISTINCT v.titleShort AS suggestion")
-                         ->andWhere('v.titleShort LIKE :name')
-                         ->andWhere('v.itemTypeId = :item_type_id')
-                         ->addOrderBy('v.titleShort')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestPropertyName($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.name AS suggestion")
-                         ->join('i.itemProperty', 'prop')
-                         ->andWhere('prop.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestPropertyValue($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.value AS suggestion")
-                         ->join('i.itemProperty', 'prop')
-                         ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.name AS suggestion")
-                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
-                         ->andWhere('prop.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestRolePropertyValue($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.value AS suggestion")
-                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
-                         ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestEditStatus($item_type_id, $name, $hintSize) {
-        // do not filter by name 'i.editStatus LIKE :name'
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT i.editStatus AS suggestion")
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->andWhere('i.editStatus IS NOT NULL')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->orderBy('i.editStatus');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
     }
 
 }

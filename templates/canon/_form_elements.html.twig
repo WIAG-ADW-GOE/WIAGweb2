@@ -5,7 +5,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('canon_suggest', {field: 'name'}),
+		     url: path('person_suggest_online', { 'itemTypeId': itemTypeId, 'field': 'name' }),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}
@@ -23,11 +23,11 @@
 	    {# domstift #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('canon_suggest', {field: 'domstift'}),
+		     url: path('person_suggest_base', { 'field': 'domstift' }),
 		 }) }}>
-		{{ form_label(form.domstift) }}
-		{{ form_errors(form.domstift) }}
-		{{ form_widget(form.domstift, {
+		{{ form_label(form.institution) }}
+		{{ form_errors(form.institution) }}
+		{{ form_widget(form.institution, {
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 15,
@@ -41,7 +41,7 @@
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('canon_suggest', {field: 'office'}),
+		     url: path('person_suggest_online', { 'itemTypeId': itemTypeId, 'field': 'office' }),
 		 }) }}>
 		{{ form_label(form.office) }}
 		{{ form_errors(form.office) }}
@@ -59,7 +59,7 @@
 	    {# place #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('canon_suggest', {field: 'place'}),
+		     url: path('person_suggest_online', { 'itemTypeId': itemTypeId, 'field': 'place'}),
 		 }) }}>
 		{{ form_label(form.place) }}
 		{{ form_errors(form.place) }}

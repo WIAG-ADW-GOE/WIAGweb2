@@ -1,0 +1,17 @@
+<div data-controller="insert"
+     data-insert-url-value="{{ path('edit_person_new_property', {
+			    'itemTypeId': itemTypeId,
+			    'personIndex': personIndex
+			    }) }}"
+     data-insert-point-value="lastButOne">
+    {% for prop in person.item.itemProperty %}
+	{{ include('edit_person/_input_property.html.twig', {
+	    'current_idx': loop.index0,
+	    }) }}
+    {% endfor %}
+    <div class="input-group input-group-sm mt-1">
+	<button class="btn btn-sm btn-outline-secondary"
+		type="button"
+		data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
+    </div>
+</div>

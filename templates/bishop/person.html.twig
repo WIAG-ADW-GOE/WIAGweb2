@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 4 %}
     {% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
     {% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 

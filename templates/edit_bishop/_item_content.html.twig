@@ -55,7 +55,7 @@
 	       name="{{ base_input_name }}[item][changedBy]"
 	       value="{{ person.item.changedBy }}">
     </div>
-    {# store data into the form #}
+    {# store data into the form; 2023-03-29 redundant!?#}
     {{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}
     {{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], person.item.changedBy) }}
     {{ util.hiddenInput(base_id, base_input_name, ['item', 'dateChanged'], person.item.dateChanged|format_datetime()) }}

@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 5 %}
     {{ form_start(form, {
 	'attr': {
 	    'id': form.vars.id,
@@ -68,14 +69,14 @@
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    {% if form.facetDomstift is defined %}
+			    {% if form.facetInstitution is defined %}
 				{{ include('canon/_facet.html.twig', {
-				    facet: form.facetDomstift,
+				    facet: form.facetInstitution,
 				    facetTitle: 'Filter Domstift',
-				    facetState: form.stateFctDmt.vars.value,
-				    facetShort: 'Dmt'
+				    facetState: form.stateFctInst.vars.value,
+				    facetShort: 'Inst'
 				}) }}
-				{{ form_row(form.stateFctDmt) }}
+				{{ form_row(form.stateFctInst) }}
 			    {% endif %}
 			    {% if form.facetOffice is defined %}
 				{{ include('canon/_facet.html.twig', {

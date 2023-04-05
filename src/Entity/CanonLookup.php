@@ -101,6 +101,14 @@ class CanonLookup
         return $this->personIdRole;
     }
 
+    public function setPersonIdRole(int $personIdRole): self
+    {
+        $this->personIdRole = $personIdRole;
+
+        return $this;
+    }
+
+
     // 2022-07-25 obsolete?
     // public function setCanonGs(?int $personIdRole): self
     // {

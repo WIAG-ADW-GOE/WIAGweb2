@@ -51,9 +51,11 @@ class EditBishopController extends AbstractController {
     /**
      * display query form for bishops;
      *
-     * @Route("/edit/bischof/query", name="edit_bishop_query")
+     * @Route("/edit/bischof/query/", name="edit_bishop_query")
      */
     public function query(Request $request) {
+
+        $this->itemTypeId = $itemTypeId;
 
         $model = new BishopFormModel;
         // set defaults

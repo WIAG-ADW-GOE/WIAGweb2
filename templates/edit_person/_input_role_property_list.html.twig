@@ -1,0 +1,20 @@
+<div data-controller="insert input-state"
+     data-insert-url-value="{{ path('edit_person_new_role_property', {
+			    'itemTypeId': itemTypeId,
+			    'personIndex': personIndex,
+			    'roleIndex': roleIndex,
+			    }) }}"
+     data-insert-point-value="lastButOne">
+    {% for role_prop in role.roleProperty %}
+	{{ include('edit_person/_input_role_property.html.twig', {
+	    prop: role_prop,
+	    current_idx: loop.index0
+	}) }}
+    {% endfor %}
+    <div class="input-group input-group-sm mt-1">
+	<button class="btn btn-sm btn-outline-secondary"
+		       type="button"
+		       data-new-input-target="button"
+		       data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Attribut</button>
+    </div>
+</div>
