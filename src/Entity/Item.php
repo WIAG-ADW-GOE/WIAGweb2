@@ -64,7 +64,7 @@ class Item {
             "GND" => 1,
             "Wikidata" => 2,
             "Wikipedia" => 3,
-            "WIAG" => 5,
+            "WIAG_ID" => 5,
             "VIAF" => 4,
             "GS" => 200,
     ];
@@ -266,15 +266,15 @@ class Item {
      * 2023-03-01 obsolete?
      * 2023-03-21 obsolete
      */
-    public function getUrlExternalExternal_legacy() {
-        return $this->urlExternal->filter(function($urlext) {
-            $auth = $urlext->getAuthority();
-            if (is_null($auth)) {
-                return true;
-            }
-            return ($auth->getUrlType() != "Internal Identifier");
-        });
-    }
+    // public function getUrlExternalExternal_legacy() {
+    //     return $this->urlExternal->filter(function($urlext) {
+    //         $auth = $urlext->getAuthority();
+    //         if (is_null($auth)) {
+    //             return true;
+    //         }
+    //         return ($auth->getUrlType() != "Internal Identifier");
+    //     });
+    // }
 
     /**
      *
@@ -300,18 +300,18 @@ class Item {
     public function getUrlExternalNonCore() {
         $id_ext_list = $this->getUrlExternalSorted();
 
-        $core_ids = Authority::coreIDs();
+        $core = Authority::CORE_ID_LIST;
 
-        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+        return $id_ext_list->filter(function($id_ext) use ($core) {
             $auth = $id_ext->getAuthority();
             if (is_null($auth)) {
                 return true;
             } else {
-                return array_search($auth->getId(), $core_ids) === false;
+                return (array_search($auth->getId(), $core) === false
+                        and $auth->getUrlType() != 'Interner Identifier');
             }
         });
     }
-
 
     /**
      * return sorted ArrayCollection
@@ -335,15 +335,15 @@ class Item {
     /**
      * exclude url_type 'Internal Identifier'
      */
-    public function displayUrlExternal_legacy() {
-        $display = $this->urlExternal->toArray();
-        return array_filter(
-            $display,
-            function($v) {
-                return $v->getAuthority()->getUrlType() != "Internal Identifier";
-            }
-        );
-    }
+    // public function displayUrlExternal_legacy() {
+    //     $display = $this->urlExternal->toArray();
+    //     return array_filter(
+    //         $display,
+    //         function($v) {
+    //             return $v->getAuthority()->getUrlType() != "Internal Identifier";
+    //         }
+    //     );
+    // }
 
     public function getReference() {
         return $this->reference;
@@ -631,7 +631,6 @@ class Item {
         }
         return $authority_id;
     }
-
 
     /**
      * @return object of type UrlExternal for $authorityIdOrName

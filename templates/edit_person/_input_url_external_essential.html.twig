@@ -13,28 +13,38 @@
 	    {% for id_ext in person.item.urlexternalcore %}
 		{% set auth_id=id_ext.authority.id %}
 		{% set auth_e=auth_e_list[auth_id] %}
+		{% set loop_index_offset=loop.index0 + 100 %}
+		{% set base_id_urlext_loop =base_id_urlext~'_'~loop_index_offset %}
+		{% set base_input_name_urlext_loop =base_input_name_urlext~'['~loop_index_offset~']' %}
 		<span class="input-group-text">{% if id_ext.url %}<a href="{{ id_ext.url }}" target="_blank" rel="noopener">{{ auth_e.short }}</a>{% else %}{{ auth_e.short }}{% endif %}
 		    <a href="{{ authBaseUrlList[auth_id] }}"
 		       target="blank"
 		       rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
 		<input type="text"
-		       id="{{ base_id_urlext }}_{{ loop.index0 + 100 }}_deleteFlag"
-		       name="{{ base_input_name_urlext }}[{{ loop.index0 + 100 }}][deleteFlag]"
+		       id="{{ base_id_urlext_loop }}_deleteFlag"
+		       name="{{ base_input_name_urlext_loop }}[deleteFlag]"
 		       class="form-control form-control-sm d-none"
 		       value="">
-		<input type="text" id="{{ base_id_urlext }}_{{ loop.index0 + 100 }}_urlName"
-		       name="{{ base_input_name_urlext}}[{{ loop.index0 + 100 }}][urlName]"
+		<input type="text" id="{{ base_id_urlext_loop }}_urlName"
+		       name="{{ base_input_name_urlext_loop}}[urlName]"
 		       class="form-control form-control-sm d-none"
 		       value="{{ auth_e.long }}"
 		       spellcheck="false"
 		       aria-label="{{ auth_e.aria }} ID">
-		<input type="text" id="{{ base_id_urlext }}_{{ loop.index0 + 100 }}_value"
-		       name="{{ base_input_name_urlext}}[{{ loop.index0 + 100 }}][value]"
+		<input type="text" id="{{ base_id_urlext_loop }}_value"
+		       name="{{ base_input_name_urlext_loop }}[value]"
 		       data-paramfx="{{ auth_e.paramfx }}"
 		       class="form-control form-control-sm wiag-input {{ auth_e.width }}"
 		       value="{{ id_ext.value }}"
 		       spellcheck="false"
 		       aria-label="{{ auth_e.aria }} value">
+		<input type="text" id="{{ base_id_urlext_loop }}_note"
+		       name="{{ base_input_name_urlext_loop}}[note]"
+		       class="d-none"
+		       value="{{ id_ext.note }}"
+		       spellcheck="false"
+		       aria-label="Bemerkung">
+
 	    {% endfor %}
 	</div>
     </div>

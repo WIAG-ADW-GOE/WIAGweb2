@@ -60,15 +60,19 @@ class EditPersonController extends AbstractController {
 
         $model = new PersonFormModel;
         // set defaults
-        $model->editStatus = ['fertig'];
+        $edit_status_default_list = [
+            '4' => 'fertig',
+            '5' => 'online'
+        ];
+        $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->isOnline = true;
         $model->listSize = 5;
+        $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
-            'statusChoices' => $status_choices,
-            'itemTypeId' => $itemTypeId,
+            'statusChoices' => $status_choices
         ]);
 
         $offset = 0;
@@ -84,12 +88,7 @@ class EditPersonController extends AbstractController {
             $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
             $limit = 0; $offset = 0; $online_only = false;
-            $id_all = array();
-            if ($itemTypeId == 4) {
-                $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
-            } elseif ($itemTypeId == 5) {
-                $id_all = $canonLookupRepository->canonIdsAll($model, $limit, $offset);
-            }
+            $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
             $count = count($id_all);
 
             //
@@ -170,6 +169,7 @@ class EditPersonController extends AbstractController {
     public function save(Request $request) {
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $item_type_id = $form_data[0]['item']['itemTypeId'];
 
         /* map/validate form */
         // fill person_list
@@ -187,13 +187,13 @@ class EditPersonController extends AbstractController {
         $form_display_type = $request->request->get('formType');
 
         /* save data */
-        $item_type_id = null;
+        $entity_manager = $this->entityManager;
         if (!$error_flag) {
             $current_user_id = $this->getUser()->getId();
-            $personRepository = $this->entityManager->getRepository(Person::class);
-            $nameLookupRepository = $this->entityManager->getRepository(NameLookup::class);
+            $personRepository = $entity_manager->getRepository(Person::class);
+            $nameLookupRepository = $entity_manager->getRepository(NameLookup::class);
+            $canonLookupRepository = $entity_manager->getRepository(CanonLookup::class);
             foreach ($person_list as $key => $person) {
-                $item_type_id = $person->getItem()->getItemTypeId();
                 if ($person->getItem()->getFormIsEdited()) {
                     $person_id = $person->getId();
                     if ($person_id == 0) { // new entry
@@ -208,11 +208,14 @@ class EditPersonController extends AbstractController {
                     $query_result = $personRepository->findList([$person_id]);
                     $target = $query_result[0];
                     $this->editService->update($target, $person, $current_user_id);
-                    $nameLookupRepository->update($target);
                     // online?
                     $online_status = Item::ITEM_TYPE[$item_type_id]['online_status'];
                     $is_online = $target->getItem()->getEditStatus() == $online_status ? 1 : 0;
                     $target->getItem()->setIsOnline($is_online);
+                    $nameLookupRepository->update($target);
+                    if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+                        $canonLookupRepository->update($target);
+                    }
                     $target->getItem()->setFormIsEdited(0);
 
                     $person_list[$key] = $target; // show updated object
@@ -313,7 +316,7 @@ class EditPersonController extends AbstractController {
      *
      * @Route("/edit/person/new/{itemTypeId}", name="edit_person_new")
      */
-    public function newBishop(Request $request, int $itemTypeId) {
+    public function newPerson(Request $request, int $itemTypeId) {
 
         $person = $this->editService->makePerson($itemTypeId, $this->getUser()->getId());
         // add empty elements for blank form sections
@@ -348,8 +351,6 @@ class EditPersonController extends AbstractController {
         $auth_list = $authorityRepository->findList(Authority::coreIDs());
         $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
-
-        // dd(self::EDIT_FORM_ID.'_'.$index);
 
         return $this->renderEditElements("edit_person/_item_content.html.twig", $itemTypeId, [
             'person' => $person,
@@ -690,10 +691,10 @@ class EditPersonController extends AbstractController {
     /**
      * split merged item, show parents in edit forms
      *
-     * @Route("/edit/person/split-item/{id}", name="edit_person_split_item")
+     * @Route("/edit/person/split-item/{itemTypeId}/{id}", name="edit_person_split_item")
      *
      */
-    public function splitItem(int $id) {
+    public function splitItem(int $itemTypeId, int $id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -729,7 +730,7 @@ class EditPersonController extends AbstractController {
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, $item_type_id, [
+        return $this->renderEditElements($template, $itemTypeId, [
             'personList' => $person_list,
             'form' => null,
             'count' => count($person_list),

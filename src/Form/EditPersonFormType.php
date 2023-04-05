@@ -32,20 +32,20 @@ class EditPersonFormType extends AbstractType
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
             'statusChoices' => ['online'],
-            'itemTypeId' => 4,
         ]);
 
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
+        $itemTypeId = $model->itemTypeId;
 
         $institution_label_list = [
             '4' => 'Erzbistum/Bistum',
             '5' => 'Domstift/Kloster'
         ];
 
-        $institution_label = $institution_label_list[$options['itemTypeId']];
+        $institution_label = $institution_label_list[$itemTypeId];
 
         $builder
             ->add('name', TextType::class, [
@@ -132,7 +132,7 @@ class EditPersonFormType extends AbstractType
                 ]
             ]);
 
-        if ($options['itemTypeId'] == 5) { // canons
+        if ($itemTypeId == 5) { // canons
             $builder->add('place', TextType::class, [
                 'label' => 'Ort',
                 'required' => false,

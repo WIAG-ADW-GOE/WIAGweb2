@@ -354,12 +354,40 @@ class AutocompleteService extends ServiceEntityRepository {
         }
     }
 
+    /**
+     * @return list of WIAG-IDs of bishops
+     */
+    public function suggestBishop($queryParam, $hint_size) {
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT i.idPublic AS suggestion")
+                         ->andWhere('i.idPublic LIKE :queryParam')
+                         ->andWhere("i.itemTypeId = 4")
+                         ->setParameter('queryParam', '%'.$queryParam.'%');
+
+        $qb->setMaxResults($hint_size);
+
+        $query = $qb->getQuery();
+
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+
     public function suggestUrlName($name, $hint_size) {
+        // exclude core data and internal references
+        $core_id_list = Authority::CORE_ID_LIST;
+
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')
                          ->select("DISTINCT a.urlNameFormatter AS suggestion")
                          ->andWhere('a.urlNameFormatter LIKE :name')
+                         ->andWhere('a.id not in (:core)')
+                         ->andWhere("a.urlType != 'Interner Identifier'")
                          ->addOrderBy('a.urlNameFormatter')
+                         ->setParameter('core', $core_id_list)
                          ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hint_size);

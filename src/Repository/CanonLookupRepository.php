@@ -454,7 +454,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         return array_column($query->getResult(), 'personIdRole');
     }
 
-
     public function findPersonIdName($id) {
         $qb = $this->createQueryBuilder('c')
                    ->select('c.personIdName')
@@ -675,6 +674,114 @@ class CanonLookupRepository extends ServiceEntityRepository
         $result = $query->getResult();
         return $result;
     }
+
+    /**
+     * update entries for $person
+     * do not flush
+     */
+    public function update($person) {
+
+        // remove entries
+        $person_id_name = $this->findPersonIdName($person->getId());
+        $entityManager = $this->getEntityManager();
+        $list_name = $this->findBy(['personIdName' => $person_id_name]);
+        foreach ($list_name as $c_del) {
+            $entityManager->remove($c_del);
+        }
+
+        if ($person->getItem()->getIsOnline()) {
+            $c2 = null;
+            $c3 = null;
+            $itemRepository = $entityManager->getRepository(Item::class);
+            $personRepository = $entityManager->getRepository(Person::class);
+
+            $c1 = new CanonLookup();
+            $c1->setPerson($person);
+            $c1->setPrioRole(1);
+            $person_id_name = $person->getId(); // may be reset, if there is a bishop
+
+            // gs
+            $c2 = $this->newCanonGS($person);
+
+            // ep
+            $c3 = $this->newCanonEP($person);
+
+            // find gs via ep
+            if (!$c2 and $c3) {
+                $c2 = $this->newCanonGS($c3->getPerson());
+            }
+
+            // set priority for role ep, set person_id_name
+            if ($c3) {
+                $prio_role_ep = $c2 ? 3 : 2;
+                $c3->setPrioRole($prio_role_ep);
+                $person_id_name = $c3->getPerson()->getId();
+                $c3->setPersonIdName($person_id_name);
+                $entityManager->persist($c3);
+            }
+
+            $c1->setPersonIdName($person_id_name);
+            $entityManager->persist($c1);
+            if ($c2) {
+                $c2->setPersonIdName($person_id_name);
+                $entityManager->persist($c2);
+            }
+        }
+    }
+
+    /**
+     * @return object of type CanonLookup if $person refers to Personendatenbank
+     */
+    private function newCanonGS(Person $person) {
+        $gs_auth_id = Authority::ID['GS'];
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        $gs_gsn = $person->getItem()->getUrlExternalByAuthorityId($gs_auth_id);
+        $c_gs = null;
+        if ($gs_gsn) {
+            // find GS by it's entry in url_external
+            $itemTypeId = [
+                Item::ITEM_TYPE_ID['Domherr GS']['id'],
+                Item::ITEM_TYPE_ID['Bischof GS']['id']
+            ];
+
+            $param_is_online = false;
+            $gs_cand = $itemRepository->findByUrlExternal($itemTypeId, $gs_gsn, $gs_auth_id, $param_is_online);
+            if (count($gs_cand) > 0) {
+                $gs = $personRepository->find($gs_cand[0]->getId());
+                $c_gs = new CanonLookup();
+                $c_gs->setPerson($gs);
+                $c_gs->setPrioRole(2);
+            }
+        }
+        return $c_gs;
+    }
+
+    /**
+     * @return object of type CanonLookup if $person refers to Gatz (WIAG-ID)
+     */
+    private function newCanonEP(Person $person) {
+        $wiag_auth_id = Authority::ID['WIAG-ID'];
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        $ep_wiag_id = $person->getItem()->getUrlExternalByAuthorityId($wiag_auth_id);
+        $c_ep = null;
+        if ($ep_wiag_id) {
+            // find EP
+            $ep_cand = $itemRepository->findBy(['idPublic' => $ep_wiag_id]);
+            if (count($ep_cand) > 0) {
+                $ep_id = $ep_cand[0]->getId();
+                $ep = $personRepository->find($ep_id);
+                $c_ep = new CanonLookup();
+                $c_ep->setPerson($ep);
+                $person_id_name = $ep_id;
+                }
+        }
+        return $c_ep;
+    }
+
 
 
     /**

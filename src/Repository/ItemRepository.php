@@ -78,37 +78,46 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-
-    public function bishopIds($model, $limit = 0, $offset = 0, $online_only = true) {
+    public function personIds($model, $limit = 0, $offset = 0, $online_only = true) {
         $result = null;
 
-        $itemTypeBishop = Item::ITEM_TYPE_ID['Bischof']['id'];
-
-        $diocese = $model->institution;
+        $itemTypeId = $model->itemTypeId;
+        $diocese = null;
+        $monastery = null;
+        if ($itemTypeId == 4) {
+            $diocese = $model->institution;
+        } else {
+            $monastery = $model->institution;
+        }
         $office = $model->office;
         $year = $model->year;
         $name = $model->name;
+        $place = $model->place;
         $someid = $model->someid;
 
         $qb = $this->createQueryBuilder('i')
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->andWhere('i.itemTypeId = :itemTypeBishop')
+                   ->andWhere('i.itemTypeId = :itemTypeId')
                    ->andWhere('i.mergeStatus <> :merged')
-                   ->setParameter(':itemTypeBishop', $itemTypeBishop)
+                   ->setParameter(':itemTypeId', $itemTypeId)
                    ->setParameter(':merged', 'parent');
 
         if ($online_only) {
             $qb->andWhere('i.isOnline = 1');
         }
-        $qb = $this->addBishopConditions($qb, $model);
+        $qb = $this->addPersonConditions($qb, $model);
+
+        // only relevant for bishop queries (not for editing)
         $qb = $this->addBishopFacets($qb, $model);
 
-        if ($office || $diocese) {
+        if ($office || $diocese || $monastery || $place) {
             // sort: if diocese is a query condition, this filters personRoles
             $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
-               ->leftjoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
+               ->leftjoin('p.role', 'pr')
+               ->leftjoin('pr.institution', 'inst_sort')
                ->addGroupBy('pr.personId')
                ->addOrderBy('pr.dioceseName')
+               ->addOrderBy('inst_sort.name')
                ->addOrderBy('dateSortKey');
         } elseif ($model->isEmpty() || $name || $someid || $year) {
             $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
@@ -134,16 +143,22 @@ class ItemRepository extends ServiceEntityRepository
         }
         $query = $qb->getQuery();
 
-        $result =  $query->getResult();
+        $result = $query->getResult();
 
         return array_column($result, 'personId');
-
     }
 
-
-    private function addBishopConditions($qb, $model) {
-        $diocese = $model->institution;
+    private function addPersonConditions($qb, $model) {
+        $diocese = null;
+        $monastery = null;
+        $itemTypeId = $model->itemTypeId;
+        if ($itemTypeId == 4) {
+            $diocese = $model->institution;
+        } else {
+            $monastery = $model->institution;
+        }
         $office = $model->office;
+        $place = $model->place;
 
         if ($diocese) {
             $qb->andWhere("(pr.dioceseName LIKE :paramDiocese ".
@@ -152,9 +167,32 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('paramDiocese', '%'.$diocese.'%');
         }
 
+        if ($monastery) {
+            $qb->leftjoin('p.role', 'pr_filter')
+               ->leftjoin('pr_filter.institution', 'inst')
+               ->andWhere("(pr.institutionName LIKE :paramInst ".
+                          "OR inst.name LIKE :paramInst)")
+               ->setParameter('paramInst', '%'.$monastery.'%');
+        }
+
         if ($office) {
             $qb->andWhere("pr.roleName LIKE :q_office")
                ->setParameter('q_office', '%'.$office.'%');
+        }
+
+        if ($place) {
+            // Join places independently from role (other query condition)
+            $qb->join('p.role', 'role_place')
+               ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
+                          'role_place.institutionId = ip.institutionId '.
+                          'AND ( '.
+                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
+                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
+                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
+                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
+                ->andWhere('ip.placeName LIKE :q_place')
+                ->setParameter('q_place', '%'.$place.'%');
         }
 
         $year = $model->year;
@@ -167,6 +205,7 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
+            // join name_lookup via person or via canon_lookup
             $qb->leftjoin('\App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
                ->join('\App\Entity\NameLookup',
                       'nlu',
@@ -289,7 +328,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.dioceseName IS NOT NULL");
 
-        $this->addBishopConditions($qb, $model);
+        $this->addPersonConditions($qb, $model);
         $this->addBishopFacets($qb, $model);
 
         $qb->groupBy('prcount.dioceseName');
@@ -316,7 +355,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->andWhere("i.isOnline = 1")
                    ->andWhere("prcount.roleName IS NOT NULL");
 
-        $this->addBishopConditions($qb, $model);
+        $this->addPersonConditions($qb, $model);
         $this->addBishopFacets($qb, $model);
 
         $qb->groupBy('prcount.roleName');
@@ -337,14 +376,13 @@ class ItemRepository extends ServiceEntityRepository
         $gsn = $item[0]->getUrlExternalByAuthorityId($authorityGs);
         if (!is_null($gsn)) {
             // Each person from Germania Sacra should have an entry in table id_external with its GSN.
-            // If data are up to date at most one of these requests is successful.
-            $itemTypeCanonGs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-            $canonGs = $this->findByUrlExternal($itemTypeCanonGs, $gsn, $authorityGs);
-            $item = array_merge($item, $canonGs);
-
-            $itemTypeBishopGs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
-            $bishopGs = $this->findByUrlExternal($itemTypeBishopGs, $gsn, $authorityGs);
-            $item = array_merge($item, $bishopGs);
+            // If data are up to date at most one of these types is successful.
+            $itemTypeGs = [
+                Item::ITEM_TYPE_ID['Domherr GS']['id'],
+                Item::ITEM_TYPE_ID['Bischof GS']['id']
+            ];
+            $itemGs = $this->findByUrlExternal($itemTypeGs, $gsn, $authorityGs);
+            $item = array_merge($item, $itemGs);
         }
 
         // get item from Domherrendatenbank
@@ -584,10 +622,14 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     public function findByUrlExternal($itemTypeId, $value, $authId, $isonline = true) {
+        if (!is_array($itemTypeId)) {
+            $itemTypeId = [$itemTypeId];
+        }
+
         $qb = $this->createQueryBuilder('i')
                    ->addSelect('i')
                    ->join('i.urlExternal', 'ext')
-                   ->andWhere('i.itemTypeId = :itemTypeId')
+                   ->andWhere('i.itemTypeId in (:itemTypeId)')
                    ->andWhere('ext.value = :value')
                    ->andWhere('ext.authorityId = :authId')
                    ->setParameter(':itemTypeId', $itemTypeId)
@@ -755,6 +797,5 @@ class ItemRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         return $query->getResult();
     }
-
 
 }

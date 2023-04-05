@@ -54,6 +54,7 @@ class BishopController extends AbstractController {
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
+        $model->itemTypeId = 4;
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -72,12 +73,11 @@ class BishopController extends AbstractController {
                     'form' => $form,
             ]);
         } else {
-
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
             $itemRepository = $entityManager->getRepository(Item::class);
-            $id_all = $itemRepository->bishopIds($model);
+            $id_all = $itemRepository->personIds($model);
             $count = count($id_all);
 
             // set offset to page begin
@@ -85,7 +85,7 @@ class BishopController extends AbstractController {
 
             $itemRepository = $entityManager->getRepository(Item::class);
             $model->editStatus = [Item::ITEM_TYPE[$this->itemTypeId]['online_status']];
-            $id_all = $itemRepository->bishopIds($model);
+            $id_all = $itemRepository->personIds($model);
             $count = count($id_all);
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
@@ -122,17 +122,18 @@ class BishopController extends AbstractController {
         $offset = $request->request->get('offset');
 
         $model = $form->getData();
+        $model->itemTypeId = 4;
 
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $itemRepository->bishopIds($model,
+            $ids = $itemRepository->personIds($model,
                                               2,
                                               $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $itemRepository->bishopIds($model,
+            $ids = $itemRepository->personIds($model,
                                               3,
                                               $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -182,7 +183,8 @@ class BishopController extends AbstractController {
             $format = $request->query->get('format') ?? 'json';
         }
 
-        $id_all = $itemRepository->bishopIds($model);
+        $model->itemTypeId = 4;
+        $id_all = $itemRepository->personIds($model);
 
         $chunk_offset = 0;
         $chunk_size = 50;

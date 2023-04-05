@@ -15,41 +15,24 @@
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text">URL Name</span>
 	    {# id (hidden) #}
-	    {% if urlext.authority %}
-		<input type="text"
-		       id="{{ base_id_urlext }}_authorityId"
-		       name="{{ base_input_name_urlext }}[authorityId]"
-		       class="form-control form-control-sm d-none"
-		       value="{{ urlext.authority.id }}">
-	    {% else %}
-		<input type="text"
-		       id="{{ base_id_urlext }}_authorityId"
-		       name="{{ base_input_name_urlext }}[authorityId]"
-		       class="form-control form-control-sm d-none"
-		       value="">
-	    {% endif %}
+	    {% set url_auth_id = urlext.authority ? urlext.authority.id : "" %}
+	    <input type="text"
+		   id="{{ base_id_urlext }}_authorityId"
+		   name="{{ base_input_name_urlext }}[authorityId]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ url_auth_id }}">
 	    <div class="w-50"
 		 {{ stimulus_controller('autocomplete', {
 		     url: path('person_suggest_base', { field: 'urlName' }),
 		 }) }}>
-		{% if urlext.authority %}
+		{% set url_auth_name = urlext.authority ? urlext.authority.urlNameFormatter : "" %}
  		    <input type="text" id="{{ base_id_urlext }}_urlName"
 			   name="{{ base_input_name_urlext}}[urlName]"
 			   class="form-control form-control-sm wiag-input"
-			   value="{{ urlext.authority.urlNameFormatter }}"
+			   value="{{ url_auth_name }}"
 			   spellcheck="false"
 			   aria-label="Institution/Katalog"
 			   data-autocomplete-target="input">
-		{% else %}
-		    <input type="text" id="{{ base_id_urlext }}_urlName"
-			   name="{{ base_input_name_urlext}}[urlName]"
-			   class="form-control form-control-sm wiag-input"
-			   value=""
-			   spellcheck="false"
-			   aria-label="Institution/Katalog"
-			   data-autocomplete-target="input">
-
-		{% endif %}
 		<ul class="list-group autocomplete-target"
 			   data-autocomplete-target="results"
 			   style="max-width: 30rem;"></ul>
@@ -67,5 +50,23 @@
 		   spellcheck="false"
 		   aria-label="Id/Nummer">
 	</div>
+	{% if itemTypeId == 5 %}
+	    <div class="input-group input-group-sm mb-1">
+		<span class="input-group-text">URL Bemerkung</span>
+		<input type="text" id="{{ base_id_urlext }}_note"
+		       name="{{ base_input_name_urlext}}[note]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ urlext.note }}"
+		       spellcheck="false"
+		       aria-label="Bemerkung">
+	    </div>
+	{% else %}
+	    <input type="text" id="{{ base_id_urlext }}_note"
+		   name="{{ base_input_name_urlext}}[note]"
+		   class="d-none"
+		   value="{{ urlext.note }}"
+		   spellcheck="false"
+		   aria-label="Bemerkung">
+	{% endif %}
     </div>
 </div>

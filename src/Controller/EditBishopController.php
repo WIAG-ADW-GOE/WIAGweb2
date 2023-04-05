@@ -144,7 +144,6 @@ class EditBishopController extends AbstractController {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $suggestions = $personRepository->suggestEditStatus($this->itemTypeId, null, 60);
-        dump($suggestions);
         $status_list = array_column($suggestions, 'suggestion');
 
         $status_choices = ['- alle -' => null];
