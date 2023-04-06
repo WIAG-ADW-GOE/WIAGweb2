@@ -1,7 +1,7 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = ['copy', 'check', 'fill', 'toggle'];
+    static targets = ['copy', 'check', 'fill', 'toggle', 'expand'];
     static values = {
 	fillStatus: String,
 	fillUrl: String,
@@ -62,6 +62,19 @@ export default class extends Controller {
 	    elmt.setAttribute("value", this.toggleFirstValue)
 	}
 	//console.log(elmt.getAttribute("value"));
+    }
+
+    /**
+     * expand()
+     *
+     * 2023-04-06 open edit form when it is manually marked as edited
+     */
+    expand() {
+	console.log('sync#expand');
+	var aria_expanded = this.expandTarget.getAttribute('aria-expanded');
+	if (aria_expanded == 'false') {
+	    this.expandTarget.click();
+	}
     }
 
 

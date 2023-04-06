@@ -112,11 +112,6 @@ class EditPersonService {
         $source_ref = $person->getItem()->getUrlExternal();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
 
-        // merging?
-        if ($target_item->getMergeStatus() == 'merging') {
-            $this->updateMergeMetaData($target, $person);
-        }
-
         $this->copyCore($target, $person);
 
         // name variants
@@ -138,8 +133,8 @@ class EditPersonService {
         // roles
         $this->setRole($target, $person);
 
-        $expanded = $person->getItem()->getFormIsExpanded();
-        $target->getItem()->setFormIsExpanded($expanded);
+        // online?
+        $target->getItem()->updateIsOnline();
 
     }
 
@@ -376,34 +371,33 @@ class EditPersonService {
         return $person;
     }
 
-    /**
-     * updateMergeMetaData($person)
-     *
-     * find merged entities; update merge meta data
-     */
-    public function updateMergeMetaData($target, $person) {
+    public function readParentList($person) {
         $parent_id = $person->getItem()->getMergeParent();
 
         $personRepository = $this->entityManager->getRepository(Person::class);
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
         $parent_list = array();
         foreach($parent_id as $p_id) {
             $parent_list[] = $personRepository->find($p_id);
         }
 
-        // child
-        $target->getItem()->setMergeStatus('child');
-        $target->getItem()->setIdPublic($parent_list[0]->getItem()->getIdPublic());
-        // parents
-        $child_id = $target->getId();
-        foreach ($parent_list as $p) {
-            $p->getItem()->setMergedIntoId($child_id);
-            $p->getItem()->setMergeStatus('parent');
-            $p->getItem()->setIsOnline(0);
-            if ($person->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                $canonLookupRepository->update($person);
-            }
+        return $parent_list;
+    }
+
+    /**
+     * updateAsParent(Person $parent, $childId)
+     *
+     * update internal merge meta data and table canon_lookup
+     */
+    public function updateAsParent(Person $parent, $childId) {
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+        $item = $parent->getItem();
+        $item->setMergedIntoId($childId);
+        $item->setMergeStatus('parent');
+        $item->setIsOnline(0);
+
+        if ($item->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+            $canonLookupRepository->update($parent);
         }
     }
 
@@ -556,6 +550,9 @@ class EditPersonService {
             }
         }
 
+        // set warning when role list is empty
+        $this->checkRoleList($person);
+
         // date min/date max
         $this->updateDateRange($person);
 
@@ -566,6 +563,27 @@ class EditPersonService {
         }
 
         return $person;
+    }
+
+    /**
+     * checkRoleList($person)
+     *
+     * add a warning if no valid role is found
+     */
+    private function checkRoleList($person) {
+        $role_found = false;
+        $role_list = $person->getRole();
+        foreach ($role_list as $person_role) {
+            if ($person_role->getDeleteFlag() != "delete") {
+                $role_found = true;
+            }
+        }
+
+        if (!$role_found) {
+            $msg = "Hinweis: Der Eintrag hat keine Angaben zu Ämtern!";
+            $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+        }
+
     }
 
     /**
@@ -755,7 +773,7 @@ class EditPersonService {
                 // dd($inst_name, $inst_type_id, $query_result);
                 if (count($query_result) < 1) {
                     $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
-                    $role->getInput_error()->add(new InputError('role', $msg, 'warning'));
+                    $role->getInputError()->add(new InputError('role', $msg, 'warning'));
                     $role->setInstitution(null);
                     $role->setInstitutionName($inst_name);
                 } else {

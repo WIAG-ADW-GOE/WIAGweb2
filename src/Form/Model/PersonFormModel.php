@@ -70,7 +70,7 @@ class PersonFormModel {
 
         // set defaults
         $default_list = [
-            'itemTypeID' => 0,
+            'itemTypeId' => 0,
             'isOnline' => true,
             'isDeleted' => false,
             'commentDuplicate' => null,

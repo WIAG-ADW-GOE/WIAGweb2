@@ -207,15 +207,31 @@ class EditPersonController extends AbstractController {
                     // read complete tree to perform deletions if necessary
                     $query_result = $personRepository->findList([$person_id]);
                     $target = $query_result[0];
+                    // transfer data from $person to $target
                     $this->editService->update($target, $person, $current_user_id);
-                    // online?
-                    $online_status = Item::ITEM_TYPE[$item_type_id]['online_status'];
-                    $is_online = $target->getItem()->getEditStatus() == $online_status ? 1 : 0;
-                    $target->getItem()->setIsOnline($is_online);
+
+                    // merging process?
+                    $target_item = $target->getItem();
+                    if ($target_item->getMergeStatus() == 'merging') {
+                        $parent_list = $this->editService->readParentList($person);
+                        $target_item->setMergeStatus('child');
+                        $idPublic = $parent_list[0]->getItem()->getIdPublic();
+                        $target_item->setIdPublic($idPublic);
+                        $target_id = $target->getId();
+                        foreach ($parent_list as $parent) {
+                            $this->editService->updateAsParent($parent, $target_id);
+                        }
+                    }
+
+                    // update auxiliary tables
                     $nameLookupRepository->update($target);
                     if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
                         $canonLookupRepository->update($target);
                     }
+
+                    // form status
+                    $expanded = $person->getItem()->getFormIsExpanded();
+                    $target->getItem()->setFormIsExpanded($expanded);
                     $target->getItem()->setFormIsEdited(0);
 
                     $person_list[$key] = $target; // show updated object
@@ -697,30 +713,41 @@ class EditPersonController extends AbstractController {
     public function splitItem(int $itemTypeId, int $id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
         $item = $itemRepository->find($id);
 
         // set status values for parents and child
         $person_list = array();
         if (!is_null($item)) {
-            $parent_list = $itemRepository->findBy(['mergedIntoId' => $item->getId()]);
+            $parent_list = $itemRepository->findParents($item);
             // dd ($parent_list);
 
             $item->setIsDeleted(1);
             $item->setMergeStatus('orphan');
             $item->setIsOnline(0);
+            $orphan_person = $personRepository->find($id);
+            $canonLookupRepository->update($orphan_person);
 
-            $online_status = Item::ITEM_TYPE[$item->getItemTypeId()]['online_status'];
             $id_list = array();
             foreach($parent_list as $parent_item) {
-                if ($parent_item->getEditStatus() == $online_status) {
-                    $parent_item->setIsOnline(1);
-                }
-                $parent_item->setFormIsExpanded(1);
-                $parent_item->setMergeStatus('original');
+                $parent_item->updateIsOnline();
+
+                // merge_status
+                $parent_parent_list = $itemRepository->findParents($parent_item);
+                $merge_status = count($parent_parent_list) > 0 ? 'child' : 'original';
+                $parent_item->setMergeStatus($merge_status);
+
+                $parent_item->setMergedIntoId(null);
+
                 $id_list[] = $parent_item->getId();
+
+                $parent_item->setFormIsExpanded(1);
             }
             $person_list = $personRepository->findList($id_list);
+            foreach ($person_list as $parent_person) {
+                $canonLookupRepository->update($parent_person);
+            }
 
             $this->entityManager->flush();
 

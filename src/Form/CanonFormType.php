@@ -92,6 +92,7 @@ class CanonFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
+            ->add('itemTypeId', HiddenType::class)
             ->add('stateFctInst', HiddenType::class, [
                 'mapped' => false,
             ])

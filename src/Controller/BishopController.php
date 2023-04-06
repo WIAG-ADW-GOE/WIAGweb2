@@ -50,11 +50,12 @@ class BishopController extends AbstractController {
                           EntityManagerInterface $entityManager,
                           RouterInterface $router) {
 
+
         $personRepository = $entityManager->getRepository(Person::class);
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
-        $model->itemTypeId = 4;
+        $model->itemTypeId = $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $flagInit = count($request->request->all()) == 0;
 

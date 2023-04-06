@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Item;
 use App\Repository\PersonRoleRepository;
 use App\Service\UtilService;
 
@@ -76,15 +77,15 @@ class PersonRole
     private $diocese;
 
     /**
-     * fallback if dioceseId is NULL and institutionId is NULL
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $dioceseName;
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $institutionTypeId;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $dioceseName;
 
     /**
      * @ORM\Column(type="string", length=31, nullable=true)

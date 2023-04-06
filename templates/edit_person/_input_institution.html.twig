@@ -1,5 +1,5 @@
 {# params: inst_type_id, controller select-institution #}
-{# the autocompletion list depends on itemTypeId #}
+{# the autocompletion list depends on itemTypeId of the institution #}
 {% set inst_ac_url = {
     1: path('person_suggest_base', { field: 'diocese' }),
     2: path('person_suggest_base', { field: 'institution' }),
@@ -13,7 +13,7 @@
     <option value="1"
 	    data-url="{{ inst_ac_url.1 }}"
 	    {% if inst_type_id == 1 %}selected="selected"{% endif %}>Bistum</option>
-    <option value="not 1"
+    <option value="2"
 	    data-url="{{ inst_ac_url.2 }}"
 	    {% if inst_type_id != 1 %}selected="selected"{% endif %}>Kloster/Domstift</option>
 </select>

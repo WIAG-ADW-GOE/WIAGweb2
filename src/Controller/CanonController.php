@@ -48,6 +48,7 @@ class CanonController extends AbstractController {
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         // $model = new PersonFormModel;
         $model = new PersonFormModel;
+        $model->itemTypeId = Item::ITEM_TYPE_ID['Domherr']['id'];
 
         $flagInit = count($request->request->all()) == 0;
 

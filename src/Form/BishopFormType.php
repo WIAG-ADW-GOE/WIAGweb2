@@ -83,6 +83,7 @@ class BishopFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
+            ->add('itemTypeId', HiddenType::class)
             ->add('stateFctInst', HiddenType::class, [
                 'mapped' => false,
             ])
@@ -145,7 +146,6 @@ class BishopFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetOffice = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
         $offices = $this->repository->countBishopOffice($model);
 
         $choices = array();

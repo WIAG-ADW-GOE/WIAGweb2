@@ -579,6 +579,11 @@ class Item {
         return $this;
     }
 
+    public function updateIsOnline() {
+        $online_status = self::ITEM_TYPE[$this->itemTypeId]['online_status'];
+        $this->isOnline = $this->editStatus == $online_status ? 1 : 0;
+    }
+
     public function setFormIsEdited($value): self {
         $this->formIsEdited = $value;
         return $this;

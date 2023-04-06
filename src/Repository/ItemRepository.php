@@ -316,7 +316,7 @@ class ItemRepository extends ServiceEntityRepository
      * return array of dioceses related to a person's role (used for facet)
      */
     public function countBishopDiocese($model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
+        $itemTypeId = $model->itemTypeId;
 
         $qb = $this->createQueryBuilder('i')
                    ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) AS n')
@@ -797,5 +797,17 @@ class ItemRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         return $query->getResult();
     }
+
+    /**
+     *
+     */
+    public function findParents($item) {
+        $qb = $this->createQueryBuilder('i')
+                   ->andWhere('i.mergedIntoId = :child_id')
+                   ->setParameter('child_id', $item->getId());
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
 
 }
