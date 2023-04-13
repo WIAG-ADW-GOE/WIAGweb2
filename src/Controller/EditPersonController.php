@@ -522,6 +522,7 @@ class EditPersonController extends AbstractController {
         $model->editStatus = ['fertig'];
         $model->isOnline = true;
         $model->listSize = 5;
+        $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
@@ -552,7 +553,7 @@ class EditPersonController extends AbstractController {
             $limit = 0;
             $offset = 0;
             $online_only = false;
-            $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
+            $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
             $count = count($id_all);
 
             $offset = $request->request->get('offset');
@@ -676,7 +677,7 @@ class EditPersonController extends AbstractController {
         $online_only = false;
         $limit = null;
         $offset = null;
-        $id_all = $itemRepository->bishopIds($model, $limit, $offset, $online_only);
+        $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
 
         $person_list = $personRepository->findList($id_all);
 

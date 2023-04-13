@@ -21,9 +21,7 @@ export default class extends Controller {
 
     async openModal(event) {
         this.modal = new Modal(this.modalTarget);
-	this.elmtID = event.currentTarget.value;
-	this.personID = event.currentTarget.dataset.personId;
-	this.listIndex = event.currentTarget.dataset.listIndex;
+	this.personID = event.currentTarget.dataset.personId; // see this.submitForm
         this.modal.show();
 
 	// fetch uses the current URL if it is called with an empty URL
@@ -105,45 +103,5 @@ export default class extends Controller {
 	return null;
     }
 
-    /**
-     * updateEntry(form_elmt)
-     *
-     * fetch data for the current item and the merge item; update form section for item
-     * 2022-12-22 obsolete?
-     */
-    async updateEntry(request_body) {
-	// console.log('this is updateEntry');
-	// find the form section to update
-	const entry_elmt = document.getElementById(this.elmtID);
-
-	// wrapper
-	const wrap = document.createElement("div");
-	// get new data from the server
-	var url = this.mergeItemUrlValue + '/' + this.personID + '/' + this.listIndex;
-
-	const response = await fetch(url, {
-	    method: "POST",
-	    body: request_body,
-	});
-
-	wrap.innerHTML = await response.text();
-	entry_elmt.firstElementChild.innerHTML = wrap.firstElementChild.firstElementChild.innerHTML;
-    }
-
-    /**
-     * 2022-12-22 obsolete?
-     */
-    async mergeItem(event) {
-	// console.log('this is mergeItem');
-	this.elmtID = event.currentTarget.value;
-	this.personID = event.currentTarget.dataset.personId;
-	this.listIndex = event.currentTarget.dataset.listIndex;
-
-	const merge_select = event.currentTarget.dataset.mergeSelect;
-
-	var request_body = new URLSearchParams({"merge_select": merge_select});
-
-	await this.updateEntry(request_body);
-    }
 
 }
