@@ -17,7 +17,25 @@
 		   value="{{ reference.yearPublication }}"
 		   spellcheck="false"
 		   aria-label="Erscheinungsjahr">
- 	    <span class="input-group-text" style="min-width: 4rem">ISBN</span>
+	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
+	    <input type="text" id="{{ base_id }}_display_order"
+		   name="{{ base_input_name}}[displayOrder]"
+		   class="form-control wiag-input"
+		   style="max-width: 5rem"
+		   value="{{ reference.DisplayOrder }}"
+		   spellcheck="false"
+		   aria-label="Reihenfolge">
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">GS Nr.</span>
+	    <input type="text" id="{{ base_id }}_gs_volume_nr"
+		   name="{{ base_input_name}}[gsVolumeNr]"
+		   class="form-control wiag-input"
+		   value="{{ reference.gsVolumeNr }}"
+		   style="max-width: 9rem"
+		   spellcheck="false"
+		   aria-label="GS Nummer">
+	    <span class="input-group-text" style="min-width: 4rem">ISBN</span>
 	    <input type="text" id="{{ base_id }}_isbn"
 		   name="{{ base_input_name}}[isbn]"
 		   class="form-control wiag-input"
@@ -33,14 +51,6 @@
 		   value="{{ reference.riOpacId }}"
 		   spellcheck="false"
 		   aria-label="RI OPAC">
-	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
-	    <input type="text" id="{{ base_id }}_display_order"
-		   name="{{ base_input_name}}[displayOrder]"
-		   class="form-control wiag-input"
-		   style="max-width: 5rem"
-		   value="{{ reference.DisplayOrder }}"
-		   spellcheck="false"
-		   aria-label="Reihenfolge">
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">Titel</span>
@@ -67,36 +77,13 @@
 		   aria-label="Online Ressource">
 	</div>
  	<div class="input-group input-group-sm mb-1">
-	    <span class="input-group-text" style="min-width: 10rem">GS Nr., GS Titel</span>
-	    <input type="text" id="{{ base_id }}_gs_volume_nr"
-		   name="{{ base_input_name}}[gsVolumeNr]"
-		   class="form-control wiag-input"
-		   value="{{ reference.gsVolumeNr }}"
-		   style="max-width: 9rem"
-		   spellcheck="false"
-		   aria-label="GS Nummer">
+	    <span class="input-group-text" style="min-width: 10rem">GS Zitation</span>
 	    <textarea id="{{ base_id }}_gs_citation"
 		      name="{{ base_input_name}}[gsCitation]"
 		      class="form-control wiag-input"
 		      style="height: 3rem"
 		      spellcheck="false"
 		      aria-label="GS Titel">{{ reference.gsCitation }}</textarea>
-	</div>
-	<div class="input-group input-group-sm mb-1">
-	    <span class="input-group-text" style="min-width: 10rem">GS URL</span>
-	    <input type="text" id="{{ base_id }}_gs_url"
-		   name="{{ base_input_name}}[gsUrl]"
-		   class="form-control wiag-input"
-		   value="{{ reference.gsUrl }}"
-		   spellcheck="false"
-		   aria-label="GS URL">
-	    <span class="input-group-text" style="min-width: 5rem">GS DOI</span>
-	    <input type="text" id="{{ base_id }}_gs_doi"
-		   name="{{ base_input_name}}[gsDoi]"
-		   class="form-control wiag-input"
-		   value="{{ reference.gsDoi }}"
-		   spellcheck="false"
-		   aria-label="GS DOI">
 	</div>
 	<div class="input-group input-group-sm mt-1">
 	    <span class="input-group-text" style="min-width: 10rem">Bemerkung (online)</span>

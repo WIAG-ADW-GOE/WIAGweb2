@@ -141,7 +141,7 @@ class EditReferenceController extends AbstractController {
         if (!$error_flag) {
             foreach ($reference_list as $reference) {
                 $id = $reference->getId();
-                if (!$id > 0) {
+                if ($id < 1) {
                     $reference->setReferenceId($max_reference_id + 1);
                     $max_reference_id += 1;
                     $entityManager->persist($reference);

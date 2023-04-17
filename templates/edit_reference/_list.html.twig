@@ -10,22 +10,23 @@
 		{# disable submit via enter-key #}
 		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
 		{# toggle collapse button #}
-		<button class="btn btn-sm btn-secondary float-start"
-			type="button"
-			data-bs-toggle="collapse"
-			data-bs-target=".multi-collapse"
-			aria-expanded="false"
-			aria-controls="{{ body_id_list }}"
-			{{ stimulus_controller('toggle-arrow', {
-			    state: true,
-			    imgOpen: 'down',
-			    imgClosed: 'right'
-			}) }}
-			data-action="toggle-arrow#toggle"
-			aria-label="Listenelemente aufklappen oder schließen"
-			{# avoid overflow of the number of input field elements #}
-			{% if referenceList|length > 20 %}disabled{% endif %}
-			data-value="down">öffnen/schließen</button>
+		{% if referenceList|length <= 40 %}
+		    <button class="btn btn-sm btn-secondary float-start"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    data-bs-target=".multi-collapse"
+			    aria-expanded="false"
+			    aria-controls="{{ body_id_list }}"
+			    {{ stimulus_controller('toggle-arrow', {
+				state: true,
+				imgOpen: 'down',
+				imgClosed: 'right'
+			    }) }}
+			    data-action="toggle-arrow#toggle"
+			    aria-label="Listenelemente aufklappen oder schließen"
+			    {# avoid overflow of the number of input field elements #}
+			    data-value="down">öffnen/schließen</button>
+		{% endif %}
 	    </div>
 	    <div class="col">
 		<button type="button"
@@ -43,7 +44,12 @@
 					    item_type_id: itemTypeId,
 					    }) }}"
 		     data-insert-point-value="lastButOne">
-		    {% for ref in referenceList %}
+		    <div class="input-group input-group-sm mt-1 ">
+			<button class="btn btn-sm btn-outline-secondary"
+				       type="button"
+				data-action="insert#insertAfter"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+		    </div>
+			{% for ref in referenceList %}
 			{{ include('edit_reference/_item.html.twig', {
 			    reference: ref,
 			    current_idx: loop.index,

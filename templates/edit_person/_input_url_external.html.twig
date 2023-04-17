@@ -13,7 +13,7 @@
     </div>
     <div class="col-11">
 	<div class="input-group input-group-sm mb-1">
-	    <span class="input-group-text">URL Name</span>
+	    <span class="input-group-text">URL Typ</span>
 	    {# id (hidden) #}
 	    {% set url_auth_id = urlext.authority ? urlext.authority.id : "" %}
 	    <input type="text"
@@ -52,7 +52,7 @@
 	</div>
 	{% if itemTypeId == 5 %}
 	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text">URL Bemerkung</span>
+		<span class="input-group-text">URL Beschreibung</span>
 		<input type="text" id="{{ base_id_urlext }}_note"
 		       name="{{ base_input_name_urlext}}[note]"
 		       class="form-control form-control-sm wiag-input"

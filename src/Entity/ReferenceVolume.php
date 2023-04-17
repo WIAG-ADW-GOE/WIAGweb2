@@ -25,8 +25,6 @@ class ReferenceVolume {
         'titleShort',
         'gsVolumeNr',
         'gsCitation',
-        'gsUrl',
-        'gsDoi',
         'onlineResource',
         'note',
         'comment',
