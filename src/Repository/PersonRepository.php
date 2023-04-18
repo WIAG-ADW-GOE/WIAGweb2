@@ -22,13 +22,9 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PersonRepository extends ServiceEntityRepository {
 
-    private $utilService;
-
-    public function __construct(ManagerRegistry $registry, UtilService $utilService)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Person::class);
-
-        $this->utilService = $utilService;
     }
 
     // /**
@@ -103,7 +99,7 @@ class PersonRepository extends ServiceEntityRepository {
         $em->getRepository(Authority::class)->setAuthority($item_list);
 
         // restore order as in $id_list
-        $person_list = $this->utilService->reorder($person_list, $id_list, "id");
+        $person_list = UtilService::reorder($person_list, $id_list, "id");
 
         return $person_list;
     }

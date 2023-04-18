@@ -58,14 +58,18 @@ export default class extends Controller {
 
 	// console.log(this.pointValue);
 
+	var new_elmt = null;
 	if (this.pointValue == "last") {
-	    this.element.appendChild(wrap.firstElementChild);
+	    new_elmt = this.element.appendChild(wrap.firstElementChild);
 	} else if (this.pointValue == "lastButOne") {
-	    this.element.insertBefore(
+	    new_elmt = this.element.insertBefore(
 		wrap.firstElementChild,
 		this.element.lastElementChild
 	    );
 	}
+	//var dummy_scroll_target = document.getElementById('ref_insert_bottom');
+	//dummy_scroll_target.scrollIntoView();
+	new_elmt.scrollIntoView();
 
     }
 

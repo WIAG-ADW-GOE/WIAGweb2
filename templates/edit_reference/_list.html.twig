@@ -45,7 +45,7 @@
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
 				       type="button"
-				data-action="insert#insertAfter"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+				data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
 		    </div>
 			{% for ref in referenceList %}
 			{{ include('edit_reference/_item.html.twig', {
@@ -55,6 +55,7 @@
 		    {% endfor %}
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
+				id="ref_insert_bottom"
 				type="button"
 				data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
 		    </div>

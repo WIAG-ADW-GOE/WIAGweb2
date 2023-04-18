@@ -47,7 +47,6 @@
 	    <input type="text" id="{{ base_id }}_ri_opac_id"
 		   name="{{ base_input_name}}[riOpacId]"
 		   class="form-control wiag-input"
-		   style="max-width: 24rem"
 		   value="{{ reference.riOpacId }}"
 		   spellcheck="false"
 		   aria-label="RI OPAC">
@@ -63,6 +62,7 @@
 	    <select class="form-select form-select-sm wiag-input"
 		    aria-label="Thema/Typ"
 	    	    id="{{ base_id }}_item_type_id"
+		    style="max-width: 12rem"
 		    name="{{ base_input_name }}[itemTypeId]">
 		{% for key, item_type_loop in item_type_choice_list %}
 		    {% if key == reference.itemTypeId %}

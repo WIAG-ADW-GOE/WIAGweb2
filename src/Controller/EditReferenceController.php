@@ -39,8 +39,9 @@ class EditReferenceController extends AbstractController {
 
         $sort_by_choices = [
             'ID' => 'referenceId',
-            'Kurztitel' => 'titleShort',
+            'Titel' => 'fullCitation',
             'Autorenschaft' => 'authorEditor',
+            'Kurztitel' => 'titleShort',
             'Anzeigereihenfolge' => 'displayOrder',
         ];
 
@@ -112,67 +113,6 @@ class EditReferenceController extends AbstractController {
 
     }
 
-
-    /**
-     * @Route("/edit/reference", name="edit_reference")
-     */
-    public function list(Request $request,
-                         EntityManagerInterface $entityManager): Response {
-        $edit_form_id = 'reference_edit_form';
-
-        // default
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
-        $model = ['itemType' => $item_type_id]; // set default
-
-        $itemTypeRepository = $entityManager->getRepository(ItemType::class);
-
-        $choices = [
-            'Bischof'    => Item::ITEM_TYPE_ID['Bischof']['id'],
-            'Domherr'    => Item::ITEM_TYPE_ID['Domherr']['id'],
-            'Bistum'     => Item::ITEM_TYPE_ID['Bistum']['id'],
-            'Bischof GS' => Item::ITEM_TYPE_ID['Bischof GS']['id'],
-            'GS-Bände' => Item::ITEM_TYPE_ID['Domherr GS']['id'],
-            'Priester Utrecht' => Item::ITEM_TYPE_ID['Priester Utrecht']['id'],
-        ];
-
-        $form = $this->createFormBuilder($model)
-                     ->setMethod('GET')
-                     ->add('itemType', ChoiceType::class, [
-                         'label' => 'Gegenstandstyp',
-                         'choices' => $choices,
-                     ])
-                     ->getForm();
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $data = $form->getData();
-            $item_type_id = $data['itemType'];
-            // dump($request->getUri());
-        }
-
-        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
-
-        $reference_list = $referenceRepository->findBy(
-            ['itemTypeId' => $item_type_id],
-        );
-
-        // sort null last
-        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder', 'id']);
-
-        $emptyReference = new ReferenceVolume();
-        $emptyReference->setItemTypeId($item_type_id);
-
-        return $this->renderForm('edit_reference/select.html.twig', [
-            'menuItem' => 'edit-menu',
-            'form' => $form,
-            'editFormId' => $edit_form_id,
-            'itemTypeId' => $item_type_id,
-            'referenceList' => $reference_list,
-            'emptyReference' => $emptyReference,
-        ]);
-    }
-
     /**
      * @Route("/edit/reference/save", name="edit_reference_save")
      */
@@ -234,7 +174,9 @@ class EditReferenceController extends AbstractController {
             foreach ($reference_list as $reference) {
                 $id = $reference->getId();
                 if ($id < 1) {
-                    $reference->setReferenceId($max_reference_id + 1);
+                    $new_item_type_id = $reference->getItemTypeId();
+                    $next_id = $referenceRepository->nextId($new_item_type_id);
+                    $reference->setReferenceId($next_id);
                     $max_reference_id += 1;
                     $entityManager->persist($reference);
                 }
