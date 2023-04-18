@@ -6,6 +6,7 @@ use App\Entity\Item;
 use App\Entity\ItemType;
 use App\Entity\ReferenceVolume;
 use App\Entity\InputError;
+use App\Form\Model\ReferenceQueryFormModel;
 
 use App\Service\UtilService;
 
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
@@ -20,6 +22,96 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 class EditReferenceController extends AbstractController {
+
+    /**
+     * @Route("/edit/reference/query", name="edit_reference_query")
+     */
+    public function query(Request $request,
+                          EntityManagerInterface $entityManager): Response {
+
+        $item_type_choices = [
+            '- alle -' => '',
+            'Bischof/Domherr' => '4, 5',
+            'GS-Bände' => '6, 9',
+            'Bistum' => '1',
+            'Priester Utrecht' => '10',
+        ];
+
+        $sort_by_choices = [
+            'ID' => 'referenceId',
+            'Kurztitel' => 'titleShort',
+            'Autorenschaft' => 'authorEditor',
+            'Anzeigereihenfolge' => 'displayOrder',
+        ];
+
+        $model = [
+            'itemType' => '4, 5',
+            'sortBy' => 'referenceId',
+            'searchText' => '',
+        ];
+
+        $form = $this->createFormBuilder($model)
+                     ->setMethod('GET')
+                     ->add('itemType', ChoiceType::class, [
+                         'label' => 'Thema',
+                         'choices' => $item_type_choices,
+                         'required' => false,
+                     ])
+                     ->add('searchText', TextType::class, [
+                         'label' => 'Suchtext',
+                         'required' => false,
+                         'attr' => [
+                             'placeholder' => 'Autor/Titel'
+                         ],
+                     ])
+                     ->add('sortBy', ChoiceType::class, [
+                         'label' => 'Sortierung',
+                         'choices' => $sort_by_choices,
+                     ])
+                     ->getForm();
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+
+        $reference_list = array();
+        if ($form->isSubmitted() && $form->isValid()) {
+        } else {
+            $model['itemType'] = '4, 5';
+        }
+
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+
+        $reference_list = $referenceRepository->findByModel($model);
+
+        // sort null last
+        $sort_criteria = array();
+        if ($model['sortBy'] != '') {
+            $sort_criteria[] = $model['sortBy'];
+        }
+        $sort_criteria[] = 'id';
+        $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
+
+        $item_type_id = '';
+        if ($model['itemType'] != '- alle -') {
+            $item_type_cand = explode(' ,', $model['itemType']);
+            $item_type_id = $item_type_cand[0];
+        }
+        $emptyReference = new ReferenceVolume();
+        $emptyReference->setItemTypeId($item_type_id);
+
+        $template = 'edit_reference/query.html.twig';
+        $edit_form_id = 'reference_edit_form';
+
+        return $this->renderForm($template, [
+            'menuItem' => 'edit-menu',
+            'form' => $form,
+            'editFormId' => $edit_form_id,
+            'referenceList' => $reference_list,
+            'emptyReference' => $emptyReference,
+        ]);
+
+    }
+
 
     /**
      * @Route("/edit/reference", name="edit_reference")
@@ -109,13 +201,13 @@ class EditReferenceController extends AbstractController {
 
         foreach($form_data as $data) {
             $id = $data['id'];
-            $item_type_id = $data['itemTypeId'];
             $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $reference = $reference_list[$id];
                 $reference->setFormIsExpanded($formIsExpanded);
             }
             if (isset($data['formIsEdited'])) {
+                $item_type_id = $data['itemTypeId'];
                 if (!$id > 0) {
                     // new entry
                     $reference = new ReferenceVolume();
@@ -150,9 +242,6 @@ class EditReferenceController extends AbstractController {
             $entityManager->flush();
         }
 
-        // displayOrder may have been edited
-        // sort null last
-        $reference_list = UtilService::sortByFieldList($reference_list, ['displayOrder', 'id']);
 
         // create empty template for new entries
         $emptyReference = new ReferenceVolume();

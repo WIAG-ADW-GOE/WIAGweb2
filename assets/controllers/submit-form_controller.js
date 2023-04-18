@@ -33,10 +33,11 @@ export default class extends Controller {
     }
 
     /**
-     * submit form with only one selection element
+     * submit form when an input field changes
      */
     onChange(event) {
 	// console.log('on change');
+	event.preventDefault();
 	this.element.submit();
     }
 

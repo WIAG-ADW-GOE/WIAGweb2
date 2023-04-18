@@ -29,13 +29,10 @@ class CanonLookupRepository extends ServiceEntityRepository
     // item type for domstift
     const ITEMTYPEDOMSTIFT = 3;
 
-    private $utilService;
-
-    public function __construct(ManagerRegistry $registry, UtilService $utilService)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CanonLookup::class);
 
-        $this->utilService = $utilService;
     }
 
     // /**
@@ -366,7 +363,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $role_list = $this->getRoleList($canon_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-        $canon_list = $this->utilService->reorder($canon_list, $id_list, "personIdName");
+        $canon_list = UtilService::reorder($canon_list, $id_list, "personIdName");
 
         return $canon_list;
 

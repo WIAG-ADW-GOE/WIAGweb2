@@ -5,8 +5,8 @@
 	  method="post"
 	  data-controller="submit-form">
 	{% set body_id_list = range(1,referenceList|length)|map(r => 'body'~r)|join(' ') %}
-	<div class="row mx-0">
-	    <div class="col">
+	<div class="row mx-2 mt-2">
+	    <div class="col-12">
 		{# disable submit via enter-key #}
 		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
 		{# toggle collapse button #}
@@ -27,8 +27,6 @@
 			    {# avoid overflow of the number of input field elements #}
 			    data-value="down">öffnen/schließen</button>
 		{% endif %}
-	    </div>
-	    <div class="col">
 		<button type="button"
 			name="formType"
 			value="list"
@@ -36,7 +34,7 @@
 			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
-	<div class="row mx-0">
+	<div class="row ms-2 mx-0">
 	    <div class="col-12">
 		<div data-controller="insert"
 		     data-insert-url-value="{{ path('edit_reference_new_reference', {
@@ -64,7 +62,7 @@
 	    </div>
 	</div>
 	{# submit #}
-	<div class="row mx-2"
+	<div class="row ms-2 mx-2"
 	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    <div class="col">
 		{% set debug = false %}

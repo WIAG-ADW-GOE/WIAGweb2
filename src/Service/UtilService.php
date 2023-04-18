@@ -200,7 +200,7 @@ class UtilService {
      *
      * An index in $sorted may occur several times as a value in $list
      */
-    public function reorder($list, $sorted, $field = "id") {
+    static public function reorder($list, $sorted, $field = "id") {
         // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
         $idx_map = array_flip($sorted);

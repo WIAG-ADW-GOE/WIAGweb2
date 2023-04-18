@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ReferenceVolume;
+use App\Service\UtilService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -123,6 +124,36 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
                    ->andWhere('v.id in (:id_list)')
                    ->addOrderBy('v.displayOrder', 'ASC')
                    ->setParameter('id_list', $id_list);
+        $query = $qb->getQuery();
+        $reference_list = $query->getResult();
+
+        $reference_list = UtilService::reorder($reference_list, $id_list, "id");
+
+        return $reference_list;
+
+    }
+
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v');
+
+        if ($model['itemType'] != '') {
+            $item_type_id = explode(', ', $model['itemType']);
+            $qb->join('\App\Entity\ItemReference', 'ir', 'WITH', 'ir.itemTypeId = v.itemTypeId AND ir.referenceId = v.referenceId')
+               ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = ir.itemId')
+               ->andWhere('i.itemTypeId in (:item_type_id)')
+               ->setParameter('item_type_id', $item_type_id);
+        }
+
+        if ($model['searchText'] != '') {
+            $qb->andWhere('v.titleShort LIKE :q_search '.
+                          'OR v.authorEditor LIKE :q_search '.
+                          'OR v.fullCitation LIKE :q_search '.
+                          'OR v.gsCitation LIKE :q_search '.
+                          'OR v.note LIKE :q_search')
+               ->setParameter('q_search', '%'.trim($model['searchText'].'%'));
+        }
+
         $query = $qb->getQuery();
         return $query->getResult();
     }
