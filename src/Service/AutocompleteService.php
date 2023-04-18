@@ -153,7 +153,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * autocomplete for references
+     * autocomplete function for references
      *
      * usually used for asynchronous JavaScript request
      */

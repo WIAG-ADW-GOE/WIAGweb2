@@ -183,6 +183,8 @@ class BishopController extends AbstractController {
             $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
+        $format = ucfirst(strtolower($format));
+
 
         $model->itemTypeId = 4;
         $id_all = $itemRepository->personIds($model);
@@ -209,7 +211,6 @@ class BishopController extends AbstractController {
         }
 
 
-        $format = ucfirst(strtolower($format));
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
