@@ -691,23 +691,46 @@ class Item {
     }
 
     /**
-     * @return elements of `itemProperty` as array
+     * @return elements of `itemProperty` as array with `item_property_type.name` as key
      */
-    public function combineItemProperty() {
+    public function arrayItemProperty() {
         $itemPropByName = array();
         foreach ($this->itemProperty as $ip) {
             $key = $ip->getType()->getName();
-            $itemPropByName[$key] = $ip->getValue();
-            $itemPropByName[$key.'_date'] = $ip->getDateValue();
+            $entry = array();
+            $entry['value'] = $ip->getValue();
+            if ($ip->getDateValue()) {
+                $entry['date'] = $ip->getDateValue()->format('d.m.Y');
+            }
+            $itemPropByName[$key] = $entry;
         }
         return $itemPropByName;
     }
 
     /**
+     * @return elements of `itemProperty` as array with `item_property_type.name` as key
+     */
+    public function arrayItemPropertyWithLabel() {
+        $itemPropByName = array();
+        foreach ($this->itemProperty as $ip) {
+            $key = $ip->getType()->getName();
+            $entry = array();
+            $entry['value'] = $ip->getValue();
+            $entry['label'] = $ip->getType()->getLabel();
+            if ($ip->getDateValue()) {
+                $entry['date'] = $ip->getDateValue()->format('d.m.Y');
+            }
+            $itemPropByName[$key] = $entry;
+        }
+        return $itemPropByName;
+    }
+
+
+    /**
      * get a value in `itemProperty` if present or null
      */
     public function itemPropertyValue(string $key) {
-        $itemPropertyList = $this->combineItemProperty();
+        $itemPropertyList = $this->arrayItemProperty();
         $value = null;
         if (array_key_exists($key, $itemPropertyList)) {
             $value =  $itemPropertyList[$key];

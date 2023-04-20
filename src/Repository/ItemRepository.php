@@ -412,83 +412,7 @@ class ItemRepository extends ServiceEntityRepository
 
         return $person_role;
 
-        // version before 2022-07-21
-        // // get office data and references
-        // $personRoleRepository = $em->getRepository(PersonRole::class);
-        // $referenceVolumeRepository = $em->getRepository(ReferenceVolume::class);
-        // foreach ($item as $item_loop) {
-        //     $item_id = $item_loop->getId();
-        //     $person = $item_loop->getPerson();
-        //     $person->setRole($personRoleRepository->findRoleWithPlace($item_id));
-        //     $referenceVolumeRepository->addReferenceVolumes($item_loop);
-        // }
-
-        // return $item;
     }
-
-
-    /**
-     * 2023-03-30 obsolete see Person Repository
-     * usually used for asynchronous JavaScript request
-     */
-    // public function suggestBishopDiocese($name, $hintSize) {
-    //     $qb = $this->createQueryBuilder('i')
-    //                ->select("DISTINCT pr.dioceseName AS suggestion")
-    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'i.id = pr.personId')
-    //                ->andWhere('i.itemTypeId = :itemType')
-    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-    //                ->andWhere('pr.dioceseName like :name')
-    //                ->setParameter(':name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     * 2023-03-31 see AutocompleteService
-     */
-    // public function suggestBishopOffice($name, $hintSize) {
-    //     $qb = $this->createQueryBuilder('i')
-    //                ->select("DISTINCT pr.roleName AS suggestion")
-    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
-    //                ->andWhere('i.itemTypeId = :itemType')
-    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-    //                ->andWhere('pr.roleName like :name')
-    //                ->setParameter(':name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-    //     // dd($suggestions);
-
-    //     return $suggestions;
-    // }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     * 2023-03-21 see AutocompleteService
-     */
-    // public function suggestBishopCommentDuplicate($name, $hintSize) {
-    //     $qb = $this->createQueryBuilder('i')
-    //                ->select("DISTINCT i.commentDuplicate AS suggestion")
-    //                ->andWhere('i.itemTypeId = :itemType')
-    //                ->setParameter(':itemType', Item::ITEM_TYPE_ID['Bischof']['id'])
-    //                ->andWhere('i.commentDuplicate like :name')
-    //                ->setParameter(':name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
 
     public function priestUtIds($model, $limit = 0, $offset = 0) {
         $result = null;
@@ -507,10 +431,10 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('\App\Entity\ItemProperty',
                           'ip_ord_date',
                           'WITH',
-                          'ip_ord_date.itemId = i.id AND ip_ord_date.name = :ordination')
+                          'ip_ord_date.itemId = i.id AND ip_ord_date.propertyTypeId = :ordination')
                    ->andWhere('i.itemTypeId = :itemTypePriestUt')
                    ->andWhere('i.isOnline = 1')
-                   ->setParameter(':ordination', 'ordination_priest')
+                   ->setParameter(':ordination', ItemProperty::ITEM_PROPERTY_TYPE_ID['ordination_priest']['id'])
                    ->setParameter(':itemTypePriestUt', $itemTypePriestUt);
 
         $qb = $this->addPriestUtConditions($qb, $model);

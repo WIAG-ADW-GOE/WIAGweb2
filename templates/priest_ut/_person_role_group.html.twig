@@ -8,7 +8,7 @@
 			properties: properties
 		    }) }}
 		{% endif %}
-		{% if person.role %}
+		{% if person.role|length > 0 %}
 		    {{ include('priest_ut/_person_roles.html.twig', {
 			roles: person.role
 		    }) }}

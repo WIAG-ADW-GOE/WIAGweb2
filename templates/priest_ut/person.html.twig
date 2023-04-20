@@ -8,13 +8,12 @@
 {% block body %}
     {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
     {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
-    {% set prop = person.item.combineitemproperty %}
 
     {# person is passed as an object #}
     {% if not person%}
 	<p class="em">Person nicht gefunden.</p>
     {% else %}
-	{% set properties = person.item.combineitemproperty %}
+	{% set property_list = person.item.arrayitemproperty %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
@@ -64,13 +63,16 @@
 	    {# comments, dates #}
 	    {% set commentline = person.commentline %}
 	    {% set persontitle = person.item.itemPropertyValue('title') %}
+	    {% set persontitle = persontitle ? persontitle['value'] %}
 	    {% set patronym = person.item.itemPropertyValue('patronym') %}
-	    {% if patronym %}{% set patronym = 'Patronym: '~patronym %}{% endif %}
+	    {% set patronym = patronym ? 'Patronym: '~patronym['value'] : '' %}
 	    {% if commentline or persontitle or patronym%}
 		<div class="row mx-2">
+
 		    <div class="col-12 comment">
 			{{ [commentline, persontitle, patronym]|filter(v => v != null)|join('; ') }}
 		    </div>
+
 		</div>
 	    {% endif %}
 
@@ -90,7 +92,7 @@
 	    {% if person %}
 		{{ include('priest_ut/_person_role_group.html.twig', {
 		    person: person,
-		    properties: properties,
+		    properties: property_list,
 		    title: "Amtsangaben aus Referenzwerken",
 		    with_context: false
 		}) }}

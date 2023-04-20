@@ -8,8 +8,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ItemPropertyRepository::class)
  */
-class ItemProperty
-{
+class ItemProperty {
+
+    const ITEM_PROPERTY_TYPE_ID = [
+        'ordination_priest' => ['id' => 11],
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -38,11 +42,6 @@ class ItemProperty
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
-
-    /**
-     * @ORM\Column(type="string", length=63)
-     */
-    private $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -104,18 +103,6 @@ class ItemProperty
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
-
-        return $this;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
 
         return $this;
     }

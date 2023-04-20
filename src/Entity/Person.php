@@ -484,7 +484,7 @@ class Person {
         return $this->isNew;
     }
 
-    static private function combineData($a, $b) {
+    static private function concatData($a, $b) {
         if (is_null($a)) {
             return $b;
         }
@@ -506,7 +506,7 @@ class Person {
         if (is_null($this->sibling)) {
             return $this->$getfnc();
         }
-        return $this->combineData($this->$getfnc(), $this->sibling->$getfnc());
+        return $this->concatData($this->$getfnc(), $this->sibling->$getfnc());
     }
 
     /**
@@ -518,8 +518,36 @@ class Person {
         }
         $a = $this->item->itemPropertyValue($key);
         $b = $this->sibling->getItem()->itemPropertyValue($key);
-        return $this->combineData($a, $b);
+        return $this->concatData($a, $b);
     }
+
+    /**
+     * combine complete item property list
+     */
+    public function combinePropertyList() {
+        $a_prop_list = $this->item->arrayItemPropertyWithLabel();
+        $b_prop_list = array();
+        if ($this->sibling) {
+            $b_prop_list = $this->sibling->getItem()->arrayItemPropertyWithLabel();
+        }
+
+        $key_list = array_merge(array_keys($a_prop_list), array_keys($b_prop_list));
+        $key_list = array_unique($key_list);
+
+        $prop_list = array();
+        foreach($key_list as $key) {
+            $a_value = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['value'] : null;
+            $b_value = array_key_exists($key, $b_prop_list) ? $b_prop_list[$key]['value'] : null;
+
+            $entry['value'] = $this->concatData($a_value, $b_value);
+            $label = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['label'] : $b_prop_list[$key]['label'];
+            $entry['label'] = $label;
+            $prop_list[$key] = $entry;
+        }
+
+        return $prop_list;
+    }
+
 
     public function getSibling(): ?Person {
         return $this->sibling;
@@ -549,8 +577,6 @@ class Person {
      */
     public function commentLine($flag_names = true) {
 
-        $academic_title = $this->combineProperty('academic_title');
-        $academic_title = "";
         $academic_title = $this->combine('academicTitle');
 
         $str_gn_variants = null;
@@ -591,6 +617,11 @@ class Person {
             $this->combine('noteName'),
             $this->combine('notePerson'),
         ];
+
+        $property_list = $this->combinePropertyList();
+        foreach ($property_list as $prop) {
+            $elt_cands[] = $prop['label'].': '.$prop['value'];
+        }
 
         $line_elts = array();
         foreach ($elt_cands as $elt) {

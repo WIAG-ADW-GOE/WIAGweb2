@@ -184,6 +184,8 @@ class PersonService {
 
         $pj['givenName'] = $person->getGivenname();
 
+        $pj = array_merge($pj, $person->getItem()->arrayItemProperty());
+
         $fv = $person->getPrefixName();
         if ($fv) $pj['prefix'] = $fv;
 
@@ -253,19 +255,6 @@ class PersonService {
             }
         }
 
-        // extra properties for priests in Utrecht
-        // ordination
-        $nd = array();
-        $itemProp = $person->getItem()->combineItemProperty();
-        if (array_key_exists('ordination_priest', $itemProp)) {
-            $nd['office'] = $itemProp['ordination_priest'];
-        }
-        if (array_key_exists('ordination_priest_date', $itemProp)) {
-            $nd['date'] = $itemProp['ordination_priest_date']->format('d.m.Y');
-        }
-        if ($nd) {
-            $pj['ordination'] = $nd;
-        }
 
         // birthplace
         $nd = array();
@@ -378,7 +367,7 @@ class PersonService {
             $bhi[] = $fv;
         }
 
-        $fv = $person->getItem()->combineItemProperty();
+        $fv = $person->getItem()->arrayItemProperty();
         if ($fv) {
             $ipt = $this->itemPropertyText($fv, 'ordination_priest');
             if ($ipt) {
@@ -713,7 +702,7 @@ class PersonService {
             $bhi[] = $fv;
         }
 
-        $fv = $person->getItem()->combineItemProperty();
+        $fv = $person->getItem()->arrayItemProperty();
         if ($fv) {
             $ipt = $this->itemPropertyText($fv, 'ordination_priest');
             if ($ipt) {
@@ -953,14 +942,14 @@ class PersonService {
     public function itemPropertyText($properties, string $key): ?string {
 
         if (array_key_exists('ordination_priest', $properties)) {
-            $text = 'Weihe zum '.$properties[$key];
-            $fv = $properties[$key.'_date'];
+            $text = 'Weihe zum '.$properties[$key]['value'];
+            $fv = $properties[$key]['date'];
             if (!is_null($fv)) {
                 // $date_value = date('d.m.Y', $fv);
-                $text = $text.' am '.$fv->format('d.m.Y');
+                $text = $text.' am '.$fv;
             }
             if (array_key_exists($key.'_place', $properties)) {
-                $text = $text.' in '.$properties[$key.'_place'];
+                $text = $text.' in '.$properties[$key.'_place']['value'];
             }
             return $text;
         }

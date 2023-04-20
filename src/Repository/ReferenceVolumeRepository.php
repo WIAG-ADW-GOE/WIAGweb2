@@ -99,7 +99,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
             $vol = array_filter($result, function($el) use ($item_type_id, $ref_id) {
                 return ($el->getReferenceId() == $ref_id) && ($el->getItemTypeId() == $item_type_id);
             });
-            $vol_obj = !is_null($vol) ? array_values($vol)[0] : null;
+            $vol_obj = (!is_null($vol) and count($vol) > 0) ? array_values($vol)[0] : null;
             $ref->setReferenceVolume($vol_obj);
         }
 
