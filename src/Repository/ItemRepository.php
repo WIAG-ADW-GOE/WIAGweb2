@@ -219,15 +219,15 @@ class ItemRepository extends ServiceEntityRepository
         if ($someid) {
             // search for idPublic in merging ancestors
             $qb->leftjoin('i.urlExternal', 'uxt')
-               ->join('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
+               ->leftjoin('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
                ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'i.isOnline = 1 AND ip1.mergedIntoId = i.id')
                ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
                ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
-               ->andWhere("i.idPublic LIKE :q_id ".
+               ->andWhere("i.idPublic LIKE :q_id OR i.idInSource LIKE :q_id ".
                           "OR uxt.value LIKE :q_id ".
-                          "OR ip1.idPublic LIKE :q_id ".
-                          "OR ip2.idPublic LIKE :q_id ".
-                          "OR ip3.idPublic LIKE :q_id")
+                          "OR ip1.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
+                          "OR ip2.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
+                          "OR ip3.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id")
                ->setParameter('q_id', '%'.$someid.'%');
         }
 
