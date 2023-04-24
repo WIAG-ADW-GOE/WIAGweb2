@@ -3,8 +3,7 @@
 	  name="{{ editFormId }}"
 	  action="{{ path('edit_person_save') }}"
 	  method="post"
-	  data-controller="submit-form"
-	  data-action="submit-confirm:async:submit->submit-form#submit">
+	  data-controller="submit-form">
 	{% set body_id_list = personList|map(p => 'body'~attribute(p, "id"))|join(' ') %}
 	<div class="row mx-2">
 	    <div class="col">

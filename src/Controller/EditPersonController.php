@@ -184,7 +184,7 @@ class EditPersonController extends AbstractController {
             }
         }
 
-        $form_display_type = $request->request->get('formType');
+        $form_display_type = $request->request->get('formType') ?? 'list';
 
         /* save data */
         $entity_manager = $this->entityManager;
@@ -237,6 +237,7 @@ class EditPersonController extends AbstractController {
                     $person_list[$key] = $target; // show updated object
                 }
             }
+
 
             $this->entityManager->flush();
 
@@ -313,18 +314,39 @@ class EditPersonController extends AbstractController {
      * @Route("/edit/person/delete", name="edit_person_delete")
      */
     public function deleteEntry(Request $request) {
+        $person_repository = $this->entityManager->getRepository(Person::class);
 
+        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $item_type_id = $form_data[0]['item']['itemTypeId'];
 
-        // the button name is 'delete-id'
-        $id = $request->request->get('delete-id');
+        $delete_id = $request->request->get('delete-id');
 
-        // set the delete flag
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $item = $itemRepository->find($id);
-        $item->setIsDeleted(1);
+        $id_list = array_column($form_data, 'id');
+
+        $person_list = $person_repository->findList($id_list);
+
+        // deletion takes priority: all other edit data are lost and sub-forms are closed
+        foreach ($person_list as $person) {
+            $id = $person->getId();
+            if ($id == $delete_id) {
+                $person->getItem()->setIsDeleted(1);
+                $person->getItem()->setIsOnline(0);
+            }
+        }
+
         $this->entityManager->flush();
 
-        return $this->query($request);
+        $person_list = array_filter($person_list, function ($v) {
+            return !$v->getItem()->getIsDeleted();
+        });
+
+        $template = 'edit_person/_list.html.twig';
+
+        return $this->renderEditElements($template, $item_type_id, [
+            'personList' => $person_list,
+            'count' => count($person_list),
+            'formType' => 'list',
+        ]);
     }
 
     /**

@@ -167,6 +167,8 @@ class EditPersonService {
      */
     private function copyItem($target, $source, $current_user_id) {
         $field_list = [
+            'isOnline',
+            'isDeleted',
             'editStatus',
             'commentDuplicate',
             'mergeStatus',
@@ -455,6 +457,11 @@ class EditPersonService {
         // copy meta data even if they are still empty (new entry)
         $item->setIdPublic($data['item']['idPublic']);
         $item->setIdInSource($data['item']['idInSource']);
+
+        if (array_key_exists('isDeleted', $data['item']) && $data['item']['isDeleted'] == 1) {
+            $item->setIsOnline(0);
+            $item->setIsDeleted(1);
+        }
 
         // item: status values, editorial notes
         $key_list = ['editStatus', 'mergeStatus', 'changedBy', 'commentDuplicate'];

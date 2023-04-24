@@ -46,17 +46,17 @@
 		{% endfor %}
 	    {% endif %}
 	    {% if itemTypeId == '5' %}
-		<span class="input-group-text ms-2">Bischof</span>
-		<div class="w-25"
-		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_base', { 'field': 'bishop' }),
-		     }) }}>
+		<span class="input-group-text ms-2">WIAG_ID Bischof</span>
+		<div
+		    {{ stimulus_controller('autocomplete', {
+			url: path('person_suggest_base', { 'field': 'bishop' }),
+		    }) }}>
 		    {% set bishop_wiag_id = person.item.urlExternalByAuthority('WIAG_ID') %}
 		    <input type="text"
-			   id="{{ base_id }}_bishopGatz"
+			   id="{{ base_id }}_bishop"
 			   name="{{ base_input_name}}[bishop]"
 			   class="form-control form-control-sm wiag-input"
-			   style="max-width: 22rem"
+			   style="max-width: 26rem; min-width: 22rem"
 			   value="{{ bishop_wiag_id }}"
 			   aria-label="Verweis auf Bischof"
 			   data-autocomplete-target="input">
@@ -85,18 +85,18 @@
 			{% endif %}
 			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"
-				data-submit-confirm-title-value="Eintrag aufteilen?"
-				data-submit-confirm-button-id-value="split_{{ person.id }}"
-				data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
-				data-submit-confirm-confirm-button-text-value="Aufteilen"
-				data-submit-confirm-cancel-button-text-value="Abbrechen">
+						 data-submit-confirm-title-value="Eintrag aufteilen?"
+						 data-submit-confirm-button-id-value="split_{{ person.id }}"
+						 data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
+						 data-submit-confirm-confirm-button-text-value="Aufteilen"
+						 data-submit-confirm-cancel-button-text-value="Abbrechen">
 				{# use this hidden element to trigger the confirmed action #}
 				<a id="split_{{ person.id }}"
 				   class="d-none"
 				   href="{{ path('edit_person_split_item', { 'itemTypeId': itemTypeId, 'id': person.id }) }}">Link zum Aufteilen</a>
 				<button type="button"
-					class="dropdown-item"
-					data-action="submit-confirm#confirm">Eintrag aufteilen</button>
+					      class="dropdown-item"
+					      data-action="submit-confirm#confirm">Eintrag aufteilen</button>
 			    </li>
 			{% endif %}
 			<li data-controller="submit-confirm"
@@ -106,14 +106,16 @@
 			    data-submit-confirm-confirm-button-text-value="Löschen"
 			    data-submit-confirm-cancel-button-text-value="Abbrechen">
 			    {# use this hidden element to trigger the confirmed action #}
+			    {# set delete flag and save the edit form list #}
 			    <button type="submit"
 				    id="delete_{{ person.id }}"
+				    data-action="submit-form#submit"
 				    form="{{ editFormId }}"
 				    formaction="{{ path('edit_person_delete') }}"
 				    class="d-none"
 				    value="{{ person.id }}"
 				    name="delete-id"></button>
-			    <button type="button"
+			    <button type="BUTTON"
 				    class="dropdown-item"
 				    data-action="submit-confirm#confirm">Eintrag löschen</button>
 			</li>

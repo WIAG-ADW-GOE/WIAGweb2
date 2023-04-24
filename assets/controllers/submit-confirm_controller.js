@@ -18,7 +18,6 @@ export default class extends Controller {
 
     confirm(event) {
 	event.preventDefault();
-	console.log('button color');
 	Swal.fire({
 	    title: this.titleValue || null,
 	    text: this.textValue || null,

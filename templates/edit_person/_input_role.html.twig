@@ -78,7 +78,10 @@
 	    </div>
 	    <div class="input-group input-group-sm mb-1">
 		<div class="input-group-text wiag-input-text-blue">
-		    <input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the office data are uncertain" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain ?? false %}checked="checked"{% endif %}> unsicher
+		    <input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the office data are uncertain" id="{{ base_id_role }}_uncertain" name="{{ base_input_name_role }}[uncertain]" {% if role.uncertain ?? false %}checked="checked"{% endif %}>
+		    <label class="form-check-label" for="{{ base_id_role }}_uncertain">
+			unsicher
+		    </label>
 		</div>
 		<span class="input-group-text wiag-input-text-blue ms-1">Bemerkung</span>
 		<input type="text"

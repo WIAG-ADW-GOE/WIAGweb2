@@ -10,10 +10,10 @@ export default class extends Controller {
 
     async submit(event) {
 	console.log('submit-form#submit');
-	event.preventDefault();
-
 
 	const btn = event.target;
+
+	event.preventDefault(); // avoid to submit the form twice
 
 	var body = new URLSearchParams(new FormData(this.element));
 
@@ -24,7 +24,9 @@ export default class extends Controller {
 	    body.append(btn.name, btn.value);
 	}
 
-        const response = await fetch(this.element.action, {
+	var url = btn.getAttribute('formaction') ?? this.element.action;
+
+        const response = await fetch(url, {
             method: this.element.method,
             body: body
         });
