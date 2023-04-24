@@ -249,8 +249,8 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->setParameter('q_id', '%'.$someid.'%');
             }
             if ($year) {
-                $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
-                              " AND :q_year < p.dateMax + :mgnyear")
+                $qb->andWhere("p_id_year.dateMin - :mgnyear < :q_year ".
+                              " AND :q_year < p_id_year.dateMax + :mgnyear")
                    ->setParameter('mgnyear', self::MARGINYEAR)
                    ->setParameter('q_year', $year);
             }
@@ -501,7 +501,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->innerjoin('\App\Entity\ReferenceVolume',
                                'v',
                                'WITH',
-                               'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
+                               'v.referenceId = item_ref.referenceId')
                    ->andWhere('item_ref.itemTypeId = :item_type_id')
                    ->setParameter('item_type_id', $item_type_id);
 
@@ -535,15 +535,6 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function countCanonDomstift($model) {
         // $model should not contain domstift facet
-
-        // all in one query (time consuming)
-        // $qb = $this->createQueryBuilder('c')
-        //            ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
-        //            ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
-        //            ->join('pr_count.institution', 'inst_count')
-        //            ->andWhere("inst_count.itemTypeId = :itemTypeDomstift")
-        //            ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID["Domstift"]);
-
 
         $em = $this->getEntityManager();
         $qbi = $em->getRepository(Institution::class)

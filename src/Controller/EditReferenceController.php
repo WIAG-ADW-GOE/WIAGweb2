@@ -39,14 +39,14 @@ class EditReferenceController extends AbstractController {
 
         $sort_by_choices = [
             'ID' => 'referenceId',
-            'Titel' => 'fullCitation',
+            'GS Zitation' => 'gsCitation',
             'Autorenschaft' => 'authorEditor',
             'Kurztitel' => 'titleShort',
             'Anzeigereihenfolge' => 'displayOrder',
         ];
 
         $model = [
-            'itemType' => '4, 5',
+            'itemType' => '',
             'sortBy' => 'referenceId',
             'searchText' => '',
         ];

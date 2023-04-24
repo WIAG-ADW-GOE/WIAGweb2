@@ -32,14 +32,14 @@
 		   name="{{ base_input_name}}[gsVolumeNr]"
 		   class="form-control wiag-input"
 		   value="{{ reference.gsVolumeNr }}"
-		   style="max-width: 9rem"
+		   style="max-width: 12rem"
 		   spellcheck="false"
 		   aria-label="GS Nummer">
 	    <span class="input-group-text" style="min-width: 4rem">ISBN</span>
 	    <input type="text" id="{{ base_id }}_isbn"
 		   name="{{ base_input_name}}[isbn]"
 		   class="form-control wiag-input"
-		   style="max-width: 11rem"
+		   style="max-width: 14rem"
 		   value="{{ reference.isbn }}"
 		   spellcheck="false"
 		   aria-label="ISBN">
@@ -47,9 +47,11 @@
 	    <input type="text" id="{{ base_id }}_ri_opac_id"
 		   name="{{ base_input_name}}[riOpacId]"
 		   class="form-control wiag-input"
+		   style="max-width: 25rem"
 		   value="{{ reference.riOpacId }}"
 		   spellcheck="false"
 		   aria-label="RI OPAC">
+	    {% if false  %} {# obsolete 2023-04-24 #}
 	    {% set item_type_choice_list = {
 		'1': 'Bistum',
 		'4': 'Bischof',
@@ -72,6 +74,7 @@
 		    {% endif %}
 		{% endfor %}
 	    </select>
+	    {% endif %}
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">Titel</span>
