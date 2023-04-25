@@ -6,18 +6,18 @@
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
 	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '4'}) }}">Bischöfe</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '4' }) }}">Bischöfe anlegen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '4' }) }}" target="_blank" rel="noopener">Bischöfe anlegen (neuer Tab)</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '5'}) }}">Domherren</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '5'}) }}">Domherren anlegen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '5'}) }}" target="_blank" rel="noopener">Domherren anlegen (neuer Tab)</a></li>
 	<li><hr class="dropdown-divider"></li>
-	<li><span class="dropdown-header">Basisdaten</span></li>
-	<li><a class="dropdown-item" href="{{ path('edit_reference_query') }}">Referenzen</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_authority') }}">Normdaten/Externe Ressourcen</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_prop') }}">Attribute</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}">Klöster</a></li>
+	<li><span class="dropdown-header">Basisdaten (neuer Tab)</span></li>
+	<li><a class="dropdown-item" href="{{ path('edit_reference_query') }}" target="_blank" rel="noopener">Literatur</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_authority') }}" target="_blank" rel="noopener">Normdaten/Externe Ressourcen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_prop') }}" target="_blank" rel="noopener">Attribute</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
 	{% if is_granted('ROLE_EDIT_USER') %}
 	    <li><hr class="dropdown-divider"></li>
-	    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
+	    <li><a class="dropdown-item" href="{{ path('user_register') }}" target="_blank" rel="noopener">Benutzer eintragen</a></li>
 	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>
 	{% endif  %}
     </ul>

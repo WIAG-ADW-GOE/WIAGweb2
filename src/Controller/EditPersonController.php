@@ -61,8 +61,8 @@ class EditPersonController extends AbstractController {
         $model = new PersonFormModel;
         // set defaults
         $edit_status_default_list = [
-            '4' => 'fertig',
-            '5' => 'online'
+            '4' => null, # all status values
+            '5' => null, # all status values
         ];
         $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->isOnline = true;
@@ -70,6 +70,7 @@ class EditPersonController extends AbstractController {
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
+        dump($status_choices);
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
             'statusChoices' => $status_choices
