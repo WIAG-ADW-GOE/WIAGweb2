@@ -37,6 +37,8 @@ class EditReferenceController extends AbstractController {
             'Priester Utrecht' => '10',
         ];
 
+        $default_item_type = $item_type_choices['- alle -'];
+
         $sort_by_choices = [
             'ID' => 'referenceId',
             'GS Zitation' => 'gsCitation',
@@ -77,7 +79,7 @@ class EditReferenceController extends AbstractController {
         $reference_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
         } else {
-            $model['itemType'] = '4, 5';
+            $model['itemType'] = $default_item_type;
         }
 
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
