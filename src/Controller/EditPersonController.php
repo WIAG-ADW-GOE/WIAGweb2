@@ -70,7 +70,6 @@ class EditPersonController extends AbstractController {
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
-        dump($status_choices);
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
             'statusChoices' => $status_choices
