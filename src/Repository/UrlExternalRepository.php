@@ -75,6 +75,13 @@ class UrlExternalRepository extends ServiceEntityRepository
     */
 
     /**
+     * @return info about essential external references
+     */
+    public function essentialList() {
+
+    }
+
+    /**
      *
      */
     public function groupByType($item_id) {

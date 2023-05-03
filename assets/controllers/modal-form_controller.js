@@ -98,7 +98,7 @@ export default class extends Controller {
 	var url = url_comp_list.join('/');
 
 	this.modal.hide();
-	window.location.assign(url);
+	window.open(url, '_blank');
 
 	return null;
     }

@@ -558,18 +558,41 @@ class EditPersonController extends AbstractController {
 
         $model = new PersonFormModel;
         // set defaults
-        $model->editStatus = ['fertig'];
-        $model->isOnline = true;
+        $edit_status_default_list = [
+            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
+            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
+        ];
+        $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->listSize = 5;
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
-        $form = $formFactory->createNamed('bishop_merge',
-                                          EditPersonFormType::class,
-                                          $model, [
-                                              'statusChoices' => $status_choices,
-                                          ]);
+        $sort_by_choices = [
+            'Name' => 'name',
+            'Domstift/Kloster' => 'institution',
+            'Jahr' => 'year',
+            'identisch mit' => 'commentDuplicate',
+        ];
+
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $sort_by_choices = [
+                'Name' => 'name',
+                'Bistum' => 'diocese',
+                'Jahr' => 'year',
+                'identisch mit' => 'commentDuplicate',
+            ];
+        }
+
+
+        $form = $formFactory->createNamed(
+            'bishop_merge',
+            EditPersonFormType::class,
+            $model, [
+                'statusChoices' => $status_choices,
+                'sortByChoices' => $sort_by_choices,
+            ]);
+
         // $form = $this->createForm(EditBishopFormType::class);
 
         $offset = 0;

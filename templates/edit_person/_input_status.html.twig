@@ -80,7 +80,7 @@
 				    data-list-index="{{ personIndex }}"
 				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
 			{% if person.item.commentDuplicate %}
-			    <li><a class="dropdown-item" href="{{ path('edit_person_merge_item', { 'itemTypeId': itemTypeId, 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
+			    <li><a class="dropdown-item" href="{{ path('edit_person_merge_item', { 'itemTypeId': itemTypeId, 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}" target="_blank" rel="noopener">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
 			    </li>
 			{% endif %}
 			{% if person.item.mergeStatus == 'child' %}

@@ -33,7 +33,7 @@
 		       aria-label="{{ auth_e.aria }} ID">
 		<input type="text" id="{{ base_id_urlext_loop }}_value"
 		       name="{{ base_input_name_urlext_loop }}[value]"
-		       data-paramfx="{{ auth_e.paramfx }}"
+		       {# data-paramfx="{{ auth_e.paramfx }}" #} {# 2023-05-03 obsolete? #}
 		       class="form-control form-control-sm wiag-input {{ auth_e.width }}"
 		       value="{{ id_ext.value }}"
 		       spellcheck="false"
