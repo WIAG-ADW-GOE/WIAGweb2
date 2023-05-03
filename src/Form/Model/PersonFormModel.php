@@ -34,6 +34,8 @@ class PersonFormModel {
     public $facetOffice = null;
     public $facetPlace = null;
     public $facetUrl = null;
+    public $sortBy = null;
+    public $sortOrder = 'ASC';
 
 
     /**
@@ -84,6 +86,8 @@ class PersonFormModel {
             'place' => null,
             'year' => null,
             'someid' => null,
+            'sortBy' => null,
+            'sortOrder' => 'ASC',
         ];
 
         foreach ($default_list as $key => $value) {

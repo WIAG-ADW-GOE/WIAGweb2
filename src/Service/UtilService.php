@@ -136,9 +136,10 @@ class UtilService {
     /**
      * use crit_list in $crit_list to sort $list (array of arrays)
      */
-    static function sortByFieldList($list, $crit_list) {
-        usort($list, function($a, $b) use ($crit_list) {
-            return self::compare($a, $b, $crit_list);
+    static function sortByFieldList($list, $crit_list, $dir = 'ASC') {
+        usort($list, function($a, $b) use ($crit_list, $dir) {
+            $dir_factor = $dir == 'ASC' ? 1 : -1;
+            return $dir_factor * self::compare($a, $b, $crit_list);
         });
 
         return $list;

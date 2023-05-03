@@ -78,6 +78,76 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
+    public function personIds_legacy($model, $limit = 0, $offset = 0, $online_only = true) {
+        $result = null;
+
+        $itemTypeId = $model->itemTypeId;
+        $diocese = null;
+        $monastery = null;
+        if ($itemTypeId == 4) {
+            $diocese = $model->institution;
+        } else {
+            $monastery = $model->institution;
+        }
+        $office = $model->office;
+        $year = $model->year;
+        $name = $model->name;
+        $place = $model->place;
+        $someid = $model->someid;
+        $sort_by = $model->sortBy;
+        $sort_order = $model->sortOrder;
+
+        $qb = $this->createQueryBuilder('i')
+                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+                   ->andWhere('i.itemTypeId = :itemTypeId')
+                   ->andWhere('i.mergeStatus <> :merged')
+                   ->setParameter(':itemTypeId', $itemTypeId)
+                   ->setParameter(':merged', 'parent');
+
+        if ($online_only) {
+            $qb->andWhere('i.isOnline = 1');
+        }
+
+        $qb = $this->addPersonConditions($qb, $model);
+
+        // only relevant for bishop queries (not for editing)
+        $qb = $this->addBishopFacets($qb, $model);
+
+        if ($office || $diocese || $monastery || $place) {
+            // sort: if diocese is a query condition, this filters personRoles
+            $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
+               ->leftjoin('p.role', 'pr')
+               ->leftjoin('pr.institution', 'inst_sort')
+               ->addGroupBy('pr.personId');
+            $qb->addOrderBy('pr.dioceseName')
+               ->addOrderBy('inst_sort.name')
+               ->addOrderBy('dateSortKey');
+        } elseif ($model->isEmpty() || $name || $someid || $year) {
+            $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
+               ->leftjoin('p.role', 'role_srt')
+               ->addGroupBy('personId');
+            if ($year) {
+                $qb->addOrderBy('dateSortKey');
+            }
+        }
+
+        if (($model->isEmpty() || $name || $someid) && !$year) {
+            $qb->addOrderBy('dateSortKey');
+        }
+
+        $qb->addOrderBy('p.id');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        return array_column($result, 'personId');
+    }
+
     public function personIds($model, $limit = 0, $offset = 0, $online_only = true) {
         $result = null;
 
@@ -94,9 +164,12 @@ class ItemRepository extends ServiceEntityRepository
         $name = $model->name;
         $place = $model->place;
         $someid = $model->someid;
+        $sort_by = $model->sortBy;
+        $sort_order = $model->sortOrder;
 
         $qb = $this->createQueryBuilder('i')
                    ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+                   ->leftjoin('p.role', 'pr')
                    ->andWhere('i.itemTypeId = :itemTypeId')
                    ->andWhere('i.mergeStatus <> :merged')
                    ->setParameter(':itemTypeId', $itemTypeId)
@@ -105,45 +178,57 @@ class ItemRepository extends ServiceEntityRepository
         if ($online_only) {
             $qb->andWhere('i.isOnline = 1');
         }
+
         $qb = $this->addPersonConditions($qb, $model);
 
         // only relevant for bishop queries (not for editing)
         $qb = $this->addBishopFacets($qb, $model);
 
-        if ($office || $diocese || $monastery || $place) {
-            // sort: if diocese is a query condition, this filters personRoles
-            $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
-               ->leftjoin('p.role', 'pr')
-               ->leftjoin('pr.institution', 'inst_sort')
-               ->addGroupBy('pr.personId')
-               ->addOrderBy('pr.dioceseName')
-               ->addOrderBy('inst_sort.name')
-               ->addOrderBy('dateSortKey');
-        } elseif ($model->isEmpty() || $name || $someid || $year) {
-            $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
-               ->leftjoin('p.role', 'role_srt')
-               ->addGroupBy('personId');
-            if ($year) {
-                $qb->addOrderBy('dateSortKey');
-            }
-        }
+        // get sort criteria
+        $qb->leftjoin('p.role', 'pr_inst')
+           ->leftjoin('p.role', 'pr_date')
+           ->leftjoin('pr_inst.institution', 'inst_sort')
+           ->select('i.id as personId, p.givenname, p.familyname, '.
+                    '(CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, '.
+                    'min(inst_sort.nameShort) as inst_name, '.
+                    'min(pr.dioceseName) as dioceseName, '.
+                    'min(pr_date.dateSortKey) as dateSortKey, '.
+                    'i.commentDuplicate')
+           ->addGroupBy('personId');
 
-        $qb->addOrderBy('p.familyname')
-           ->addOrderBy('p.givenname');
-
-        if (($model->isEmpty() || $name || $someid) && !$year) {
-            $qb->addOrderBy('dateSortKey');
-        }
-
-        $qb->addOrderBy('p.id');
-
-        if ($limit > 0) {
-            $qb->setMaxResults($limit)
-               ->setFirstResult($offset);
-        }
         $query = $qb->getQuery();
 
         $result = $query->getResult();
+
+        $sort_list = array();
+        if ($sort_by == 'name') {
+            $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'];
+        } elseif ($sort_by == 'institution') {
+            $sort_list = ['inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'];
+        } elseif ($sort_by == 'diocese') {
+            $sort_list = ['dioceseName', 'dateSortKey', 'familyname', 'givenname', 'personId'];
+
+        } elseif ($sort_by == 'year') {
+            $sort_list = ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId'];
+        } elseif ($sort_by == 'commentDuplicate') {
+            $sort_list = ['commentDuplicate', 'inst_name', 'familyname', 'givenname', 'personId'];
+        } else {
+            if ($office || $diocese || $monastery || $place) {
+                $sort_list = ['dioceseName', 'inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'];
+            }
+            elseif ($model->isEmpty() || $name || $someid) {
+                $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'];
+            }
+            else { # year
+                $sort_list = ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId'];
+            }
+        }
+
+        $result = UtilService::sortByFieldList($result, $sort_list, $sort_order);
+
+        if ($limit > 0) {
+            $result = array_slice($result, $offset, $limit);
+        }
 
         return array_column($result, 'personId');
     }

@@ -39,6 +39,8 @@ class EditBishopFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
 
+        dd('2023-05-02 obsolete?');
+
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Name',

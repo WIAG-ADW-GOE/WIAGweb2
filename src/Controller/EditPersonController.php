@@ -20,7 +20,6 @@ use App\Form\Model\PersonFormModel;
 use App\Entity\Role;
 
 use App\Service\EditPersonService;
-use App\Service\UtilService;
 use App\Service\AutocompleteService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -61,8 +60,8 @@ class EditPersonController extends AbstractController {
         $model = new PersonFormModel;
         // set defaults
         $edit_status_default_list = [
-            '4' => null, # all status values
-            '5' => null, # all status values
+            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
+            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
         ];
         $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->isOnline = true;
@@ -71,8 +70,26 @@ class EditPersonController extends AbstractController {
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
+        $sort_by_choices = [
+            'Name' => 'name',
+            'Domstift/Kloster' => 'institution',
+            'Jahr' => 'year',
+            'identisch mit' => 'commentDuplicate',
+        ];
+
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $sort_by_choices = [
+                'Name' => 'name',
+                'Bistum' => 'diocese',
+                'Jahr' => 'year',
+                'identisch mit' => 'commentDuplicate',
+            ];
+        }
+
+
         $form = $this->createForm(EditPersonFormType::class, $model, [
-            'statusChoices' => $status_choices
+            'statusChoices' => $status_choices,
+            'sortByChoices' => $sort_by_choices,
         ]);
 
         $offset = 0;
@@ -81,7 +98,7 @@ class EditPersonController extends AbstractController {
         $model = $form->getData();
 
         $person_list = array();
-        if ($form->isSubmitted() && $form->isValid() && $model->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() && $model->isValid() || $model->isEmpty()) {
 
             $personRepository = $this->entityManager->getRepository(Person::class);
             $itemRepository = $this->entityManager->getRepository(Item::class);
