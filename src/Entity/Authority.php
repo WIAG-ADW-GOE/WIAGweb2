@@ -13,13 +13,6 @@ use Doctrine\Common\Collections\Collection;
  */
 class Authority {
 
-    const CORE = [
-        'GND',
-        'GS',
-        'Wikidata',
-        'Wikipedia',
-    ];
-
     const ID = [
         'GND' => 1,
         'Wikidata' => 2,
@@ -30,7 +23,7 @@ class Authority {
         'World Historical Gazetteer' => 54,
     ];
 
-    const CORE_ID_LIST = [1, 2, 3, 200];
+    const ESSENTIAL_ID_LIST = [1, 2, 3, 200];
 
     const EDIT_FIELD_LIST = [
         'urlNameFormatter',
@@ -41,13 +34,6 @@ class Authority {
         'displayOrder',
         'comment'
     ];
-
-
-    static public function coreIDs() {
-        return array_map(function($v) {
-            return self::ID[$v];
-        }, self::CORE);
-    }
 
     /**
      * @ORM\Id
@@ -205,6 +191,15 @@ class Authority {
         $this->displayOrder = $displayOrder;
 
         return $this;
+    }
+
+    public function getNameShort() {
+        $short = array_flip(self::ID);
+        if (array_key_exists($this->id, $short)) {
+            return $short[$this->id];
+        } else {
+            return "";
+        }
     }
 
     public function setFormIsEdited($value): self {

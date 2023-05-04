@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Person;
 use App\Entity\Diocese;
+use App\Entity\Institution;
 use App\Entity\Item;
 use App\Entity\Role;
 use App\Entity\ReferenceVolume;
@@ -133,11 +134,23 @@ class AutocompleteService extends ServiceEntityRepository {
      */
     public function suggestInstitution($queryParam, $hintSize) {
         $itemTypeInst = [2, 3];
-        $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-        $qb = $repository->createQueryBuilder('c')
+
+        // 2023-05-02 for editing the list should not be restricted to institution
+        // that are already referenced by a canon
+        // $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
+        // $qb = $repository->createQueryBuilder('c')
+        //                  ->select("DISTINCT inst.name AS suggestion")
+        //                  ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
+        //                  ->join('pr.institution', 'inst')
+        //                  ->andWhere("inst.itemTypeId in (:itemTypeInst)")
+        //                  ->andWhere('inst.name like :name')
+        //                  ->setParameter('itemTypeInst', $itemTypeInst)
+        //                  ->setParameter('name', '%'.$queryParam.'%')
+        //                  ->orderBy('inst.name');
+
+        $repository = $this->getEntityManager()->getRepository(Institution::class);
+        $qb = $repository->createQueryBuilder('inst')
                          ->select("DISTINCT inst.name AS suggestion")
-                         ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                         ->join('pr.institution', 'inst')
                          ->andWhere("inst.itemTypeId in (:itemTypeInst)")
                          ->andWhere('inst.name like :name')
                          ->setParameter('itemTypeInst', $itemTypeInst)
@@ -378,7 +391,7 @@ class AutocompleteService extends ServiceEntityRepository {
 
     public function suggestUrlName($name, $hint_size) {
         // exclude core data and internal references
-        $core_id_list = Authority::CORE_ID_LIST;
+        $core_id_list = Authority::ESSENTIAL_ID_LIST;
 
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')

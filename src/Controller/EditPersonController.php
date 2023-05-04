@@ -20,7 +20,6 @@ use App\Form\Model\PersonFormModel;
 use App\Entity\Role;
 
 use App\Service\EditPersonService;
-use App\Service\UtilService;
 use App\Service\AutocompleteService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -61,8 +60,8 @@ class EditPersonController extends AbstractController {
         $model = new PersonFormModel;
         // set defaults
         $edit_status_default_list = [
-            '4' => null, # all status values
-            '5' => null, # all status values
+            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
+            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
         ];
         $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->isOnline = true;
@@ -71,8 +70,27 @@ class EditPersonController extends AbstractController {
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
+        $sort_by_choices = [
+            'Name' => 'name',
+            'Domstift/Kloster' => 'institution',
+            'Jahr' => 'year',
+            'identisch mit' => 'commentDuplicate',
+            'ID' => 'idInSource'
+        ];
+
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $sort_by_choices = [
+                'Name' => 'name',
+                'Bistum' => 'diocese',
+                'Jahr' => 'year',
+                'identisch mit' => 'commentDuplicate',
+            ];
+        }
+
+
         $form = $this->createForm(EditPersonFormType::class, $model, [
-            'statusChoices' => $status_choices
+            'statusChoices' => $status_choices,
+            'sortByChoices' => $sort_by_choices,
         ]);
 
         $offset = 0;
@@ -81,7 +99,7 @@ class EditPersonController extends AbstractController {
         $model = $form->getData();
 
         $person_list = array();
-        if ($form->isSubmitted() && $form->isValid() && $model->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() && $model->isValid() || $model->isEmpty()) {
 
             $personRepository = $this->entityManager->getRepository(Person::class);
             $itemRepository = $this->entityManager->getRepository(Item::class);
@@ -115,7 +133,7 @@ class EditPersonController extends AbstractController {
 
             // add empty role, reference and url external if not present
             $authorityRepository = $this->entityManager->getRepository(Authority::class);
-            $auth_list = $authorityRepository->findList(Authority::coreIDs());
+            $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
             foreach ($person_list as $person) {
                 $person->extractSeeAlso();
                 $person->addEmptyDefaultElements($auth_list);
@@ -246,7 +264,7 @@ class EditPersonController extends AbstractController {
                 $person = $this->editService->makePerson($item_type_id, $current_user_id);
                 // add empty elements for blank form sections
                 $authorityRepository = $this->entityManager->getRepository(Authority::class);
-                $auth_list = $authorityRepository->findList(Authority::coreIDs());
+                $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
                 $person->addEmptyDefaultElements($auth_list);
                 $person->getItem()->setFormIsExpanded(true);
                 $person_list[] = $person;
@@ -256,7 +274,7 @@ class EditPersonController extends AbstractController {
 
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         foreach ($person_list as $person) {
             $person->extractSeeAlso();
             $person->addEmptyDefaultElements($auth_list);
@@ -282,12 +300,7 @@ class EditPersonController extends AbstractController {
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
-        $auth_query_result = $authorityRepository->findList(array_values(Authority::ID));
-
-        $auth_base_url_list = array();
-        foreach($auth_query_result as $auth) {
-            $auth_base_url_list[$auth->getId()] = $auth->getUrl();
-        }
+        $essential_auth_list = $authorityRepository->findList(array_values(Authority::ID));
 
         // property types
         $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
@@ -300,7 +313,7 @@ class EditPersonController extends AbstractController {
             'editFormId' => self::EDIT_FORM_ID,
             'itemTypeId' => $item_type_id,
             'userWiagRepository' => $userWiagRepository,
-            'authBaseUrlList' => $auth_base_url_list,
+            'essentialAuthorityList' => $essential_auth_list,
             'itemPropertyTypeList' => $item_property_type_list,
             'rolePropertyTypeList' => $role_property_type_list,
         ]);
@@ -359,7 +372,7 @@ class EditPersonController extends AbstractController {
         $person = $this->editService->makePerson($itemTypeId, $this->getUser()->getId());
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->addEmptyDefaultElements($auth_list);
         $person->getItem()->setFormIsExpanded(true);
 
@@ -386,7 +399,7 @@ class EditPersonController extends AbstractController {
         $query_result = $person_repository->findList([$id]);
         $person = $query_result[0];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
 
@@ -541,18 +554,42 @@ class EditPersonController extends AbstractController {
 
         $model = new PersonFormModel;
         // set defaults
-        $model->editStatus = ['fertig'];
-        $model->isOnline = true;
+        $edit_status_default_list = [
+            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
+            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
+        ];
+        $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->listSize = 5;
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->getStatusChoices($itemTypeId);
 
-        $form = $formFactory->createNamed('bishop_merge',
-                                          EditPersonFormType::class,
-                                          $model, [
-                                              'statusChoices' => $status_choices,
-                                          ]);
+        $sort_by_choices = [
+            'Name' => 'name',
+            'Domstift/Kloster' => 'institution',
+            'Jahr' => 'year',
+            'identisch mit' => 'commentDuplicate',
+            'ID' => 'idInSource',
+        ];
+
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $sort_by_choices = [
+                'Name' => 'name',
+                'Bistum' => 'diocese',
+                'Jahr' => 'year',
+                'identisch mit' => 'commentDuplicate',
+            ];
+        }
+
+
+        $form = $formFactory->createNamed(
+            'bishop_merge',
+            EditPersonFormType::class,
+            $model, [
+                'statusChoices' => $status_choices,
+                'sortByChoices' => $sort_by_choices,
+            ]);
+
         // $form = $this->createForm(EditBishopFormType::class);
 
         $offset = 0;
@@ -662,7 +699,7 @@ class EditPersonController extends AbstractController {
         // set public id
         $person->getItem()->setIdPublic($parent_list[0]->getIdPublic());
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
 
@@ -705,7 +742,7 @@ class EditPersonController extends AbstractController {
 
         // add empty role, reference and id external if not present
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::coreIDs());
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         foreach ($person_list as $person) {
             $person->addEmptyDefaultElements($auth_list);
         }

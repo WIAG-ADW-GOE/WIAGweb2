@@ -1,7 +1,7 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = ['copy', 'check', 'fill', 'toggle', 'expand'];
+    static targets = ['copy', 'check', 'fill', 'toggle', 'expand', 'click'];
     static values = {
 	fillStatus: String,
 	fillUrl: String,
@@ -76,6 +76,5 @@ export default class extends Controller {
 	    this.expandTarget.click();
 	}
     }
-
 
 }

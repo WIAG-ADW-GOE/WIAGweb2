@@ -69,8 +69,9 @@ export default class extends Controller {
 	}
 	//var dummy_scroll_target = document.getElementById('ref_insert_bottom');
 	//dummy_scroll_target.scrollIntoView();
-	new_elmt.scrollIntoView();
-
+	if (currentTarget.classList.contains('show-new-element')) {
+	    new_elmt.scrollIntoView();
+	}
     }
 
     async fetch(url) {

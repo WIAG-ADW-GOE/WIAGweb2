@@ -18,7 +18,6 @@
 			<ul class="{% if references|length == 1 %}list-unstyled{% else %}ps-3{% endif %} small">
 			    {% for ref in references %}
 				{% if not ref.referencevolume %}
-				    <li>{{ dump(ref) }}</li>
 				    <li>Band nicht gefunden</li>
 				{% else %}
 				    {% if person.item.source == "Bischof" %} {# bishops #}

@@ -807,11 +807,11 @@ class Person {
         $url_ext_list = $this->getItem()->getUrlExternal();
 
         // placeholder for all essential authorities
-        $url_ext_e_list = $this->getItem()->getUrlExternalCore();
+        $url_ext_e_list = $this->getItem()->getEssentialUrlExternal();
 
-        $core_ids = Authority::coreIDs();
+        $e_auth_ids = Authority::ESSENTIAL_ID_LIST;
 
-        foreach ($core_ids as $auth_id) {
+        foreach ($e_auth_ids as $auth_id) {
             $flag_found = false;
             foreach ($url_ext_list as $url_ext_e) {
                 if ($url_ext_e->getAuthority()->getId() == $auth_id) {
@@ -835,7 +835,7 @@ class Person {
         }
 
         // there should be at least one non-essential external url
-        $url_ext_ne_list = $this->getItem()->getUrlExternalNonCore();
+        $url_ext_ne_list = $this->getItem()->getUrlExternalNonEssential();
         if (count($url_ext_ne_list) < 1) {
             $url_ext_list->add(new UrlExternal());
         }

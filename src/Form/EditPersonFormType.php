@@ -31,7 +31,12 @@ class EditPersonFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
-            'statusChoices' => ['online'],
+            'statusChoices' => [
+                '- alle -' => null,
+            ],
+            'sortByChoices' => [
+                'Name' => 'name',
+            ]
         ]);
 
     }
@@ -130,7 +135,16 @@ class EditPersonFormType extends AbstractType
                 'attr' => [
                     'size' => '3',
                 ]
-            ]);
+            ])
+            ->add('sortBy', ChoiceType::class, [
+                'required' => true,
+                'label' => 'Sortierung',
+                'multiple' => false,
+                'expanded' => false,
+                'choices' => $options['sortByChoices'],
+            ])
+            // data set via JavaScript
+            ->add('sortOrder', HiddenType::class);
 
         if ($itemTypeId == 5) { // canons
             $builder->add('place', TextType::class, [
@@ -140,6 +154,7 @@ class EditPersonFormType extends AbstractType
                     'placeholder' => 'Ort',
                 ],
             ]);
+        } else {
         }
     }
 }

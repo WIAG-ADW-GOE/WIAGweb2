@@ -44,13 +44,14 @@
 		{% endset %}
 	    {% endif %}
 	    {# store data in the form #}
-	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
+	    <span class="ms-2 text-truncate" style="max-width: 45rem;">{{ head_line }}</span>
 	    <span class="ms-2">ID: {{ person.item.idInSource }}</span>
 	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
 	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.idInSource) }}
 	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'itemTypeId'], itemTypeId) }}
 	    <span class="vr ms-auto"></span>
-	    <span class="bg-light ms-1 px-2">{{ person.item.editStatus }}</span>
+	    <span class="bg-light ms-1 px-2">identisch mit: {{ person.item.commentduplicate }}</span>
+	    <span class="bg-light ms-1 px-2" style="min-width: 8rem;">{{ person.item.editStatus }}</span>
 	</div>
     </div>
 </div>

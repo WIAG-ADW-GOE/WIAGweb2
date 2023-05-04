@@ -9,28 +9,30 @@
 	    {% set edit_title = { '4': bishop_title, '5': canon_title } %}
 	    <span class="topic-title">{{ edit_title[itemTypeId] }}</span>
 	</div>
-	{{ include("edit_person/_form_elements.html.twig", {
-	    indent_class: "ms-2",
-	    input_width_name: 35,
-	    input_width_institution: 16,
-	    input_width_office: 18,
-	    input_width_id: 26,
-	    input_width_reference: 45,
-	    input_width_place: 12,
-	    input_width_duplicate: 8,
-	    input_width_comment: 21,
-	    input_width_date: 18,
-	}) }}
-	{% for error_obj in error_list %}
-	    <div class="row mt-1 mx-2">
-		{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
-		<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
-	    </div>
-	{% endfor %}
-	<div class="row mt-2 mx-2">
-	    <div class="col-12">
-		<button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
-		<a href="{{ path('edit_person_query', { 'itemTypeId': itemTypeId }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+	<div data-controller="trigger"> {# submit form, when some form data change #}
+	    {{ include("edit_person/_form_elements.html.twig", {
+		indent_class: "ms-2",
+		input_width_name: 35,
+		input_width_institution: 16,
+		input_width_office: 18,
+		input_width_id: 26,
+		input_width_reference: 45,
+		input_width_place: 12,
+		input_width_duplicate: 8,
+		input_width_comment: 21,
+		input_width_date: 18,
+	    }) }}
+	    {% for error_obj in error_list %}
+		<div class="row mt-1 mx-2">
+		    {% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+		    <div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+		</div>
+	    {% endfor %}
+	    <div class="row mt-2 mx-2">
+		<div class="col-12">
+		    <button type="submit" data-trigger-target="click" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		    <a href="{{ path('edit_person_query', { 'itemTypeId': itemTypeId }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+		</div>
 	    </div>
 	</div>
 	{% if personList is defined %}

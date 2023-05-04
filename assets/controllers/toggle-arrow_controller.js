@@ -1,5 +1,8 @@
 import { Controller } from 'stimulus';
 
+/**
+ * toggle the content/image of target `button`
+ */
 export default class extends Controller {
     static targets = ['button'];
     static values = {
@@ -17,7 +20,7 @@ export default class extends Controller {
     }
 
     toggle(event) {
-	// console.log(this.element);
+	console.log('toggle-arrow#toggle');
 	const dataValue = this.element.dataset.value;
 	var html = this.element.innerHTML;
 	if (dataValue == 'down') {

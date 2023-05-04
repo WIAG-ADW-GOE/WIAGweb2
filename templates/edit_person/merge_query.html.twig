@@ -2,33 +2,38 @@
      data-controller="hide-on-input">
     {{ form_start(form) }}
 	{# submit form via ENTER key #}
-	<div data-action="keyup->modal-form#submitQuery">
-	    {{ include("edit_person/_form_elements.html.twig", {
-		indent_class: "",
-		input_width_name: 27,
-		input_width_institution: 11,
-		input_width_office: 16,
-		input_width_id: 14,
-		input_width_place: 12,
-		input_width_reference: 45,
-		input_width_duplicate: 6,
-		input_width_comment: 18,
-		input_width_date: 16,
-	    }) }}
-	</div>
-	<div class="row mt-2">
-	    {% if debug_flag is defined %}
-		<div class="col-12">
-		    <button type="submit"
-			    class="btn btn-secondary btn-light btn-sm">Suche</button>
-		</div>
-	    {% else %}
-		<div class="col-12">
-		    <button type="button"
-			    class="btn btn-secondary btn-light btn-sm"
-			    data-action="modal-form#submitQuery">Suche</button>
-		</div>
-	    {% endif %}
+	<div data-controller="trigger">
+	    <div data-action="keyup->modal-form#submitQuery">
+		{{ include("edit_person/_form_elements.html.twig", {
+		    indent_class: "",
+		    input_width_name: 27,
+		    input_width_institution: 11,
+		    input_width_office: 16,
+		    input_width_id: 14,
+		    input_width_place: 12,
+		    input_width_reference: 45,
+		    input_width_duplicate: 6,
+		    input_width_comment: 18,
+		    input_width_date: 16,
+		}) }}
+	    </div>
+	    <div class="row mt-2">
+		{% if debug_flag is defined %}
+		    <div class="col-12">
+			<button type="submit"
+				data-trigger-target="click"
+				class="btn btn-secondary btn-light btn-sm">Suche</button>
+		    </div>
+		{% else %}
+		    <div class="col-12">
+			<button type="button"
+				id="modal-submit"
+				data-trigger-target="click"
+				class="btn btn-secondary btn-light btn-sm"
+				data-action="modal-form#submitQuery">Suche</button>
+		    </div>
+		{% endif %}
+	    </div>
 	</div>
 	{# empty structure for warnings set by JS #}
 	<div class="row mt-2"><div class="col-12 wiag-form-warning"></div></div>
