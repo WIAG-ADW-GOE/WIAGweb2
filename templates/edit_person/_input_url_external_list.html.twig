@@ -6,7 +6,7 @@
 			    }) }}"
      data-insert-hide-trigger-value="yes"
      data-insert-point-value="last">
-    {% for url_ext in person.item.urlexternalnoncore %}
+    {% for url_ext in person.item.urlexternalnonessential %}
 	{{ include('edit_person/_input_url_external.html.twig', {
 	    urlext: url_ext,
 	    current_idx: loop.index0,

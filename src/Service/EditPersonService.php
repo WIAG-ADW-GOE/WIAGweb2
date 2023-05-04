@@ -934,7 +934,7 @@ class EditPersonService {
             return $url_external;
             } else {
             $authority_name = $data["urlName"];
-            $auth_query = $authorityRepository->findByNameAndIDRange($authority_name, 1000);
+            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
             if (!is_null($auth_query) && count($auth_query) > 0) {
                 $authority = $auth_query[0];
                 // drop base URL if present

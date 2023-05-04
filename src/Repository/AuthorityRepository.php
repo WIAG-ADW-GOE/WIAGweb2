@@ -48,18 +48,6 @@ class AuthorityRepository extends ServiceEntityRepository
     }
     */
 
-
-    public function findByNameAndIDRange($name, $id_max) {
-        return $this->createQueryBuilder('a')
-                    ->andWhere('a.urlNameFormatter = :name')
-                    ->andWhere('a.id < :id_max')
-                    ->setParameter('name', $name)
-                    ->setParameter('id_max', $id_max)
-                    ->getQuery()
-                    ->getResult();
-    }
-
-
     /**
      * set authority for external URLs in $person_list
      */

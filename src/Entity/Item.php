@@ -279,28 +279,29 @@ class Item {
     /**
      *
      */
-    public function getUrlExternalCore() {
+    public function getEssentialUrlExternal() {
         $id_ext_list = $this->getUrlExternalSorted();
 
-        $core_ids = Authority::coreIDs();
+        $essential_auth_ids = Authority::ESSENTIAL_ID_LIST;
 
-        return $id_ext_list->filter(function($id_ext) use ($core_ids) {
+        return $id_ext_list->filter(function($id_ext) use ($essential_auth_ids) {
             $auth = $id_ext->getAuthority();
             if (is_null($auth)) {
                 return false;
             } else {
-                return array_search($auth->getId(), $core_ids) !== false;
+                return array_search($auth->getId(), $essential_auth_ids) !== false;
             }
         });
+
     }
 
     /**
      *
      */
-    public function getUrlExternalNonCore() {
+    public function getUrlExternalNonEssential() {
         $id_ext_list = $this->getUrlExternalSorted();
 
-        $core = Authority::CORE_ID_LIST;
+        $core = Authority::ESSENTIAL_ID_LIST;
 
         return $id_ext_list->filter(function($id_ext) use ($core) {
             $auth = $id_ext->getAuthority();
@@ -783,7 +784,9 @@ class Item {
         $merged_list = new ArrayCollection();
         $last_ref_ext = null;
         foreach ($list as $ref_ext) {
-            if (is_null($last_ref_ext) || $ref_ext->getAuthorityId() != $last_ref_ext->getAuthorityId()) {
+            if (is_null($last_ref_ext) ||
+                ($ref_ext->getAuthorityId() != $last_ref_ext->getAuthorityId()) ||
+                !in_array($ref_ext->getAuthorityId(), Authority::ESSENTIAL_ID_LIST)) {
                 $last_ref_ext = $ref_ext;
                 $merged_list->add($ref_ext);
             } else {

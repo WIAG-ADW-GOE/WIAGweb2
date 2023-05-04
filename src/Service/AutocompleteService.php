@@ -391,7 +391,7 @@ class AutocompleteService extends ServiceEntityRepository {
 
     public function suggestUrlName($name, $hint_size) {
         // exclude core data and internal references
-        $core_id_list = Authority::CORE_ID_LIST;
+        $core_id_list = Authority::ESSENTIAL_ID_LIST;
 
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')
