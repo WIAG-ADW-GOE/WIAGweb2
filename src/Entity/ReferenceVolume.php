@@ -15,7 +15,7 @@ use Doctrine\Common\Collections\Collection;
 class ReferenceVolume {
 
     const EDIT_FIELD_LIST = [
-        'itemTypeId',
+        // 'itemTypeId', 2023-05-05 obsolete
         'authorEditor',
         'yearPublication',
         'isbn',

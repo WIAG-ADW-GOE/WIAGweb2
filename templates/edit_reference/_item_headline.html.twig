@@ -30,7 +30,7 @@
 		       data-action="click->sync#fill"
 		       {% if reference.formisedited %}checked="checked"{% endif %}>
 	    </span>
-	    {% set head_line= reference.fullcitation|length > 0 ? reference.gsCitation : "Neuer Eintrag" %}
+	    {% set head_line= reference.gsCitation|length > 0 ? reference.gsCitation : "Neuer Eintrag" %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    {# insert internal id, reference_id and item_type_id into the form (hidden) #}
 	    <input type="text"

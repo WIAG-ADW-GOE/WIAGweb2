@@ -139,7 +139,8 @@ class EditReferenceController extends AbstractController {
         }
 
         // - default
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
+        // reference_volume.item_type_id is obsolete 2023-05-05
+        $item_type_id = 0;
 
         foreach($form_data as $data) {
             $id = $data['id'];
@@ -149,7 +150,6 @@ class EditReferenceController extends AbstractController {
                 $reference->setFormIsExpanded($formIsExpanded);
             }
             if (isset($data['formIsEdited'])) {
-                $item_type_id = $data['itemTypeId'];
                 if (!$id > 0) {
                     // new entry
                     $reference = new ReferenceVolume();
@@ -176,8 +176,7 @@ class EditReferenceController extends AbstractController {
             foreach ($reference_list as $reference) {
                 $id = $reference->getId();
                 if ($id < 1) {
-                    $new_item_type_id = $reference->getItemTypeId();
-                    $next_id = $referenceRepository->nextId($new_item_type_id);
+                    $next_id = $referenceRepository->nextId();
                     $reference->setReferenceId($next_id);
                     $max_reference_id += 1;
                     $entityManager->persist($reference);

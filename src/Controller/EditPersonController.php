@@ -68,25 +68,8 @@ class EditPersonController extends AbstractController {
         $model->listSize = 5;
         $model->itemTypeId = $itemTypeId;
 
-        $status_choices = $this->getStatusChoices($itemTypeId);
-
-        $sort_by_choices = [
-            'Name' => 'name',
-            'Domstift/Kloster' => 'institution',
-            'Jahr' => 'year',
-            'identisch mit' => 'commentDuplicate',
-            'ID' => 'idInSource'
-        ];
-
-        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
-            $sort_by_choices = [
-                'Name' => 'name',
-                'Bistum' => 'diocese',
-                'Jahr' => 'year',
-                'identisch mit' => 'commentDuplicate',
-            ];
-        }
-
+        $status_choices = $this->statusChoices($itemTypeId);
+        $sort_by_choices = $this->sortByChoices($itemTypeId);
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
             'statusChoices' => $status_choices,
@@ -162,11 +145,40 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * getStatusChoices(int $itemTypeId)
+     * sortByChoices($itemTypeid)
+     *
+     * @return choice list for
+     */
+    private function sortByChoices($itemTypeId) {
+        $sort_by_choices = [
+            'Vorname, Familienname' => 'givenname',
+            'Familienname, Vorname' => 'familyname',
+            'Domstift/Kloster' => 'institution',
+            'Jahr' => 'year',
+            'identisch mit' => 'commentDuplicate',
+            'ID' => 'idInSource'
+        ];
+
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $sort_by_choices = [
+                'Vorname, Familienname' => 'givenname',
+                'Familienname, Vorname' => 'familyname',
+                'Name' => 'name',
+                'Bistum' => 'diocese',
+                'Jahr' => 'year',
+                'identisch mit' => 'commentDuplicate',
+            ];
+        }
+
+        return $sort_by_choices;
+    }
+
+    /**
+     * statusChoices(int $itemTypeId)
      *
      * @return choice list for status values
      */
-    private function getStatusChoices(int $itemTypeId) {
+    private function statusChoices(int $itemTypeId) {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $suggestions = $this->autocomplete->suggestEditStatus($itemTypeId, null, 60);
@@ -562,25 +574,8 @@ class EditPersonController extends AbstractController {
         $model->listSize = 5;
         $model->itemTypeId = $itemTypeId;
 
-        $status_choices = $this->getStatusChoices($itemTypeId);
-
-        $sort_by_choices = [
-            'Name' => 'name',
-            'Domstift/Kloster' => 'institution',
-            'Jahr' => 'year',
-            'identisch mit' => 'commentDuplicate',
-            'ID' => 'idInSource',
-        ];
-
-        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
-            $sort_by_choices = [
-                'Name' => 'name',
-                'Bistum' => 'diocese',
-                'Jahr' => 'year',
-                'identisch mit' => 'commentDuplicate',
-            ];
-        }
-
+        $status_choices = $this->statusChoices($itemTypeId);
+        $sort_by_choices = $this->sortByChoices($itemTypeId);
 
         $form = $formFactory->createNamed(
             'bishop_merge',

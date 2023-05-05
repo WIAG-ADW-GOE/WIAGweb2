@@ -176,11 +176,9 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
-    public function nextId($itemTypeId) {
+    public function nextId() {
             $qb = $this->createQueryBuilder('v')
-                       ->select('max(v.referenceId) AS nextId')
-                       ->andWhere('v.itemTypeId = :itemTypeId')
-                       ->setParameter('itemTypeId', $itemTypeId);
+                       ->select('max(v.referenceId) AS nextId');
             $query = $qb->getQuery();
             $list = $query->getOneOrNullResult();
 

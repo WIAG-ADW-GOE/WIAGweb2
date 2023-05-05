@@ -201,8 +201,10 @@ class ItemRepository extends ServiceEntityRepository
         $result = $query->getResult();
 
         $sort_list = array();
-        if ($sort_by == 'name') {
+        if ($sort_by == 'familyname') {
             $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'];
+        } elseif ($sort_by == 'givenname') {
+            $sort_list = ['hasFamilyname', 'givenname',  'familyname', 'inst_name', 'dateSortKey', 'personId'];
         } elseif ($sort_by == 'institution') {
             $sort_list = ['inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'];
         } elseif ($sort_by == 'diocese') {
