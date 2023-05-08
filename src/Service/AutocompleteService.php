@@ -279,6 +279,28 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
+    public function suggestNormdataEditedBy($item_type_id, $name, $hintSize) {
+        // do not filter by name 'i.editStatus LIKE :name'
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT i.normdataEditedBy AS suggestion")
+                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->andWhere('i.normdataEditedBy like :name')
+                         ->setParameter('item_type_id', $item_type_id)
+                         ->setParameter('name', '%'.$name.'%')
+                         ->orderBy('i.normdataEditedBy');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
     public function suggestName($itemTypeId, $queryParam, $resultSize, $online_only = true) {
         // canons: case $online_only == false is relevant for the editing query
         if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {

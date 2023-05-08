@@ -510,9 +510,10 @@ class Person {
     }
 
     /**
+     * 2023-05-08 see combinePropertyList
      * combine item properties
      */
-    public function combineProperty($key) {
+    public function combineProperty_legacy($key) {
         if (is_null($this->sibling)) {
             return $this->item->itemPropertyValue($key);
         }
@@ -575,7 +576,7 @@ class Person {
     /**
      * concatenate name variants and comments
      */
-    public function commentLine($flag_names = true) {
+    public function commentLine($flag_names = true, $flag_properties) {
 
         $academic_title = $this->combine('academicTitle');
 
@@ -618,9 +619,11 @@ class Person {
             $this->combine('notePerson'),
         ];
 
-        $property_list = $this->combinePropertyList();
-        foreach ($property_list as $prop) {
-            $elt_cands[] = $prop['label'].': '.$prop['value'];
+        if ($flag_properties) {
+            $property_list = $this->combinePropertyList();
+            foreach ($property_list as $prop) {
+                $elt_cands[] = $prop['label'].': '.$prop['value'];
+            }
         }
 
         $line_elts = array();

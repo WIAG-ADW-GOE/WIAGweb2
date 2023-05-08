@@ -697,7 +697,7 @@ class PersonService {
 
         // additional information
         $bhi = array();
-        $fv = $person->commentLine(false);
+        $fv = $person->commentLine(false, false);
         if($fv) {
             $bhi[] = $fv;
         }
@@ -942,14 +942,14 @@ class PersonService {
     public function itemPropertyText($properties, string $key): ?string {
 
         if (array_key_exists('ordination_priest', $properties)) {
-            $text = 'Weihe zum '.$properties[$key]['value'];
-            $fv = $properties[$key]['date'];
+            $text = 'Weihe zum '.$properties[$key][0]['value'];
+            $fv = $properties[$key][0]['date'];
             if (!is_null($fv)) {
                 // $date_value = date('d.m.Y', $fv);
                 $text = $text.' am '.$fv;
             }
             if (array_key_exists($key.'_place', $properties)) {
-                $text = $text.' in '.$properties[$key.'_place']['value'];
+                $text = $text.' in '.$properties[$key.'_place'][0]['value'];
             }
             return $text;
         }

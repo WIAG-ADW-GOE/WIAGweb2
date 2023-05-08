@@ -5,9 +5,9 @@
 	{% set propkeys = properties|keys %}
 	<li>
 	    <ul class="list-inlined list-unstyled">
-		<li class="list-inline-item">{{ properties['ordination_priest']['value'] }}</li>
-		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties['ordination_priest_place']['value'] }}</li>{% endif %}
-		{% if properties['ordination_priest']['date'] is defined %}<li class="list-inline-item">{{ properties['ordination_priest']['date']|date("d.m.Y") }}</li>{% endif %}
+		<li class="list-inline-item">{{ properties['ordination_priest'][0].value }}</li>
+		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties['ordination_priest_place'][0].value }}</li>{% endif %}
+		{% if properties['ordination_priest'][0].date is defined %}<li class="list-inline-item">{{ properties['ordination_priest'][0].date|date("d.m.Y") }}</li>{% endif %}
 		{% if 'contribution' in propkeys %}<li class="list-inline-item comment">(verminderte Weihegebühr)</li>{% endif %}
 	    </ul>
 	</li>

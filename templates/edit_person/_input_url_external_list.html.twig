@@ -14,6 +14,27 @@
 	}) }}
     {% endfor %}
 </div>
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm mb-1 mt-1">
+	    <span class="input-group-text">Normdaten recherchiert von </span>
+	    <div {{ stimulus_controller('autocomplete', {
+		 url: path('person_suggest', {itemTypeId: itemTypeId, field: 'normdataEditedBy'}),
+		 }) }} >
+		<input type="text" id="{{ base_id }}_item_normdataEditedBy"
+		       name="{{ base_input_name}}[item][normdataEditedBy]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.item.normdataEditedBy }}"
+		       style="max-width: 12em"
+		       spellcheck="false"
+		       aria-label="Status"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	</div>
+</div>
 {% for error_obj in person.inputError|filter(v => v.section == 'external id') %}
     <div class="row">
 	<div class="col-12 text-danger">{{ error_obj.msg }}</div>

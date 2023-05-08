@@ -159,7 +159,7 @@ class Item {
     private $isDeleted;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="string", length=63, nullable=true)
      */
     private $normdataEditedBy;
 
@@ -532,12 +532,12 @@ class Item {
         return $this;
     }
 
-    public function getNormdataEditedBy(): ?int
+    public function getNormdataEditedBy(): ?string
     {
         return $this->normdataEditedBy;
     }
 
-    public function setNormdataEditedBy(?int $normdataEditedBy): self
+    public function setNormdataEditedBy(?string $normdataEditedBy): self
     {
         $this->normdataEditedBy = $normdataEditedBy;
 
@@ -696,6 +696,12 @@ class Item {
      */
     public function arrayItemProperty() {
         $itemPropByName = array();
+        // prepare list
+        foreach ($this->itemProperty as $ip) {
+            $key = $ip->getType()->getName();
+            $itemPropByName[$key] = array();
+        }
+        // collect values
         foreach ($this->itemProperty as $ip) {
             $key = $ip->getType()->getName();
             $entry = array();
@@ -703,8 +709,9 @@ class Item {
             if ($ip->getDateValue()) {
                 $entry['date'] = $ip->getDateValue()->format('d.m.Y');
             }
-            $itemPropByName[$key] = $entry;
+            $itemPropByName[$key][] = $entry;
         }
+
         return $itemPropByName;
     }
 
@@ -713,16 +720,29 @@ class Item {
      */
     public function arrayItemPropertyWithLabel() {
         $itemPropByName = array();
+        // prepare list
         foreach ($this->itemProperty as $ip) {
             $key = $ip->getType()->getName();
-            $entry = array();
-            $entry['value'] = $ip->getValue();
             $entry['label'] = $ip->getType()->getLabel();
-            if ($ip->getDateValue()) {
-                $entry['date'] = $ip->getDateValue()->format('d.m.Y');
-            }
+            $entry['value'] = array();
+            $entry['date'] = array();
             $itemPropByName[$key] = $entry;
         }
+        // collect values
+        foreach ($this->itemProperty as $ip) {
+            $key = $ip->getType()->getName();
+            $itemPropByName[$key]['value'][] = $ip->getValue();
+            if ($ip->getDateValue()) {
+                $date_value = $ip->getDateValue()->format('d.m.Y');
+                $itemPropByName[$key]['date'][] = $date_value;
+            }
+        }
+        // list to string
+        foreach ($itemPropByName as $key => $ipn) {
+            $itemPropByName[$key]['value'] = implode(', ', $ipn['value']);
+            $itemPropByName[$key]['date'] = implode(', ', $ipn['date']);
+        }
+
         return $itemPropByName;
     }
 
@@ -731,12 +751,13 @@ class Item {
      * get a value in `itemProperty` if present or null
      */
     public function itemPropertyValue(string $key) {
-        $itemPropertyList = $this->arrayItemProperty();
-        $value = null;
-        if (array_key_exists($key, $itemPropertyList)) {
-            $value =  $itemPropertyList[$key];
+        $prop = array();
+        foreach ($this->itemProperty as $ip) {
+            if ($ip->getType()->getName() == $key) {
+                $prop[] = $ip;
+            }
         }
-        return $value;
+        return $prop;
     }
 
     public function getCommentDuplicate(): ?string

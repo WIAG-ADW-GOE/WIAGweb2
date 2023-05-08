@@ -50,13 +50,13 @@
 		<div
 		    {{ stimulus_controller('autocomplete', {
 			url: path('person_suggest_base', { 'field': 'bishop' }),
-		    }) }}>
+		    }) }}
+		    class="w-25">
 		    {% set bishop_wiag_id = person.item.urlExternalByAuthority('WIAG_ID') %}
 		    <input type="text"
 			   id="{{ base_id }}_bishop"
 			   name="{{ base_input_name}}[bishop]"
 			   class="form-control form-control-sm wiag-input"
-			   style="max-width: 26rem; min-width: 22rem"
 			   value="{{ bishop_wiag_id }}"
 			   aria-label="Verweis auf Bischof"
 			   data-autocomplete-target="input">
