@@ -42,7 +42,6 @@ class EditReferenceController extends AbstractController {
         $sort_by_choices = [
             'ID' => 'referenceId',
             'GS Zitation' => 'gsCitation',
-            'Autorenschaft' => 'authorEditor',
             'Kurztitel' => 'titleShort',
             'Anzeigereihenfolge' => 'displayOrder',
         ];
@@ -166,6 +165,18 @@ class EditReferenceController extends AbstractController {
                     $reference->getInputError()->add(new InputError('general', $msg, 'error'));
                     $error_flag = true;
                 }
+                if (trim($reference->getTitleShort()) == "") {
+                    $msg = "Bitte das Feld 'Kurztitel' ausfüllen.";
+                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $error_flag = true;
+                }
+
+                if (trim($reference->getGSCitation()) == "") {
+                    $msg = "Bitte das Feld 'GS Zitation' ausfüllen.";
+                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $error_flag = true;
+                }
+
             }
         }
 
