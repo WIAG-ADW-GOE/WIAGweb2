@@ -175,9 +175,7 @@ class AutocompleteService extends ServiceEntityRepository {
         $qb = $repository->createQueryBuilder('v')
                          ->select("DISTINCT v.titleShort AS suggestion")
                          ->andWhere('v.titleShort LIKE :name')
-                         ->andWhere('v.itemTypeId = :item_type_id')
                          ->addOrderBy('v.titleShort')
-                         ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
