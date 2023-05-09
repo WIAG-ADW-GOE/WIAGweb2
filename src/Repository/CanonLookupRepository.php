@@ -242,10 +242,12 @@ class CanonLookupRepository extends ServiceEntityRepository
             $qb->join('App\Entity\Person', 'p_id_year', 'WITH', 'p_id_year.id = c.personIdRole');
             if ($someid) {
                 $qb->join('p_id_year.item', 'item')
-                   ->join('item.urlExternal', 'uxt')
-                   ->join('\App\Entity\Authority', 'auth_ext', 'WITH', "auth_ext.id = uxt.authorityId AND auth_ext.urlType = 'Normdaten'")
+                   ->leftjoin('item.urlExternal', 'uxt')
+                    // 2023-05-09 SQL does not work as expected here. The result set is too small. Condition is now in the 'where'-clause
+                    // ->join('\App\Entity\Authority', 'auth_ext', 'WITH', "auth_ext.id = uxt.authorityId AND auth_ext.urlType = 'Normdaten'")
+                   ->leftjoin('uxt.authority', 'auth_ext')
                    ->andWhere("item.idPublic LIKE :q_id ".
-                              "OR uxt.value LIKE :q_id")
+                              "OR (uxt.value LIKE :q_id AND auth_ext.urlType = 'Normdaten')")
                    ->setParameter('q_id', '%'.$someid.'%');
             }
             if ($year) {
