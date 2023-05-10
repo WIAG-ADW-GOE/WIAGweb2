@@ -44,7 +44,10 @@
 		{% endset %}
 	    {% endif %}
 	    {# store data in the form #}
-	    <span class="ms-2 text-truncate" style="max-width: 45rem;">{{ head_line }}</span>
+	    <span class="ms-2 text-truncate" style="max-width: 35rem;">{{ head_line }}</span>
+	    {% if person.describeReference %}
+		<span class="ms-2 text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
+	    {% endif %}
 	    <span class="ms-2">ID: {{ person.item.idInSource }}</span>
 	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
 	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.idInSource) }}

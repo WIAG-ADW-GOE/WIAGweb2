@@ -671,6 +671,27 @@ class Person {
 
     }
 
+    /**
+     * get information about references
+     */
+    public function describeReference($nRef = 3): ?string {
+
+        $vol_txt_list = array();
+        foreach(array_slice($this->getItem()->getReference()->toArray(), 0, $nRef) as $ref) {
+            if ($ref->getReferenceVolume()) {
+                $vol_txt_list[] = $ref->getReferenceVolume()->getTitleShort();
+            }
+        }
+
+        $description = null;
+        if(count($vol_txt_list) > 0) {
+            $description = implode(', ', $vol_txt_list);
+        }
+
+        return($description);
+
+    }
+
     public function birthInfo(): ?string {
         $birth_info = null;
         if($this->dateBirth && $this->dateDeath) {

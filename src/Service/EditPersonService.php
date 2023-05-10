@@ -862,7 +862,7 @@ class EditPersonService {
         $reference->setVolumeTitleShort($volume_name); # save data for the form
 
         if ($volume_name != "") {
-            $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
+            $volume_query_result = $volumeRepository->findByTitleShort($volume_name);
             if ($volume_query_result) {
                 $volume = $volume_query_result[0];
                 $reference->setItemTypeId($item_type_id);

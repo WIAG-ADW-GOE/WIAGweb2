@@ -100,6 +100,7 @@ class EditReferenceController extends AbstractController {
         }
         $emptyReference = new ReferenceVolume();
         $emptyReference->setItemTypeId($item_type_id);
+        $emptyReference->setIsOnline(0);
 
         $template = 'edit_reference/query.html.twig';
         $edit_form_id = 'reference_edit_form';
@@ -109,7 +110,6 @@ class EditReferenceController extends AbstractController {
             'form' => $form,
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'emptyReference' => $emptyReference,
         ]);
 
     }
@@ -205,12 +205,6 @@ class EditReferenceController extends AbstractController {
             $entityManager->flush();
         }
 
-
-        // create empty template for new entries
-        $emptyReference = new ReferenceVolume();
-        $emptyReference->setItemTypeId($item_type_id);
-
-
         $template = 'edit_reference/_list.html.twig';
 
         $debug = $request->request->get('formType');
@@ -260,6 +254,7 @@ class EditReferenceController extends AbstractController {
         $item_type_id = $request->query->get('item_type_id');
         $ref = new ReferenceVolume();
         $ref->setItemTypeId($item_type_id);
+        $ref->setIsOnline(0);
         $ref->setFormIsExpanded(true);
 
         // property types
