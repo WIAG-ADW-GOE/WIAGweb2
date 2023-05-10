@@ -735,6 +735,11 @@ class EditPersonController extends AbstractController {
         $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
 
         $person_list = $personRepository->findList($id_all);
+        if (count($person_list) > 0) {
+            $item_type_id = $person_list[0]->getItemTypeId();
+        } else {
+            $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
+        }
 
         // add empty role, reference and id external if not present
         $authorityRepository = $this->entityManager->getRepository(Authority::class);

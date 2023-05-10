@@ -172,6 +172,7 @@ class EditPersonService {
             'editStatus',
             'commentDuplicate',
             'mergeStatus',
+            'normdataEditedBy',
         ];
 
         foreach ($field_list as $field) {
@@ -464,7 +465,13 @@ class EditPersonService {
         }
 
         // item: status values, editorial notes
-        $key_list = ['editStatus', 'mergeStatus', 'changedBy', 'commentDuplicate'];
+        $key_list = [
+            'editStatus',
+            'mergeStatus',
+            'changedBy',
+            'commentDuplicate',
+            'normdataEditedBy'
+        ];
         UtilService::setByKeys($item, $data['item'], $key_list);
 
         $collect_merge_parent = array();
