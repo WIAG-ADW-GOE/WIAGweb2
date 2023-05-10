@@ -44,6 +44,11 @@ class ReferenceVolume {
     private $idsExternal;
 
     /**
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $isOnline;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
@@ -153,6 +158,16 @@ class ReferenceVolume {
         return $this->idsExternal;
     }
 
+    public function getIsOnline(): int
+    {
+        return $this->isOnline;
+    }
+
+    public function setIsOnline($is_online): self
+    {
+        $this->isOnline = $is_online;
+        return $this;
+    }
 
     public function getComment(): ?string
     {

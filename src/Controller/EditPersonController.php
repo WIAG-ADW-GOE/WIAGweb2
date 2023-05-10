@@ -65,7 +65,7 @@ class EditPersonController extends AbstractController {
         ];
         $model->editStatus = [$edit_status_default_list[$itemTypeId]];
         $model->isOnline = true;
-        $model->listSize = 5;
+        $model->listSize = 20;
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->statusChoices($itemTypeId);
@@ -156,7 +156,8 @@ class EditPersonController extends AbstractController {
             'Domstift/Kloster' => 'institution',
             'Jahr' => 'year',
             'identisch mit' => 'commentDuplicate',
-            'ID' => 'idInSource'
+            'ID' => 'idInSource',
+            'Status' => 'editStatus'
         ];
 
         if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
@@ -571,7 +572,7 @@ class EditPersonController extends AbstractController {
             Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
         ];
         $model->editStatus = [$edit_status_default_list[$itemTypeId]];
-        $model->listSize = 5;
+        $model->listSize = 10;
         $model->itemTypeId = $itemTypeId;
 
         $status_choices = $this->statusChoices($itemTypeId);

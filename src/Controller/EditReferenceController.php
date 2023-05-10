@@ -156,27 +156,36 @@ class EditReferenceController extends AbstractController {
                     $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
-                UtilService::setByKeys(
-                    $reference,
-                    $data,
-                    ReferenceVolume::EDIT_FIELD_LIST);
-                if (trim($reference->getFullCitation()) == "") {
-                    $msg = "Bitte das Feld 'Titel' ausfüllen.";
-                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
-                if (trim($reference->getTitleShort()) == "") {
-                    $msg = "Bitte das Feld 'Kurztitel' ausfüllen.";
-                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
+                if ($formIsExpanded) {
+                    $is_online = isset($data['isOnline']) ? 1 : 0;
+                    $reference->setIsOnline($is_online);
+                    UtilService::setByKeys(
+                        $reference,
+                        $data,
+                        ReferenceVolume::EDIT_FIELD_LIST);
+                    if (trim($reference->getFullCitation()) == "") {
+                        $msg = "Bitte das Feld 'Titel' ausfüllen.";
+                        $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
+                    if (trim($reference->getTitleShort()) == "") {
+                        $msg = "Bitte das Feld 'Kurztitel' ausfüllen.";
+                        $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
 
-                if (trim($reference->getGSCitation()) == "") {
-                    $msg = "Bitte das Feld 'GS Zitation' ausfüllen.";
-                    $reference->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
+                    if (trim($reference->getGSCitation()) == "") {
+                        $msg = "Bitte das Feld 'GS Zitation' ausfüllen.";
+                        $reference->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
                 }
-
+                else { // only item.display_order is accessible
+                    UtilService::setByKeys(
+                        $reference,
+                        $data,
+                        ['displayOrder']);
+                }
             }
         }
 

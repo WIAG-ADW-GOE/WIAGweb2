@@ -188,7 +188,7 @@ class ItemRepository extends ServiceEntityRepository
         $qb->leftjoin('p.role', 'pr_inst')
            ->leftjoin('p.role', 'pr_date')
            ->leftjoin('pr_inst.institution', 'inst_sort')
-           ->select('i.id as personId, i.idInSource, p.givenname, p.familyname, '.
+           ->select('i.id as personId, i.idInSource, i.editStatus, p.givenname, p.familyname, '.
                     '(CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, '.
                     'min(inst_sort.nameShort) as inst_name, '.
                     'min(pr.dioceseName) as dioceseName, '.
@@ -216,7 +216,8 @@ class ItemRepository extends ServiceEntityRepository
             $sort_list = ['commentDuplicate', 'inst_name', 'familyname', 'givenname', 'personId'];
         } elseif ($sort_by == 'idInSource') {
             $sort_list = ['idInSource', 'familyname', 'givenname', 'personId'];
-
+        } elseif ($sort_by == 'editStatus') {
+            $sort_list = ['editStatus', 'idInSource', 'personId'];
         } else {
             if ($office || $diocese || $monastery || $place) {
                 $sort_list = ['dioceseName', 'inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'];
@@ -340,6 +341,8 @@ class ItemRepository extends ServiceEntityRepository
         if ($editStatus) {
             $qb->andWhere("i.editStatus in (:q_status)")
                ->setParameter('q_status', $editStatus);
+        } else {
+            $qb->andWhere("i.editStatus <> 'Dublette'");
         }
 
         $commentDuplicate = $model->commentDuplicate;

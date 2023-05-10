@@ -17,14 +17,6 @@
 		   value="{{ reference.yearPublication }}"
 		   spellcheck="false"
 		   aria-label="Erscheinungsjahr">
-	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
-	    <input type="text" id="{{ base_id }}_display_order"
-		   name="{{ base_input_name}}[displayOrder]"
-		   class="form-control wiag-input"
-		   style="max-width: 5rem"
-		   value="{{ reference.DisplayOrder }}"
-		   spellcheck="false"
-		   aria-label="Reihenfolge">
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">GS Nr.</span>
@@ -52,28 +44,28 @@
 		   spellcheck="false"
 		   aria-label="RI OPAC">
 	    {% if false  %} {# obsolete 2023-04-24 #}
-	    {% set item_type_choice_list = {
-		'1': 'Bistum',
-		'4': 'Bischof',
-		'9': 'GS Band (Bischof)',
-		'5': 'Domherr',
-		'6': 'GS Band (Domherr)',
-		'10': 'Priester Utrecht',
-	    } %}
-	    <span class="input-group-text" style="min-width: 5rem">Thema/Typ</span>
-	    <select class="form-select form-select-sm wiag-input"
-		    aria-label="Thema/Typ"
-	    	    id="{{ base_id }}_item_type_id"
-		    style="max-width: 12rem"
-		    name="{{ base_input_name }}[itemTypeId]">
-		{% for key, item_type_loop in item_type_choice_list %}
-		    {% if key == reference.itemTypeId %}
-			<option selected value="{{ key }}">{{ item_type_loop }}</option>
-		    {% else %}
-			<option value="{{ key }}">{{ item_type_loop }}</option>
-		    {% endif %}
-		{% endfor %}
-	    </select>
+		{% set item_type_choice_list = {
+		    '1': 'Bistum',
+		    '4': 'Bischof',
+		    '9': 'GS Band (Bischof)',
+		    '5': 'Domherr',
+		    '6': 'GS Band (Domherr)',
+		    '10': 'Priester Utrecht',
+		} %}
+		<span class="input-group-text" style="min-width: 5rem">Thema/Typ</span>
+		<select class="form-select form-select-sm wiag-input"
+			aria-label="Thema/Typ"
+			id="{{ base_id }}_item_type_id"
+			style="max-width: 12rem"
+			name="{{ base_input_name }}[itemTypeId]">
+		    {% for key, item_type_loop in item_type_choice_list %}
+			{% if key == reference.itemTypeId %}
+			    <option selected value="{{ key }}">{{ item_type_loop }}</option>
+			{% else %}
+			    <option value="{{ key }}">{{ item_type_loop }}</option>
+			{% endif %}
+		    {% endfor %}
+		</select>
 	    {% endif %}
 	</div>
 	<div class="input-group input-group-sm mb-1">
@@ -99,6 +91,12 @@
 		   value="{{ reference.onlineResource }}"
 		   spellcheck="false"
 		   aria-label="Online Ressource">
+	    <div class="input-group-text">
+		<input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the volume is online" id="{{ base_id }}_isOnline" name="{{ base_input_name }}[isOnline]" {% if reference.isOnline %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_isOnline">
+		    veröffentlicht
+		</label>
+	    </div>
 	</div>
  	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">GS Zitation</span>

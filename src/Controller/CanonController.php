@@ -391,60 +391,6 @@ class CanonController extends AbstractController {
 
     }
 
-    /**
-     * obsolete? 2022-08-01
-     * show selected canons (e.g. by domstift) in one page
-     * @Route("/domherr/onepage_legacy", name="canon_onepage_legacy")
-     */
-    public function onepage_legacy (Request $request,
-                                    EntityManagerInterface $entityManager) {
-
-        $model = new PersonFormModel();
-        $form = $this->createForm(CanonFormType::class, $model);
-        $form->handleRequest($request);
-
-        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
-
-        $query_result = $canonLookupRepository->findWithOfficesByModel($model);
-        // dd($query_result);
-
-        $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
-        $canon_list = array();
-        $canon = array();
-        $item_list = array();
-        foreach($query_result as $obj) {
-            if (is_a($obj, Person::class)) {
-                if (count($canon) > 0) {
-                    $canon['item'] = $item_list;
-                    $canon_list[] = $canon;
-                    $item_list = array();
-                    $canon = array();
-                    }
-                    $canon['person'] = $obj;
-            } elseif (is_a($obj, Item::class)) {
-                $referenceVolumeRepository->addReferenceVolumes($obj);
-                $item_list[] = $obj;
-            } else {}
-        }
-
-        $title = $model->domstift;
-        if ($title) {
-            $part_list = explode(" ", $title);
-            if (count($part_list) == 1) {
-                $title = 'Domstift '.$title;
-            }
-            $title = ucwords($title);
-        } else {
-            $title = "Domherren";
-        }
-
-        return $this->render('canon/onepage_result.html.twig', [
-            'title' => $title,
-            'canon_list' => $canon_list,
-        ]);
-
-    }
-
      /**
      * show references for selected canons
      * @Route("/domherr/onepage/literatur/{itemType}", name="canon_onepage_references")
