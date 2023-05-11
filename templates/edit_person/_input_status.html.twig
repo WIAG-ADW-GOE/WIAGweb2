@@ -1,5 +1,5 @@
 {% import "edit_person/_util.html.twig" as util %}
-<div class="row"> {# empty div to have the same structure for all sections #}
+<div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm mb-1 mt-1">
 	    <span class="input-group-text">Status</span>
@@ -125,6 +125,13 @@
 	</div>
     </div>
 </div>
+{% if person.item.ancestor %}
+<div class="row">
+    <div class="col-12">
+	<span class="ms-1">zusammengesetzt aus: </span>{{ person.item.ancestor|map(a => a.idInSource)|join('; ') }}
+    </div>
+</div>
+{% endif %}
 {# validation messages #}
 {% for error_obj in person.inputError|filter(v => v.section == 'status') %}
     <div class="row">

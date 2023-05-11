@@ -92,6 +92,10 @@ class PersonRepository extends ServiceEntityRepository {
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
         $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+
+        // set ancestors
+        $itemRepository->setAncestor($item_list);
+
         // set reference volumes
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
 

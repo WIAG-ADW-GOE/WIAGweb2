@@ -82,28 +82,6 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
             return null;
         }
 
-
-        // get all volumes for relevant item_types
-        // $qb = $this->createQueryBuilder('r')
-        //            ->select('r')
-        //            ->andWhere('r.itemTypeId in (:item_type_list)')
-        //            ->setParameter('item_type_list', $item_type_list);
-
-        // $query = $qb->getQuery();
-        // $result = $query->getResult();
-
-        // // match volumes by item_type_id and ref_id
-        // // - the result list is not large so the filter is no performance problem
-        // foreach ($item_ref_list as $ref) {
-        //     $item_type_id = $ref->getItemTypeId();
-        //     $ref_id = $ref->getReferenceId();
-        //     $vol = array_filter($result, function($el) use ($item_type_id, $ref_id) {
-        //         return ($el->getReferenceId() == $ref_id) && ($el->getItemTypeId() == $item_type_id);
-        //     });
-        //     $vol_obj = (!is_null($vol) and count($vol) > 0) ? array_values($vol)[0] : null;
-        //     $ref->setReferenceVolume($vol_obj);
-        // }
-
         $qb = $this->createQueryBuilder('r')
                    ->select('r');
 

@@ -9,6 +9,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\PersonBirthplace;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -826,5 +827,38 @@ class ItemRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     *
+     */
+    public function setAncestor($item_list) {
+        foreach($item_list as $i_loop) {
+            $i_loop->setAncestor($this->findAncestor($i_loop));
+        }
+        return null;
+    }
+
+    /**
+     *
+     */
+    public function findAncestor($item) {
+        $ancestor_list = array();
+        $id_list = array($item->getId());
+        while (true) {
+            $qb = $this->createQueryBuilder('i')
+                       ->andWhere('i.mergedIntoId in (:id_list)')
+                       ->setParameter('id_list', $id_list);
+            $query = $qb->getQuery();
+            $q_result = $query->getResult();
+            if (count($q_result) < 1) {
+                break;
+            }
+            $id_list = array();
+            foreach ($q_result as $i_loop) {
+                $id_list[] = $i_loop->getId();
+                $ancestor_list[] = $i_loop;
+            }
+        }
+        return $ancestor_list;
+    }
 
 }

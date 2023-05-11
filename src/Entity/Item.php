@@ -201,6 +201,12 @@ class Item {
      */
     private $formIsExpanded = false;
 
+    /**
+     * no DB-mapping
+     * hold ancestor
+     */
+    private $ancestor = null;
+
     public function __construct() {
         $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
@@ -210,6 +216,7 @@ class Item {
         $this->idInSource = "";
         $this->mergeStatus = 'original';
         $this->mergeParent = array();
+        $this->ancestor = array();
     }
 
     static public function newItem($item_type_id, $user_wiag_id) {
@@ -610,6 +617,15 @@ class Item {
 
     public function getMergeParent() {
         return $this->mergeParent;
+    }
+
+    public function setAncestor($value): self {
+        $this->ancestor = $value;
+        return $this;
+    }
+
+    public function getAncestor() {
+        return $this->ancestor;
     }
 
     public function getMergeParentTxt() {
