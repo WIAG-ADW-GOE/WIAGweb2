@@ -9,6 +9,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\PersonBirthplace;
+use App\Entity\UrlExternal;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -241,6 +242,8 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     private function addPersonConditions($qb, $model) {
+        // parameters
+
         $diocese = null;
         $monastery = null;
         $itemTypeId = $model->itemTypeId;
@@ -309,18 +312,43 @@ class ItemRepository extends ServiceEntityRepository
 
         $someid = $model->someid;
         if ($someid) {
-            // search for idPublic in merging ancestors
-            $qb->leftjoin('i.urlExternal', 'uxt')
-               ->leftjoin('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
-               ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'i.isOnline = 1 AND ip1.mergedIntoId = i.id')
-               ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
-               ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
-               ->andWhere("i.idPublic LIKE :q_id OR i.idInSource LIKE :q_id ".
-                          "OR uxt.value LIKE :q_id ".
-                          "OR ip1.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
-                          "OR ip2.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
-                          "OR ip3.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id")
-               ->setParameter('q_id', '%'.$someid.'%');
+            // look for $someid in merged ancestors
+            $with_id_in_source = $model->isEdit;
+            $list_size_max = 200;
+            $descendant_list = $this->findCurrentChildById(
+                $someid,
+                $itemTypeId,
+                $with_id_in_source,
+                $list_size_max
+            );
+            $descendant_id_list = array_map(function($v) {return $v->getId();}, $descendant_list);
+
+            // look for $someid in external links
+            $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+            $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                $someid,
+                $itemTypeId,
+                $list_size_max
+            );
+
+            $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+
+            // dd($descendant_id_list, $uext_id_list, count($q_id_list));
+
+            // search for idPublic in merged ancestors
+                // $qb->leftjoin('i.urlExternal', 'uxt')
+                //    ->leftjoin('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
+                //    ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'i.isOnline = 1 AND ip1.mergedIntoId = i.id')
+                //    ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
+                //    ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
+                //    ->andWhere("i.idPublic LIKE :q_id OR i.idInSource LIKE :q_id ".
+                //               "OR uxt.value LIKE :q_id ".
+                //               "OR ip1.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
+                //               "OR ip2.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
+                //               "OR ip3.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id")
+                //    ->setParameter('q_id', '%'.$someid.'%');
+            $qb->andWhere("i.id in (:q_id_list)")
+               ->setParameter('q_id_list', $q_id_list);
         }
 
         $reference = $model->reference;
@@ -838,27 +866,81 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     *
+     * @return list of items that were merged into $item
      */
     public function findAncestor($item) {
         $ancestor_list = array();
         $id_list = array($item->getId());
-        while (true) {
+        $result_count = 1;
+        while ($result_count > 0) {
             $qb = $this->createQueryBuilder('i')
                        ->andWhere('i.mergedIntoId in (:id_list)')
                        ->setParameter('id_list', $id_list);
             $query = $qb->getQuery();
             $q_result = $query->getResult();
-            if (count($q_result) < 1) {
-                break;
-            }
             $id_list = array();
             foreach ($q_result as $i_loop) {
                 $id_list[] = $i_loop->getId();
                 $ancestor_list[] = $i_loop;
             }
+            $result_count = count($q_result);
         }
         return $ancestor_list;
     }
+
+    /**
+     * @return items containing $id in ancestor list
+     */
+    public function findCurrentChildById(string $q_id, $item_type_id, $with_id_in_source, $list_size_max) {
+
+        if ($with_id_in_source) {
+            $qb = $this->createQueryBuilder('i')
+                       ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
+                       ->andWhere("i.itemTypeId = :item_type_id")
+                       ->setParameter('item_type_id', $item_type_id)
+                       ->setParameter('q_id', '%'.$q_id.'%');
+        } else {
+            $qb = $this->createQueryBuilder('i')
+                       ->andWhere("i.idPublic like :q_id")
+                       ->andWhere("i.itemTypeId = :item_type_id")
+                       ->setParameter('item_type_id', $item_type_id)
+                       ->setParameter('q_id', '%'.$q_id.'%');
+        }
+
+        $qb->setMaxResults($list_size_max);
+        $query = $qb->getQuery();
+
+        $q_result = $query->getResult();
+
+        $child_list = array();
+        foreach($q_result as $i_loop) {
+            $child = $this->findCurrentChild($i_loop);
+            if ($child) {
+                $child_list[] = $child;
+            }
+        }
+        return $child_list;
+    }
+
+    /**
+     * @return first item that is online or has no descendants
+     */
+    public function findCurrentChild(Item $item) {
+        $child = $item;
+        $merged_into_id = $item->getMergedIntoId();
+        $is_child = $item->getMergeStatus() == 'child';
+        while(!is_null($merged_into_id) and $merged_into_id > 0 and !$is_child) {
+            $child = $this->find($merged_into_id);
+            if ($child) { // avoid error for inconsistent data
+                $is_child = $child->getMergeStatus() == $child;
+                $merged_into_id = $child->getMergedIntoId();
+            } else {
+                $is_online = false;
+                $merged_into_id = null;
+            }
+        }
+        return $child;
+    }
+
 
 }

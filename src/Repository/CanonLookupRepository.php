@@ -179,6 +179,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
 
     public function addCanonConditions($qb, $model, $add_joins = true) {
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
         $domstift = $model->institution;
@@ -241,14 +242,42 @@ class CanonLookupRepository extends ServiceEntityRepository
             // year and id are linked now via p_all
             $qb->join('App\Entity\Person', 'p_id_year', 'WITH', 'p_id_year.id = c.personIdRole');
             if ($someid) {
+
+                // look for $someid in merged ancestors
+                $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+                $with_id_in_source = $model->isEdit;
+                $list_size_max = 200;
+                $descendant_list = $itemRepository->findCurrentChildById(
+                    $someid,
+                    $item_type_id,
+                    $with_id_in_source,
+                    $list_size_max
+                );
+                $descendant_id_list = array_map(function($v) { return $v->getId(); }, $descendant_list);
+
+                // look for $someid in external links
+                $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                    $someid,
+                    $item_type_id,
+                    $list_size_max
+                );
+
+                $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+
+                // $qb->join('p_id_year.item', 'item')
+                //    ->leftjoin('item.urlExternal', 'uxt')
+                //     // 2023-05-09 SQL does not work as expected here. The result set is too small.
+                //     // Condition is now in the 'where'-clause
+                //     // ->join('\App\Entity\Authority', 'auth_ext', 'WITH', "auth_ext.id = uxt.authorityId AND auth_ext.urlType = 'Normdaten'")
+                //    ->leftjoin('uxt.authority', 'auth_ext')
+                //    ->andWhere("item.id in (:descendant_id_list)")
+                //     // "OR (uxt.value LIKE :q_id AND auth_ext.urlType = 'Normdaten')")
+                //     // ->setParameter('q_id', '%'.$someid.'%')
+                //    ->setParameter('descendant_id_list', $descendant_id_list);
                 $qb->join('p_id_year.item', 'item')
-                   ->leftjoin('item.urlExternal', 'uxt')
-                    // 2023-05-09 SQL does not work as expected here. The result set is too small. Condition is now in the 'where'-clause
-                    // ->join('\App\Entity\Authority', 'auth_ext', 'WITH', "auth_ext.id = uxt.authorityId AND auth_ext.urlType = 'Normdaten'")
-                   ->leftjoin('uxt.authority', 'auth_ext')
-                   ->andWhere("item.idPublic LIKE :q_id ".
-                              "OR (uxt.value LIKE :q_id AND auth_ext.urlType = 'Normdaten')")
-                   ->setParameter('q_id', '%'.$someid.'%');
+                   ->andWhere("item.id in (:q_id_list)")
+                   ->setParameter('q_id_list', $q_id_list);
             }
             if ($year) {
                 $qb->andWhere("p_id_year.dateMin - :mgnyear < :q_year ".

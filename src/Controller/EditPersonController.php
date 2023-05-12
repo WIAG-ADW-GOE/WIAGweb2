@@ -67,6 +67,7 @@ class EditPersonController extends AbstractController {
         $model->isOnline = true;
         $model->listSize = 20;
         $model->itemTypeId = $itemTypeId;
+        $model->isEdit = true;
 
         $status_choices = $this->statusChoices($itemTypeId);
         $sort_by_choices = $this->sortByChoices($itemTypeId);

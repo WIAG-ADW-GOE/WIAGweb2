@@ -143,6 +143,7 @@ class EditPersonFormType extends AbstractType
                 'expanded' => false,
                 'choices' => $options['sortByChoices'],
             ])
+            ->add('isEdit', HiddenType::class)
             // data set via JavaScript
             ->add('sortOrder', HiddenType::class);
 

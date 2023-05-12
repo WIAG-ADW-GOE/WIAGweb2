@@ -74,12 +74,24 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
     */
 
-    /**
-     * @return info about essential external references
-     */
-    public function essentialList() {
+    public function findIdBySomeNormUrl($someid, $item_type_id, $list_size_max = 200) {
 
+        $qb = $this->createQueryBuilder('u')
+                   ->select('DISTINCT u.itemId')
+                   ->join('u.authority', 'auth')
+                   ->join('u.item', 'i')
+                   ->andWhere("auth.urlType = 'Normdaten'")
+                   ->andWhere('u.value like :someid')
+                   ->andWhere('i.itemTypeId = :item_type_id')
+                   ->setParameter('item_type_id', $item_type_id)
+                   ->setParameter(':someid', '%'.$someid.'%');
+
+        $qb->setMaxResults($list_size_max);
+
+        $query = $qb->getQuery();
+        return array_column($query->getResult(), 'itemId');
     }
+
 
     /**
      *

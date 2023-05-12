@@ -36,6 +36,7 @@ class PersonFormModel {
     public $facetUrl = null;
     public $sortBy = null;
     public $sortOrder = 'ASC';
+    public $isEdit = false;
 
 
     /**
@@ -88,6 +89,7 @@ class PersonFormModel {
             'someid' => null,
             'sortBy' => null,
             'sortOrder' => 'ASC',
+            'isEdit' => false,
         ];
 
         foreach ($default_list as $key => $value) {
@@ -112,17 +114,6 @@ class PersonFormModel {
         $keys = ['name', 'institution', 'place', 'office', 'year', 'someid'];
         foreach($keys as $key) {
             $value = $value && is_null($this->$key);
-        }
-
-        return $value;
-    }
-
-    // 2023-03-29 obsolete?
-    public function hasFacets_legacy() {
-        $value = false;
-        $keys = ['facetInstitution', 'facetOffice'];
-        foreach($keys as $key) {
-            $value = $value || !is_null($this->$key);
         }
 
         return $value;
