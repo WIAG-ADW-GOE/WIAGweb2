@@ -270,20 +270,6 @@ class Item {
     }
 
     /**
-     * 2023-03-01 obsolete?
-     * 2023-03-21 obsolete
-     */
-    // public function getUrlExternalExternal_legacy() {
-    //     return $this->urlExternal->filter(function($urlext) {
-    //         $auth = $urlext->getAuthority();
-    //         if (is_null($auth)) {
-    //             return true;
-    //         }
-    //         return ($auth->getUrlType() != "Internal Identifier");
-    //     });
-    // }
-
-    /**
      *
      */
     public function getEssentialUrlExternal() {
@@ -819,18 +805,22 @@ class Item {
         });
 
         $merged_list = new ArrayCollection();
-        $last_ref_ext = null;
+        $last_ref_ext = new UrlExternal();
         foreach ($list as $ref_ext) {
-            if (is_null($last_ref_ext) ||
-                ($ref_ext->getAuthorityId() != $last_ref_ext->getAuthorityId()) ||
-                !in_array($ref_ext->getAuthorityId(), Authority::ESSENTIAL_ID_LIST)) {
+            if ($ref_ext->getAuthorityId() != $last_ref_ext->getAuthorityId()) { // other authority
                 $last_ref_ext = $ref_ext;
                 $merged_list->add($ref_ext);
             } else {
                 $last_value = $last_ref_ext->getValue();
                 $merge_value = $ref_ext->getValue();
                 if ($last_value != $merge_value) {
-                    $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+                    // essential authority?
+                    if (!in_array($ref_ext->getAuthorityId(), Authority::ESSENTIAL_ID_LIST)) {
+                        $last_ref_ext = $ref_ext;
+                        $merged_list->add($ref_ext);
+                    } else {
+                        $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+                    }
                 }
             }
         }
