@@ -326,22 +326,15 @@ class Item {
         return new ArrayCollection($urlExternal_sorted);
     }
 
-    /**
-     * exclude url_type 'Internal Identifier'
-     */
-    // public function displayUrlExternal_legacy() {
-    //     $display = $this->urlExternal->toArray();
-    //     return array_filter(
-    //         $display,
-    //         function($v) {
-    //             return $v->getAuthority()->getUrlType() != "Internal Identifier";
-    //         }
-    //     );
-    // }
-
     public function getReference() {
         return $this->reference;
     }
+
+    public function setReference(ArrayCollection $reference) {
+        $this->reference = $reference;
+        return $this;
+    }
+
 
     public function getSortedReference(string $field) {
         // sort by referece_volume.display_order

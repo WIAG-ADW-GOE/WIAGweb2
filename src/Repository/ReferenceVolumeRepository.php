@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ReferenceVolume;
 use App\Service\UtilService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -97,6 +98,17 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
             });
             $vol_obj = (!is_null($vol) and count($vol) > 0) ? array_values($vol)[0] : null;
             $ref->setReferenceVolume($vol_obj);
+        }
+
+        // sort references
+        foreach ($item_list as $item_loop) {
+            $ref_list = $item_loop->getReference()->toArray();
+            usort($ref_list, function($a, $b) {
+                $gsc_a = $a->getReferenceVolume()->getGsCitation();
+                $gsc_b = $b->getReferenceVolume()->getGsCitation();
+                return $gsc_a == $gsc_b ? 0 : ($gsc_a < $gsc_b ? -1 : 1);
+            });
+            $item_loop->setReference(new ArrayCollection($ref_list));
         }
 
         return null;
