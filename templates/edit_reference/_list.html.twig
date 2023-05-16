@@ -4,13 +4,14 @@
 	  action="{{ path('edit_reference_save') }}"
 	  method="post"
 	  data-controller="submit-form">
-	{% set body_id_list = range(1,referenceList|length)|map(r => 'body'~r)|join(' ') %}
+	{% set reference_count = referenceList|length %}
+	{% set body_id_list = range(1,reference_count)|map(r => 'body'~r)|join(' ') %}
 	<div class="row mx-2 mt-2">
 	    <div class="col-12">
 		{# disable submit via enter-key #}
 		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
 		{# toggle collapse button #}
-		{% if referenceList|length <= 40 %}
+		{% if reference_count <= 40 and reference_count > 0 %}
 		    <button class="btn btn-sm btn-secondary float-start"
 			    type="button"
 			    data-bs-toggle="collapse"
@@ -27,11 +28,13 @@
 			    {# avoid overflow of the number of input field elements #}
 			    data-value="down">öffnen/schließen</button>
 		{% endif %}
-		<button type="button"
-			name="formType"
-			value="list"
-			data-action="submit-form#submit"
-			class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% if reference_count > 7 %}
+		    <button type="button"
+				  name="formType"
+				  value="list"
+				  data-action="submit-form#submit"
+			    class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% endif %}
 	    </div>
 	</div>
 	<div class="row ms-2 mx-0">
@@ -42,16 +45,20 @@
 					    item_type_id: itemTypeId,
 					    }) }}"
 		     data-insert-point-value="lastButOne">
-		    <div class="input-group input-group-sm mt-1 ">
-			<button class="btn btn-sm btn-outline-secondary show-new-element"
-				type="button"
-				data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
-		    </div>
-			{% for ref in referenceList %}
+		    {% if reference_count > 7 %}
+			<div class="input-group input-group-sm mt-1 ">
+			    <button class="btn btn-sm btn-outline-secondary show-new-element"
+					   type="button"
+				    data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+			</div>
+		    {% endif %}
+		    {% for ref in referenceList %}
 			{{ include('edit_reference/_item.html.twig', {
 			    reference: ref,
 			    current_idx: loop.index,
 			}) }}
+			{% else %}
+			<span>Treffer: keine</span>
 		    {% endfor %}
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
@@ -71,18 +78,18 @@
 		    <div class="float-end">
 			<span class="me-2">debug mode</span>
 			<button type="submit"
-				name="formType"
+				      name="formType"
 				value="debug"
 				data-submit-by-key-target="button"
 				class="btn btn-primary btn-sm float-end">Speichern</button>
 		    </div>
 		{% else %}
 		    <button type="button"
-			    name="formType"
-			    value="list"
-			    data-submit-by-key-target="button"
-			    data-action="submit-form#submit"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
+				  name="formType"
+				  value="list"
+				  data-submit-by-key-target="button"
+				  data-action="submit-form#submit"
+				  class="btn btn-primary btn-sm float-end">Speichern</button>
 		{% endif %}
 	    </div>
 	</div>

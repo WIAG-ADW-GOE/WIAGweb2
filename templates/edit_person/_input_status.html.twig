@@ -111,10 +111,8 @@
 				    id="delete_{{ person.id }}"
 				    data-action="submit-form#submit"
 				    form="{{ editFormId }}"
-				    formaction="{{ path('edit_person_delete') }}"
-				    class="d-none"
-				    value="{{ person.id }}"
-				    name="delete-id"></button>
+				    formaction="{{ path('edit_person_delete', { 'q_id': person.id }) }}"
+				    class="d-none"></button>
 			    <button type="BUTTON"
 				    class="dropdown-item"
 				    data-action="submit-confirm#confirm">Eintrag löschen</button>

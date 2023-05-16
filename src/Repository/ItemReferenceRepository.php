@@ -48,5 +48,17 @@ class ItemReferenceRepository extends ServiceEntityRepository
     }
     */
 
+    public function referenceCount($reference_id) {
+        $qb = $this->createQueryBuilder('ir')
+                   ->select('COUNT(DISTINCT(ir.id)) as count')
+                   ->join('ir.item', 'item')
+                   ->andWhere('ir.referenceId = :reference_id')
+                   ->andWhere('item.isOnline = 1')
+                   ->setParameter('reference_id', $reference_id);
+        $query = $qb->getQuery();
+
+        return $query->getSingleResult()['count'];
+    }
+
 
 }

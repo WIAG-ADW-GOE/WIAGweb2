@@ -17,6 +17,25 @@
 		   value="{{ reference.yearPublication }}"
 		   spellcheck="false"
 		   aria-label="Erscheinungsjahr">
+	    <div class="ms-1"
+		 data-controller="submit-confirm"
+		 data-submit-confirm-title-value="Eintrag löschen?"
+		 data-submit-confirm-button-id-value="delete_{{ reference.id }}"
+		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
+		 data-submit-confirm-confirm-button-text-value="Löschen"
+		 data-submit-confirm-cancel-button-text-value="Abbrechen">
+		{# use this hidden element to trigger the confirmed action #}
+		{# set delete flag and save the edit form list #}
+		<button type="submit"
+			id="delete_{{ reference.id }}"
+			data-action="submit-form#submit"
+			form="{{ editFormId }}"
+			formaction="{{ path('edit_reference_delete', {'q_id': reference.id ?? 0 }) }}"
+			class="d-none"></button>
+		<button type="BUTTON"
+			class="btn btn-sm btn-danger"
+			data-action="submit-confirm#confirm">Eintrag löschen</button>
+	    </div>
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">GS Nr.</span>
@@ -133,5 +152,10 @@
 		      name="{{ base_input_name }}[comment]"
 		      class="form-control form-control-sm wiag-input">{{ reference.comment }}</textarea>
 	</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+	referenziert (online): {{ reference.referencecount }}
     </div>
 </div>

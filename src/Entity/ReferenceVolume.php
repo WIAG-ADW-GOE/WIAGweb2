@@ -145,6 +145,8 @@ class ReferenceVolume {
      */
     private $inputError;
 
+    private $referenceCount = 0;
+
     public function __construct() {
         $this->inputError = new ArrayCollection();
     }
@@ -363,6 +365,15 @@ class ReferenceVolume {
 
     public function getFormIsExpanded() {
         return $this->formIsExpanded;
+    }
+
+    public function getReferenceCount(): int {
+        return $this->referenceCount;
+    }
+
+    public function setReferenceCount($count) {
+        $this->referenceCount = $count;
+        return $this;
     }
 
     /**

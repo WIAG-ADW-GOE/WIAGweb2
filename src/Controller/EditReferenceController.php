@@ -6,6 +6,7 @@ use App\Entity\Item;
 use App\Entity\ItemType;
 use App\Entity\ReferenceVolume;
 use App\Entity\InputError;
+use App\Entity\ItemReference;
 use App\Form\Model\ReferenceQueryFormModel;
 
 use App\Service\UtilService;
@@ -121,7 +122,7 @@ class EditReferenceController extends AbstractController {
                          EntityManagerInterface $entityManager) {
 
         $edit_form_id = 'reference_edit_form';
-        $form_data = $request->request->get($edit_form_id);
+        $form_data = $request->request->get($edit_form_id) ?? array();
 
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
 
@@ -213,13 +214,65 @@ class EditReferenceController extends AbstractController {
         }
 
         return $this->render($template, [
-            'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
             'itemTypeId' => $item_type_id,
         ]);
 
     }
+
+    /**
+     *
+     * @Route("/edit/reference/delete/{q_id}", name="edit_reference_delete")
+     */
+    public function deleteEntry(Request $request,
+                                int $q_id,
+                                EntityManagerInterface $entityManager) {
+        $edit_form_id = 'reference_edit_form';
+        $form_data = $request->request->get($edit_form_id);
+
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+
+        // validation
+        $error_flag = false;
+
+        $id_list = array_column($form_data, 'id');
+        $query_result = $referenceRepository->findList($id_list);
+        $reference_list = array();
+        foreach ($query_result as $reference) {
+            $reference_list[$reference->getId()] = $reference;
+        }
+
+        // - default
+        // reference_volume.item_type_id is obsolete 2023-05-05
+        $item_type_id = 0;
+
+        // deletion takes priority: all other edit data are lost and sub-forms are closed
+        foreach ($reference_list as $reference) {
+            $id_loop = $reference->getId();
+            if ($id_loop == $q_id) {
+                $entityManager->remove($reference);
+            }
+        }
+
+        $entityManager->flush();
+
+        $query_result = $referenceRepository->findList($id_list);
+        $reference_list = array();
+        foreach ($query_result as $reference) {
+            $reference_list[$reference->getId()] = $reference;
+        }
+
+        $template = 'edit_reference/_list.html.twig';
+
+        return $this->render($template, [
+            'editFormId' => $edit_form_id,
+            'referenceList' => $reference_list,
+            'itemTypeId' => $item_type_id,
+        ]);
+
+    }
+
 
     /**
      * get data for item with ID $id and pass $index
@@ -232,6 +285,13 @@ class EditReferenceController extends AbstractController {
 
         $reference = $referenceRepository->find($id);
         $reference->setFormIsExpanded(1);
+
+        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
+
+
+        $referenceCount = $itemReferenceRepository->referenceCount($reference->getReferenceId());
+        $reference->setReferenceCount($referenceCount);
+
         $edit_form_id = 'reference_edit_form';
 
         return $this->render('edit_reference/_input_content.html.twig', [

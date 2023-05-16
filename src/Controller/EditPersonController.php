@@ -338,15 +338,13 @@ class EditPersonController extends AbstractController {
 
     /**
      *
-     * @Route("/edit/person/delete", name="edit_person_delete")
+     * @Route("/edit/person/delete/{q_id}", name="edit_person_delete")
      */
-    public function deleteEntry(Request $request) {
+    public function deleteEntry(Request $request, $q_id) {
         $person_repository = $this->entityManager->getRepository(Person::class);
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
         $item_type_id = $form_data[0]['item']['itemTypeId'];
-
-        $delete_id = $request->request->get('delete-id');
 
         $id_list = array_column($form_data, 'id');
 
@@ -354,8 +352,8 @@ class EditPersonController extends AbstractController {
 
         // deletion takes priority: all other edit data are lost and sub-forms are closed
         foreach ($person_list as $person) {
-            $id = $person->getId();
-            if ($id == $delete_id) {
+            $id_loop = $person->getId();
+            if ($id_loop == $q_id) {
                 $person->getItem()->setIsDeleted(1);
                 $person->getItem()->setIsOnline(0);
             }
