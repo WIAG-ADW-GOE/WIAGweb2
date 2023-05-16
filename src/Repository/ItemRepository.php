@@ -317,7 +317,6 @@ class ItemRepository extends ServiceEntityRepository
             $list_size_max = 200;
             $descendant_list = $this->findCurrentChildById(
                 $someid,
-                $itemTypeId,
                 $with_id_in_source,
                 $list_size_max
             );
@@ -327,7 +326,6 @@ class ItemRepository extends ServiceEntityRepository
             $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
             $uext_id_list = $uextRepository->findIdBySomeNormUrl(
                 $someid,
-                $itemTypeId,
                 $list_size_max
             );
 
@@ -891,19 +889,19 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * @return items containing $id in ancestor list
      */
-    public function findCurrentChildById(string $q_id, $item_type_id, $with_id_in_source, $list_size_max) {
+    public function findCurrentChildById(string $q_id, $with_id_in_source, $list_size_max) {
 
         if ($with_id_in_source) {
             $qb = $this->createQueryBuilder('i')
                        ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
-                       ->andWhere("i.itemTypeId = :item_type_id")
-                       ->setParameter('item_type_id', $item_type_id)
+                       ->andWhere("i.itemTypeId in (:item_type_list)")
+                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
                        ->setParameter('q_id', '%'.$q_id.'%');
         } else {
             $qb = $this->createQueryBuilder('i')
                        ->andWhere("i.idPublic like :q_id")
-                       ->andWhere("i.itemTypeId = :item_type_id")
-                       ->setParameter('item_type_id', $item_type_id)
+                       ->andWhere("i.itemTypeId in (:item_type_list)")
+                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
                        ->setParameter('q_id', '%'.$q_id.'%');
         }
 

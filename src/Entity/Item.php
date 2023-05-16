@@ -32,6 +32,13 @@ class Item {
         'Priester Utrecht' => ['id' => 10],
     ];
 
+    const ITEM_TYPE_WIAG_PERSON_LIST = [
+        self::ITEM_TYPE_ID['Bischof']['id'],
+        self::ITEM_TYPE_ID['Domherr']['id'],
+        self::ITEM_TYPE_ID['Bischof GS']['id'],
+        self::ITEM_TYPE_ID['Domherr GS']['id'],
+    ];
+
     const ITEM_TYPE = [
         4 => [
             'name' => 'Bischof',

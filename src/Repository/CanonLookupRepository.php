@@ -220,13 +220,13 @@ class CanonLookupRepository extends ServiceEntityRepository
             // Join places independently from role (other query condition)
             $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'role_place.institutionId = ip.institutionId '.
-                          'AND ( '.
-                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
+                      'role_place.institutionId = ip.institutionId '.
+                      'AND ( '.
+                      'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
+                      'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
+                      'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
+                      'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
+                      'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
                 ->andWhere('ip.placeName LIKE :q_place')
                 ->setParameter('q_place', '%'.$place.'%');
         }
@@ -249,7 +249,6 @@ class CanonLookupRepository extends ServiceEntityRepository
                 $list_size_max = 200;
                 $descendant_list = $itemRepository->findCurrentChildById(
                     $someid,
-                    $item_type_id,
                     $with_id_in_source,
                     $list_size_max
                 );
@@ -259,22 +258,11 @@ class CanonLookupRepository extends ServiceEntityRepository
                 $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
                 $uext_id_list = $uextRepository->findIdBySomeNormUrl(
                     $someid,
-                    $item_type_id,
                     $list_size_max
                 );
 
                 $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
 
-                // $qb->join('p_id_year.item', 'item')
-                //    ->leftjoin('item.urlExternal', 'uxt')
-                //     // 2023-05-09 SQL does not work as expected here. The result set is too small.
-                //     // Condition is now in the 'where'-clause
-                //     // ->join('\App\Entity\Authority', 'auth_ext', 'WITH', "auth_ext.id = uxt.authorityId AND auth_ext.urlType = 'Normdaten'")
-                //    ->leftjoin('uxt.authority', 'auth_ext')
-                //    ->andWhere("item.id in (:descendant_id_list)")
-                //     // "OR (uxt.value LIKE :q_id AND auth_ext.urlType = 'Normdaten')")
-                //     // ->setParameter('q_id', '%'.$someid.'%')
-                //    ->setParameter('descendant_id_list', $descendant_id_list);
                 $qb->join('p_id_year.item', 'item')
                    ->andWhere("item.id in (:q_id_list)")
                    ->setParameter('q_id_list', $q_id_list);
