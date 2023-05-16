@@ -145,4 +145,17 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     }
 
+    public function referenceCount($authority_id) {
+        $qb = $this->createQueryBuilder('uext')
+                   ->select('COUNT(DISTINCT(uext.id)) as count')
+                   ->join('uext.item', 'item')
+                   ->andWhere('uext.authorityId = :authority_id')
+                   ->andWhere('item.isOnline = 1')
+                   ->setParameter('authority_id', $authority_id);
+        $query = $qb->getQuery();
+
+        return $query->getSingleResult()['count'];
+    }
+
+
 }

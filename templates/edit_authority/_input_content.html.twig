@@ -21,17 +21,28 @@
 		       aria-label="Art der URL"
 		       data-autocomplete-target="input">
 		<ul class="list-group autocomplete-target"
-			   data-autocomplete-target="results"
-			   style="max-width: 36rem;"></ul>
+		    data-autocomplete-target="results"
+		    style="max-width: 36rem;"></ul>
 	    </div>
-	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
-	    <input type="text" id="{{ base_id }}_display_order"
-		   name="{{ base_input_name}}[displayOrder]"
-		   class="form-control form-control-sm wiag-input"
-		   style="max-width: 5rem"
-		   value="{{ authority.DisplayOrder }}"
-		   spellcheck="false"
-		   aria-label="Reihenfolge">
+	    <div class="ms-1"
+		 data-controller="submit-confirm"
+		 data-submit-confirm-title-value="Eintrag löschen?"
+		 data-submit-confirm-button-id-value="delete_{{ authority.id }}"
+		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
+		 data-submit-confirm-confirm-button-text-value="Löschen"
+		 data-submit-confirm-cancel-button-text-value="Abbrechen">
+		{# use this hidden element to trigger the confirmed action #}
+		{# set delete flag and save the edit form list #}
+		<button type="submit"
+			      id="delete_{{ authority.id }}"
+			      data-action="submit-form#submit"
+			      form="{{ editFormId }}"
+			      formaction="{{ path('edit_authority_delete', {'q_id': authority.id ?? 0 }) }}"
+			      class="d-none"></button>
+		<button type="BUTTON"
+			      class="btn btn-sm btn-danger"
+			      data-action="submit-confirm#confirm">Eintrag löschen</button>
+	    </div>
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">Basis-URL</span>
@@ -77,5 +88,10 @@
 		      name="{{ base_input_name }}[comment]"
 		      class="form-control form-control-sm wiag-input">{{ authority.comment }}</textarea>
 	</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+	referenziert (online): {{ authority.referencecount }}
     </div>
 </div>

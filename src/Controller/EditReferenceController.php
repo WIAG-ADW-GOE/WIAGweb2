@@ -125,6 +125,7 @@ class EditReferenceController extends AbstractController {
         $form_data = $request->request->get($edit_form_id) ?? array();
 
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
 
         // validation
 
@@ -144,20 +145,24 @@ class EditReferenceController extends AbstractController {
 
         foreach($form_data as $data) {
             $id = $data['id'];
-            $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
+            $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $reference = $reference_list[$id];
-                $reference->setFormIsExpanded($formIsExpanded);
+                $reference->setFormIsExpanded($form_is_expanded);
             }
             if (isset($data['formIsEdited'])) {
                 if (!$id > 0) {
                     // new entry
+                    $form_is_expanded = 1;
                     $reference = new ReferenceVolume();
-                    $reference->setFormIsExpanded($formIsExpanded);
+                    $reference->setFormIsExpanded($form_is_expanded);
                     $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
-                if ($formIsExpanded) {
+                if ($form_is_expanded) {
+                    $referenceCount = $itemReferenceRepository->referenceCount($reference->getReferenceId());
+                    $reference->setReferenceCount($referenceCount);
+
                     $is_online = isset($data['isOnline']) ? 1 : 0;
                     $reference->setIsOnline($is_online);
                     UtilService::setByKeys(
@@ -282,12 +287,10 @@ class EditReferenceController extends AbstractController {
                           int $index,
                           EntityManagerInterface $entityManager): Response {
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
 
         $reference = $referenceRepository->find($id);
         $reference->setFormIsExpanded(1);
-
-        $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
-
 
         $referenceCount = $itemReferenceRepository->referenceCount($reference->getReferenceId());
         $reference->setReferenceCount($referenceCount);

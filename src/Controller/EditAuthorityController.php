@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Entity\Authority;
 use App\Entity\InputError;
+use App\Entity\UrlExternal;
 
 use App\Service\UtilService;
 
@@ -55,6 +56,7 @@ class EditAuthorityController extends AbstractController {
         $form_data = $request->request->get($edit_form_id);
 
         $authorityRepository = $entityManager->getRepository(Authority::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
         // validation
 
@@ -70,38 +72,48 @@ class EditAuthorityController extends AbstractController {
 
         foreach($form_data as $data) {
             $id = $data['id'];
-            $formIsExpanded = isset($data['formIsExpanded']) ? 1 : 0;
+            $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $authority = $authority_list[$id];
-                $authority->setFormIsExpanded($formIsExpanded);
+                $authority->setFormIsExpanded($form_is_expanded);
             }
             if (isset($data['formIsEdited'])) {
                 if (!$id > 0) {
                     // new entry
+                    $form_is_expanded = 1;
                     $authority = new Authority();
-                    $authority->setFormIsExpanded($formIsExpanded);
+                    $authority->setFormIsExpanded($form_is_expanded);
                     $authority_list[] = $authority;
                 }
-                UtilService::setByKeys(
-                    $authority,
-                    $data,
-                    Authority::EDIT_FIELD_LIST);
-                if (trim($authority->getUrlNameFormatter()) == "") {
-                    $msg = "Bitte das Feld 'Name' ausfüllen.";
-                    $authority->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
-                if (trim($authority->getUrlType()) == "") {
-                    $msg = "Bitte das Feld 'Typ' ausfüllen.";
-                    $authority->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
-                if (trim($authority->getUrlFormatter()) == "") {
-                    $msg = "Bitte das Feld 'Basis-URL' ausfüllen.";
-                    $authority->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
+                if ($form_is_expanded) {
+                    $referenceCount = $urlExternalRepository->referenceCount($authority->getId());
+                    $authority->setReferenceCount($referenceCount);
 
+                    UtilService::setByKeys(
+                        $authority,
+                        $data,
+                        Authority::EDIT_FIELD_LIST);
+                    if (trim($authority->getUrlNameFormatter()) == "") {
+                        $msg = "Bitte das Feld 'Name' ausfüllen.";
+                        $authority->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
+                    if (trim($authority->getUrlType()) == "") {
+                        $msg = "Bitte das Feld 'Typ' ausfüllen.";
+                        $authority->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
+                    if (trim($authority->getUrlFormatter()) == "") {
+                        $msg = "Bitte das Feld 'Basis-URL' ausfüllen.";
+                        $authority->getInputError()->add(new InputError('general', $msg, 'error'));
+                        $error_flag = true;
+                    }
+                } else { // only item.display_order is accessible
+                    UtilService::setByKeys(
+                        $authority,
+                        $data,
+                        ['displayOrder']);
+                }
             }
         }
 
@@ -142,6 +154,55 @@ class EditAuthorityController extends AbstractController {
     }
 
     /**
+     *
+     * @Route("/edit/authority/delete/{q_id}", name="edit_authority_delete")
+     */
+    public function deleteEntry(Request $request,
+                                int $q_id,
+                                EntityManagerInterface $entityManager) {
+        $edit_form_id = 'authority_edit_form';
+        $form_data = $request->request->get($edit_form_id);
+
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+
+        // validation
+        $error_flag = false;
+
+        $id_list = array_column($form_data, 'id');
+        $query_result = $authorityRepository->findList($id_list);
+        $authority_list = array();
+        foreach ($query_result as $authority) {
+            $authority_list[$authority->getId()] = $authority;
+        }
+
+
+        // deletion takes priority: all other edit data are lost and sub-forms are closed
+        foreach ($authority_list as $authority) {
+            $id_loop = $authority->getId();
+            if ($id_loop == $q_id) {
+                $entityManager->remove($authority);
+            }
+        }
+
+        $entityManager->flush();
+
+        $query_result = $authorityRepository->findList($id_list);
+        $authority_list = array();
+        foreach ($query_result as $authority) {
+            $authority_list[$authority->getId()] = $authority;
+        }
+
+        $template = 'edit_authority/_list.html.twig';
+
+        return $this->render($template, [
+            'editFormId' => $edit_form_id,
+            'authorityList' => $authority_list,
+        ]);
+
+    }
+
+
+    /**
      * get data for item with ID $id and pass $index
      * @Route("/edit/authority/item/{id}/{index}", name="edit_authority_item")
      */
@@ -149,8 +210,12 @@ class EditAuthorityController extends AbstractController {
                           int $index,
                           EntityManagerInterface $entityManager): Response {
         $authorityRepository = $entityManager->getRepository(Authority::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
         $authority = $authorityRepository->find($id);
+        $referenceCount = $urlExternalRepository->referenceCount($authority->getId());
+        $authority->setReferenceCount($referenceCount);
+
         $authority->setFormIsExpanded(1);
         $edit_form_id = 'authority_edit_form';
 

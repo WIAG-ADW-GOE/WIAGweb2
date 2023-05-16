@@ -100,6 +100,8 @@ class Authority {
      */
     private $inputError;
 
+    private $referenceCount = 0;
+
     public function __construct() {
         $this->inputError = new ArrayCollection();
     }
@@ -219,6 +221,16 @@ class Authority {
     public function getFormIsExpanded() {
         return $this->formIsExpanded;
     }
+
+    public function getReferenceCount(): int {
+        return $this->referenceCount;
+    }
+
+    public function setReferenceCount($count) {
+        $this->referenceCount = $count;
+        return $this;
+    }
+
 
     /**
      * do not provide setInputError; use add or remove to manipulate this property
