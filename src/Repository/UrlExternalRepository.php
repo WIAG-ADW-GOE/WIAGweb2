@@ -81,7 +81,7 @@ class UrlExternalRepository extends ServiceEntityRepository
                    ->select('DISTINCT u.itemId')
                    ->join('u.authority', 'auth')
                    ->join('u.item', 'i')
-                   ->andWhere("auth.urlType = 'Normdaten'")
+                   ->andWhere("auth.urlType in ('Normdaten', 'Interner Identifier')")
                    ->andWhere('u.value like :someid')
                    ->andWhere('i.itemTypeId in (:item_type_list)')
                    ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
