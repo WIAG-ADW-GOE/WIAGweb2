@@ -678,6 +678,16 @@ class UtilService {
         }
     }
 
+    static public function missingKeyList($data, $key_list) {
+        $missing_key_list = array();
+        foreach($key_list as $key) {
+            if (!array_key_exists($key, $data)) {
+                $missing_key_list[] = $key;
+            }
+        }
+        return $missing_key_list;
+    }
+
     /**
      * find max value for $attribute in a list of objects
      */

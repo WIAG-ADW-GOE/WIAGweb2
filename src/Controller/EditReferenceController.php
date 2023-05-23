@@ -25,6 +25,24 @@ use Doctrine\ORM\EntityManagerInterface;
 class EditReferenceController extends AbstractController {
 
     /**
+     * respond to asynchronous JavaScript request
+     *
+     * @Route("/reference-suggest/entry", name="reference_suggest_entry")
+     */
+    public function autocomplete(Request $request,
+                                 EntityManagerInterface $entityManager): Response {
+        $query_param = $request->query->get('q');
+
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
+        $suggestions = $referenceRepository->suggestEntry($query_param);
+
+        return $this->render('person/_autocomplete.html.twig', [
+            'suggestions' => array_column($suggestions, 'suggestion'),
+        ]);
+    }
+
+
+    /**
      * @Route("/edit/reference/query", name="edit_reference_query")
      */
     public function query(Request $request,
@@ -159,7 +177,7 @@ class EditReferenceController extends AbstractController {
                     $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
-                if ($form_is_expanded) {
+                if (UtilService::missingKeyList($data, ReferenceVolume::EDIT_FIELD_LIST) == array()) {
                     $referenceCount = $itemReferenceRepository->referenceCount($reference->getReferenceId());
                     $reference->setReferenceCount($referenceCount);
 

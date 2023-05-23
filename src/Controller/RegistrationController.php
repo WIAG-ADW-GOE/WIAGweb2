@@ -28,7 +28,6 @@ class RegistrationController extends AbstractController
                              FormLoginAuthenticator $formLoginAuthenticator): Response {
         $user = new UserWiag();
         $has_admin_access = $this->isGranted("ROLE_ADMIN");
-        // dump($has_admin_access);
         $form = $this->createForm(RegistrationFormType::class, $user, [
             'has_admin_access' => $has_admin_access
         ]);

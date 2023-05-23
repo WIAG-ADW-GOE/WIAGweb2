@@ -178,5 +178,20 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
             }
     }
 
+    public function suggestEntry($query_param) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v.gsCitation as suggestion')
+                   ->andWhere('v.titleShort LIKE :q_search '.
+                              'OR v.authorEditor LIKE :q_search '.
+                              'OR v.fullCitation LIKE :q_search '.
+                              'OR v.gsCitation LIKE :q_search '.
+                              'OR v.note LIKE :q_search')
+                   ->setParameter('q_search', '%'.$query_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
+    }
+
 
 }

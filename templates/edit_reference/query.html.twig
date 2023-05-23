@@ -25,14 +25,21 @@
 				}
 			    }) }}
 			</div>
-			<div class="w-30 me-2">
+			<div class="w-30 me-2"
+			     {{ stimulus_controller('autocomplete', {
+				 url: path('reference_suggest_entry')
+			     }) }}>
 			    {{ form_label(form.searchText) }}
 			    {{ form_errors(form.searchText) }}
 			    {{ form_widget(form.searchText, {
 				'attr': {
+				    'data-autocomplete-target': "input",
 				    'class': 'wiag-input'
 				}
 			    }) }}
+			    <ul class="list-group autocomplete-target"
+				data-autocomplete-target="results"
+				style="max-width: 22rem;"></ul>
 			</div>
 			<div class="w-15 me-2">
 			    {{ form_label(form.sortBy) }}

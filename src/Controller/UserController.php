@@ -29,7 +29,6 @@ class UserController extends AbstractController
         $user = $userRepository->findOneBy(['email' => $email]);
 
         $has_admin_access = $this->isGranted("ROLE_ADMIN");
-        // dump($has_admin_access);
         $form = $this->createForm(UserFormType::class, $user, [
             'has_admin_access' => $has_admin_access
         ]);

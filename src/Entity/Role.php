@@ -33,6 +33,41 @@ class Role
      */
     private $note;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $gsRegId;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $genericTerm;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $plural;
+
+    /**
+     * @ORM\Column(type="string", length=1023, nullable=true)
+     */
+    private $definition;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $roleGroup;
+
+    /**
+     * @ORM\Column(type="string", length=31, nullable=true)
+     */
+    private $gender;
+
+    /**
+     * @ORM\Column(type="string", length=31)
+     */
+    private $lang;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -70,6 +105,90 @@ class Role
     public function setNote(?string $note): self
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getGsRegId(): ?int
+    {
+        return $this->gsRegId;
+    }
+
+    public function setGsRegId(?int $gsRegId): self
+    {
+        $this->gsRegId = $gsRegId;
+
+        return $this;
+    }
+
+    public function getGenericTerm(): ?string
+    {
+        return $this->genericTerm;
+    }
+
+    public function setGenericTerm(?string $genericTerm): self
+    {
+        $this->genericTerm = $genericTerm;
+
+        return $this;
+    }
+
+    public function getPlural(): ?string
+    {
+        return $this->plural;
+    }
+
+    public function setPlural(?string $plural): self
+    {
+        $this->plural = $plural;
+
+        return $this;
+    }
+
+    public function getDefinition(): ?string
+    {
+        return $this->definition;
+    }
+
+    public function setDefinition(?string $definition): self
+    {
+        $this->definition = $definition;
+
+        return $this;
+    }
+
+    public function getRoleGroup(): ?string
+    {
+        return $this->roleGroup;
+    }
+
+    public function setRoleGroup(?string $roleGroup): self
+    {
+        $this->roleGroup = $roleGroup;
+
+        return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getLang(): ?string
+    {
+        return $this->lang;
+    }
+
+    public function setLang(string $lang): self
+    {
+        $this->lang = $lang;
 
         return $this;
     }
