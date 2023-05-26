@@ -249,24 +249,4 @@ class EditAuthorityController extends AbstractController {
 
     }
 
-    /**
-     * respond to asynchronous JavaScript request
-     *
-     * @Route("/authority-suggest/{field}", name="authority_suggest")
-     */
-    public function autocomplete(Request $request,
-                                 EntityManagerInterface $entityManager,
-                                 String $field) {
-        $repository = $entityManager->getRepository(Authority::class);
-        $name = $request->query->get('q');
-        $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
-        $suggestions = $repository->$fnName($name, self::HINT_SIZE);
-
-        return $this->render('person/_autocomplete.html.twig', [
-            'suggestions' => array_column($suggestions, 'suggestion'),
-        ]);
-    }
-
-
-
 }

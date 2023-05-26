@@ -15,7 +15,9 @@ use App\Entity\CanonLookup;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-
+/**
+ * provide autocomplete functions for Person forms
+ */
 class AutocompleteService extends ServiceEntityRepository {
 
     public function __construct(ManagerRegistry $registry, UtilService $utilService)
@@ -42,8 +44,6 @@ class AutocompleteService extends ServiceEntityRepository {
         $suggestions = $query->getResult();
 
         return $suggestions;
-
-
     }
 
     /**

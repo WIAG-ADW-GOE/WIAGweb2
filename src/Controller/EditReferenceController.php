@@ -7,7 +7,6 @@ use App\Entity\ItemType;
 use App\Entity\ReferenceVolume;
 use App\Entity\InputError;
 use App\Entity\ItemReference;
-use App\Form\Model\ReferenceQueryFormModel;
 
 use App\Service\UtilService;
 
@@ -117,9 +116,6 @@ class EditReferenceController extends AbstractController {
             $item_type_cand = explode(' ,', $model['itemType']);
             $item_type_id = $item_type_cand[0];
         }
-        $emptyReference = new ReferenceVolume();
-        $emptyReference->setItemTypeId($item_type_id);
-        $emptyReference->setIsOnline(0);
 
         $template = 'edit_reference/query.html.twig';
         $edit_form_id = 'reference_edit_form';
@@ -214,7 +210,6 @@ class EditReferenceController extends AbstractController {
         }
 
         // save
-        $max_reference_id = UtilService::maxInList($reference_list, 'referenceId', 0);
 
         if (!$error_flag) {
             foreach ($reference_list as $reference) {
@@ -222,7 +217,6 @@ class EditReferenceController extends AbstractController {
                 if ($id < 1) {
                     $next_id = $referenceRepository->nextId();
                     $reference->setReferenceId($next_id);
-                    $max_reference_id += 1;
                     $entityManager->persist($reference);
                 }
             }

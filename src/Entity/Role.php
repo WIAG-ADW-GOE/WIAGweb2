@@ -3,7 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\RoleRepository;
+
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 
 /**
@@ -11,6 +13,26 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Role
 {
+
+    const EDIT_FIELD_LIST = [
+        'name',
+        'plural',
+        'gender',
+        'lang',
+        'genericTerm',
+        'roleGroup',
+        'gsRegId',
+        'note',
+        'definition',
+        'comment'
+    ];
+
+    /**
+     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $item;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -24,7 +46,7 @@ class Role
     private $comment;
 
     /**
-     * @ORM\Column(type="string", length=63)
+     * @ORM\Column(type="string", length=63, nullable=true)
      */
     private $name;
 
@@ -66,7 +88,33 @@ class Role
     /**
      * @ORM\Column(type="string", length=31)
      */
-    private $lang;
+    private $lang = "de";
+
+    /**
+     * no DB-mapping
+     */
+    private $referenceCount = 0;
+
+    /**
+     * collection of InputError
+     */
+    private $inputError;
+
+    public function __construct($user_id) {
+        $item_type_id = Item::ITEM_TYPE_ID['Amt']['id'];
+        $this->item = new Item($item_type_id, $user_id);
+        $this->inputError = new ArrayCollection();
+    }
+
+    public function setItem($item) {
+        $this->item = $item;
+        $this->id = $item->getId();
+        return $this;
+    }
+
+    public function getItem() {
+        return $this->item;
+    }
 
     public function getId(): ?int
     {
@@ -90,7 +138,7 @@ class Role
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
 
@@ -191,6 +239,32 @@ class Role
         $this->lang = $lang;
 
         return $this;
+    }
+
+    public function setReferenceCount($value): self {
+        $this->referenceCount = $value;
+        return $this;
+    }
+
+    public function getReferenceCount() {
+        return $this->referenceCount;
+    }
+
+    /**
+     * provide direct access
+     */
+    public function getIdInSource() {
+        return $this->getItem()->getIdInSource();
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection();
+        }
+        return $this->inputError;
     }
 
 }

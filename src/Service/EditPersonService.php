@@ -53,7 +53,7 @@ class EditPersonService {
      *
      * @return list of persons containing the data in $form_data
      */
-    public function mapFormData($form_data) {
+    public function mapFormData($form_data, $user_id) {
 
         $person_repository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
@@ -72,12 +72,7 @@ class EditPersonService {
                 $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
                 $person->getItem()->setFormIsExpanded($expanded_param);
             } else {
-                $item = new Item();
-                $item->setId($id);
-                $item->setItemTypeId($item_type_id);
-                $person = new Person();
-                $person->setItem($item); // sets ID
-
+                $person = new Person($item_type_id, $user_id);
                 $this->mapAndValidatePerson($person, $data);
 
                 // set form collapse state
@@ -108,9 +103,9 @@ class EditPersonService {
         $source_ref = $person->getItem()->getReference();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
         // url external
-        $target_ref = $target_item->getUrlExternal();
-        $source_ref = $person->getItem()->getUrlExternal();
-        $this->setItemAttributeList($target_item, $target_ref, $source_ref);
+        $target_uext = $target_item->getUrlExternal();
+        $source_uext = $person->getItem()->getUrlExternal();
+        $this->setItemAttributeList($target_item, $target_uext, $source_uext);
 
         $this->copyCore($target, $person);
 
@@ -139,7 +134,7 @@ class EditPersonService {
     }
 
     /**
-     * copy collection $source_list to $target_list
+     * clear $target_list; copy collection $source_list to $target_list;
      */
     private function setItemAttributeList($target, $target_list, $source_list) {
 
@@ -165,7 +160,7 @@ class EditPersonService {
     /**
      * copy (validated) data from $source to $target
      */
-    private function copyItem($target, $source, $current_user_id) {
+    private function copyItem($target, $source, $user_id) {
         $field_list = [
             'isOnline',
             'isDeleted',
@@ -181,7 +176,7 @@ class EditPersonService {
             $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
         }
 
-        $this->updateChangedMetaData($target->getItem(), $current_user_id);
+        $target->getItem()->updateChangedMetaData($user_id);
     }
 
     private function copyCore($target, $source) {
@@ -336,32 +331,11 @@ class EditPersonService {
     }
 
     /**
-     * create Person object
-     */
-    public function makePerson($item_type_id, $user_wiag_id) {
-        $item = Item::newItem($item_type_id, $user_wiag_id);
-        $person = Person::newPerson($item);
-        $edit_status_default = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
-        $person->getItem()->setEditStatus($edit_status_default);
-
-        return $person;
-    }
-
-    /**
      * create person object and persist
      */
-    public function initMetaData($person, $item_type_id, $user_wiag_id) {
+    public function initMetaData($person, $item_type_id) {
 
         $item = $person->getItem();
-        $item->setItemTypeId($item_type_id);
-        $person->setItemTypeId($item_type_id);
-
-        $now_date = new \DateTimeImmutable('now');
-        $item->setCreatedBy($user_wiag_id);
-        $item->setDateCreated($now_date);
-
-        // redundant but neccessary to meet DB constraints
-        $this->updateChangedMetaData($item, $user_wiag_id);
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
@@ -405,19 +379,6 @@ class EditPersonService {
     }
 
     /**
-     * updateChangeMetaData($item, $user_wiag_id)
-     *
-     * update meta data for $item
-     */
-    public function updateChangedMetaData($item, $user_wiag_id) {
-
-        $now_date = new \DateTimeImmutable('now');
-        $item->setChangedBy($user_wiag_id);
-        $item->setDateChanged($now_date);
-        return($item);
-    }
-
-    /**
      * validateSubstring($person, $key_list, $substring)
      *
      * Set error if fields contain $substring
@@ -434,13 +395,15 @@ class EditPersonService {
     }
 
     /**
-     * map content of $data to $obj_list
+     * map content of $data to $person
      */
     public function mapAndValidatePerson($person, $data) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
 
         // item
         $item = $person->getItem();
+        $item->setId($data['id']);
+        $person->setId($data['id']);
 
         $edit_status = trim($data['item']['editStatus']);
         if ($edit_status == "") {

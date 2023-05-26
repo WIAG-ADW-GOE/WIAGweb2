@@ -175,5 +175,23 @@ class PersonRoleRepository extends ServiceEntityRepository
         return null;
     }
 
+    /**
+     * @return number of items that refer to the role with $role_id
+     */
+    public function referenceCount($role_id) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('COUNT(DISTINCT i.id) AS n')
+                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = r.personId')
+                   ->andWhere('i.isOnline = 1')
+                   ->andWhere('r.roleId = :role_id')
+                   ->setParameter('role_id', $role_id);
+        $query = $qb->getQuery();
+
+        $result = $query->getOneOrNullResult();
+
+        return $result ? $result['n'] : 0;
+    }
+
+
 
 }

@@ -1,0 +1,20 @@
+<div data-controller="insert"
+     data-insert-url-value="{{ path('edit_role_new_urlexternal', {
+			    'itemIndex': itemIndex
+			    }) }}"
+     data-insert-hide-trigger-value="yes"
+     data-insert-point-value="last">
+    {% for url_ext in role.item.urlexternal %}
+	{{ include('edit_role/_input_url_external.html.twig', {
+	    'urlext': url_ext,
+	    'itemIndex': itemIndex,
+	    'currentIndex': loop.index0,
+	    'isLast': loop.last,
+	}) }}
+    {% endfor %}
+</div>
+{% for error_obj in role.inputError|filter(v => v.section == 'external id') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

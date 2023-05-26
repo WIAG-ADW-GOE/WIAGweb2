@@ -193,4 +193,24 @@ class AuthorityRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestUrlNameFormatter($q_param, $hint_size) {
+        $repository = $this->getEntityManager()->getRepository(Authority::class);
+        $qb = $repository->createQueryBuilder('a')
+                         ->select("DISTINCT a.urlNameFormatter AS suggestion")
+                         ->andWhere('a.urlNameFormatter LIKE :q_param')
+                         ->addOrderBy('a.urlNameFormatter')
+                         ->setParameter('q_param', '%'.$q_param.'%');
+
+        $qb->setMaxResults($hint_size);
+
+        $query = $qb->getQuery();
+
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 }

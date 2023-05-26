@@ -202,12 +202,11 @@ class EditPersonController extends AbstractController {
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
         $item_type_id = $form_data[0]['item']['itemTypeId'];
+        $current_user_id = $this->getUser()->getId();
 
         /* map/validate form */
         // fill person_list
-        $person_list = $this->editService->mapFormdata(
-            $form_data,
-        );
+        $person_list = $this->editService->mapFormdata($form_data, $current_user_id);
 
         $error_flag = false;
         foreach($person_list as $person) {
@@ -221,7 +220,6 @@ class EditPersonController extends AbstractController {
         /* save data */
         $entity_manager = $this->entityManager;
         if (!$error_flag) {
-            $current_user_id = $this->getUser()->getId();
             $personRepository = $entity_manager->getRepository(Person::class);
             $nameLookupRepository = $entity_manager->getRepository(NameLookup::class);
             $canonLookupRepository = $entity_manager->getRepository(CanonLookup::class);
@@ -230,13 +228,16 @@ class EditPersonController extends AbstractController {
                     $person_id = $person->getId();
                     if ($person_id == 0) { // new entry
                         // start out with a new object to avoid cascade errors
-                        $person_new = $this->editService->makePerson($item_type_id, $current_user_id);
-                        $this->editService->initMetaData($person_new, $item_type_id, $current_user_id);
+                        $person_new = new Person($item_type_id, $current_user_id);
+                        $this->editService->initMetaData($person_new, $item_type_id);
                         $this->entityManager->persist($person_new);
                         $this->entityManager->flush();
                         $person_id = $person_new->getItem()->getId();
                     }
                     // read complete tree to perform deletions if necessary
+                    // 2023-05-25 here, we get a second object for the same
+                    // person from the database. Which one takes precedence when
+                    // data are written to the database
                     $query_result = $personRepository->findList([$person_id]);
                     $target = $query_result[0];
                     // transfer data from $person to $target
@@ -275,7 +276,7 @@ class EditPersonController extends AbstractController {
 
             // add an empty form in case the user wants to add more items
             if ($form_display_type == "new_entry") {
-                $person = $this->editService->makePerson($item_type_id, $current_user_id);
+                $person = new Person($item_type_id, $current_user_id);
                 // add empty elements for blank form sections
                 $authorityRepository = $this->entityManager->getRepository(Authority::class);
                 $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
@@ -381,7 +382,8 @@ class EditPersonController extends AbstractController {
      */
     public function newPerson(Request $request, int $itemTypeId) {
 
-        $person = $this->editService->makePerson($itemTypeId, $this->getUser()->getId());
+        $current_user_id = intVal($this->getUser()->getId());
+        $person = new Person($itemTypeId, $current_user_id);
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
@@ -408,12 +410,18 @@ class EditPersonController extends AbstractController {
                                  int $id,
                                  int $index) {
         $person_repository = $this->entityManager->getRepository(Person::class);
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+
         $query_result = $person_repository->findList([$id]);
         $person = $query_result[0];
-        $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
+
+        $item = $person->getItem();
+        $user = $userWiagRepository->find($item->getChangedBy());
+        $item->setChangedByUser($user);
 
         return $this->renderEditElements("edit_person/_item_content.html.twig", $itemTypeId, [
             'person' => $person,
@@ -550,7 +558,6 @@ class EditPersonController extends AbstractController {
             'personIndex' => $personIndex,
             'current_idx' => $request->query->get('current_idx'),
             'urlext' => $urlExternal,
-            'itemTypeId' => $itemTypeId,
         ]);
 
     }
@@ -664,7 +671,7 @@ class EditPersonController extends AbstractController {
 
         // create new person
         $current_user = $this->getUser()->getId();
-        $person = $this->editService->makePerson($itemTypeId, $current_user);
+        $person = new Person($itemTypeId, $current_user);
 
         // get parent data
         $parent_list = $itemRepository->findById($first);

@@ -31,7 +31,7 @@ class Person {
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $id = 0;
 
     /**
      * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
@@ -180,7 +180,7 @@ class Person {
     private $seeAlso;
 
 
-    public function __construct() {
+    public function __construct($item_type_id, $user_wiag_id) {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->nameLookup = new ArrayCollection();
@@ -188,14 +188,24 @@ class Person {
         $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
+
+        $this->item = new Item($item_type_id, $user_wiag_id);
+        $this->itemTypeId = $item_type_id;
     }
 
-    static public function newPerson(Item $item) {
+    /**
+     * 2023-05-24 obsolete
+     */
+    static public function newPerson_legacy(Item $item) {
         $person = new Person();
         $person->setItem($item);
         $person->setItemTypeId($item->getItemTypeId());
-        $person->setIsNew = true;
         return $person;
+    }
+
+    public function setId($id): self {
+        $this->id = $id;
+        return $this;
     }
 
     public function getId(): ?int
@@ -473,15 +483,6 @@ class Person {
             return implode(', ', $this->familynameVariants->toArray());
         }
         return null;
-    }
-
-    private function setIsNew($flag) {
-        $this->isNew = $flag;
-        return $this;
-    }
-
-    public function getIsNew() {
-        return $this->isNew;
     }
 
     static private function concatData($a, $b) {

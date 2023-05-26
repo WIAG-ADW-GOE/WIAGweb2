@@ -940,5 +940,28 @@ class ItemRepository extends ServiceEntityRepository
         return $child;
     }
 
+    /**
+     * @return maximum value for id_in_source, if it is numerical
+     */
+    public function maxIdInSource($item_type_id) {
+        // Doctrine does not know the function CAST nor CONVERT
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.idInSource')
+                   ->andWhere('i.itemTypeId = :item_type_id')
+                   ->setParameter('item_type_id', $item_type_id);
+
+        $query = $qb->getQuery();
+        $q_result = $query->getResult();
+
+        $max = 0;
+        foreach($q_result as $val) {
+            $val = intval($val['idInSource']);
+            if($max < $val) {
+                $max = $val;
+            }
+        }
+        return $max;
+    }
+
 
 }

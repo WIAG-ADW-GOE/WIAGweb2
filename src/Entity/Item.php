@@ -28,6 +28,7 @@ class Item {
             'id' => 5,
         ],
         'Domherr GS' => ['id' => 6],
+        'Amt'        => ['id' => 8],
         'Bischof GS' => ['id' => 9],
         'Priester Utrecht' => ['id' => 10],
     ];
@@ -59,6 +60,10 @@ class Item {
             'id_public_mask' => 'WIAG-Pers-CANON-#-001',
             'numeric_field_width' => 5,
             'online_status' => 'online',
+        ],
+        8 => [
+            'name' => 'Amt',
+            'edit_status_default' => 'angelegt',
         ],
         9 => [
             'name' => 'Bischof GS',
@@ -92,7 +97,7 @@ class Item {
     private $itemProperty;
 
     /**
-     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item")
+     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"})
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $urlExternal;
@@ -209,12 +214,23 @@ class Item {
     private $formIsExpanded = false;
 
     /**
+     * no DB-mapping, hold user obj
+     */
+    private $changedByUser = null;
+
+    /**
+     * no DB-mapping
+     */
+    private $isNew = true;
+
+    /**
      * no DB-mapping
      * hold ancestor
      */
     private $ancestor = null;
 
-    public function __construct() {
+    public function __construct($item_type_id, $user_wiag_id) {
+        $now = new \DateTimeImmutable('now');
         $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
@@ -223,10 +239,22 @@ class Item {
         $this->idInSource = "";
         $this->mergeStatus = 'original';
         $this->mergeParent = array();
+        $this->isNew = true;
         $this->ancestor = array();
+
+        $this->itemTypeId = $item_type_id;
+        $this->createdBy = $user_wiag_id;
+        $this->dateCreated = $now;
+        $this->changedBy = $user_wiag_id;
+        $this->dateChanged = $now;
+
+        $this->editStatus = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
     }
 
-    static public function newItem($item_type_id, $user_wiag_id) {
+    /**
+     * 2023-05-24 obsolete
+     */
+    static public function newItem_legacy($item_type_id, $user_wiag_id) {
         $now = new \DateTimeImmutable('now');
         $item = new Item();
         $item->setItemTypeId($item_type_id);
@@ -237,8 +265,7 @@ class Item {
         return $item;
     }
 
-    public function setId($id): self
-    {
+    public function setId($id): self {
         $this->id = $id;
         return $this;
     }
@@ -605,6 +632,16 @@ class Item {
         return $this->mergeParent;
     }
 
+    public function setIsNew($value): self {
+        $this->isNew = $value;
+        return $this;
+    }
+
+    public function getIsNew() {
+        return $this->isNew;
+    }
+
+
     public function setAncestor($value): self {
         $this->ancestor = $value;
         return $this;
@@ -612,6 +649,15 @@ class Item {
 
     public function getAncestor() {
         return $this->ancestor;
+    }
+
+    public function setChangedByUser($value): self {
+        $this->changedByUser = $value;
+        return $this;
+    }
+
+    public function getChangedByUser() {
+        return $this->changedByUser;
     }
 
     public function getMergeParentTxt() {
@@ -771,6 +817,18 @@ class Item {
     {
         $this->commentDuplicate = $commentDuplicate;
 
+        return $this;
+    }
+
+    /**
+     * updateChangedMetaData($user_id)
+     *
+     * update meta data for $item
+     */
+    public function updateChangedMetaData($user_id) {
+        $now_date = new \DateTimeImmutable('now');
+        $this->changedBy = $user_id;
+        $this->dateChanged = $now_date;
         return $this;
     }
 
