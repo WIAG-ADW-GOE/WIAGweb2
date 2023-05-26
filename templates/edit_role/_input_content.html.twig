@@ -19,13 +19,22 @@
 		   spellcheck="false"
 		   aria-label="Plural">
 	    <span class="input-group-text" style="min-width: 7rem">Geschlecht</span>
-	    <input type="text" id="{{ base_id }}_gender"
-		   name="{{ base_input_name}}[gender]"
-		   class="form-control wiag-input"
-		   style="min-width: 5rem; max-width: 8rem"
-		   value="{{ role.gender }}"
-		   spellcheck="false"
-		   aria-label="Geschlecht">
+	    <div
+		{{ stimulus_controller('autocomplete', {
+		    url: path('role_suggest', { field: 'gender' }),
+		}) }}>
+		<input type="text" id="{{ base_id }}_gender"
+		       name="{{ base_input_name}}[gender]"
+		       class="form-control wiag-input"
+		       style="min-width: 5rem; max-width: 8rem"
+		       value="{{ role.gender }}"
+		       spellcheck="false"
+		       aria-label="Geschlecht"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
+	    </div>
 	    <span class="input-group-text" style="min-width: 5rem">Sprache</span>
 	    <input type="text" id="{{ base_id }}_lang"
 		   name="{{ base_input_name}}[lang]"
@@ -64,13 +73,22 @@
 		   spellcheck="false"
 		   aria-label="Oberbegriff">
 	    <span class="input-group-text" style="min-width: 5rem">Gruppe</span>
-	    <input type="text" id="{{ base_id }}_roleGroup"
-		   name="{{ base_input_name}}[roleGroup]"
-		   class="form-control wiag-input"
-		   style="min-width: 20rem; max-width: 30rem;"
-		   value="{{ role.roleGroup }}"
-		   spellcheck="false"
-		   aria-label="Gruppe">
+	    <div class="w-20"
+		{{ stimulus_controller('autocomplete', {
+		    url: path('role_suggest', { field: 'roleGroup' }),
+		}) }}>
+		<input type="text" id="{{ base_id }}_roleGroup"
+		       name="{{ base_input_name}}[roleGroup]"
+		       class="form-control wiag-input"
+		       style="min-width: 20rem; max-width: 30rem;"
+		       value="{{ role.roleGroup }}"
+		       spellcheck="false"
+		       aria-label="Gruppe"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
+	    </div>
 	    <span class="input-group-text" style="min-width: 6rem">GS Reg ID</span>
 	    <input type="text" id="{{ base_id }}_gsRegId"
 		   name="{{ base_input_name}}[gsRegId]"

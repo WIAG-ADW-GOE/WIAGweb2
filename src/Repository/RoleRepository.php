@@ -132,5 +132,30 @@ class RoleRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return list of role names for autocompletion
+     */
+    public function suggestGender($q_param) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.gender AS suggestion')
+                   ->andWhere('r.gender like :q_param')
+                   ->setParameter('q_param', '%'.$q_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * @return list of role names for autocompletion
+     */
+    public function suggestRoleGroup($q_param) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.roleGroup AS suggestion')
+                   ->andWhere('r.roleGroup like :q_param')
+                   ->setParameter('q_param', '%'.$q_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
 }

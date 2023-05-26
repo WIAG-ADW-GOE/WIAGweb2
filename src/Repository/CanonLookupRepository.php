@@ -86,7 +86,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c')
                    ->join('App\Entity\CanonLookup', 'c_prio', 'WITH', 'c_prio.personIdName = c.personIdName AND c_prio.prioRole = 1')
                    ->join('App\Entity\PersonRole', 'r', 'WITH', 'r.personId = c.personIdRole')
-                   ->join('App\Entity\Person', 'p_prio', 'WITH', 'p_prio.id = c_prio.personIdRole')
+                   ->join('App\Entity\Person', 'p_role', 'WITH', 'p_role.id = c_prio.personIdRole')
                    ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = c_prio.personIdName');
 
         // table canon_lookup only contains entries with status 'online'
@@ -104,7 +104,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
             // Join domstift (sorting) independently from role (query condition).
-            $qb->leftjoin('App\Entity\PersonRole', 'r_sort', 'WITH', 'r_sort.personId = p_prio.id')
+            $qb->leftjoin('App\Entity\PersonRole', 'r_sort', 'WITH', 'r_sort.personId = p_role.id')
                ->leftjoin('App\Entity\Institution', 'domstift_sort', 'WITH', 'domstift_sort.id = r_sort.institutionId')
                ->select('c.personIdName, p_name.givenname, (CASE WHEN p_name.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p_name.familyname, min(domstift_sort.nameShort) as sort_domstift, min(r_sort.dateSortKey) as dateSortKey');
         } elseif ($place) {
@@ -234,7 +234,8 @@ class CanonLookupRepository extends ServiceEntityRepository
         if ($name) {
             // check all persons mapped to this canon
             $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
-               ->andWhere('name_lookup.gnPrefixFn LIKE :q_name OR name_lookup.gnFn LIKE :q_name')
+               ->andWhere('name_lookup.gnPrefixFn LIKE :q_name '.
+                          'OR name_lookup.gnFn LIKE :q_name')
                ->setParameter('q_name', '%'.$name.'%');
         }
 
