@@ -237,7 +237,7 @@ class EditPersonController extends AbstractController {
                     // read complete tree to perform deletions if necessary
                     // 2023-05-25 here, we get a second object for the same
                     // person from the database. Which one takes precedence when
-                    // data are written to the database
+                    // data are written to the database?
                     $query_result = $personRepository->findList([$person_id]);
                     $target = $query_result[0];
                     // transfer data from $person to $target

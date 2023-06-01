@@ -137,6 +137,7 @@ class EditRoleController extends AbstractController {
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
         $current_user_id = $this->getUser()->getId();
+        $current_user = $userWiagRepository->find($current_user_id);
 
         $edit_form_id = 'role_edit_form';
         $form_data = $request->request->get($edit_form_id) ?? array();
@@ -174,7 +175,6 @@ class EditRoleController extends AbstractController {
                 $role->getItem()->setFormIsEdited(1);
 
                 // content in item can not be edited in the form
-                $role->getItem()->updateChangedMetaData($current_user_id);
                 UtilService::setByKeys(
                     $role,
                     $data,
@@ -214,11 +214,13 @@ class EditRoleController extends AbstractController {
                         $next_id += 1;
                         $item->setIsNew(false);
                         $item->setFormIsEdited(false);
+                        $item->updateChangedMetaData($current_user);
                     } else {
                         // get object for saving
                         $q_result = $roleRepository->findList([$key]);
                         $target = $q_result[0];
                         $this->copy($target, $role, $entityManager);
+                        $target->getItem()->updateChangedMetaData($current_user);
                         $role_list[$key] = $target;
                     }
                 }

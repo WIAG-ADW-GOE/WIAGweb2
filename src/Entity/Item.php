@@ -821,13 +821,14 @@ class Item {
     }
 
     /**
-     * updateChangedMetaData($user_id)
+     * updateChangedMetaData($user)
      *
      * update meta data for $item
      */
-    public function updateChangedMetaData($user_id) {
+    public function updateChangedMetaData($user) {
         $now_date = new \DateTimeImmutable('now');
-        $this->changedBy = $user_id;
+        $this->changedBy = $user->getId();
+        $this->changedByUser = $user;
         $this->dateChanged = $now_date;
         return $this;
     }

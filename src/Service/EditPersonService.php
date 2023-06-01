@@ -20,6 +20,7 @@ use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
 use App\Entity\CanonLookup;
 use App\Entity\InputError;
+use App\Entity\UserWiag;
 
 use App\Service\UtilService;
 
@@ -176,7 +177,10 @@ class EditPersonService {
             $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
         }
 
-        $target->getItem()->updateChangedMetaData($user_id);
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+        $user = $userWiagRepository->find($user_id);
+
+        $target->getItem()->updateChangedMetaData($user);
     }
 
     private function copyCore($target, $source) {
