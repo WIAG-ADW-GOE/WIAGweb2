@@ -84,6 +84,7 @@ class NameLookupRepository extends ServiceEntityRepository
         $familyname = $person->getFamilyname();
         $givenname_variants = $person->getGivennameVariants();
         $familyname_variants = $person->getFamilynameVariants();
+        $note_name = $person->getNoteName();
 
         $lookup_list = array();
         // rare case of missing givenname
@@ -104,31 +105,31 @@ class NameLookupRepository extends ServiceEntityRepository
         }
 
         // make entry with $givenname
-        $lookup_list[] = $this->makeVariant($givenname, $prefix, $familyname);
+        $lookup_list[] = $this->makeVariant($givenname, $prefix, $familyname, $note_name);
         // - make an entry with the first of several givennames
         $gn_list = explode(' ', $givenname);
         if (count($gn_list) > 1) {
-            $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $familyname);
+            $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $familyname, $note_name);
         }
         foreach ($familyname_variants as $fn_loop) {
-            $lookup_list[] = $this->makeVariant($givenname, $prefix, $fn_loop);
+            $lookup_list[] = $this->makeVariant($givenname, $prefix, $fn_loop, $note_name);
             if (count($gn_list) > 1) {
-                $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $fn_loop);
+                $lookup_list[] = $this->makeVariant($gn_list[0], $prefix, $fn_loop, $note_name);
             }
         }
 
         // make entries with variants of $givenname
         foreach ($givenname_variants as $gn_loop) {
-            $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $familyname);
+            $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $familyname, $note_name);
             $gnv_list = explode(' ', $gn_loop);
             if (count($gnv_list) > 1) {
-                $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $familyname);
+                $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $familyname, $note_name);
             }
             foreach ($familyname_variants as $fn_loop) {
-                $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $fn_loop);
+                $lookup_list[] = $this->makeVariant($gn_loop, $prefix, $fn_loop, $note_name);
                 // - make an entry with the first of several givennames
                 if (count($gnv_list) > 1) {
-                    $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $fn_loop);
+                    $lookup_list[] = $this->makeVariant($gnv_list[0], $prefix, $fn_loop, $note_name);
                 }
             }
         }
@@ -136,16 +137,30 @@ class NameLookupRepository extends ServiceEntityRepository
         return $lookup_list;
     }
 
-    private function makeVariant($givenname, $prefix, $familyname) {
-        if (!is_null($familyname) && $familyname != "") {
-            if (!is_null($prefix) && $prefix != "") {
-                return array(implode(' ', [$givenname, $familyname]), implode(' ', [$givenname, $prefix, $familyname]));
-            } else {
-                return array(implode(' ', [$givenname, $familyname]), null);
-            }
-        } else {
-            return array($givenname, null);
+    private function makeVariant($givenname, $prefix, $familyname, $note_name) {
+        $vn_0 = null;
+        $vn_1 = null;
+
+        $vn_list_0 = [$givenname];
+        if (!is_null($familyname) and trim($familyname) != "") {
+            $vn_list_0[] = $familyname;
         }
+        if (!is_null($note_name) and trim($note_name) != "") {
+            $vn_list_0[] = $note_name;
+        }
+        $vn_0 = implode($vn_list_0, ' ');
+
+        if (!is_null($prefix) and trim($prefix) != "") {
+            $vn_list_1 = [$givenname, $prefix];
+            if (!is_null($familyname) and trim($familyname) != "") {
+                $vn_list_1[] = $familyname;
+            }
+            if (!is_null($note_name) and trim($note_name) != "") {
+                $vn_list_1[] = $note_name;
+            }
+            $vn_1 = implode($vn_list_1, ' ');
+        }
+        return array($vn_0, $vn_1);
     }
 
 
