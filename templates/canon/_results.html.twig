@@ -38,9 +38,10 @@
 			{# use institution.nameShort when no place can be determined #}
 			<small>{% if r.role and r.role.name %}{{ r.role.name }}{% elseif r.rolename %}{{ r.rolename }}{% endif %}
 			    {% if r.placename %}({{ r.placename|join(', ') }})
-			    {% elseif  r.diocese %}({{ r.diocese.name }})
+			    {% elseif r.diocese %}({{ r.diocese.name }})
 			    {% elseif r.diocesename %}({{ r.diocesename }})
 			    {% elseif r.institution and r.institution.nameShort %}({{ r.institution.nameShort }})
+			    {% else %}{{ r.institutionname }}
 			    {% endif %}
 			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
 				{% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
