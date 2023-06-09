@@ -40,7 +40,7 @@ class PersonFormModel {
 
 
     /**
-     * collection of InputError
+     * collection of InputError in the query form
      */
     private $inputError;
 

@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bistümer{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+	<div class="row ms-2 col-12">
+	    <h1>Bistümer</h1>
+	</div>
+	{{ form_start(form, {
+	    'attr': {
+		'data-controller': 'submit-form',
+		'data-action': 'change->submit-form#onChange',
+	    }
+	}) }}
+	    <div class="row ms-2">
+		<div class="col-12">
+		    <div class="d-flex flex-wrap">
+			<div class="w-30 me-2"
+			     {{ stimulus_controller('autocomplete', {
+				 url: path('diocese_suggest', { 'field': 'name' })
+			     }) }}>
+			    {{ form_label(form.name) }}
+			    {{ form_errors(form.name) }}
+			    {{ form_widget(form.name, {
+				'attr': {
+				    'data-autocomplete-target': "input",
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			    <ul class="list-group autocomplete-target"
+				       data-autocomplete-target="results"
+				       style="max-width: 22rem;"></ul>
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div class="row mt-2 ms-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		</div>
+	    </div>
+	{{ form_end(form) }}
+	{{ include('edit_diocese/_list.html.twig') }}
+    </div>
+{% endblock %}

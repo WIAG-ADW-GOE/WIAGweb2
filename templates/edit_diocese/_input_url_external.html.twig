@@ -2,29 +2,20 @@
 {% set base_input_name=editFormId~'['~itemIndex~']' %}
 {% set base_id_urlext=base_id~'_urlext_'~currentIndex %}
 {% set base_input_name_urlext=base_input_name~'[urlext]['~currentIndex~']' %}
-{% if isLast is not defined %}
-    {% set isLast = true %}
+{% if is_last is not defined %}
+    {% set is_last = true %}
 {% endif %}
 <div class="row"
      data-controller="input-state">
     {# col with add button and delete button #}
     <div class="col-1 text-end pe-0">
-	{{ include('edit_role/_insert_delete.html.twig', {
-	    'obj': urlext,
-	    'base_id_delete': base_id_urlext,
-	    'base_name_delete': base_input_name_urlext,
-	    'isLast': isLast}) }}
+	{{ include('edit_diocese/_insert_delete.html.twig', { obj: urlext, base_id_delete: base_id_urlext, base_name_delete: base_input_name_urlext }) }}
     </div>
     <div class="col-11">
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text">URL Typ</span>
-	    {# IDs (hidden) #}
+	    {# id (hidden) #}
 	    {% set url_auth_id = urlext.authority ? urlext.authority.id : "" %}
-	    <input type="text"
-		   id="{{ base_id_urlext }}_id"
-		   name="{{ base_input_name_urlext }}[id]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ urlext.id }}">
 	    <input type="text"
 		   id="{{ base_id_urlext }}_authorityId"
 		   name="{{ base_input_name_urlext }}[authorityId]"

@@ -180,7 +180,21 @@ class DioceseRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('d')
+                   ->select('d', 'i')
+                   ->join('d.item', 'i')
+                   ->leftjoin('i.urlExternal', 'ext')
+                   ->addOrderBy('d.name');
 
+        if ($model['name'] != '') {
+            $qb->andWhere('d.name like :name')
+               ->setParameter('name', '%'.$model['name'].'%');
+        }
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
 
 }

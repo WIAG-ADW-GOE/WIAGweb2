@@ -106,6 +106,11 @@ class Diocese
      */
     private $itemTypeId;
 
+    /**
+     * no
+     */
+    private $referenceCount;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -299,6 +304,32 @@ class Diocese
         $this->itemTypeId = $itemTypeId;
 
         return $this;
+    }
+
+    public function setReferenceCount($value): self {
+        $this->referenceCount = $value;
+        return $this;
+    }
+
+    public function getReferenceCount() {
+        return $this->referenceCount;
+    }
+
+    /**
+     * provide direct access
+     */
+    public function getIdInSource() {
+        return $this->getItem()->getIdInSource();
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection();
+        }
+        return $this->inputError;
     }
 
 }

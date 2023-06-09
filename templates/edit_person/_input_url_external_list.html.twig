@@ -36,7 +36,7 @@
 	</div>
     </div>
 </div>
-{% for error_obj in person.inputError|filter(v => v.section == 'external id') %}
+{% for error_obj in person.item.inputErrorSection('external id') %}
     <div class="row">
 	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
     </div>

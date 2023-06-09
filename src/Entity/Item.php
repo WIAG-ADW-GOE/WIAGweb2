@@ -214,6 +214,11 @@ class Item {
     private $formIsExpanded = false;
 
     /**
+     * collection of InputError
+     */
+    private $inputError;
+
+    /**
      * no DB-mapping, hold user obj
      */
     private $changedByUser = null;
@@ -249,6 +254,8 @@ class Item {
         $this->dateChanged = $now;
 
         $this->editStatus = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
+
+        $this->inputError = new ArrayCollection();
     }
 
     /**
@@ -818,6 +825,45 @@ class Item {
         $this->commentDuplicate = $commentDuplicate;
 
         return $this;
+    }
+
+    public function hasError($min_level): bool {
+        // the database is not aware of inputError and it's type
+        if (is_null($this->inputError)) {
+            return false;
+        }
+
+        foreach($this->inputError as $e_loop) {
+            $level = $e_loop->getLevel();
+            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection;
+        }
+        return $this->inputError;
+    }
+
+    /**
+     * get list of input errors for section $name
+     */
+    public function getInputErrorSection($name) {
+        $list = new ArrayCollection();
+        if (!is_null($this->inputError)) {
+            $list = $this->inputError->filter(function($v) use ($name) {
+                return $v->getSection() == $name;
+            });
+        }
+        return $list;
     }
 
     /**

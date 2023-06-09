@@ -122,8 +122,8 @@ class EditPersonService {
             $person->getFamilynameVariants(),
         );
         // errors (relevant for warnings)
-        foreach($person->getInputError() as $e) {
-            $target->getInputError()->add($e);
+        foreach($person->getItem()->getInputError() as $e) {
+            $target_item->getInputError()->add($e);
         }
 
         // roles
@@ -393,7 +393,7 @@ class EditPersonService {
             if (str_contains($person->$get_fnc(), $substring)) {
                 $field = Person::EDIT_FIELD_LIST[$key];
                 $msg = "Das Feld '".$field."' enthält '".$substring."'.";
-                $person->getInputError()->add(new InputError('name', $msg));
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
             }
         }
     }
@@ -412,7 +412,7 @@ class EditPersonService {
         $edit_status = trim($data['item']['editStatus']);
         if ($edit_status == "") {
             $msg = "Das Feld 'Status' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('status', $msg));
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
         // item: checkboxes
@@ -472,7 +472,7 @@ class EditPersonService {
 
         if (is_null($person->getGivenname())) {
             $msg = "Das Feld 'Vorname' kann nicht leer sein.";
-            $person->getInputError()->add(new InputError('name', $msg));
+            $item->getInputError()->add(new InputError('name', $msg));
         }
 
         // name variants
@@ -486,7 +486,7 @@ class EditPersonService {
                 $person->setNumDateBirth($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
-                $person->getInputError()->add(new InputError('name', $msg));
+                $item->getInputError()->add(new InputError('name', $msg));
             }
         } else {
             $person->setNumDateBirth(null);
@@ -499,7 +499,7 @@ class EditPersonService {
                 $person->setNumDateDeath($year);
             } else {
                 $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
-                $person->getInputError()->add(new InputError('name', $msg));
+                $item->getInputError()->add(new InputError('name', $msg));
             }
         } else {
             $person->setNumDateDeath(null);
@@ -515,19 +515,31 @@ class EditPersonService {
             ];
         }
 
-        // roles, reference, free properties
-        $section_map = [
-            'role'  => 'mapRole',
-            'ref'   => 'mapReference',
-            'prop'  => 'mapItemProperty',
-            'urlext' => 'mapUrlExternal'
-        ];
+        // role
+        if (array_key_exists('role', $data)) {
+            foreach($data['role'] as $data_loop) {
+                $this->mapRole($person, $data_loop);
+            }
+        }
 
-        foreach($section_map as $key => $mapFunction) {
-            if (array_key_exists($key, $data)) {
-                foreach($data[$key] as $data_loop) {
-                    $this->$mapFunction($person, $data_loop);
-                }
+        // reference
+        if (array_key_exists('ref', $data)) {
+            foreach($data['ref'] as $data_loop) {
+                $this->mapReference($item, $data_loop);
+            }
+        }
+
+        // property
+        if (array_key_exists('prop', $data)) {
+            foreach($data['prop'] as $data_loop) {
+                $this->mapItemProperty($item, $data_loop);
+            }
+        }
+
+        // url external
+        if (array_key_exists('urlext', $data)) {
+            foreach($data['urlext'] as $data_loop) {
+                $this->mapUrlExternal($item, $data_loop);
             }
         }
 
@@ -540,7 +552,7 @@ class EditPersonService {
         // validation
         if ($item->getIsOnline() && $item->getIsDeleted()) {
             $msg = "Der Eintrag kann nicht gleichzeitig online und gelöscht sein.";
-            $person->getInputError()->add(new InputError('status', $msg));
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
         return $person;
@@ -562,7 +574,7 @@ class EditPersonService {
 
         if (!$role_found) {
             $msg = "Hinweis: Der Eintrag hat keine Angaben zu Ämtern!";
-            $person->getInputError()->add(new InputError('role', $msg, 'warning'));
+            $person->getItem()->getInputError()->add(new InputError('role', $msg, 'warning'));
         }
 
     }
@@ -712,7 +724,7 @@ class EditPersonService {
         // copy input errors
         if ($data['deleteFlag'] != "delete") {
             foreach($role->getInputError() as $r_e) {
-                $person->getInputError()->add($r_e);
+                $person->getItem()->getInputError()->add($r_e);
             }
         }
 
@@ -800,7 +812,7 @@ class EditPersonService {
         // case of completely missing data see above
         if (trim($data['value']) == "") {
             $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('role', $msg));
+            $person->getItem()->getInputError()->add(new InputError('role', $msg));
         } else {
             $roleProperty->setValue($data['value']);
         }
@@ -811,12 +823,11 @@ class EditPersonService {
     /**
      * fill person's references with $data
      */
-    private function mapReference($person, $data) {
+    private function mapReference($item, $data) {
         $referenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
         $id = $data['id'];
-        $item = $person->getItem();
         $item_type_id = $item->getItemTypeId();
 
         $key_list = ['volume', 'page', 'idInReference'];
@@ -843,11 +854,11 @@ class EditPersonService {
                 $reference->setReferenceId($volume->getReferenceId());
             } else {
                 $error_msg = "Keinen Band für '".$volume_name."' gefunden.";
-                $person->getInputError()->add(new InputError('reference', $error_msg));
+                $item->getInputError()->add(new InputError('reference', $error_msg));
             }
         } else {
             $error_msg = "Das Feld 'Bandtitel' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('reference', $error_msg));
+            $item->getInputError()->add(new InputError('reference', $error_msg));
         }
 
         $key_list = ['deleteFlag', 'page','idInReference'];
@@ -856,11 +867,9 @@ class EditPersonService {
         return $reference;
     }
 
-    private function mapItemProperty($person, $data) {
+    private function mapItemProperty($item, $data) {
 
         $id = $data['id'];
-        $item = $person->getItem();
-
         // the property entry is considered empty if no value is set
         $key_list = ['value'];
         $no_data = $this->utilService->no_data($data, $key_list);
@@ -896,11 +905,10 @@ class EditPersonService {
     /**
      * fill url external with $data
      */
-    private function mapUrlExternal($person, $data) {
+    private function mapUrlExternal($item, $data) {
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
-        $item = $person->getItem();
         $url_external_list = $item->getUrlExternal();
         $url_external = null;
         $value = is_null($data['value']) ? null : trim($data['value']);
@@ -927,11 +935,11 @@ class EditPersonService {
                 $separator = "|";
                 if (str_contains($value, $separator)) {
                     $msg = "Eine externe ID enthält '".$separator."'.";
-                    $person->getInputError()->add(new InputError('external id', $msg));
+                    $item->getInputError()->add(new InputError('external id', $msg));
                 }
             } else {
                 $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
-                $person->getInputError()->add(new InputError('external id', $msg));
+                $item->getInputError()->add(new InputError('external id', $msg));
             }
         }
 

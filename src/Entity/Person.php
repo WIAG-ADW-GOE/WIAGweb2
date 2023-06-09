@@ -157,11 +157,6 @@ class Person {
     private ?Person $sibling = null;
 
     /**
-     * collection of InputError
-     */
-    private $inputError;
-
-    /**
      * no DB-mapping
      * hold form input data
      */
@@ -185,7 +180,6 @@ class Person {
         $this->familynameVariants = new ArrayCollection();
         $this->nameLookup = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
-        $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
 
@@ -560,16 +554,6 @@ class Person {
         return $this;
     }
 
-    /**
-     * do not provide setInputError; use add or remove to manipulate this property
-     */
-    public function getInputError() {
-        if (is_null($this->inputError)) {
-            $this->inputError = new ArrayCollection;
-        }
-        return $this->inputError;
-    }
-
     public function getSeeAlso() {
         return $this->seeAlso;
     }
@@ -705,20 +689,6 @@ class Person {
         return $birth_info;
     }
 
-    public function hasError($min_level): bool {
-        // the database is not aware of inputError and it's type
-        if (is_null($this->inputError)) {
-            return false;
-        }
-
-        foreach($this->inputError as $e_loop) {
-            $level = $e_loop->getLevel();
-            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public function getFirstRoleSortKey() {
         $key = PersonRole::MAX_DATE_SORT_KEY;

@@ -14,7 +14,7 @@
 	}) }}
     {% endfor %}
 </div>
-{% for error_obj in person.inputError|filter(v => v.section == 'role') %}
+{% for error_obj in person.item.inputErrorSection('role') %}
     <div class="row">
 	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
 	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>

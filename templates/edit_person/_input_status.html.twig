@@ -131,7 +131,7 @@
 </div>
 {% endif %}
 {# validation messages #}
-{% for error_obj in person.inputError|filter(v => v.section == 'status') %}
+{% for error_obj in person.item.inputErrorSection('status') %}
     <div class="row">
 	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
     </div>

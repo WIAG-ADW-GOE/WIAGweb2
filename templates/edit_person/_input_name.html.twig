@@ -88,7 +88,7 @@
 	</div>
     </div>
 </div>
-{% for error_obj in person.inputError|filter(v => v.section == 'name') %}
+{% for error_obj in person.item.inputErrorSection('name') %}
     <div class="row">
 	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
 	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>

@@ -210,7 +210,7 @@ class EditPersonController extends AbstractController {
 
         $error_flag = false;
         foreach($person_list as $person) {
-            if ($person->hasError('error')) {
+            if ($person->getItem()->hasError('error')) {
                 $error_flag = true;
             }
         }

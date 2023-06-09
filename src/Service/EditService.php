@@ -17,7 +17,7 @@ class EditService {
             $t->setItem(null);
             $entityManager->remove($t);
         }
-
+        dump($source_list);
         // - set new entries
         foreach ($source_list as $i) {
             if (!$i->getDeleteFlag()) {

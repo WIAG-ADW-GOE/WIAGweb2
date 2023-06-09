@@ -159,40 +159,48 @@ class EditRoleController extends AbstractController {
             $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $role = $role_list[$id];
-                $role->getItem()->setFormIsExpanded($form_is_expanded);
-            }
-            if (isset($data['formIsEdited'])) {
+            } else {
                 $role = new Role($current_user_id);
+            }
+            $role->getItem()->setFormIsExpanded($form_is_expanded);
+
+            if (isset($data['formIsEdited'])) {
+                $item = $role->getItem();
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;
                     $role_list[] = $role;
+                    $data['item']['idInSource'] = '0';
                 } else {
                     $role->getItem()->setIsNew(false);
                     $role_list[$id] = $role;
                 }
-                $role->getItem()->setFormIsExpanded($form_is_expanded);
-                $role->getItem()->setFormIsEdited(1);
+                $item->setFormIsExpanded($form_is_expanded);
+                $item->setFormIsEdited(1);
 
-                // content in item can not be edited in the form
+                // item
+                UtilService::setByKeys(
+                    $item,
+                    $data['item'],
+                    ['idInSource']);
+
+                // role
                 UtilService::setByKeys(
                     $role,
                     $data,
                     Role::EDIT_FIELD_LIST);
 
-                foreach ($data['urlext'] as $data_loop) {
-                     $this->mapUrlExternal($role, $data_loop, $entityManager);
-                }
+                $this->mapUrlExternal($item, $data['urlext'], $entityManager);
 
                 // validate input
                 if (trim($role->getName()) == "") {
                     $msg = "Bitte das Feld 'Bezeichung' ausfüllen.";
-                    $role->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $item->getInputError()->add(new InputError('general', $msg, 'error'));
                     $error_flag = true;
                 }
                 if (trim($role->getLang()) == "") {
                     $msg = "Bitte das Feld 'Sprache' ausfüllen.";
-                    $role->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $item->getInputError()->add(new InputError('general', $msg, 'error'));
                     $error_flag = true;
                 }
             }
@@ -214,15 +222,10 @@ class EditRoleController extends AbstractController {
                         $next_id += 1;
                         $item->setIsNew(false);
                         $item->setFormIsEdited(false);
-                        $item->updateChangedMetaData($current_user);
-                    } else {
-                        // get object for saving
-                        $q_result = $roleRepository->findList([$key]);
-                        $target = $q_result[0];
-                        $this->copy($target, $role, $entityManager);
-                        $target->getItem()->updateChangedMetaData($current_user);
-                        $role_list[$key] = $target;
                     }
+                    $this->removeUrlExternal($item, $entityManager);
+                    $item->updateChangedMetaData($current_user);
+                    $item->setFormIsEdited(false);
                 }
             }
             $entityManager->flush();
@@ -258,14 +261,48 @@ class EditRoleController extends AbstractController {
         }
     }
 
-    private function copy(Role $target, Role $source, $entityManager) {
+    /**
+     * remove external URLs that are marked for deletion
+     */
+    private function removeUrlExternal($item, $entityManager) {
+        $uext_list = $item->getUrlExternal();
+
+        foreach ($uext_list as $uext) {
+            if ($uext->getDeleteFlag() == "delete") {
+                $uext_list->removeElement($uext); // seems to be stable
+                $entityManager->remove($uext);
+            }
+        }
+        return $item;
+    }
+
+    /**
+     * obsolete 2023-06-06
+     **/
+    private function copy_legacy(Role $target, Role $source, $entityManager) {
         // content in item can not be edited in the form
 
         // url external
         $target_item = $target->getItem();
         $target_uext = $target_item->getUrlExternal();
         $source_uext = $source->getItem()->getUrlExternal();
-        EditService::setItemAttributeList($target->getItem(), $target_uext, $source_uext, $entityManager);
+        // $this->setItemAttributeList($target->getItem(), $target_uext, $source_uext, $entityManager);
+
+        foreach ($target_uext as $t) {
+            $target_uext->removeElement($t);
+            $t->setItem(null);
+            $entityManager->remove($t);
+        }
+
+        // - set new entries
+        foreach ($source_list as $i) {
+            if (!$i->getDeleteFlag()) {
+                $target_list->add($i);
+                $i->setItem($target);
+                $entityManager->persist($i);
+            }
+        }
+
 
         $field_list = Role::EDIT_FIELD_LIST;
 
@@ -406,13 +443,12 @@ class EditRoleController extends AbstractController {
 
     /**
      * fill url external with $data
+     * 2023-06-05
      */
-    private function mapUrlExternal($role, $data, $entityManager) {
+    private function mapUrlExternal_legacy($item, $data, $entityManager) {
 
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
         $authorityRepository = $entityManager->getRepository(Authority::class);
 
-        $item = $role->getItem();
         $url_external_list = $item->getUrlExternal();
         $url_external = null;
         $value = is_null($data['value']) ? null : trim($data['value']);
@@ -439,15 +475,69 @@ class EditRoleController extends AbstractController {
                 $separator = "|";
                 if (str_contains($value, $separator)) {
                     $msg = "Eine externe ID enthält '".$separator."'.";
-                    $role->getInputError()->add(new InputError('external id', $msg));
+                    $item->getInputError()->add(new InputError('external id', $msg));
                 }
             } else {
-                $msg = "Keine exindeutige Institution für '".$authority_name."' gefunden.";
-                $role->getInputError()->add(new InputError('external id', $msg));
+                $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
+                $item->getInputError()->add(new InputError('external id', $msg));
             }
         }
 
         return $url_external;
+    }
+
+
+    /**
+     * fill url external with $data
+     */
+    private function mapUrlExternal($item, $data, $entityManager) {
+
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+
+        $uext_list = $item->getUrlExternal();
+        foreach ($data as $data_loop) {
+            $id = $data_loop['id'];
+            $uext = null;
+            if (!($id > 0)) {
+                $uext = new UrlExternal();
+                $uext->setItem($item);
+                if (!is_null($item->getId())) {
+                    $uext->setItemId($item->getId());
+                }
+                $uext_list->add($uext);
+            } else {
+                // find uext
+                foreach ($uext_list as $uext_loop) {
+                    if ($uext_loop->getId() == $id) {
+                        $uext = $uext_loop;
+                        break;
+                    }
+                }
+            }
+
+            $authority_name = $data_loop["urlName"];
+            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
+            if (!is_null($auth_query) && count($auth_query) > 0) {
+                $authority = $auth_query[0];
+
+                $uext->setAuthorityId($authority->getId());
+                $uext->setAuthority($authority);
+            } else {
+                $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
+                $item->getInputError()->add(new InputError('external id', $msg));
+            }
+
+            // drop base URL if present
+            if ($authority_name == 'Wikipedia-Artikel') {
+                $val_list = explode('/', $value);
+                $value = array_slice($val_list, -1)[0];
+            }
+
+            $key_list = ['deleteFlag', 'value', 'note'];
+            UtilService::setByKeys($uext, $data_loop, $key_list);
+        }
+
+        return $item;
     }
 
     /**
@@ -465,6 +555,39 @@ class EditRoleController extends AbstractController {
         return $url_external;
     }
 
+    /**
+     * clear $target_list; copy collection $source_list to $target_list;
+     */
+    private function setItemAttributeList($target, $target_list, $source_list, $entityManager) {
 
+        // - remove entries
+        // $target_ref = $target->getItem()->getReference();
+        foreach ($target_list as $t) {
+            $target_list->removeElement($t);
+            $t->setItem(null);
+            $entityManager->remove($t);
+        }
+
+        // - set new entries
+        foreach ($source_list as $i) {
+            if (!$i->getDeleteFlag()) {
+                $target_list->add($i);
+                $i->setItem($target);
+                $entityManager->persist($i);
+            }
+        }
+    }
+
+    private function updateUrlExternal($role, $entityManager) {
+        $uext_list = $role->getItem()->getUrlExternal();
+
+        foreach ($uext_list as $uext) {
+            if ($uext->getDeleteFlag()) {
+                $uext_list->removeElement($uext);
+            }
+            // what about new elements?
+        }
+
+    }
 
 }

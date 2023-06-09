@@ -13,8 +13,3 @@
 	}) }}
     {% endfor %}
 </div>
-{% for error_obj in role.inputError|filter(v => v.section == 'external id') %}
-    <div class="row">
-	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
-    </div>
-{% endfor %}

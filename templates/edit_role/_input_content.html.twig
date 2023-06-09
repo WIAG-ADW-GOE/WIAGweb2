@@ -19,13 +19,14 @@
 		   spellcheck="false"
 		   aria-label="Plural">
 	    <span class="input-group-text" style="min-width: 7rem">Geschlecht</span>
+	    {% if false %}
 	    <div
 		{{ stimulus_controller('autocomplete', {
 		    url: path('role_suggest', { field: 'gender' }),
 		}) }}>
 		<input type="text" id="{{ base_id }}_gender"
 		       name="{{ base_input_name}}[gender]"
-		       class="form-control wiag-input"
+		       class="form-control form-control-sm wiag-input"
 		       style="min-width: 5rem; max-width: 8rem"
 		       value="{{ role.gender }}"
 		       spellcheck="false"
@@ -35,10 +36,27 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 30rem;"></ul>
 	    </div>
+	    {% else %}
+	    <div {{ stimulus_controller('autocomplete', {
+		 url: path('role_suggest', { field: 'gender' }),
+		 }) }} >
+		<input type="text" id="{{ base_id }}_gender"
+		       name="{{ base_input_name}}[gender]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ role.gender }}"
+		       style="max-width: 12rem"
+		       spellcheck="false"
+		       aria-label="Status"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    {% endif %}
 	    <span class="input-group-text" style="min-width: 5rem">Sprache</span>
 	    <input type="text" id="{{ base_id }}_lang"
 		   name="{{ base_input_name}}[lang]"
-		   class="form-control wiag-input"
+		   class="form-control form-control-sm wiag-input"
 		   style="min-width: 3rem; max-width: 5rem"
 		   value="{{ role.lang }}"
 		   spellcheck="false"
@@ -67,7 +85,7 @@
 	    <span class="input-group-text" style="min-width: 8rem">Oberbegriff</span>
 	    <input type="text" id="{{ base_id }}_genericTerm"
 		   name="{{ base_input_name}}[genericTerm]"
-		   class="form-control wiag-input"
+		   class="form-control form-control-sm wiag-input"
 		   value="{{ role.genericTerm }}"
 		   style="min-width: 20rem; max-width: 30rem;"
 		   spellcheck="false"
@@ -79,7 +97,7 @@
 		}) }}>
 		<input type="text" id="{{ base_id }}_roleGroup"
 		       name="{{ base_input_name}}[roleGroup]"
-		       class="form-control wiag-input"
+		       class="form-control form-control-sm wiag-input"
 		       style="min-width: 20rem; max-width: 30rem;"
 		       value="{{ role.roleGroup }}"
 		       spellcheck="false"
@@ -112,14 +130,14 @@
 		      style="height: 3.5rem"
 		      name="{{ base_input_name }}[definition]"
 		      aria-label="Definition"
-		      class="form-control form-control-sm wiag-input">{{ role.definition }}</textarea>
+		      class="form-control wiag-input">{{ role.definition }}</textarea>
 	</div>
 	{{ include('edit_role/_input_url_external_list.html.twig', {
 	    'itemIndex': itemIndex
 	}) }}
     </div>
 </div>
-{% for error_obj in role.inputError %}
+{% for error_obj in role.item.inputError %}
     <div class="row">
 	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
 	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>

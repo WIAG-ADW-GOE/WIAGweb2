@@ -95,15 +95,10 @@ class Role
      */
     private $referenceCount = 0;
 
-    /**
-     * collection of InputError
-     */
-    private $inputError;
 
     public function __construct($user_id) {
         $item_type_id = Item::ITEM_TYPE_ID['Amt']['id'];
         $this->item = new Item($item_type_id, $user_id);
-        $this->inputError = new ArrayCollection();
     }
 
     public function setItem($item) {
@@ -234,7 +229,7 @@ class Role
         return $this->lang;
     }
 
-    public function setLang(string $lang): self
+    public function setLang(?string $lang): self
     {
         $this->lang = $lang;
 
@@ -255,16 +250,6 @@ class Role
      */
     public function getIdInSource() {
         return $this->getItem()->getIdInSource();
-    }
-
-    /**
-     * do not provide setInputError; use add or remove to manipulate this property
-     */
-    public function getInputError() {
-        if (is_null($this->inputError)) {
-            $this->inputError = new ArrayCollection();
-        }
-        return $this->inputError;
     }
 
 }
