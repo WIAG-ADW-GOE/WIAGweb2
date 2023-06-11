@@ -162,13 +162,10 @@ class IdController extends AbstractController {
         }, $canon_list);
 
         if ($format == 'html') {
-
             return $this->render('canon/person.html.twig', [
                 'personName' => $personName,
                 'personRole' => $personRole,
             ]);
-
-
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);

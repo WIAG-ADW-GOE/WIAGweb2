@@ -839,6 +839,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->setParameter('q_id', $id);
 
         $query = $qb->getQuery();
+
         return $query->getResult();
     }
 
