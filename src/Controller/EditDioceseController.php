@@ -7,7 +7,9 @@ use App\Entity\ItemType;
 use App\Entity\Diocese;
 use App\Entity\PersonRole;
 use App\Entity\UrlExternal;
+use App\Entity\SkosLabel;
 use App\Entity\Authority;
+use App\Entity\Place;
 use App\Entity\UserWiag;
 use App\Entity\InputError;
 
@@ -26,26 +28,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 class EditDioceseController extends AbstractController {
-
-    /**
-     * respond to asynchronous JavaScript request
-     *
-     * @Route("/diocese-suggest/{field}", name="diocese_suggest")
-     */
-    public function autocomplete(Request $request,
-                                 EntityManagerInterface $entityManager,
-                                 String $field): Response {
-        $query_param = $request->query->get('q');
-        $fn_name = 'suggest'.ucfirst($field); // e.g. suggestInstitution
-
-        $dioceseRepository = $entityManager->getRepository(Diocese::class);
-        $suggestions = $dioceseRepository->$fn_name($query_param);
-
-        return $this->render('_autocomplete.html.twig', [
-            'suggestions' => array_column($suggestions, 'suggestion'),
-        ]);
-    }
-
 
     /**
      * @Route("/edit/diocese/query", name="edit_diocese_query")
@@ -105,7 +87,6 @@ class EditDioceseController extends AbstractController {
                          EntityManagerInterface $entityManager) {
 
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
-        $personDioceseRepository = $entityManager->getRepository(PersonDiocese::class);
         $itemRepository = $entityManager->getRepository(Item::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
@@ -132,72 +113,87 @@ class EditDioceseController extends AbstractController {
             $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $diocese = $diocese_list[$id];
-                $diocese->getItem()->setFormIsExpanded($form_is_expanded);
-            }
-            if (isset($data['formIsEdited'])) {
+
+            } else {
                 $diocese = new Diocese($current_user_id);
+            }
+            $diocese->getItem()->setFormIsExpanded($form_is_expanded);
+            if (isset($data['formIsEdited'])) {
+                $item = $diocese->getItem();
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;
                     $diocese_list[] = $diocese;
+                    $data['item']['idInSource'] = '0';
                 } else {
                     $diocese->getItem()->setIsNew(false);
                     $diocese_list[$id] = $diocese;
                 }
-                $diocese->getItem()->setFormIsExpanded($form_is_expanded);
-                $diocese->getItem()->setFormIsEdited(1);
+                $item->setFormIsEdited(1);
 
-                // content in item can not be edited in the form
+                // item
+                UtilService::setByKeys(
+                    $item,
+                    $data['item'],
+                    ['idInSource']);
+
+                // diocese
                 UtilService::setByKeys(
                     $diocese,
                     $data,
                     Diocese::EDIT_FIELD_LIST);
 
-                foreach ($data['urlext'] as $data_loop) {
-                     $this->mapUrlExternal($diocese, $data_loop, $entityManager);
-                }
+                $this->mapBishopricSeat($diocese, $data['bishopricSeat'], $entityManager);
+
+                EditService::mapUrlExternal($item, $data['urlext'], $entityManager);
+                EditService::mapSkosLabel($diocese, $data['skosLabel']);
 
                 // validate input
                 if (trim($diocese->getName()) == "") {
                     $msg = "Bitte das Feld 'Bezeichung' ausfüllen.";
                     $diocese->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
                 }
-                if (trim($diocese->getLang()) == "") {
-                    $msg = "Bitte das Feld 'Sprache' ausfüllen.";
-                    $diocese->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
-                }
+                $error_flag = ($error_flag or !$item->getInputError()->isEmpty());
             }
         }
 
         // save
         if (!$error_flag) {
-            $item_type_id = ITEM::ITEM_TYPE_ID['Amt']['id'];
+            $item_type_id = ITEM::ITEM_TYPE_ID['Bistum']['id'];
             $max_id = $itemRepository->maxIdInSource($item_type_id);
             $next_id = $max_id + 1;
-            foreach ($diocese_list as $key => $diocese) {
+            foreach ($diocese_list as $diocese) {
                 $item = $diocese->getItem();
                 if ($item->getFormIsEdited()) {
                     if ($item->getIsNew()) {
                         $item->setIdInSource($next_id);
+                        EditService::removeUrlExternalMayBe($item, $entityManager);
+                        EditService::removeSkosLabelMayBe($diocese, $entityManager);
                         $entityManager->persist($diocese);
                         // get new item from the database (ID updated)
                         $entityManager->flush();
                         $next_id += 1;
+
+                        // we need to set conceptId manually
+                        $diocese->getAltLabels()->map(function($v) use ($diocese) {
+                            $v->setConceptId($diocese->getItem()->getId());
+                        });
+
                         $item->setIsNew(false);
-                        $item->setFormIsEdited(false);
-                        $item->updateChangedMetaData($current_user);
-                    } else {
-                        // get object for saving
-                        $q_result = $dioceseRepository->findList([$key]);
-                        $target = $q_result[0];
-                        $this->copy($target, $diocese, $entityManager);
-                        $target->getItem()->updateChangedMetaData($current_user);
-                        $diocese_list[$key] = $target;
+                    }
+                    // delete flag?
+                    EditService::removeUrlExternalMayBe($item, $entityManager);
+                    EditService::removeSkosLabelMayBe($diocese, $entityManager);
+                    $item->updateChangedMetaData($current_user);
+                    $item->setFormIsEdited(false);
+
+                    $label_list = $diocese->getAltLabels();
+                    foreach ($label_list as $label) {
+                        $label->setDiocese($diocese);
                     }
                 }
             }
+
             $entityManager->flush();
         }
 
@@ -217,37 +213,53 @@ class EditDioceseController extends AbstractController {
 
     }
 
+    private function mapBishopricSeat($diocese, $data, $entityManager) {
+        $placeRepository = $entityManager->getRepository(Place::class);
+
+        $match_list = array();
+        preg_match("/[[:alpha:]]+ \(([0-9]+)\)/", $data, $match_list);
+
+        $diocese->setFormBishopricSeat($data);
+
+        $error_flag = true;
+        if (count($match_list) > 0) {
+            $q_result = $placeRepository->findByGeonamesId($match_list[1]);
+            if (!is_null($q_result) and count($q_result) > 0) {
+                $diocese->setBishopricSeatId($q_result[0]->getId());
+                $diocese->setBishopricSeat($q_result[0]);
+                $error_flag = false;
+            }
+        }
+
+        if ($error_flag) {
+            $msg = "Es wurde kein Ort für den Bischofssitz gefunden.";
+            $item = $diocese->getItem();
+            $item->getInputError()->add(new InputError('general', $msg, 'error'));
+        }
+
+        return $diocese;
+
+    }
+
+    /**
+     * set default elements for the form
+     */
     private function setDisplayData($diocese, $entityManager) {
         $personRoleRepository = $entityManager->getRepository(PersonRole::class);
 
         $item = $diocese->getItem();
         if ($item->getFormIsExpanded()) {
-            $url_ext_list = $item->getUrlExternal();
-            if (count($url_ext_list) < 1) {
-                $url_ext_list->add(new UrlExternal());
+            $uext_list = $item->getUrlExternal();
+            if (count($uext_list) < 1) {
+                $uext_list->add(new UrlExternal());
+            }
+            $skos_label_list = $diocese->getAltLabels();
+            if (count($skos_label_list) < 1) {
+                $skos_label_list->add(new SkosLabel(Diocese::SKOS_SCHEME_ID));
             }
             $dioceseCount = $personRoleRepository->dioceseReferenceCount($diocese->getId());
             $diocese->setReferenceCount($dioceseCount);
         }
-    }
-
-    private function copy(Diocese $target, Diocese $source, $entityManager) {
-        // content in item can not be edited in the form
-
-        // url external
-        $target_item = $target->getItem();
-        $target_uext = $target_item->getUrlExternal();
-        $source_uext = $source->getItem()->getUrlExternal();
-        EditService::setItemAttributeList($target->getItem(), $target_uext, $source_uext, $entityManager);
-
-        $field_list = Diocese::EDIT_FIELD_LIST;
-
-        foreach ($field_list as $field) {
-            $get_fnc = 'get'.ucfirst($field);
-            $set_fnc = 'set'.ucfirst($field);
-            $target->$set_fnc($source->$get_fnc());
-        }
-
     }
 
     /**
@@ -274,10 +286,13 @@ class EditDioceseController extends AbstractController {
             $id_loop = $diocese->getId();
             if ($id_loop == $q_id) {
                 $item = $diocese->getItem();
-                $entityManager->remove($diocese);
+                foreach($diocese->getAltLabels() as $label) {
+                    $entityManager->remove($label);
+                }
                 foreach($item->getUrlExternal() as $uext) {
                     $entityManager->remove($uext);
                 }
+                $entityManager->remove($diocese);
                 $entityManager->remove($item);
             }
         }
@@ -343,8 +358,6 @@ class EditDioceseController extends AbstractController {
         $current_user_id = $this->getUser()->getId();
         $obj = new Diocese($current_user_id);
         $obj->getItem()->setFormIsExpanded(true);
-        // default
-        $obj->setGender('männlich');
 
         $this->setDisplayData($obj, $entityManager);
 
@@ -356,7 +369,7 @@ class EditDioceseController extends AbstractController {
 
     }
 
-        /**
+    /**
      * @return template for new external ID
      *
      * @Route("/edit/diocese/new-url-external/{itemIndex}", name="edit_diocese_new_urlexternal")
@@ -366,78 +379,38 @@ class EditDioceseController extends AbstractController {
 
         $edit_form_id = 'diocese_edit_form';
 
-        $urlExternal = new urlExternal();
+        $urlExternal = new UrlExternal();
 
         return $this->render('edit_diocese/_input_url_external.html.twig', [
             'editFormId' => $edit_form_id,
             'itemIndex' => $itemIndex,
             'currentIndex' => $request->query->get('current_idx'),
             'urlext' => $urlExternal,
+            'isLast' => true,
         ]);
 
     }
 
     /**
-     * fill url external with $data
+     * @return template for new skos label
+     *
+     * @Route("/edit/diocese/new-skos-label/{itemIndex}", name="edit_diocese_new_skos_label")
      */
-    private function mapUrlExternal($diocese, $data, $entityManager) {
+    public function newSkosLabel(Request $request,
+                                   int $itemIndex) {
 
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
-        $authorityRepository = $entityManager->getRepository(Authority::class);
+        $edit_form_id = 'diocese_edit_form';
 
-        $item = $diocese->getItem();
-        $url_external_list = $item->getUrlExternal();
-        $url_external = null;
-        $value = is_null($data['value']) ? null : trim($data['value']);
-        if (is_null($value) || $value == "") {
-            return $url_external;
-            } else {
-            $authority_name = $data["urlName"];
-            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
-            if (!is_null($auth_query) && count($auth_query) > 0) {
-                $authority = $auth_query[0];
-                // drop base URL if present
-                if ($authority_name == 'Wikipedia-Artikel') {
-                    $val_list = explode('/', $value);
-                    $value = array_slice($val_list, -1)[0];
-                }
+        $skos_label = new SkosLabel(Diocese::SKOS_SCHEME_ID);
 
-                $url_external = $this->makeUrlExternal($item, $authority);
-                $key_list = ['deleteFlag', 'value', 'note'];
-                UtilService::setByKeys($url_external, $data, $key_list);
+        return $this->render('edit_diocese/_input_skos_label.html.twig', [
+            'editFormId' => $edit_form_id,
+            'itemIndex' => $itemIndex,
+            'currentIndex' => $request->query->get('current_idx'),
+            'skosLabel' => $skos_label,
+            'isLast' => true,
+        ]);
 
-                $url_external_list->add($url_external);
-
-                // validate: avoid merge separator
-                $separator = "|";
-                if (str_contains($value, $separator)) {
-                    $msg = "Eine externe ID enthält '".$separator."'.";
-                    $diocese->getInputError()->add(new InputError('external id', $msg));
-                }
-            } else {
-                $msg = "Keine exindeutige Institution für '".$authority_name."' gefunden.";
-                $diocese->getInputError()->add(new InputError('external id', $msg));
-            }
-        }
-
-        return $url_external;
     }
-
-    /**
-     * create UrlExternal object
-     * TODO 2023-05-25 replace this by UrlExternal($item);
-     */
-    public function makeUrlExternal($item, $authority) {
-        $url_external = new UrlExternal();
-        if (!is_null($item->getId())) {
-            $url_external->setItemId($item->getId());
-        }
-        $url_external->setItem($item);
-        $url_external->setAuthorityId($authority->getId());
-        $url_external->setAuthority($authority);
-        return $url_external;
-    }
-
-
 
 }

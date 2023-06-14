@@ -1,12 +1,12 @@
 <div data-controller="insert"
-     data-insert-url-value="{{ path('edit_diocese_new_urlexternal', {
+     data-insert-url-value="{{ path('edit_diocese_new_skos_label', {
 			    'itemIndex': itemIndex
 			    }) }}"
      data-insert-hide-trigger-value="yes"
      data-insert-point-value="last">
-    {% for url_ext in diocese.item.urlexternal %}
-	{{ include('edit_diocese/_input_url_external.html.twig', {
-	    'urlext': url_ext,
+    {% for label in diocese.altLabels %}
+	{{ include('edit_diocese/_input_skos_label.html.twig', {
+	    'skosLabel': label,
 	    'itemIndex': itemIndex,
 	    'currentIndex': loop.index0,
 	    'isLast': loop.last,

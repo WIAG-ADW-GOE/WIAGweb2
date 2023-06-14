@@ -4,11 +4,15 @@
      data-sync-toggle-first-value=""
      data-sync-toggle-second-value="delete">
     <span class="text-nowrap">
-	{% if is_last %}
+	{% if isLast %}
 	    <button class="btn btn-light btn-sm"
 		    type="button"
 		    data-action="insert#insert"><img width="20" height="20" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus"></button>
 	{% endif %}
-	{{ include('edit_person/_delete_button_sans_div.html.twig') }}
+	{{ include('edit_diocese/_delete_button_sans_div.html.twig', {
+	    'obj': obj,
+	    'base_id_delete': base_id_delete,
+	    'base_name_delete': base_name_delete
+	}) }}
     </span>
 </div>

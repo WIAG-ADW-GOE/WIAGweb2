@@ -26,6 +26,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 class EditRoleController extends AbstractController {
+    const SUGGEST_SIZE = 8;
 
     /**
      * respond to asynchronous JavaScript request
@@ -39,7 +40,7 @@ class EditRoleController extends AbstractController {
         $fn_name = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
         $roleRepository = $entityManager->getRepository(Role::class);
-        $suggestions = $roleRepository->$fn_name($query_param);
+        $suggestions = $roleRepository->$fn_name($query_param, self::SUGGEST_SIZE);
 
         return $this->render('_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
@@ -175,7 +176,6 @@ class EditRoleController extends AbstractController {
                     $role->getItem()->setIsNew(false);
                     $role_list[$id] = $role;
                 }
-                $item->setFormIsExpanded($form_is_expanded);
                 $item->setFormIsEdited(1);
 
                 // item
@@ -190,19 +190,23 @@ class EditRoleController extends AbstractController {
                     $data,
                     Role::EDIT_FIELD_LIST);
 
-                $this->mapUrlExternal($item, $data['urlext'], $entityManager);
+                EditService::mapUrlExternal($item, $data['urlext'], $entityManager);
 
                 // validate input
+                $gs_reg_id = intval($role->getGsRegId());
+                if (strlen($role->getGsRegId()) > 0 and $gs_reg_id == 0) {
+                    $msg = "Der Wert für 'GS Reg ID' muss eine Zahl sein.";
+                    $item->getInputError()->add(new InputError('general', $msg, 'error'));
+                }
                 if (trim($role->getName()) == "") {
                     $msg = "Bitte das Feld 'Bezeichung' ausfüllen.";
                     $item->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
                 }
                 if (trim($role->getLang()) == "") {
                     $msg = "Bitte das Feld 'Sprache' ausfüllen.";
                     $item->getInputError()->add(new InputError('general', $msg, 'error'));
-                    $error_flag = true;
                 }
+                $error_flag = ($error_flag or !$item->getInputError()->isEmpty());
             }
         }
 
@@ -216,14 +220,15 @@ class EditRoleController extends AbstractController {
                 if ($item->getFormIsEdited()) {
                     if ($item->getIsNew()) {
                         $item->setIdInSource($next_id);
+                        EditService::removeUrlExternalMayBe($item, $entityManager);
                         $entityManager->persist($role);
                         // get new item from the database (ID updated)
                         $entityManager->flush();
                         $next_id += 1;
-                        $item->setIsNew(false);
-                        $item->setFormIsEdited(false);
                     }
-                    $this->removeUrlExternal($item, $entityManager);
+                    // delete flag?
+                    EditService::removeUrlExternalMayBe($item, $entityManager);
+                    $item->setIsNew(false);
                     $item->updateChangedMetaData($current_user);
                     $item->setFormIsEdited(false);
                 }
@@ -247,6 +252,9 @@ class EditRoleController extends AbstractController {
 
     }
 
+    /**
+     * set default elements for the form
+     */
     private function setDisplayData($role, $entityManager) {
         $personRoleRepository = $entityManager->getRepository(PersonRole::class);
 
@@ -262,59 +270,6 @@ class EditRoleController extends AbstractController {
     }
 
     /**
-     * remove external URLs that are marked for deletion
-     */
-    private function removeUrlExternal($item, $entityManager) {
-        $uext_list = $item->getUrlExternal();
-
-        foreach ($uext_list as $uext) {
-            if ($uext->getDeleteFlag() == "delete") {
-                $uext_list->removeElement($uext); // seems to be stable
-                $entityManager->remove($uext);
-            }
-        }
-        return $item;
-    }
-
-    /**
-     * obsolete 2023-06-06
-     **/
-    private function copy_legacy(Role $target, Role $source, $entityManager) {
-        // content in item can not be edited in the form
-
-        // url external
-        $target_item = $target->getItem();
-        $target_uext = $target_item->getUrlExternal();
-        $source_uext = $source->getItem()->getUrlExternal();
-        // $this->setItemAttributeList($target->getItem(), $target_uext, $source_uext, $entityManager);
-
-        foreach ($target_uext as $t) {
-            $target_uext->removeElement($t);
-            $t->setItem(null);
-            $entityManager->remove($t);
-        }
-
-        // - set new entries
-        foreach ($source_list as $i) {
-            if (!$i->getDeleteFlag()) {
-                $target_list->add($i);
-                $i->setItem($target);
-                $entityManager->persist($i);
-            }
-        }
-
-
-        $field_list = Role::EDIT_FIELD_LIST;
-
-        foreach ($field_list as $field) {
-            $get_fnc = 'get'.ucfirst($field);
-            $set_fnc = 'set'.ucfirst($field);
-            $target->$set_fnc($source->$get_fnc());
-        }
-
-    }
-
-    /**
      *
      * @Route("/edit/role/delete/{q_id}", name="edit_role_delete")
      */
@@ -324,11 +279,13 @@ class EditRoleController extends AbstractController {
         $edit_form_id = 'role_edit_form';
         $form_data = $request->request->get($edit_form_id);
 
+
         $roleRepository = $entityManager->getRepository(Role::class);
 
         $id_list = array_column($form_data, 'id');
         $query_result = $roleRepository->findList($id_list);
         $role_list = array();
+
         foreach ($query_result as $role) {
             $role_list[$role->getId()] = $role;
         }
@@ -437,123 +394,11 @@ class EditRoleController extends AbstractController {
             'itemIndex' => $itemIndex,
             'currentIndex' => $request->query->get('current_idx'),
             'urlext' => $urlExternal,
+            'isLast' => true,
         ]);
 
     }
 
-    /**
-     * fill url external with $data
-     * 2023-06-05
-     */
-    private function mapUrlExternal_legacy($item, $data, $entityManager) {
-
-        $authorityRepository = $entityManager->getRepository(Authority::class);
-
-        $url_external_list = $item->getUrlExternal();
-        $url_external = null;
-        $value = is_null($data['value']) ? null : trim($data['value']);
-        if (is_null($value) || $value == "") {
-            return $url_external;
-            } else {
-            $authority_name = $data["urlName"];
-            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
-            if (!is_null($auth_query) && count($auth_query) > 0) {
-                $authority = $auth_query[0];
-                // drop base URL if present
-                if ($authority_name == 'Wikipedia-Artikel') {
-                    $val_list = explode('/', $value);
-                    $value = array_slice($val_list, -1)[0];
-                }
-
-                $url_external = $this->makeUrlExternal($item, $authority);
-                $key_list = ['deleteFlag', 'value', 'note'];
-                UtilService::setByKeys($url_external, $data, $key_list);
-
-                $url_external_list->add($url_external);
-
-                // validate: avoid merge separator
-                $separator = "|";
-                if (str_contains($value, $separator)) {
-                    $msg = "Eine externe ID enthält '".$separator."'.";
-                    $item->getInputError()->add(new InputError('external id', $msg));
-                }
-            } else {
-                $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
-                $item->getInputError()->add(new InputError('external id', $msg));
-            }
-        }
-
-        return $url_external;
-    }
-
-
-    /**
-     * fill url external with $data
-     */
-    private function mapUrlExternal($item, $data, $entityManager) {
-
-        $authorityRepository = $entityManager->getRepository(Authority::class);
-
-        $uext_list = $item->getUrlExternal();
-        foreach ($data as $data_loop) {
-            $id = $data_loop['id'];
-            $uext = null;
-            if (!($id > 0)) {
-                $uext = new UrlExternal();
-                $uext->setItem($item);
-                if (!is_null($item->getId())) {
-                    $uext->setItemId($item->getId());
-                }
-                $uext_list->add($uext);
-            } else {
-                // find uext
-                foreach ($uext_list as $uext_loop) {
-                    if ($uext_loop->getId() == $id) {
-                        $uext = $uext_loop;
-                        break;
-                    }
-                }
-            }
-
-            $authority_name = $data_loop["urlName"];
-            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
-            if (!is_null($auth_query) && count($auth_query) > 0) {
-                $authority = $auth_query[0];
-
-                $uext->setAuthorityId($authority->getId());
-                $uext->setAuthority($authority);
-            } else {
-                $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
-                $item->getInputError()->add(new InputError('external id', $msg));
-            }
-
-            // drop base URL if present
-            if ($authority_name == 'Wikipedia-Artikel') {
-                $val_list = explode('/', $value);
-                $value = array_slice($val_list, -1)[0];
-            }
-
-            $key_list = ['deleteFlag', 'value', 'note'];
-            UtilService::setByKeys($uext, $data_loop, $key_list);
-        }
-
-        return $item;
-    }
-
-    /**
-     * create UrlExternal object
-     * TODO 2023-05-25 replace this by UrlExternal($item);
-     */
-    public function makeUrlExternal($item, $authority) {
-        $url_external = new UrlExternal();
-        if (!is_null($item->getId())) {
-            $url_external->setItemId($item->getId());
-        }
-        $url_external->setItem($item);
-        $url_external->setAuthorityId($authority->getId());
-        $url_external->setAuthority($authority);
-        return $url_external;
-    }
 
     /**
      * clear $target_list; copy collection $source_list to $target_list;

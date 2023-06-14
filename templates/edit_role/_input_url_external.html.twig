@@ -2,9 +2,6 @@
 {% set base_input_name=editFormId~'['~itemIndex~']' %}
 {% set base_id_urlext=base_id~'_urlext_'~currentIndex %}
 {% set base_input_name_urlext=base_input_name~'[urlext]['~currentIndex~']' %}
-{% if isLast is not defined %}
-    {% set isLast = true %}
-{% endif %}
 <div class="row"
      data-controller="input-state">
     {# col with add button and delete button #}

@@ -169,8 +169,6 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         // set sibling in an extra call to PersonRepository->setSibling
-        $em = $this->getEntityManager();
-        $urlExternalRepository = $em->getRepository(UrlExternal::class);
         foreach($canon_list as $canon) {
             $person_id_name = $canon->getPersonIdName();
             $person = $id_person_map[$person_id_name];

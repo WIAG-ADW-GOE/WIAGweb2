@@ -122,11 +122,13 @@ class RoleRepository extends ServiceEntityRepository
     /**
      * @return list of role names for autocompletion
      */
-    public function suggestName($q_param) {
+    public function suggestName($q_param, $size) {
         $qb = $this->createQueryBuilder('r')
                    ->select('DISTINCT r.name AS suggestion')
                    ->andWhere('r.name like :q_param')
                    ->setParameter('q_param', '%'.$q_param.'%');
+
+        $qb->setMaxResults($size);
 
         $query = $qb->getQuery();
         return $query->getResult();

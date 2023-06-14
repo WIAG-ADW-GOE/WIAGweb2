@@ -10,7 +10,6 @@
 	{{ form_start(form, {
 	    'attr': {
 		'data-controller': 'submit-form',
-		'data-action': 'change->submit-form#onChange',
 	    }
 	}) }}
 	    <div class="row ms-2">
@@ -21,7 +20,8 @@
 			    {{ form_errors(form.roleGroup) }}
 			    {{ form_widget(form.roleGroup, {
 				'attr': {
-				    'class': 'wiag-input'
+				    'class': 'wiag-input',
+				    'data-action': 'change->submit-form#onChange',
 				}
 			    }) }}
 			</div>
@@ -46,7 +46,8 @@
 			    {{ form_errors(form.sortBy) }}
 			    {{ form_widget(form.sortBy, {
 				'attr': {
-				    'class': 'wiag-input'
+				    'class': 'wiag-input',
+				    'data-action': 'change->submit-form#onChange',
 				}
 			    }) }}
 			</div>

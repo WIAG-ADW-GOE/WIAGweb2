@@ -41,6 +41,12 @@ class Item {
     ];
 
     const ITEM_TYPE = [
+        1 => [
+            'name' => 'Bistum',
+            'id_public_mask' => 'WIAG-Inst-DIOCGatz-#-001',
+            'edit_status_default' => 'angelegt',
+            'online_status' => 'online',
+        ],
         4 => [
             'name' => 'Bischof',
             'id_public_mask' => 'WIAG-Pers-EPISCGatz-#-001',
@@ -253,7 +259,7 @@ class Item {
         $this->changedBy = $user_wiag_id;
         $this->dateChanged = $now;
 
-        $this->editStatus = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
+        $this->editStatus = self::ITEM_TYPE[$item_type_id]['edit_status_default'];
 
         $this->inputError = new ArrayCollection();
     }

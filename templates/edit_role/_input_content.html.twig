@@ -6,7 +6,7 @@
 	    <input type="text" id="{{ base_id }}_name"
 		   name="{{ base_input_name}}[name]"
 		   class="form-control wiag-input"
-		   style="min-width: 20rem"
+		   style="min-width: 16rem"
 		   value="{{ role.name }}"
 		   spellcheck="false"
 		   aria-label="Bezeichnung">
@@ -14,29 +14,11 @@
 	    <input type="text" id="{{ base_id }}_plural"
 		   name="{{ base_input_name}}[plural]"
 		   class="form-control wiag-input"
-		   style="min-width: 20rem"
+		   style="min-width: 16rem"
 		   value="{{ role.plural }}"
 		   spellcheck="false"
 		   aria-label="Plural">
 	    <span class="input-group-text" style="min-width: 7rem">Geschlecht</span>
-	    {% if false %}
-	    <div
-		{{ stimulus_controller('autocomplete', {
-		    url: path('role_suggest', { field: 'gender' }),
-		}) }}>
-		<input type="text" id="{{ base_id }}_gender"
-		       name="{{ base_input_name}}[gender]"
-		       class="form-control form-control-sm wiag-input"
-		       style="min-width: 5rem; max-width: 8rem"
-		       value="{{ role.gender }}"
-		       spellcheck="false"
-		       aria-label="Geschlecht"
-		       data-autocomplete-target="input">
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 30rem;"></ul>
-	    </div>
-	    {% else %}
 	    <div {{ stimulus_controller('autocomplete', {
 		 url: path('role_suggest', { field: 'gender' }),
 		 }) }} >
@@ -52,29 +34,30 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
-	    {% endif %}
 	    <span class="input-group-text" style="min-width: 5rem">Sprache</span>
-	    <input type="text" id="{{ base_id }}_lang"
-		   name="{{ base_input_name}}[lang]"
-		   class="form-control form-control-sm wiag-input"
-		   style="min-width: 3rem; max-width: 5rem"
-		   value="{{ role.lang }}"
-		   spellcheck="false"
-		   aria-label="Sprache">
+	    <select id="{{ base_id }}_lang"
+		    name="{{ base_input_name}}[lang]"
+		    class="form-select"
+		    style="max-width: 5rem"
+		    aria-label="Sprache">
+		{% for lang in ['de', 'fr', 'la', 'it', 'pl', 'cz', 'nl', 'en'] %}
+		    <option value="{{ lang }}" {% if lang == role.lang %}selected{% endif %}>{{ lang }}</option>
+		{% endfor %}
+	    </select>
 	    <div class="ms-1"
 		 data-controller="submit-confirm"
 		 data-submit-confirm-title-value="Eintrag löschen?"
-		 data-submit-confirm-button-id-value="delete_{{ role.id }}"
+		 data-submit-confirm-button-id-value="delete_{{ role.item.id }}"
 		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
 		 data-submit-confirm-confirm-button-text-value="Löschen"
 		 data-submit-confirm-cancel-button-text-value="Abbrechen">
 		{# use this hidden element to trigger the confirmed action #}
 		{# set delete flag and save the edit form list #}
 		<button type="submit"
-			id="delete_{{ role.id }}"
+			id="delete_{{ role.item.id }}"
 			data-action="submit-form#submit"
 			form="{{ editFormId }}"
-			formaction="{{ path('edit_role_delete', {'q_id': role.id ?? 0 }) }}"
+			formaction="{{ path('edit_role_delete', {'q_id': role.item.id ?? 0 }) }}"
 			class="d-none"></button>
 		<button type="BUTTON"
 			      class="btn btn-sm btn-danger"

@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\Diocese;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
+
+use App\Service\UtilService;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -180,6 +183,7 @@ class DioceseRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
+
     public function findByModel($model) {
         $qb = $this->createQueryBuilder('d')
                    ->select('d', 'i')
@@ -194,6 +198,22 @@ class DioceseRepository extends ServiceEntityRepository
 
         $query = $qb->getQuery();
         return $query->getResult();
+    }
+
+    /**
+     * find dioceses by ID
+     */
+    public function findList($id_list) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('r')
+                   ->andWhere('r.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $role_list = $query->getResult();
+
+        $role_list = UtilService::reorder($role_list, $id_list, "id");
+        return $role_list;
     }
 
 

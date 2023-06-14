@@ -13,23 +13,26 @@
 	    <div class="ms-1"
 		 data-controller="submit-confirm"
 		 data-submit-confirm-title-value="Eintrag löschen?"
-		 data-submit-confirm-button-id-value="delete_{{ diocese.id }}"
+		 data-submit-confirm-button-id-value="delete_{{ diocese.item.id }}"
 		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
 		 data-submit-confirm-confirm-button-text-value="Löschen"
 		 data-submit-confirm-cancel-button-text-value="Abbrechen">
 		{# use this hidden element to trigger the confirmed action #}
 		{# set delete flag and save the edit form list #}
 		<button type="submit"
-			id="delete_{{ diocese.id }}"
+			id="delete_{{ diocese.item.id }}"
 			data-action="submit-form#submit"
 			form="{{ editFormId }}"
-			formaction="{{ path('edit_diocese_delete', {'q_id': diocese.id ?? 0 }) }}"
+			formaction="{{ path('edit_diocese_delete', {'q_id': diocese.item.id ?? 0 }) }}"
 			class="d-none"></button>
 		<button type="BUTTON"
-			      class="btn btn-sm btn-danger"
-			      data-action="submit-confirm#confirm">Eintrag löschen</button>
+			class="btn btn-sm btn-danger"
+			data-action="submit-confirm#confirm">Eintrag löschen</button>
 	    </div>
 	</div>
+	{{ include('edit_diocese/_input_skos_label_list.html.twig', {
+	    'itemIndex': itemIndex
+	}) }}
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 8rem">Bemerkung</span>
 	    <textarea id="{{ base_id }}_note"
@@ -45,20 +48,57 @@
 		   aria-label="Status"
 		   class="form-control form-control-sm wiag-input"
 		   value="{{ diocese.dioceseStatus }}">
+	    <span class="input-group-text" style="min-width: 8rem">Gründung</span>
+	    <input id="{{ base_id }}_dateOfFounding"
+		   name="{{ base_input_name }}[dateOfFounding]"
+		   aria-label="Gründung"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ diocese.dateOfFounding }}">
+	    <span class="input-group-text" style="min-width: 8rem">Aufhebung</span>
+	    <input id="{{ base_id }}_dateOfDissolution"
+		   name="{{ base_input_name }}[dateOfDissolution]"
+		   aria-label="Aufhebung"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ diocese.dateOfDissolution }}">
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 8rem">Bischofssitz</span>
+	    <div {{ stimulus_controller('autocomplete', {
+		 url: path('place_suggest', { field: 'name' }),
+		 }) }} >
+		<input id="{{ base_id }}_bishopricSeat"
+		       name="{{ base_input_name }}[bishopricSeat]"
+		       aria-label="Bischofssitz"
+		       class="form-control form-control-sm wiag-input"
+		       style="min-width: 22rem"
+		       value="{{ diocese.formBishopricSeat }}"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
 	    <span class="input-group-text" style="min-width: 8rem">Kirchenprovinz</span>
 	    <input id="{{ base_id }}_ecclesiasticalProvince"
 		   name="{{ base_input_name }}[ecclesiasticalProvince]"
 		   aria-label="Kirchenprovinz"
 		   class="form-control form-control-sm wiag-input"
+		   style="max-width: 22rem"
 		   value="{{ diocese.ecclesiasticalProvince }}">
-
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 12rem">Anmerkung zum Bischofssitz</span>
+	    <input id="{{ base_id }}_noteBishopricSeat"
+		   name="{{ base_input_name }}[noteBishopricSeat]"
+		   aria-label="Anmerkung zum Bischofssitz"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ diocese.noteBishopricSeat }}">
 	</div>
 	{{ include('edit_diocese/_input_url_external_list.html.twig', {
 	    'itemIndex': itemIndex
 	}) }}
     </div>
 </div>
-{% for error_obj in diocese.inputError %}
+{% for error_obj in diocese.item.inputError %}
     <div class="row">
 	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
 	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>

@@ -58,6 +58,15 @@ class SkosLabel
      */
     private $displayOrder;
 
+    /**
+     * hold form data
+     */
+    private $deleteFlag;
+
+    public function __construct($skosSchemeId) {
+        $this->skosSchemeId = $skosSchemeId;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -99,12 +108,24 @@ class SkosLabel
         return $this;
     }
 
+    public function getDiocese() {
+        return $this->diocese;
+    }
+
+    public function setDiocese($diocese): self
+    {
+        $this->diocese = $diocese;
+
+        return $this;
+    }
+
+
     public function getLabel(): ?string
     {
         return $this->label;
     }
 
-    public function setLabel(string $label): self
+    public function setLabel($label): self
     {
         $this->label = $label;
 
@@ -146,4 +167,17 @@ class SkosLabel
 
         return $this;
     }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
 }

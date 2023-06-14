@@ -2,9 +2,6 @@
 {% set base_input_name=editFormId~'['~itemIndex~']' %}
 {% set base_id_urlext=base_id~'_urlext_'~currentIndex %}
 {% set base_input_name_urlext=base_input_name~'[urlext]['~currentIndex~']' %}
-{% if is_last is not defined %}
-    {% set is_last = true %}
-{% endif %}
 <div class="row"
      data-controller="input-state">
     {# col with add button and delete button #}
@@ -15,6 +12,11 @@
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text">URL Typ</span>
 	    {# id (hidden) #}
+	    <input type="text"
+		   id="{{ base_id_urlext }}_id"
+		   name="{{ base_input_name_urlext }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ urlext.id }}">
 	    {% set url_auth_id = urlext.authority ? urlext.authority.id : "" %}
 	    <input type="text"
 		   id="{{ base_id_urlext }}_authorityId"

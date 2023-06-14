@@ -118,7 +118,10 @@ class UrlExternal
         return $this->value;
     }
 
-    public function setValue(string $value): self
+    /**
+     * check type before saving to the database, not here
+     */
+    public function setValue($value): self
     {
         $this->value = $value;
 

@@ -152,12 +152,14 @@ class Role
         return $this;
     }
 
-    public function getGsRegId(): ?int
-    {
+    public function getGsRegId() {
         return $this->gsRegId;
     }
 
-    public function setGsRegId(?int $gsRegId): self
+    /**
+     * check type before saving to the database, not here
+     */
+    public function setGsRegId($gsRegId): self
     {
         $this->gsRegId = $gsRegId;
 
