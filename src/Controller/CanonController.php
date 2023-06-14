@@ -46,7 +46,6 @@ class CanonController extends AbstractController {
                           UtilService $utilService) {
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
-        // $model = new PersonFormModel;
         $model = new PersonFormModel;
         $model->itemTypeId = Item::ITEM_TYPE_ID['Domherr']['id'];
 
@@ -270,7 +269,7 @@ class CanonController extends AbstractController {
         $id_all = array_slice($id_all, 0, $global_limit);
 
         // set sorting parameters
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
 
         $chunk_offset = 0;
         // sort the list by office criteria (see below), therefore splitting up in chunks is not useful
@@ -372,7 +371,7 @@ class CanonController extends AbstractController {
             });
         }
 
-        $title = $model->domstift;
+        $title = $model->institution;
         if ($title) {
             $part_list = explode(" ", $title);
             if (count($part_list) == 1) {
