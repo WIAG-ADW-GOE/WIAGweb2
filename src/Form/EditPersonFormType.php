@@ -113,6 +113,10 @@ class EditPersonFormType extends AbstractType
                 'label' => 'Kommentar (red.)',
                 'required' => false,
             ])
+            ->add('misc', TextType::class, [
+                'label' => 'andere Felder',
+                'required' => false,
+            ])
             ->add('dateCreated', TextType::class, [
                 'label' => 'angelegt',
                 'required' => false,

@@ -80,76 +80,6 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-    public function personIds_legacy($model, $limit = 0, $offset = 0, $online_only = true) {
-        $result = null;
-
-        $itemTypeId = $model->itemTypeId;
-        $diocese = null;
-        $monastery = null;
-        if ($itemTypeId == 4) {
-            $diocese = $model->institution;
-        } else {
-            $monastery = $model->institution;
-        }
-        $office = $model->office;
-        $year = $model->year;
-        $name = $model->name;
-        $place = $model->place;
-        $someid = $model->someid;
-        $sort_by = $model->sortBy;
-        $sort_order = $model->sortOrder;
-
-        $qb = $this->createQueryBuilder('i')
-                   ->join('App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
-                   ->andWhere('i.itemTypeId = :itemTypeId')
-                   ->andWhere('i.mergeStatus <> :merged')
-                   ->setParameter(':itemTypeId', $itemTypeId)
-                   ->setParameter(':merged', 'parent');
-
-        if ($online_only) {
-            $qb->andWhere('i.isOnline = 1');
-        }
-
-        $qb = $this->addPersonConditions($qb, $model);
-
-        // only relevant for bishop queries (not for editing)
-        $qb = $this->addBishopFacets($qb, $model);
-
-        if ($office || $diocese || $monastery || $place) {
-            // sort: if diocese is a query condition, this filters personRoles
-            $qb->select('i.id as personId, min(pr.dateSortKey) as dateSortKey')
-               ->leftjoin('p.role', 'pr')
-               ->leftjoin('pr.institution', 'inst_sort')
-               ->addGroupBy('pr.personId');
-            $qb->addOrderBy('pr.dioceseName')
-               ->addOrderBy('inst_sort.name')
-               ->addOrderBy('dateSortKey');
-        } elseif ($model->isEmpty() || $name || $someid || $year) {
-            $qb->select('i.id as personId', 'min(role_srt.dateSortKey) as dateSortKey')
-               ->leftjoin('p.role', 'role_srt')
-               ->addGroupBy('personId');
-            if ($year) {
-                $qb->addOrderBy('dateSortKey');
-            }
-        }
-
-        if (($model->isEmpty() || $name || $someid) && !$year) {
-            $qb->addOrderBy('dateSortKey');
-        }
-
-        $qb->addOrderBy('p.id');
-
-        if ($limit > 0) {
-            $qb->setMaxResults($limit)
-               ->setFirstResult($offset);
-        }
-        $query = $qb->getQuery();
-
-        $result = $query->getResult();
-
-        return array_column($result, 'personId');
-    }
-
     public function personIds($model, $limit = 0, $offset = 0, $online_only = true) {
         $result = null;
 
@@ -254,6 +184,7 @@ class ItemRepository extends ServiceEntityRepository
         }
         $office = $model->office;
         $place = $model->place;
+        $misc = $model->misc;
 
         if ($diocese) {
             $qb->andWhere("(pr.dioceseName LIKE :paramDiocese ".
@@ -331,20 +262,6 @@ class ItemRepository extends ServiceEntityRepository
 
             $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
 
-            // dd($descendant_id_list, $uext_id_list, count($q_id_list));
-
-            // search for idPublic in merged ancestors
-                // $qb->leftjoin('i.urlExternal', 'uxt')
-                //    ->leftjoin('\App\Entity\Authority', 'auth', 'WITH', "auth.id = uxt.authorityId AND auth.urlType = 'Normdaten'")
-                //    ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'i.isOnline = 1 AND ip1.mergedIntoId = i.id')
-                //    ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
-                //    ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
-                //    ->andWhere("i.idPublic LIKE :q_id OR i.idInSource LIKE :q_id ".
-                //               "OR uxt.value LIKE :q_id ".
-                //               "OR ip1.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
-                //               "OR ip2.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id ".
-                //               "OR ip3.idPublic LIKE :q_id OR ip1.idInSource LIKE :q_id")
-                //    ->setParameter('q_id', '%'.$someid.'%');
             $qb->andWhere("i.id in (:q_id_list)")
                ->setParameter('q_id_list', $q_id_list);
         }
@@ -384,6 +301,30 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('q_comment', '%'.$comment.'%');
         }
 
+        $misc = $model->misc;
+        if ($misc) {
+            // 2023-06-14 Namen mit einbeziehen
+            $qb->leftjoin('p.role', 'pr_misc')
+               ->leftjoin('pr_misc.institution', 'inst_misc')
+               ->leftjoin('i.itemProperty', 'i_prop')
+               ->leftjoin('i_prop.type', 'i_prop_type')
+               ->leftjoin('pr_misc.roleProperty', 'r_prop')
+               ->leftjoin('r_prop.type', 'r_prop_type')
+               ->andWhere("(i.normdataEditedBy LIKE :misc)".
+                          " OR (p.noteName LIKE :misc)".
+                          " OR (p.notePerson LIKE :misc)".
+                          " OR (p.academicTitle LIKE :misc)".
+                          " OR (i.commentDuplicate LIKE :misc)".
+                          " OR (i_prop.value LIKE :misc)".
+                          " OR (i_prop_type.name LIKE :misc)".
+                          " OR (r_prop.value LIKE :misc)".
+                          " OR (r_prop_type.name LIKE :misc)".
+                          " OR (pr.roleName LIKE :misc)".
+                          " OR (pr.note LIKE :misc)".
+                          " OR (pr.dioceseName LIKE :misc)".
+                          " OR (inst_misc.name LIKE :misc)")
+               ->setParameter("misc", '%'.$misc.'%');
+        }
 
         $dateCreated = UtilService::parseDateRange($model->dateCreated);
         if ($dateCreated) {

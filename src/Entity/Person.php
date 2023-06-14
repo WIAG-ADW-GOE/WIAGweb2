@@ -100,7 +100,6 @@ class Person {
      */
     private $academicTitle;
 
-
     /**
      * @ORM\Column(type="integer", nullable=true)
      */

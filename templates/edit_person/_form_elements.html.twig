@@ -145,6 +145,16 @@
 		    }
 		}) }}
 	    </div>
+	    <div class="me-2 mt-1">
+		{{ form_label(form.misc) }}
+		{{ form_errors(form.misc) }}
+		{{ form_widget(form.misc, {
+		    'attr': {
+			'class': 'wiag-input',
+			'size': input_width_misc
+		    }
+		}) }}
+	    </div>
 	</div>
     </div>
 </div>

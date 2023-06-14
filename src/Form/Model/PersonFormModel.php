@@ -26,6 +26,7 @@ class PersonFormModel {
     public $editStatus = [];
     public $commentDuplicate = null;
     public $comment = null;
+    public $misc = null;
     public $reference = null;
     public $dateCreated = null;
     public $dateChanged = null;
@@ -78,6 +79,7 @@ class PersonFormModel {
             'isDeleted' => false,
             'commentDuplicate' => null,
             'comment' => null,
+            'misc' => null,
             'dateCreated' => null,
             'dateChanged' => null,
             'listSize' => 5,
