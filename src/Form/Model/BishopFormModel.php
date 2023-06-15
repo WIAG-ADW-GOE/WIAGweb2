@@ -82,7 +82,9 @@ class BishopFormModel {
 
         $keys = ['name', 'diocese', 'office', 'year', 'someid', 'isOnline', 'isDeleted', 'commentDuplicate', 'comment', 'dateCreated', 'dateChanged'];
         foreach($keys as $key) {
-            $model->$key = $data[$key];
+            if (array_key_exists($key, $data)) {
+                $model->$key = $data[$key];
+            }
         }
 
         $model->facetDiocese = self::makeChoices($data, 'facetDiocese');
