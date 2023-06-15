@@ -9,12 +9,36 @@
 	<div class="row mx-0">
  	    <div class="col">
 		<button type="button"
-			name="formType"
-			value="list"
-			data-action="submit-form#submit"
-			class="btn btn-primary btn-sm float-end">Speichern</button>
+			      name="formType"
+			      value="list"
+			      data-action="submit-form#submit"
+			      class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
+	{% if authorityList|length < 101 %}
+	<div class="row mx-0 mt-2">
+	    <div class="col-12">
+		{# disable submit via enter-key #}
+		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
+		{# toggle collapse button #}
+		<button class="btn btn-sm btn-secondary"
+			type="button"
+			data-bs-toggle="collapse"
+			data-bs-target=".multi-collapse"
+			aria-expanded="false"
+			aria-controls="{{ body_id_list }}"
+			{{ stimulus_controller('toggle-arrow', {
+			    state: true,
+			    imgOpen: 'down',
+			    imgClosed: 'right'
+			}) }}
+			data-action="toggle-arrow#toggle"
+			aria-label="Listenelemente aufklappen oder schließen"
+			{# avoid overflow of the number of input field elements #}
+			data-value="down">öffnen/schließen</button>
+	    </div>
+	</div>
+	{% endif %}
 	<div class="row mx-0">
 	    <div class="col-12">
 		<div data-controller="insert"
