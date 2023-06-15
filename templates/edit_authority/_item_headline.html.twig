@@ -30,7 +30,10 @@
 		       data-action="click->sync#fill"
 		       {% if authority.formisedited %}checked="checked"{% endif %}>
 	    </span>
-	    {% set head_line= authority.urlnameformatter|length > 0 ? authority.urlnameformatter : "Neuer Eintrag" %}
+	    {% set head_line=authority.urlnameformatter|length > 0 ? authority.urlnameformatter : "Neuer Eintrag" %}
+	    {% if authority.urlType %}
+		{% set head_line=head_line~" — "~authority.urlType %}
+	    {% endif %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    {# insert internal id into the form (hidden) #}
 	    <input type="text"

@@ -185,8 +185,8 @@ class BishopController extends AbstractController {
         }
         $format = ucfirst(strtolower($format));
 
-
         $model->itemTypeId = 4;
+        $model->isDeleted = 0;
         $id_all = $itemRepository->personIds($model);
 
         $chunk_offset = 0;
