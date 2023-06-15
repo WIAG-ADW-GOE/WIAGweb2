@@ -216,6 +216,12 @@ class EditDioceseController extends AbstractController {
     private function mapBishopricSeat($diocese, $data, $entityManager) {
         $placeRepository = $entityManager->getRepository(Place::class);
 
+        if (is_null($data) or trim($data) == "") {
+            $diocese->setBishopricSeatId(null);
+            $diocese->setBishopricSeat(null);
+            return $diocese;
+        }
+
         $match_list = array();
         preg_match("/[[:alpha:]]+ \(([0-9]+)\)/", $data, $match_list);
 

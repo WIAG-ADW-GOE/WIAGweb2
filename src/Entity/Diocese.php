@@ -220,7 +220,7 @@ class Diocese
         return $this->bishopricSeatId;
     }
 
-    public function setBishopricSeatId(int $id): self
+    public function setBishopricSeatId(?int $id): self
     {
         $this->bishopricSeatId = $id;
 
