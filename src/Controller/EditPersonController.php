@@ -811,7 +811,8 @@ class EditPersonController extends AbstractController {
 
                 $parent_item->setFormIsExpanded(1);
             }
-            $person_list = $personRepository->findList($id_list);
+            $with_deleted = true;
+            $person_list = $personRepository->findList($id_list, $with_deleted);
             foreach ($person_list as $parent_person) {
                 $canonLookupRepository->update($parent_person);
             }

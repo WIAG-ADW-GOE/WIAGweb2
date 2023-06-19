@@ -59,7 +59,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      *
      */
-    public function findList($id_list) {
+    public function findList($id_list, $with_deleted = false) {
         $qb = $this->createQueryBuilder('p')
                    ->select('p, i, bp, role, role_type, institution, urlext')
                    ->join('p.item', 'i') # avoid query in twig ...
@@ -70,10 +70,13 @@ class PersonRepository extends ServiceEntityRepository {
                    ->leftjoin('role.role', 'role_type')
                    ->leftjoin('role.institution', 'institution')
                    ->andWhere('p.id in (:id_list)')
-                   ->andWhere('i.isDeleted = 0')
                    ->addOrderBy('role.dateSortKey')
                    ->addOrderBy('role.id')
                    ->setParameter('id_list', $id_list);
+
+        if (!$with_deleted) {
+            $qb->andWhere('i.isDeleted = 0');
+        }
 
         // sorting of birthplaces see annotation
 
