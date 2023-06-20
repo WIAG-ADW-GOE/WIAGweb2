@@ -193,16 +193,22 @@ class ItemRepository extends ServiceEntityRepository
                ->setParameter('paramDiocese', '%'.$diocese.'%');
         }
 
+        // if monastery is given, it should be AND-combined with office
         if ($monastery) {
             $qb->leftjoin('p.role', 'pr_filter')
                ->leftjoin('pr_filter.institution', 'inst')
-               ->andWhere("(pr.institutionName LIKE :paramInst ".
+               ->andWhere("(pr_filter.institutionName LIKE :paramInst ".
                           "OR inst.name LIKE :paramInst)")
                ->setParameter('paramInst', '%'.$monastery.'%');
-        }
+            if ($office) {
+                $qb->leftjoin('pr_filter.role', 'r_office')
+               ->andWhere("pr_filter.roleName LIKE :q_office OR r_office.name LIKE :q_office")
+               ->setParameter('q_office', '%'.$office.'%');
 
-        if ($office) {
-            $qb->andWhere("pr.roleName LIKE :q_office")
+            }
+        } elseif ($office) {
+            $qb->leftjoin('pr.role', 'r_office')
+               ->andWhere("pr.roleName LIKE :q_office OR r_office.name LIKE :q_office")
                ->setParameter('q_office', '%'.$office.'%');
         }
 
