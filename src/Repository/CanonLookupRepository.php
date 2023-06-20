@@ -688,20 +688,35 @@ class CanonLookupRepository extends ServiceEntityRepository
      * do not flush
      */
     public function update($person) {
+        $em = $this->getEntityManager();
+        $urlExternalRepository = $em->getRepository(UrlExternal::class);
+        $itemRepository = $em->getRepository(Item::class);
+        $personRepository = $em->getRepository(Person::class);
 
         // remove entries
         $person_id_name = $this->findPersonIdName($person->getId());
-        $entityManager = $this->getEntityManager();
         $list_name = $this->findBy(['personIdName' => $person_id_name]);
         foreach ($list_name as $c_del) {
-            $entityManager->remove($c_del);
+            $em->remove($c_del);
+        }
+
+        // remove entry referring to an (independent) GS-entry
+
+        $gsn = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GS']);
+        if ($gsn) {
+            $gsn_id = $urlExternalRepository->findIdBySomeNormUrl($gsn);
+            if (!is_null($gsn_id) && count($gsn_id) > 0) {
+                $person_id_name = $gsn_id[0];
+                $list_name = $this->findBy(['personIdName' => $person_id_name]);
+                foreach ($list_name as $c_del) {
+                    $em->remove($c_del);
+                }
+            }
         }
 
         if ($person->getItem()->getIsOnline()) {
             $c2 = null;
             $c3 = null;
-            $itemRepository = $entityManager->getRepository(Item::class);
-            $personRepository = $entityManager->getRepository(Person::class);
 
             $c1 = new CanonLookup();
             $c1->setPerson($person);
@@ -725,14 +740,14 @@ class CanonLookupRepository extends ServiceEntityRepository
                 $c3->setPrioRole($prio_role_ep);
                 $person_id_name = $c3->getPerson()->getId();
                 $c3->setPersonIdName($person_id_name);
-                $entityManager->persist($c3);
+                $em->persist($c3);
             }
 
             $c1->setPersonIdName($person_id_name);
-            $entityManager->persist($c1);
+            $em->persist($c1);
             if ($c2) {
                 $c2->setPersonIdName($person_id_name);
-                $entityManager->persist($c2);
+                $em->persist($c2);
             }
         }
     }
