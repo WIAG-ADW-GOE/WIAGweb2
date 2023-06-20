@@ -101,31 +101,43 @@ class UtilService {
                 $a_val = $a[$field];
                 $b_val = $b[$field];
             }
-            // sort null last
+            // sort null last, but not for familyname
 
             if (is_null($a_val) && is_null($b_val)) {
                 $cmp_val = 0;
                 continue;
             }
 
-            if (is_null($a_val) && !is_null($b_val)) {
-                $cmp_val = 1;
-                break;
-            }
+            if ($field == 'familyname') {
+                if (is_null($a_val) && !is_null($b_val)) {
+                    $cmp_val = -1;
+                    break;
+                }
 
-            if (is_null($b_val) && !is_null($a_val)) {
-                $cmp_val = -1;
-                break;
-            }
-
-            if ($a_val < $b_val) {
-                $cmp_val = -1;
-                break;
-            } elseif ($a_val > $b_val) {
-                $cmp_val = 1;
-                break;
+                if (is_null($b_val) && !is_null($a_val)) {
+                    $cmp_val = 1;
+                    break;
+                }
             } else {
-                $cmp_val = 0;
+                if (is_null($a_val) && !is_null($b_val)) {
+                    $cmp_val = 1;
+                    break;
+                }
+
+                if (is_null($b_val) && !is_null($a_val)) {
+                    $cmp_val = -1;
+                    break;
+                }
+            }
+
+            if (is_string($a_val) and is_string($b_val)) {
+                $cmp_val = strnatcmp($a_val, $b_val);
+            } else {
+                $cmp_val = $a_val < $b_val ? -1 : ($a_val > $b_val ? 1 : 0);
+            }
+
+            if ($cmp_val != 0) {
+                break;
             }
         }
 
