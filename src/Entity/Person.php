@@ -725,7 +725,10 @@ class Person {
             'comment',
             'noteName',
             'notePerson',
+            'academicTitle',
         ];
+
+        $this->item->mergeData($candidate->getItem());
 
         foreach ($field_list as $field) {
             $this->mergeField($field, $candidate);

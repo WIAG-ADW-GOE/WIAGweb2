@@ -885,6 +885,31 @@ class Item {
         return $this;
     }
 
+    /**
+     * merge data from $candidate
+     */
+    public function mergeData(Item $candidate) {
+        $field_list = [
+            'normdataEditedBy'
+        ];
+
+        foreach ($field_list as $field) {
+            $getfn = 'get'.ucfirst($field);
+            $setfn = 'set'.ucfirst($field);
+            $data = $candidate->$getfn();
+            if (is_null($this->$getfn())) {
+                return $this->$setfn($data);
+            } elseif (!is_null($data)) {
+                if ($this->$getfn() != $data) {
+                    $value = $this->$getfn()." | ".$data;
+                    return $this->$setfn($value);
+                }
+            }
+        }
+
+        return $this;
+    }
+
     public function mergeCollection($collection_name, Item $candidate) {
         $getfn = 'get'.ucfirst($collection_name);
         $setfn = 'set'.ucfirst($collection_name);
