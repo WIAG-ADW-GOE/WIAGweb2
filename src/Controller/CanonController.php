@@ -160,6 +160,7 @@ class CanonController extends AbstractController {
         $personRole = array_map(function($el) {
             return $el->getPerson();
         }, $canon_list);
+
         $personUrl = null;
         foreach($personRole as $person) {
             if (count($person->getItem()->getUrlExternal()) > 0) {

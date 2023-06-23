@@ -421,7 +421,8 @@ class Person {
     public function getDisplayname() {
         $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
         $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
-        return $this->givenname.$prefixpart.$familypart;
+        $agnomenpart = strlen($this->noteName) > 0 ? ' '.$this->noteName : '';
+        return $this->givenname.$prefixpart.$familypart.$agnomenpart;
     }
 
     public function getGivennameVariants() {
