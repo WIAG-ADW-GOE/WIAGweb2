@@ -23,28 +23,81 @@ class EditAuthorityController extends AbstractController {
     const HINT_SIZE = 12;
 
     /**
-     * @Route("/edit/authority", name="edit_authority")
+     * @Route("/edit/authority/query", name="edit_authority_query")
      */
-    public function list(Request $request,
-                         EntityManagerInterface $entityManager): Response {
-        $edit_form_id = 'authority_edit_form';
+    public function query(Request $request,
+                          EntityManagerInterface $entityManager): Response {
 
         $authorityRepository = $entityManager->getRepository(Authority::class);
 
-        $authority_list = $authorityRepository->findAll();
+        $type_choices = [
+            '- alle -' => '',
+        ];
+
+        $q_choice_list = $authorityRepository->suggestUrlType(null, 100);
+        foreach($q_choice_list as $q_choice) {
+            $q_value = $q_choice['suggestion'];
+            $type_choices[$q_value] = $q_value;
+        }
+
+        $default_type = $type_choices['- alle -'];
+
+        $sort_by_choices = [
+            'Anzeigereihenfolge' => 'displayOrder',
+            'Typ' => 'urlType',
+            'ID' => 'id'
+        ];
+
+        $model = [
+            'type' => $default_type,
+            'sortBy' => 'displayOrder',
+        ];
+
+        $form = $this->createFormBuilder($model)
+                     ->setMethod('GET')
+                     ->add('type', ChoiceType::class, [
+                         'label' => 'Typ',
+                         'choices' => $type_choices,
+                         'required' => false,
+                     ])
+                     ->add('sortBy', ChoiceType::class, [
+                         'label' => 'Sortierung',
+                         'choices' => $sort_by_choices,
+                     ])
+                     ->getForm();
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+
+        $authority_list = array();
+        if ($form->isSubmitted() && $form->isValid()) {
+        } else {
+            $model['type'] = $default_type;
+        }
+
+
+        $authority_list = $authorityRepository->findByModel($model);
 
         // sort null last
-        $authority_list = UtilService::sortByFieldList($authority_list, ['id']);
+        $sort_criteria = array();
+        if ($model['sortBy'] != '') {
+            $sort_criteria[] = $model['sortBy'];
+        }
+        $sort_criteria[] = 'id';
+        $authority_list = UtilService::sortByFieldList($authority_list, $sort_criteria);
 
-        $emptyAuthority = new Authority();
+        $template = 'edit_authority/query.html.twig';
+        $edit_form_id = 'authority_edit_form';
 
-        return $this->renderForm('edit_authority/home.html.twig', [
+        return $this->renderForm($template, [
             'menuItem' => 'edit-menu',
+            'form' => $form,
             'editFormId' => $edit_form_id,
             'authorityList' => $authority_list,
-            'emptyAuthority' => $emptyAuthority,
         ]);
+
     }
+
 
     /**
      * @Route("/edit/authority/save", name="edit_authority_save")

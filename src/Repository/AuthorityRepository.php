@@ -95,32 +95,11 @@ class AuthorityRepository extends ServiceEntityRepository
 
     }
 
-    /**
-     *
-     */
-    public function baseUrlList_legacy($id_list) {
-        $qb = $this->createQueryBuilder('a')
-                   ->select('a.id, a.url')
-                   ->andWhere('a.id in (:auth_id_list)')
-                   ->setParameter('auth_id_list', $id_list);
-
-        $query = $qb->getQuery();
-        $query_result = $query->getResult();
-
-        $id_short = array_flip(Authority::ID);
-        $result = [];
-        foreach($query_result as $url_loop) {
-            $result[$id_short[$url_loop['id']]] = $url_loop['url'];
-        }
-
-        return $result;
-
-    }
 
     /**
      * 2023-03-02 obsolete?
      */
-    public function baseUrlList($id_list) {
+    public function baseUrlList_legacy($id_list) {
         $qb = $this->createQueryBuilder('a')
                    ->select('a.id, a.url')
                    ->andWhere('a.id in (:auth_id_list)')
@@ -146,32 +125,6 @@ class AuthorityRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
-    /**
-     * usually used for asynchronous JavaScript request
-     * 2023-03-30 see PersonRepository
-     */
-    // public function suggestUrlName($name, $hint_size, $exclude_ids = null) {
-    //     $repository = $this->getEntityManager()->getRepository(Authority::class);
-    //     $qb = $repository->createQueryBuilder('a')
-    //                      ->select("DISTINCT a.urlNameFormatter AS suggestion")
-    //                      ->andWhere('a.urlNameFormatter LIKE :name')
-    //                      ->addOrderBy('a.urlNameFormatter')
-    //                      ->setParameter('name', '%'.$name.'%')
-    //                      ->andWhere('a.id < 1000');
-
-    //     if (!is_null($exclude_ids)) {
-    //         $qb->andWhere('a.id not in (:exclude_ids)')
-    //            ->setParameter('exclude_ids', $exclude_ids);
-    //     }
-
-    //     $qb->setMaxResults($hint_size);
-
-    //     $query = $qb->getQuery();
-
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
 
     /**
      * usually used for asynchronous JavaScript request
@@ -180,9 +133,12 @@ class AuthorityRepository extends ServiceEntityRepository
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')
                          ->select("DISTINCT a.urlType AS suggestion")
-                         ->andWhere('a.urlType LIKE :name')
-                         ->addOrderBy('a.urlType')
-                         ->setParameter('name', '%'.$name.'%');
+                         ->addOrderBy('a.urlType');
+
+        if (!is_null($name)) {
+            $qb->andWhere('a.urlType LIKE :name')
+               ->setParameter('name', '%'.$name.'%');
+        }
 
         $qb->setMaxResults($hint_size);
 
@@ -212,5 +168,20 @@ class AuthorityRepository extends ServiceEntityRepository
 
         return $suggestions;
     }
+
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('a')
+                   ->select('a');
+
+        if ($model['type'] != '') {
+            $type = $model['type'];
+            $qb->andWhere('a.urlType = :type')
+               ->setParameter('type', $type);
+        }
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
 
 }
