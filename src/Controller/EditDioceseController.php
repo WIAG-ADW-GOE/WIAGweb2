@@ -138,6 +138,12 @@ class EditDioceseController extends AbstractController {
                     ['idInSource']);
 
                 // diocese
+                $is_altes_reich = array_key_exists('isAltesReich', $data) ? 1 : 0;
+                $diocese->setIsAltesReich($is_altes_reich);
+
+                $is_gs = array_key_exists('isDioceseGs', $data) ? 1 : 0;
+                $diocese->setIsDioceseGs($is_gs);
+
                 UtilService::setByKeys(
                     $diocese,
                     $data,
@@ -151,7 +157,7 @@ class EditDioceseController extends AbstractController {
                 // validate input
                 if (trim($diocese->getName()) == "") {
                     $msg = "Bitte das Feld 'Bezeichung' ausfüllen.";
-                    $diocese->getInputError()->add(new InputError('general', $msg, 'error'));
+                    $item->getInputError()->add(new InputError('general', $msg, 'error'));
                 }
                 $error_flag = ($error_flag or !$item->getInputError()->isEmpty());
             }

@@ -10,6 +10,18 @@
 		   value="{{ diocese.name }}"
 		   spellcheck="false"
 		   aria-label="Bezeichnung">
+	    <div class="input-group-text">
+		<input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="mark as Altes Reich" id="{{ base_id }}_isAltesReich" name="{{ base_input_name }}[isAltesReich]" {% if diocese.isAltesReich %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_isAltesReich">
+		    Altes Reich
+		</label>
+	    </div>
+	    <div class="input-group-text">
+		<input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="mark as diocese Germania Sacra" id="{{ base_id }}_isDioceseGs" name="{{ base_input_name }}[isDioceseGs]" {% if diocese.isDioceseGs %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_isDioceseGs">
+		    Diözese der Germania Sacra
+		</label>
+	    </div>
 	    <div class="ms-1"
 		 data-controller="submit-confirm"
 		 data-submit-confirm-title-value="Eintrag löschen?"
