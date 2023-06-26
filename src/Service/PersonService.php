@@ -362,7 +362,9 @@ class PersonService {
 
         // additional information
         $bhi = array();
-        $fv = $person->commentLine(false);
+        $flag_names = false;
+        $flag_properties = true;
+        $fv = $person->commentLine($flag_names, $flag_properties);
         if($fv) {
             $bhi[] = $fv;
         }
