@@ -600,7 +600,6 @@ class Person {
             $academic_title,
             $str_gn_variants,
             $str_fn_variants,
-            $this->combine('noteName'),
             $this->combine('notePerson'),
         ];
 
