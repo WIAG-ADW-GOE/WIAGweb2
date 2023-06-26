@@ -20,6 +20,7 @@ class Diocese
         'dioceseStatus',
         'dateOfFounding',
         'dateOfDissolution',
+        'noteBishopricSeat',
         'comment'
     ];
 
