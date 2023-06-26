@@ -240,6 +240,9 @@ class EditPersonController extends AbstractController {
                     // data are written to the database?
                     $query_result = $personRepository->findList([$person_id]);
                     $target = $query_result[0];
+
+                    // restore canon from Digitales Personenregister?
+                    $this->restoreCanonGs($target, $person);
                     // transfer data from $person to $target
                     $this->editService->update($target, $person, $current_user_id);
 
@@ -770,7 +773,6 @@ class EditPersonController extends AbstractController {
 
     }
 
-
     /**
      * split merged item, show parents in edit forms
      *
@@ -831,6 +833,33 @@ class EditPersonController extends AbstractController {
             'count' => count($person_list),
         ]);
 
+    }
+
+    private function restoreCanonGs($target, $source) {
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal:: class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $canon_lookup = null;
+
+        $auth_id = Item::AUTHORITY_ID['GS'];
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS'];
+        $uext_gs_target = $target->getItem()->getUrlExternalByAuthorityId($auth_id);
+        $uext_gs_source = $source->getItem()->getUrlExternalByAuthorityId($auth_id);
+
+        if (!is_null($uext_gs_target) and is_null($uext_gs_source)) {
+            $q_uext = $urlExternalRepository->findByValueAndItemType($uext_gs_target, $item_type_id);
+            if (!is_null($q_uext)) {
+                $uext = $q_uext[0];
+                $item_id = $uext->getItemId();
+                $person = $personRepository->find($item_id);
+                $canon_lookup = new CanonLookup();
+                $canon_lookup->setPerson($person);
+                $canon_lookup->setPersonIdName($item_id);
+                $canon_lookup->setPrioRole(1);
+                $this->entityManager->persist($canon_lookup);
+            }
+        }
+
+        return $canon_lookup;
     }
 
     /**
