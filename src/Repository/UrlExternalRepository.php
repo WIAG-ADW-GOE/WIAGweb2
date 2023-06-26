@@ -128,6 +128,17 @@ class UrlExternalRepository extends ServiceEntityRepository
         return $url_by_type;
     }
 
+    public function findByValueAndItemType($value, $item_type_id) {
+        $qb = $this->createQueryBuilder('u')
+                   ->innerJoin('u.item', 'i')
+                   ->andWhere('i.itemTypeId = :item_type_id')
+                   ->andWhere('u.value = :value')
+                   ->setParameter('item_type_id', $item_type_id)
+                   ->setParameter('value', $value);
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
     /**
      * BEACON export
      */
