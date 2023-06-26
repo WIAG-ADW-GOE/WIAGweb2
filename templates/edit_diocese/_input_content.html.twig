@@ -99,11 +99,11 @@
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 12rem">Anmerkung zum Bischofssitz</span>
-	    <input id="{{ base_id }}_noteBishopricSeat"
-		   name="{{ base_input_name }}[noteBishopricSeat]"
-		   aria-label="Anmerkung zum Bischofssitz"
-		   class="form-control form-control-sm wiag-input"
-		   value="{{ diocese.noteBishopricSeat }}">
+	    <textarea id="{{ base_id }}_noteBishopricSeat"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[noteBishopricSeat]"
+		      aria-label="Anmerkung zum Bischofssitz"
+		      class="form-control form-control-sm wiag-input">{{ diocese.noteBishopricSeat }}</textarea>
 	</div>
 	{{ include('edit_diocese/_input_url_external_list.html.twig', {
 	    'itemIndex': itemIndex
