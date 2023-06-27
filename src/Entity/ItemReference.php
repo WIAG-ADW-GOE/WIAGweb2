@@ -18,7 +18,7 @@ class ItemReference
     private $item;
 
     /**
-     * set this manually join columns: item_type_id, reference_id
+     * set this manually join column: reference_id
      */
     private $referenceVolume;
 

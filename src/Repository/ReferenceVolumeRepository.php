@@ -148,6 +148,9 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * find references by $model holding criteria for elements in reference_volume
+     */
     public function findByModel($model) {
         $qb = $this->createQueryBuilder('v')
                    ->select('v');

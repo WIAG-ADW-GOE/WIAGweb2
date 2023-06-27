@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ItemReference;
+use App\Entity\ReferenceVolume;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,6 +48,21 @@ class ItemReferenceRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     *
+     */
+    public function findVolumeByItemIdList($item_id_list) {
+        $qb = $this->createQueryBuilder('ref')
+                   ->join('App\Entity\ReferenceVolume', 'vol', 'WITH', 'ref.referenceId = vol.referenceId')
+                   ->select('vol')
+                   ->andWhere('ref.itemId in (:item_id_list)')
+                   ->setParameter('item_id_list', $item_id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
 
     public function referenceCount($reference_id) {
         $qb = $this->createQueryBuilder('ir')

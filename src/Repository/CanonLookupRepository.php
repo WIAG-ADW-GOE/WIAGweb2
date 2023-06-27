@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\CanonLookup;
 use App\Entity\Item;
+use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -167,7 +168,6 @@ class CanonLookupRepository extends ServiceEntityRepository
                          ->andWhere('p.itemTypeId = :item_type_id')
                          ->setParameter('item_type_id', $item_type_id);
 
-        // 2023-03-30 TODO: Sortieren, je nach Abfrageparametern
 
         $query = $qb->getQuery();
 
@@ -511,9 +511,32 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
-     * find references
+     *
      */
-    public function findReferencesByModel($model, $item_type_id) {
+    public function referenceListByItemType($id_list, $item_type_list) {
+        $referenceRepository = $this->getEntityManager()->getRepository(ItemReference::class);
+        $qb = $this->createQueryBuilder('c')
+                   ->select('distinct(c.personIdRole) as id')
+                   ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole and i.itemTypeId in (:item_type_list)')
+                   ->andWhere('c.personIdName in (:id_list)')
+                   ->setParameter('id_list', $id_list)
+                   ->setParameter('item_type_list', $item_type_list);
+        $query = $qb->getQuery();
+        $id_list_2 = $query->getResult();
+
+        $reference_list = null;
+        if (!is_null($id_list_2)) {
+            $reference_list = $referenceRepository->findVolumeByItemIdList($id_list_2);
+        }
+
+        return $reference_list;
+    }
+
+    /**
+     * find references
+     * 2023-06-27 obsolete?! see referenceListByItemType()
+     */
+    public function findReferencesByModel_legacy($model, $item_type_id) {
         $qb = $this->createQueryBuilder('c')
                    ->select('distinct v')
                    ->innerjoin('\App\Entity\CanonLookup', 'c_sel', 'WITH', 'c_sel.personIdName = c.personIdName')

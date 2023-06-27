@@ -9,9 +9,6 @@ use App\Entity\UrlExternal;
 use App\Entity\PersonRole;
 use App\Entity\Role;
 use App\Entity\ItemReference;
-use App\Repository\PersonRepository;
-use App\Repository\ItemRepository;
-use App\Repository\CanonLookupRepository;
 use App\Service\UtilService;
 use App\Form\CanonFormType;
 use App\Form\Model\PersonFormModel;
@@ -42,8 +39,9 @@ class CanonController extends AbstractController {
      */
     public function query(Request $request,
                           EntityManagerInterface $em,
-                          CanonLookupRepository $repository,
                           UtilService $utilService) {
+
+        $canonLookupRepository = $em->getRepository(CanonLookup::class);
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
@@ -74,7 +72,7 @@ class CanonController extends AbstractController {
                 $form->get('domstift')->setData($get_param_domstift);
             }
 
-            $id_all = $repository->canonIds($model);
+            $id_all = $canonLookupRepository->canonIds($model);
 
             $count = count($id_all);
 
@@ -86,7 +84,6 @@ class CanonController extends AbstractController {
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
 
-            $canonLookupRepository = $em->getRepository(CanonLookup::class);
             $prio_role = 1;
             $canon_list = $canonLookupRepository->findList($id_list, $prio_role);
             // set siblings for bishops
@@ -266,8 +263,8 @@ class CanonController extends AbstractController {
         $id_all = $canonLookupRepository->canonIds($model);
 
         // set global limit here (avoid server crash!)
-        $global_limit = 5000;
-        $id_all = array_slice($id_all, 0, $global_limit);
+        $global_limit = 4000;
+        $id_all = array_slice($id_all, 0, $global_limit - 1);
 
         // set sorting parameters
         $domstift = $model->institution;
@@ -399,19 +396,25 @@ class CanonController extends AbstractController {
                                EntityManagerInterface $entityManager,
                                $itemType) {
 
-        // itemType:
-        // 6 references GS
-        // 5 other references
+        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+
+        $item_type_list = explode('-', $itemType);
 
         $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
-        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+        $canon_id_list = $canonLookupRepository->canonIds($model);
+        $reference_list = $canonLookupRepository->referenceListByItemType($canon_id_list, $item_type_list);
 
-        $reference_list = $canonLookupRepository->findReferencesByModel($model, $itemType);
-        // dd($reference_list);
-        $title = $itemType == 6 ? 'Literatur Germania Sacra' : 'Literatur andere';
+        $title = 'Literatur andere';
+        $criteria_list = ['displayOrder', 'titleShort', 'referenceId'];
+        if ($item_type_list[0] == strval(Item::ITEM_TYPE_ID['Domherr GS']['id'])) {
+                $title = 'Literatur Germania Sacra';
+                $criteria_list = ['titleShort', 'displayOrder', 'referenceId'];
+        }
+
+        $reference_list = UtilService::sortByFieldList($reference_list, $criteria_list);
 
         return $this->render('canon/onepage_references.html.twig', [
             'title' => $title,
