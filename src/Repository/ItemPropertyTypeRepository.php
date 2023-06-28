@@ -73,4 +73,11 @@ class ItemPropertyTypeRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function nextId() {
+        $qb = $this->createQueryBuilder('t')
+                   ->select('MAX(t.id) + 1 as nextId');
+        $query = $qb->getQuery();
+        return $query->getSingleResult()['nextId'];
+    }
 }

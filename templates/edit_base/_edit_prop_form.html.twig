@@ -5,24 +5,19 @@
       method="post">
     {# disable submit via enter-key #}
     <button type="submit" disabled class="d-none" aria-hidden="true"></button>
+    {# obsolete #}
+    {% set itemTypeId=4 %}
     <input type="text"
 	   class="d-none"
 	   id="{{ editFormId }}_itemTypeId"
 	   name="{{ editFormId }}[itemTypeId]"
 	   value="{{ itemTypeId }}">
-    <div class="row col-12 mt-2"><h2>Gegenstands-/Personen-Attribute</h2></div>
     {{ include('edit_base/_property_list.html.twig', {
 	innerTypeList: itemPropertyTypeList,
 	base_id: editFormId~'_itemProp',
 	base_input_name: editFormId~'[itemProp]'
     }) }}
 
-    <div class="row col-12"><h2>Rollen-Attribute</h2></div>
-    {{ include('edit_base/_property_list.html.twig', {
-	innerTypeList: rolePropertyTypeList,
-	base_id: editFormId~'_roleProp',
-	base_input_name: editFormId~'[roleProp]'
-    }) }}
     <div class="row mx-2 mb-2">
 	<div class="col">
 	    {% set submit_debug=false %} {# submit directly for debugging#}

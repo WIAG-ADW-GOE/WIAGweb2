@@ -17,6 +17,7 @@ class PropertyTypeFormModel {
     public $label = null;
     public $comment = null;
     public $inputError = null;
+    public $displayOrder = null;
 
     public function __construct() {
         $this->inputError = new ArrayCollection();
@@ -25,6 +26,11 @@ class PropertyTypeFormModel {
 
     // for compatibility
     public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getId($id) {
         $this->id = $id;
         return $this;
     }

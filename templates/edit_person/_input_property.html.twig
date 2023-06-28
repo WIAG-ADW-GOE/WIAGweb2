@@ -22,9 +22,9 @@
 			   name="{{ base_input_name_prop }}[type]">
 		{% for type in itemPropertyTypeList %}
 		    {% if prop.type %}
-			<option {% if prop.type.id == type.id %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.label }}</option>
+			<option {% if prop.type.id == type.id %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.name }}</option>
 		    {% else %}
-			<option value ="{{ type.id }}">{{ type.label }}</option>
+			<option value ="{{ type.id }}">{{ type.name }}</option>
 		    {% endif %}
 		{% endfor %}
 	    </select>

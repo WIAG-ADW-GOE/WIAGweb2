@@ -288,8 +288,18 @@ class Item {
         return $this->id;
     }
 
+    /**
+     * @return sorted list of item properties
+     */
     public function getItemProperty() {
-        return $this->itemProperty;
+        $sorted_list = $this->itemProperty->toArray();
+        usort($sorted_list, function($a, $b) {
+            $a_key = $a->getType()->getDisplayOrder();
+            $b_key = $b->getType()->getDisplayOrder();
+
+            return $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
+        });
+        return $sorted_list;
     }
 
     public function getUrlExternal() {
@@ -779,12 +789,12 @@ class Item {
     /**
      * @return elements of `itemProperty` as array with `item_property_type.name` as key
      */
-    public function arrayItemPropertyWithLabel() {
+    public function arrayItemPropertyWithName() {
         $itemPropByName = array();
         // prepare list
         foreach ($this->itemProperty as $ip) {
             $key = $ip->getType()->getName();
-            $entry['label'] = $ip->getType()->getLabel();
+            $entry['name'] = $ip->getType()->getName();
             $entry['value'] = array();
             $entry['date'] = array();
             $itemPropByName[$key] = $entry;

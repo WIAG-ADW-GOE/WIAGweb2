@@ -21,6 +21,7 @@ use App\Entity\Role;
 
 use App\Service\EditPersonService;
 use App\Service\AutocompleteService;
+use App\Service\UtilService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -320,20 +321,13 @@ class EditPersonController extends AbstractController {
 
         $essential_auth_list = $authorityRepository->findList(array_values(Authority::ID));
 
-        // property types
-        $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($item_type_id);
-        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($item_type_id);
-
         $param_list_combined = array_merge($param_list, [
             'menuItem' => 'edit-menu',
             'editFormId' => self::EDIT_FORM_ID,
             'itemTypeId' => $item_type_id,
             'userWiagRepository' => $userWiagRepository,
             'essentialAuthorityList' => $essential_auth_list,
-            'itemPropertyTypeList' => $item_property_type_list,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
         ]);
 
         return $this->renderForm($template, $param_list_combined);
@@ -444,10 +438,6 @@ class EditPersonController extends AbstractController {
 
         $prop = new ItemProperty();
 
-        // property types
-        $itemPropertyTypeRepository = $this->entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($itemTypeId);
-
         // current_idx is set by JavaScript
 
         return $this->render('edit_person/_input_property.html.twig', [
@@ -456,7 +446,7 @@ class EditPersonController extends AbstractController {
             'current_idx' => $request->query->get('current_idx'),
             'prop' => $prop,
             'is_last' => true,
-            'itemPropertyTypeList' => $item_property_type_list,
+            'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
             'itemTypeId' => $itemTypeId,
         ]);
 
@@ -472,12 +462,8 @@ class EditPersonController extends AbstractController {
                             int $itemTypeId,
                             int $personIndex) {
 
-        $role = new PersonRole;
+        $role = new PersonRole();
         $role->setId(0);
-
-        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($itemTypeId);
-
 
         return $this->render('edit_person/_input_role.html.twig', [
             'editFormId' => self::EDIT_FORM_ID,
@@ -486,7 +472,7 @@ class EditPersonController extends AbstractController {
             'current_idx' => $request->query->get('current_idx'),
             'role' => $role,
             'is_last' => true,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
         ]);
 
     }
@@ -501,10 +487,7 @@ class EditPersonController extends AbstractController {
                                     int $personIndex,
                                     int $roleIndex) {
 
-        $prop = new PersonRoleProperty;
-
-        $rolePropertyTypeRepository = $this->entityManager->getRepository(rolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($itemTypeId);
+        $prop = new PersonRoleProperty();
 
 
         return $this->render('edit_person/_input_role_property.html.twig', [
@@ -515,10 +498,16 @@ class EditPersonController extends AbstractController {
             'current_idx' => $request->query->get('current_idx'),
             'prop' => $prop,
             'is_last' => true,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
             'itemTypeId' => $itemTypeId,
         ]);
 
+    }
+
+    private function getItemPropertyTypeList() {
+        $repository = $this->entityManager->getRepository(itemPropertyType::class);
+        $type_list = $repository->findAll();
+        return UtilService::sortByFieldList($type_list, ['displayOrder', 'name']);
     }
 
 

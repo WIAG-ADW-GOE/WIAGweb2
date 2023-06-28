@@ -23,7 +23,7 @@ class PersonRoleProperty
     private $id = 0;
 
     /**
-     * @ORM\OneToOne(targetEntity="RolePropertyType", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="ItemPropertyType", fetch="EAGER")
      * @ORM\JoinColumn(name="property_type_id", referencedColumnName="id")
      */
     private $type;

@@ -804,7 +804,7 @@ class EditPersonService {
         // set data
         UtilService::setByKeys($roleProperty, $data, ['deleteFlag']);
 
-        $property_type = $this->entityManager->getRepository(RolePropertyType::class)
+        $property_type = $this->entityManager->getRepository(ItemPropertyType::class)
                                              ->find($data['type']);
         $roleProperty->setPropertyTypeId($property_type->getId());
         $roleProperty->setType($property_type);

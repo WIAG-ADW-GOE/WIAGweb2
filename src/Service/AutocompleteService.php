@@ -195,7 +195,7 @@ class AutocompleteService extends ServiceEntityRepository {
                          ->select("DISTINCT prop.value AS suggestion")
                          ->join('i.itemProperty', 'prop')
                          ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
+                         ->andWhere('i.itemTypeId LIKE :item_type_id')
                          ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 

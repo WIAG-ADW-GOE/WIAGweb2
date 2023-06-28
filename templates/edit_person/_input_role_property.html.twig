@@ -22,8 +22,8 @@
 		<select class="form-select form-select-sm wiag-input"
 			id="{{ base_id_prop }}_type"
 			name="{{ base_input_name_prop }}[type]">
-		    {% for type in rolePropertyTypeList %}
-			<option {% if prop.type and (prop.type.id == type.id) %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.label }}</option>
+		    {% for type in itemPropertyTypeList %}
+			<option {% if prop.type and (prop.type.id == type.id) %}selected="selected"{% endif %} value ="{{ type.id }}">{{ type.name }}</option>
 		    {% endfor %}
 		</select>
 	    </span>

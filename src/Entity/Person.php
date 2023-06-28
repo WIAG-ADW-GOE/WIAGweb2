@@ -521,10 +521,10 @@ class Person {
      * combine complete item property list
      */
     public function combinePropertyList() {
-        $a_prop_list = $this->item->arrayItemPropertyWithLabel();
+        $a_prop_list = $this->item->arrayItemPropertyWithName();
         $b_prop_list = array();
         if ($this->sibling) {
-            $b_prop_list = $this->sibling->getItem()->arrayItemPropertyWithLabel();
+            $b_prop_list = $this->sibling->getItem()->arrayItemPropertyWithName();
         }
 
         $key_list = array_merge(array_keys($a_prop_list), array_keys($b_prop_list));
@@ -536,8 +536,8 @@ class Person {
             $b_value = array_key_exists($key, $b_prop_list) ? $b_prop_list[$key]['value'] : null;
 
             $entry['value'] = $this->concatData($a_value, $b_value);
-            $label = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['label'] : $b_prop_list[$key]['label'];
-            $entry['label'] = $label;
+            $name = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['name'] : $b_prop_list[$key]['name'];
+            $entry['name'] = $name;
             $prop_list[$key] = $entry;
         }
 
@@ -606,7 +606,7 @@ class Person {
         if ($flag_properties) {
             $property_list = $this->combinePropertyList();
             foreach ($property_list as $prop) {
-                $elt_cands[] = $prop['label'].': '.$prop['value'];
+                $elt_cands[] = $prop['name'].': '.$prop['value'];
             }
         }
 

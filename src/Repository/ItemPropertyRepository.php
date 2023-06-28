@@ -47,4 +47,15 @@ class ItemPropertyRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function referenceCount($type_id) {
+        $qb = $this->createQueryBuilder('ip')
+                   ->select('COUNT(DISTINCT(ip.id)) as count')
+                   ->andWhere('ip.propertyTypeId = :type_id')
+                   ->setParameter('type_id', $type_id);
+        $query = $qb->getQuery();
+
+        return $query->getSingleResult()['count'];
+    }
+
 }

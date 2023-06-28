@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\ItemType;
+use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\RolePropertyType;
 use App\Entity\InputError;
 use App\Entity\Role;
 use App\Form\Model\PropertyTypeFormModel;
@@ -31,49 +31,40 @@ class EditBaseController extends AbstractController {
                                  EntityManagerInterface $entityManager): Response {
         $edit_form_id = 'prop_edit_form';
 
-        $item_type_id = Item::ITEM_TYPE_ID['Bischof']['id'];
-        $model = ['itemType' => $item_type_id]; // set default
+        $model = ['sortBy' => 'ID']; // set default
 
         $itemTypeRepository = $entityManager->getRepository(ItemType::class);
+        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
+        $itemPropertyRepository = $entityManager->getRepository(ItemProperty::class);
 
-        // 2023-01-17 at the moment only 'Bischof' and 'Domherr' are relevant
-        // $itemType_list = $itemTypeRepository->findAll();
-        // $choices = array();
-        // foreach($itemType_list as $t_loop) {
-        //     $choices [$t_loop->getName()] = $t_loop->getId();
-        // }
         $choices = [
-            'Bischof' => Item::ITEM_TYPE_ID['Bischof']['id'],
-            'Domherr' => Item::ITEM_TYPE_ID['Domherr']['id'],
+            'ID' => 'id',
+            'Name' => 'name',
+            'Reihenfolge' => 'displayOrder',
         ];
 
         $form = $this->createFormBuilder($model)
-                     ->add('itemType', ChoiceType::class, [
-                         'label' => 'Gegenstandstyp',
+                     ->add('sortBy', ChoiceType::class, [
+                         'label' => 'Sortierung',
                          'choices' => $choices,
                      ])
                      ->getForm();
 
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+        $model = $form->getData();
 
-            $data = $form->getData();
-            $item_type_id = $data['itemType'];
-        }
+        $item_property_type_list = $itemPropertyTypeRepository->findAll();
+        $this->setReferenceCount($item_property_type_list, $itemPropertyRepository);
 
-
-        $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-        $item_property_type_list = $itemPropertyTypeRepository->findByItemTypeId($item_type_id);
-        $rolePropertyTypeRepository = $entityManager->getRepository(RolePropertyType::class);
-        $role_property_type_list = $rolePropertyTypeRepository->findByItemTypeId($item_type_id);
+        $sortBy = $model['sortBy'];
+        $item_property_type_list = UtilService::sortByFieldList($item_property_type_list, [$sortBy]);
 
         return $this->renderForm('edit_base/property.html.twig', [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,
-            'itemTypeId' => $item_type_id,
             'itemPropertyTypeList' => $item_property_type_list,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'nextId' => $itemPropertyTypeRepository->nextId(),
         ]);
     }
 
@@ -93,60 +84,52 @@ class EditBaseController extends AbstractController {
         // the properties are not linked to items yet
 
         $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
-        $rolePropertyTypeRepository = $entityManager->getRepository(RolePropertyType::class);
+        $itemPropertyRepository = $entityManager->getRepository(ItemProperty::class);
 
         // item properties
         $property_list = array();
         $error_flag = false;
         foreach($form_data['itemProp'] as $data) {
+            $is_edited = array_key_exists('formIsEdited', $data);
+            $is_new = array_key_exists('isNew', $data);
+            $do_delete = (array_key_exists('deleteFlag', $data) and ($data['deleteFlag'] == 'delete'));
+
             $prop_id = $data['id'];
-            if (isset($data['formIsEdited'])) {
-                $property = new PropertyTypeFormModel();
+            if ($is_edited and $is_new) {
+                // new entry
+                $property = new ItemPropertyType();
+                $property->setId($prop_id);
+                $property->setIsNew($is_new);
                 $property_list[] = $property;
-                $utilService->setByKeys($property, $data, ['id', 'name', 'label', 'comment']);
-                if (is_null($property->name)) {
-                    $msg = "Das Feld 'Name' darf nicht leer sein.";
-                    $property->inputError->add(new InputError('global', $msg));
-                    $error_flag = true;
-                }
-                if (is_null($property->label)) {
-                    $msg = "Das Feld 'Anzeige' darf nicht leer sein.";
-                    $property->inputError->add(new InputError('global', $msg));
-                    $error_flag = true;
-                }
-            } elseif ($prop_id > 0) {
+            }
+
+            if (!$is_new) {
+                $prop_id = $data['id'];
                 $property = $itemPropertyTypeRepository->find($prop_id);
                 $property_list[] = $property;
+            }
+
+            if ($is_edited) {
+                $utilService->setByKeys($property, $data, ['name', 'displayOrder', 'comment']);
+                $property->setDeleteFlag($do_delete ? "delete" : "");
+                if (!$do_delete) {
+                    if (is_null($property->getName())) {
+                        $msg = "Das Feld 'Name' darf nicht leer sein.";
+                        $property->getInputError()->add(new InputError('global', $msg));
+                        $error_flag = true;
+                    }
+                    $display_order = $property->getDisplayOrder();
+                    if (!is_null($display_order) and (!intval($display_order) > 0)) {
+                        $msg = "Das Feld 'Reihenfolge' muss eine positive Zahl enthalten.";
+                        $property->getInputError()->add(new InputError('global', $msg));
+                        $error_flag = true;
+                    }
+                }
+                $property->setIsEdited($is_edited);
             }
         }
 
         $item_property_type_list = $property_list;
-
-        // role properties
-        $property_list = array();
-        foreach($form_data['roleProp'] as $data) {
-            $prop_id = $data['id'];
-            if (isset($data['formIsEdited'])) {
-                $property = new PropertyTypeFormModel();
-                $property_list[] = $property;
-                $utilService->setByKeys($property, $data, ['id', 'name', 'label', 'comment']);
-                if (is_null($property->name)) {
-                    $msg = "Das Feld 'Name' darf nicht leer sein.";
-                    $property->inputError->add(new InputError('global', $msg));
-                    $error_flag = true;
-                }
-                if (is_null($property->label)) {
-                    $msg = "Das Feld 'Anzeige' darf nicht leer sein.";
-                    $property->inputError->add(new InputError('global', $msg));
-                    $error_flag = true;
-                }
-            } elseif ($prop_id > 0) {
-                $property = $rolePropertyTypeRepository->find($prop_id);
-                $property_list[] = $property;
-            }
-        }
-
-        $role_property_type_list = $property_list;
 
         // save data
         if (!$error_flag) {
@@ -154,61 +137,60 @@ class EditBaseController extends AbstractController {
             // rebuild property list
             $property_list = array();
             foreach($form_data['itemProp'] as $data) {
-                $prop_id = $data['id'];
-                if ($prop_id > 0) {
-                    $property = $itemPropertyTypeRepository->find($prop_id);
+                $is_edited = array_key_exists('formIsEdited', $data);
+                $is_new = array_key_exists('isNew', $data);
+                $do_delete = (array_key_exists('deleteFlag', $data) and ($data['deleteFlag'] == 'delete'));
+
+                if ($is_edited and $is_new) {
+                    // new entry
+                    $property = new ItemPropertyType();
+                    $entityManager->persist($property);
                     $property_list[] = $property;
                 }
-                if (isset($data['formIsEdited'])) {
-                    if (!$prop_id > 0) {
-                        // new entry
-                        $property = new ItemPropertyType();
-                        $property->setItemTypeId($item_type_id);
-                        $entityManager->persist($property);
+
+                if (!$is_new) {
+                    $prop_id = $data['id'];
+                    $property = $itemPropertyTypeRepository->find($prop_id);
+                    if ($do_delete) {
+                        $entityManager->remove($property);
+                    } else {
                         $property_list[] = $property;
                     }
-                    $utilService->setByKeys($property, $data, ['name', 'label', 'comment']);
+                }
+
+                if ($is_edited and !$do_delete) {
+                    $utilService->setByKeys($property, $data, ['name', 'displayOrder', 'comment']);
+                    $property->setIsEdited(false);
                 }
             }
 
             $item_property_type_list = $property_list;
-            // role properties
-            // rebuild property list
-            $property_list = array();
-            foreach($form_data['roleProp'] as $data) {
-                $prop_id = $data['id'];
-                if ($prop_id > 0) {
-                    $property = $rolePropertyTypeRepository->find($prop_id);
-                    $property_list[] = $property;
-                }
-                if (isset($data['formIsEdited'])) {
-                    if (!$prop_id > 0) {
-                        // new entry
-                        $property = new RolePropertyType();
-                        $property->setItemTypeId($item_type_id);
-                        $entityManager->persist($property);
-                        $property_list[] = $property;
-                    }
-                    $utilService->setByKeys($property, $data, ['name', 'label', 'comment']);
-                }
-            }
-
-            $role_property_type_list = $property_list;
 
             $entityManager->flush();
 
         }
+
+        $this->setReferenceCount($item_property_type_list, $itemPropertyRepository);
 
         $template = 'edit_base/_edit_prop_form.html.twig';
 
         return $this->renderForm($template, [
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
-            'itemTypeId' => $item_type_id,
             'itemPropertyTypeList' => $item_property_type_list,
-            'rolePropertyTypeList' => $role_property_type_list,
+            'nextId' => $itemPropertyTypeRepository->nextId(),
         ]);
 
+    }
+
+    private function setReferenceCount($type_list, $repository) {
+        foreach($type_list as $type_loop) {
+            $q_ref_count = $repository->referenceCount($type_loop->getId());
+            if (!is_null($q_ref_count)) {
+                $type_loop->setReferenceCount($q_ref_count);
+            }
+        }
+        return $type_list;
     }
 
 }

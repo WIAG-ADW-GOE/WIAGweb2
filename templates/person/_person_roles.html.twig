@@ -28,7 +28,7 @@
 		    </li>
 		    {# table person_role_property #}
 		    {% for property in o.roleproperty %}
-			<li class="list-inline-item comment"> {{ property.type.label }} {{ property.value }} </li>
+			<li class="list-inline-item comment"> {{ property.type.name }} {{ property.value }} </li>
 		    {% endfor %}
 		    {% if o.note %}
 			<li class="list-inline-item comment"> ({{ o.note }}) </li>
