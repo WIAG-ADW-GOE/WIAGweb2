@@ -299,7 +299,8 @@ class Item {
 
             return $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
         });
-        return $sorted_list;
+        $this->itemProperty = new ArrayCollection($sorted_list);
+        return $this->itemProperty;
     }
 
     public function getUrlExternal() {

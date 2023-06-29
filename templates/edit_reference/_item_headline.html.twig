@@ -24,11 +24,11 @@
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
 		       type="checkbox"
 		       value="1"
-		       id="{{ base_id }}_formisedited"
-		       name="{{ base_input_name }}[formIsEdited]"
+		       id="{{ base_id }}_isEdited"
+		       name="{{ base_input_name }}[isEdited]"
 		       data-on-input-target="checkbox"
 		       data-action="click->sync#fill"
-		       {% if reference.formisedited %}checked="checked"{% endif %}>
+		       {% if reference.isEdited %}checked="checked"{% endif %}>
 	    </span>
 	    {% set head_line= reference.gsCitation|length > 0 ? reference.gsCitation : "Neuer Eintrag" %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>

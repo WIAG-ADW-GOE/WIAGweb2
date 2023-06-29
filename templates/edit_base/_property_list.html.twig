@@ -49,10 +49,14 @@
 				</td>
 			    {% endfor %}
 			    <td style="width: 6rem">{{ prop_type.referenceCount }}</td>
+			    {% if prop_type.isNew %}
+				<td></td>
+			    {% else %}
 			    <td>{{ include('edit_base/_delete_button.html.twig', {
 				'obj': prop_type,
 				'base_id_delete': base_id~'_'~loop.index0,
 				'base_name_delete': base_input_name~'['~loop.index0~']' }) }}</td>
+			    {% endif %}
 			</tr>
 			{% if prop_type.inputError is defined %}
 			    {% for error in prop_type.inputError %}

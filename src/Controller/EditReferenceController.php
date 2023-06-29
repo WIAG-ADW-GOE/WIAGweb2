@@ -164,7 +164,7 @@ class EditReferenceController extends AbstractController {
                 $reference = $reference_list[$id];
                 $reference->setFormIsExpanded($form_is_expanded);
             }
-            if (isset($data['formIsEdited'])) {
+            if (isset($data['isEdited'])) {
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;

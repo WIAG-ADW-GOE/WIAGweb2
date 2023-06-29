@@ -129,55 +129,38 @@ class EditBaseController extends AbstractController {
             }
         }
 
-        $item_property_type_list = $property_list;
-
         // save data
         if (!$error_flag) {
             // item properties
             // rebuild property list
-            $property_list = array();
-            foreach($form_data['itemProp'] as $data) {
-                $is_edited = array_key_exists('formIsEdited', $data);
-                $is_new = array_key_exists('isNew', $data);
-                $do_delete = (array_key_exists('deleteFlag', $data) and ($data['deleteFlag'] == 'delete'));
-
-                if ($is_edited and $is_new) {
-                    // new entry
-                    $property = new ItemPropertyType();
+            $property_list_2 = array();
+            foreach($property_list as $property) {
+                if ($property->getIsNew()) { // a new entry can not be deleted
                     $entityManager->persist($property);
-                    $property_list[] = $property;
+                    $property->setIsNew(false);
+                }
+                if ($property->getDeleteFlag() == "delete") {
+                    $entityManager->remove($property);
+                } else {
+                    $property_list_2[] = $property;
                 }
 
-                if (!$is_new) {
-                    $prop_id = $data['id'];
-                    $property = $itemPropertyTypeRepository->find($prop_id);
-                    if ($do_delete) {
-                        $entityManager->remove($property);
-                    } else {
-                        $property_list[] = $property;
-                    }
-                }
-
-                if ($is_edited and !$do_delete) {
-                    $utilService->setByKeys($property, $data, ['name', 'displayOrder', 'comment']);
-                    $property->setIsEdited(false);
-                }
+                $property->setIsEdited(false);
             }
-
-            $item_property_type_list = $property_list;
-
             $entityManager->flush();
-
+        } else {
+            $property_list_2 = $property_list;
         }
 
-        $this->setReferenceCount($item_property_type_list, $itemPropertyRepository);
+
+        $this->setReferenceCount($property_list_2, $itemPropertyRepository);
 
         $template = 'edit_base/_edit_prop_form.html.twig';
 
         return $this->renderForm($template, [
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
-            'itemPropertyTypeList' => $item_property_type_list,
+            'itemPropertyTypeList' => $property_list_2,
             'nextId' => $itemPropertyTypeRepository->nextId(),
         ]);
 

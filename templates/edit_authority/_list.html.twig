@@ -4,7 +4,6 @@
 	  action="{{ path('edit_authority_save') }}"
 	  method="post"
 	  data-controller="submit-form">
-	{# 2023-03-28 obsolete; this is only needed for a global open/close button #}
 	{% set body_id_list = range(1,authorityList|length)|map(r => 'body'~r)|join(' ') %}
 	<div class="row mx-0">
  	    <div class="col">

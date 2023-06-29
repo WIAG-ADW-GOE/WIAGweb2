@@ -12,6 +12,14 @@
 	   id="{{ editFormId }}_itemTypeId"
 	   name="{{ editFormId }}[itemTypeId]"
 	   value="{{ itemTypeId }}">
+    <div class="row mx-2">
+	<div class="col">
+	    <button type="button"
+		    data-action="submit-form#submit"
+		    class="btn btn-primary btn-sm float-end">Speichern</button>
+	</div>
+    </div>
+
     {{ include('edit_base/_property_list.html.twig', {
 	innerTypeList: itemPropertyTypeList,
 	base_id: editFormId~'_itemProp',
@@ -19,17 +27,17 @@
     }) }}
 
     <div class="row mx-2 mb-2">
-	<div class="col">
+	<div class="col"
+	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    {% set submit_debug=false %} {# submit directly for debugging#}
 	    {% if submit_debug %}
 		<button type="submit"
 			formaction="{{ path('edit_prop_save') }}"
-			data-controller="submit-by-key"
 			class="btn btn-primary float-end">Speichern</button>
 	    {% else %} {# submit via Stimulus controller #}
 		<button type="button"
 			data-action="submit-form#submit"
-			data-controller="submit-by-key"
+			data-submit-by-key-target="button"
 			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    {% endif %}
 	</div>

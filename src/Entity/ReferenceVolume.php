@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Form\Model\Common as Model;
 use App\Repository\ReferenceVolumeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -12,7 +13,7 @@ use Doctrine\Common\Collections\Collection;
 /**
  * @ORM\Entity(repositoryClass=ReferenceVolumeRepository::class)
  */
-class ReferenceVolume {
+class ReferenceVolume extends Model {
 
     const EDIT_FIELD_LIST = [
         // 'itemTypeId', 2023-05-05 obsolete
@@ -128,28 +129,7 @@ class ReferenceVolume {
      */
     private $gsCitation;
 
-    /**
-     * no DB-mapping
-     * hold form input data
-     */
-    private $formIsEdited = false;
-
-    /**
-     * no DB-mapping
-     * hold form input data
-     */
-    private $formIsExpanded = false;
-
-    /**
-     * collection of InputError
-     */
-    private $inputError;
-
     private $referenceCount = 0;
-
-    public function __construct() {
-        $this->inputError = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -349,24 +329,6 @@ class ReferenceVolume {
         return $this;
     }
 
-    public function setFormIsEdited($value): self {
-        $this->formIsEdited = $value;
-        return $this;
-    }
-
-    public function getFormIsEdited() {
-        return $this->formIsEdited;
-    }
-
-    public function setFormIsExpanded($value): self {
-        $this->formIsExpanded = $value;
-        return $this;
-    }
-
-    public function getFormIsExpanded() {
-        return $this->formIsExpanded;
-    }
-
     public function getReferenceCount(): int {
         return $this->referenceCount;
     }
@@ -401,31 +363,6 @@ class ReferenceVolume {
         $this->gsCitation = $gsCitation;
 
         return $this;
-    }
-
-    /**
-     * do not provide setInputError; use add or remove to manipulate this property
-     */
-    public function getInputError() {
-        if (is_null($this->inputError)) {
-            $this->inputError = new ArrayCollection;
-        }
-        return $this->inputError;
-    }
-
-    public function hasError($min_level): bool {
-        // the database is not aware of inputError and it's type
-        if (is_null($this->inputError)) {
-            return false;
-        }
-
-        foreach($this->inputError as $e_loop) {
-            $level = $e_loop->getLevel();
-            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

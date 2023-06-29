@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Form\Model\Common as Model;
 use App\Entity\InputError;
 use App\Repository\ItemPropertyTypeRepository;
 
@@ -13,8 +14,7 @@ use Doctrine\Common\Collections\Collection;
 /**
  * @ORM\Entity(repositoryClass=ItemPropertyTypeRepository::class)
  */
-class ItemPropertyType
-{
+class ItemPropertyType extends Model {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -42,29 +42,6 @@ class ItemPropertyType
      */
     private $referenceCount = 0;
 
-    /**
-     * no db mapping
-     */
-    private $deleteFlag = false;
-
-    /**
-     * no db mapping
-     */
-    private $isNew = false;
-
-    /**
-     * no db mapping
-     */
-    private $isEdited = false;
-
-    /**
-     * no db mapping
-     */
-    private $inputError;
-
-    public function __construct() {
-        $this->inputError = new ArrayCollection();
-    }
 
 
     public function getId(): ?int
@@ -125,38 +102,5 @@ class ItemPropertyType
         return $this;
     }
 
-    public function getDeleteFlag(): bool {
-        return $this->deleteFlag;
-    }
-
-    public function setDeleteFlag($value) {
-        $this->deleteFlag = $value;
-        return $this;
-    }
-
-    public function getIsNew(): bool {
-        return $this->isNew;
-    }
-
-    public function setIsNew($value) {
-        $this->isNew = $value;
-        return $this;
-    }
-
-    public function getIsEdited(): bool {
-        return $this->isEdited;
-    }
-
-    public function setIsEdited($value) {
-        $this->isEdited = $value;
-        return $this;
-    }
-
-    public function getInputError() {
-        if (is_null($this->inputError)) {
-            $this->inputError = new ArrayCollection();
-        }
-        return $this->inputError;
-    }
 
 }
