@@ -31,7 +31,7 @@ class EditBaseController extends AbstractController {
                                  EntityManagerInterface $entityManager): Response {
         $edit_form_id = 'prop_edit_form';
 
-        $model = ['sortBy' => 'ID']; // set default
+        $model = ['sortBy' => 'name']; // set default
 
         $itemTypeRepository = $entityManager->getRepository(ItemType::class);
         $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
