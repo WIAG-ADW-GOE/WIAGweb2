@@ -651,6 +651,10 @@ class EditPersonService {
         $role_role = $roleRoleRepository->findOneByName($role_name);
         if ($role_role) {
             $role->setRole($role_role);
+        } elseif ($role_name == "") {
+            $role->setRole(null);
+            $msg = "Warnung: Es ist kein Amt angegeben.";
+            $role->getInputError()->add(new InputError('role', $msg, 'warning'));
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
