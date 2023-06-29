@@ -408,10 +408,10 @@ class CanonController extends AbstractController {
         $reference_list = $canonLookupRepository->referenceListByItemType($canon_id_list, $item_type_list);
 
         $title = 'Literatur andere';
-        $criteria_list = ['displayOrder', 'titleShort', 'referenceId'];
+        $criteria_list = ['titleShort', 'displayOrder', 'referenceId'];
         if ($item_type_list[0] == strval(Item::ITEM_TYPE_ID['Domherr GS']['id'])) {
                 $title = 'Literatur Germania Sacra';
-                $criteria_list = ['titleShort', 'displayOrder', 'referenceId'];
+                $criteria_list = ['displayOrder', 'titleShort', 'referenceId'];
         }
 
         $reference_list = UtilService::sortByFieldList($reference_list, $criteria_list);
