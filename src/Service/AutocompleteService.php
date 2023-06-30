@@ -51,7 +51,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * $item_type_id is not used here (needed for uniform signature)
      */
-    public function suggestOffice($itemTypeId, $queryParam, $hintSize, $online_only = true) {
+    public function suggestOffice($itemTypeId, $queryParam, $hintSize, $online_only = false) {
         if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {
             $repository = $this->getEntityManager()->getRepository(Item::class);
             $qb = $repository->createQueryBuilder('i')
@@ -203,7 +203,6 @@ class AutocompleteService extends ServiceEntityRepository {
 
         $query = $qb->getQuery();
 
-        // dd($query->getDql());
         $suggestions = $query->getResult();
 
         return $suggestions;
@@ -299,7 +298,7 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestName($itemTypeId, $queryParam, $resultSize, $online_only = true) {
+    public function suggestName($itemTypeId, $queryParam, $resultSize, $online_only = false) {
         // canons: case $online_only == false is relevant for the editing query
         if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {
             $qb = $this->createQueryBuilder('p')

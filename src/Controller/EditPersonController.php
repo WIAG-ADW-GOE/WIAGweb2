@@ -851,36 +851,5 @@ class EditPersonController extends AbstractController {
         return $canon_lookup;
     }
 
-    /**
-     * usually used for asynchronous JavaScript request
-     *
-     * @Route("/edit/person/suggest/{itemTypeId}/{field}", name="edit_person_suggest")
-     */
-    public function autocomplete(Request $request,
-                                 $itemTypeId,
-                                 $field){
-
-        $repository = $this->entityManager->getRepository(Person::class);
-
-        $hint = $request->query->get('q');
-
-        $fnName = 'editSuggest'.ucfirst($field);
-        $suggestions = $repository->$fnName($itemTypeId, $hint, self::SUGGEST_SIZE);
-
-        return $this->render('bishop/_autocomplete.html.twig', [
-            'suggestions' => array_column($suggestions, 'suggestion'),
-        ]);
-    }
-
-    /**
-     * 2023-03-31 Teste Service mit Datenbank-Zugriff
-     * @Route("/edit/person/autocomplete", name="test_03_31")
-     */
-    public function autocompleteTest(AutocompleteService $service) {
-        dd($service->message());
-        return new Response($service->message());
-    }
-
-
 
 }
