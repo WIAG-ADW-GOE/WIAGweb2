@@ -88,7 +88,6 @@ class EditPersonController extends AbstractController {
 
             $personRepository = $this->entityManager->getRepository(Person::class);
             $itemRepository = $this->entityManager->getRepository(Item::class);
-            $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
             $limit = 0; $offset = 0; $online_only = false;
             $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);

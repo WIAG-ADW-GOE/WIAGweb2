@@ -439,6 +439,7 @@ class EditPersonService {
             'commentDuplicate',
             'normdataEditedBy'
         ];
+
         UtilService::setByKeys($item, $data['item'], $key_list);
 
         $collect_merge_parent = array();

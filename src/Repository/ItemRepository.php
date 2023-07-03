@@ -252,12 +252,11 @@ class ItemRepository extends ServiceEntityRepository
             // look for $someid in merged ancestors
             $with_id_in_source = $model->isEdit;
             $list_size_max = 200;
-            $descendant_list = $this->findCurrentChildById(
+            $descendant_id_list = $this->findIdByAncestor(
                 $someid,
                 $with_id_in_source,
-                $list_size_max
+                $list_size_max,
             );
-            $descendant_id_list = array_map(function($v) {return $v->getId();}, $descendant_list);
 
             // look for $someid in external links
             $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
@@ -771,19 +770,21 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return entry matching $id or having $id as a parent (merging)
+     * @return entry matching $id or having $id as a parent (merging); is_online = true
      */
     public function findByIdPublicOrParent($id) {
+        $with_id_in_source = false;
+        $list_size_max = 200;
+        $descendant_id_list = $this->findIdByAncestor(
+            $id,
+            $with_id_in_source,
+            $list_size_max,
+        );
+
         $qb = $this->createQueryBuilder('i')
-                   ->leftjoin('\App\Entity\Item', 'ip1', 'WITH', 'ip1.mergedIntoId = i.id')
-                   ->leftjoin('\App\Entity\Item', 'ip2', 'WITH', 'ip2.mergedIntoId = ip1.id')
-                   ->leftjoin('\App\Entity\Item', 'ip3', 'WITH', 'ip3.mergedIntoId = ip2.id')
-                   ->andWhere("i.idPublic = :q_id ".
-                          "OR ip1.idPublic = :q_id ".
-                          "OR ip2.idPublic = :q_id ".
-                          "OR ip3.idPublic = :q_id")
-                   ->andWhere('i.isOnline = 1')
-                   ->setParameter('q_id', $id);
+                   ->andWhere("i.id in (:q_id_list)")
+                   ->andWhere("i.isOnline = 1")
+                   ->setParameter('q_id_list', $descendant_id_list);
 
         $query = $qb->getQuery();
 
@@ -837,6 +838,42 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * @return items containing $id in ancestor list
      */
+    public function findIdByAncestor(string $q_id, $with_id_in_source, $list_size_max) {
+
+        if ($with_id_in_source) {
+            $qb = $this->createQueryBuilder('i')
+                       ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
+                       ->andWhere("i.itemTypeId in (:item_type_list)")
+                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
+                       ->setParameter('q_id', '%'.$q_id.'%');
+        } else {
+            $qb = $this->createQueryBuilder('i')
+                       ->andWhere("i.idPublic like :q_id")
+                       ->andWhere("i.itemTypeId in (:item_type_list)")
+                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
+                       ->setParameter('q_id', '%'.$q_id.'%');
+        }
+
+        $qb->setMaxResults($list_size_max);
+        $query = $qb->getQuery();
+
+        $q_result = $query->getResult();
+
+        // find id of the current child
+        $child_id_list = array();
+        foreach($q_result as $i_loop) {
+            $child = $this->findCurrentChild($i_loop);
+            if ($child) {
+                $child_id_list[] = $child->getId();
+            }
+        }
+        return array_unique($child_id_list);
+    }
+
+    /**
+     * 2023-06-30 obsolete; see findIdByAncestor
+     * @return items containing $id in ancestor list
+     */
     public function findCurrentChildById(string $q_id, $with_id_in_source, $list_size_max) {
 
         if ($with_id_in_source) {
@@ -867,6 +904,7 @@ class ItemRepository extends ServiceEntityRepository
         }
         return $child_list;
     }
+
 
     /**
      * @return first item that is online or has no descendants
