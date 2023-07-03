@@ -827,24 +827,29 @@ class EditPersonController extends AbstractController {
     private function restoreCanonGs($target, $source) {
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal:: class);
         $personRepository = $this->entityManager->getRepository(Person::class);
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
         $canon_lookup = null;
 
         $auth_id = Item::AUTHORITY_ID['GS'];
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS'];
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS']['id'];
         $uext_gs_target = $target->getItem()->getUrlExternalByAuthorityId($auth_id);
         $uext_gs_source = $source->getItem()->getUrlExternalByAuthorityId($auth_id);
 
         if (!is_null($uext_gs_target) and is_null($uext_gs_source)) {
             $q_uext = $urlExternalRepository->findByValueAndItemType($uext_gs_target, $item_type_id);
-            if (!is_null($q_uext)) {
+            if (!is_null($q_uext) and count($q_uext) > 0) {
                 $uext = $q_uext[0];
                 $item_id = $uext->getItemId();
-                $person = $personRepository->find($item_id);
-                $canon_lookup = new CanonLookup();
-                $canon_lookup->setPerson($person);
-                $canon_lookup->setPersonIdName($item_id);
-                $canon_lookup->setPrioRole(1);
-                $this->entityManager->persist($canon_lookup);
+                // is there a reference by a bishop already
+                $current = $canonLookupRepository->findOneByPersonIdRole($item_id);
+                if (is_null($current)) {
+                    $person = $personRepository->find($item_id);
+                    $canon_lookup = new CanonLookup();
+                    $canon_lookup->setPerson($person);
+                    $canon_lookup->setPersonIdName($item_id);
+                    $canon_lookup->setPrioRole(1);
+                    $this->entityManager->persist($canon_lookup);
+                }
             }
         }
 

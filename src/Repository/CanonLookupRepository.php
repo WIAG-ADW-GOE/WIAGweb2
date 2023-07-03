@@ -728,8 +728,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $gsn = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GS']);
         if ($gsn) {
             $gsn_id = $urlExternalRepository->findIdBySomeNormUrl($gsn);
-            if (!is_null($gsn_id) && count($gsn_id) > 0) {
-                $person_id_name = $gsn_id[0];
+            foreach($gsn_id as $person_id_name) {
                 $list_name = $this->findBy(['personIdName' => $person_id_name]);
                 foreach ($list_name as $c_del) {
                     $em->remove($c_del);
