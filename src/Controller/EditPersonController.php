@@ -140,7 +140,7 @@ class EditPersonController extends AbstractController {
             ];
         }
 
-        $template = 'edit_person/query.html.twig';
+        $template = 'edit_person/query_fl.html.twig';
         return $this->renderEditElements($template, $itemTypeId, $template_params);
 
     }
@@ -312,6 +312,110 @@ class EditPersonController extends AbstractController {
         ]);
 
     }
+
+    /**
+     * map data to objects and save them to the database
+     * @Route("/edit/person/save-single", name="edit_person_save_single")
+     */
+    public function saveSingle(Request $request) {
+        $current_user_id = $this->getUser()->getId();
+
+        // use EDIT_FORM_ID as the name attribute of the form in the template
+        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $person_index = array_keys($form_data)[0];
+        // get first element independent from indexing
+        $form_data = array_values($form_data)[0];
+        $item_type_id = $form_data['item']['itemTypeId'];
+
+        /* map/validate form */
+        // fill person_list
+        $person_list = $this->editService->mapFormdata([$form_data], $current_user_id);
+        $person = $person_list[0];
+
+        $error_flag = $person->getItem()->hasError('error');
+
+        $form_display_type = $request->request->get('formType') ?? 'list';
+
+        /* save data */
+        $entity_manager = $this->entityManager;
+        if (!$error_flag) {
+            $personRepository = $entity_manager->getRepository(Person::class);
+            $nameLookupRepository = $entity_manager->getRepository(NameLookup::class);
+            $canonLookupRepository = $entity_manager->getRepository(CanonLookup::class);
+            // saveSingle is only called if form data have changed
+            $person_id = $person->getId();
+            if ($person_id == 0) { // new entry
+                // start out with a new object to avoid cascade errors
+                $person_new = new Person($item_type_id, $current_user_id);
+                $this->editService->initMetaData($person_new, $item_type_id);
+                $this->entityManager->persist($person_new);
+                $this->entityManager->flush();
+                $person_id = $person_new->getItem()->getId();
+            }
+            // read complete tree to perform deletions if necessary
+            // 2023-05-25 here, we get a second object for the same
+            // person from the database. Which one takes precedence when
+            // data are written to the database?
+            $query_result = $personRepository->findList([$person_id]);
+            $target = $query_result[0];
+
+            // restore canon from Digitales Personenregister?
+            $this->restoreCanonGs($target, $person);
+            // transfer data from $person to $target
+            $this->editService->update($target, $person, $current_user_id);
+
+            // merging process?
+            $target_item = $target->getItem();
+            if ($target_item->getMergeStatus() == 'merging') {
+                $parent_list = $this->editService->readParentList($person);
+                $target_item->setMergeStatus('child');
+                $idPublic = $parent_list[0]->getItem()->getIdPublic();
+                $target_item->setIdPublic($idPublic);
+                $target_id = $target->getId();
+                foreach ($parent_list as $parent) {
+                    $this->editService->updateAsParent($parent, $target_id);
+                }
+            }
+
+            // update auxiliary tables
+            $nameLookupRepository->update($target);
+            if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+                $canonLookupRepository->update($target);
+            }
+
+            // form status
+            $expanded = $person->getItem()->getFormIsExpanded();
+            $target->getItem()->setFormIsExpanded($expanded);
+            $target->getItem()->setFormIsEdited(false);
+
+            $this->entityManager->flush();
+
+            $person=$target;
+        }
+
+        dump($person->getItem()->getFormIsEdited());
+
+        // add empty elements for blank form sections
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
+        $person->extractSeeAlso();
+        $person->addEmptyDefaultElements($auth_list);
+
+        $template = "";
+        if ($form_display_type == 'list') {
+            $template = 'edit_person/_item_fl.html.twig';
+        } else {
+            // TODO 2023-07-03
+            $template = 'edit_person/new_person.html.twig';
+        }
+
+        return $this->renderEditElements($template, $item_type_id, [
+            'person' => $person,
+            'personIndex' => $person_index,
+            'formType' => $form_display_type,
+        ]);
+    }
+
 
     private function renderEditElements($template, $item_type_id, $param_list) {
 
