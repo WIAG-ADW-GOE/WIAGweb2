@@ -835,7 +835,9 @@ class EditPersonController extends AbstractController {
         $uext_gs_target = $target->getItem()->getUrlExternalByAuthorityId($auth_id);
         $uext_gs_source = $source->getItem()->getUrlExternalByAuthorityId($auth_id);
 
+        // new state (source): reference has gone
         if (!is_null($uext_gs_target) and is_null($uext_gs_source)) {
+            // is there a Domherr GS ?
             $q_uext = $urlExternalRepository->findByValueAndItemType($uext_gs_target, $item_type_id);
             if (!is_null($q_uext) and count($q_uext) > 0) {
                 $uext = $q_uext[0];
