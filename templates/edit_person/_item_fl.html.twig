@@ -4,6 +4,7 @@
 {% set online_image = person.item.isOnline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
 <form id ="{{ base_id }}"
       name="{{ base_input_name }}"
+      data-id-in-source="{{ person.item.idInSource }}"
       action="{{ path('edit_person_save_single') }}"
       method="post"
       data-submit-form-target="form">
@@ -17,11 +18,16 @@
 	    {# headline with collapse button#}
 	    {{ include('edit_person/_item_headline.html.twig') }}
 	    {# body #}
+	    {% set load_via_ajax=false %}
 	    <div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
 		 data-controller="sync"
+		 {% if load_via_ajax %}
 		 data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
 		 data-sync-fill-url-value="{{ path('edit_person_item_content', { 'id': person.id, 'index': personIndex, 'itemTypeId': itemTypeId }) }}"
 		 data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
+		 {% else %}
+		 data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
+		 {% endif %}
 		 id={{ "body#{person.id}" }}>
 		{# insert display status (hidden) #}
 		<input type="checkbox"

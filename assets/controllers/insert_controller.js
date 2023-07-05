@@ -67,14 +67,14 @@ export default class extends Controller {
 		this.element.lastElementChild
 	    );
 	}
-	//var dummy_scroll_target = document.getElementById('ref_insert_bottom');
-	//dummy_scroll_target.scrollIntoView();
+
+	// show new element in browser window
 	if (currentTarget.classList.contains('show-new-element')) {
 	    new_elmt.scrollIntoView();
 	}
     }
 
-    async fetch(url) {
+    async fetch() {
 	// add index to URL parameters; ajax
 	const url_parts = this.urlValue.split('?');
 	const base_url = url_parts[0];
@@ -83,7 +83,7 @@ export default class extends Controller {
 	params.append('current_idx', this.elmt_idx++);
 
 	const final_url = base_url + '?' + params.toString();
-	//console.log(final_url);
+	// console.log(final_url);
 	return await fetch(final_url);
     }
 

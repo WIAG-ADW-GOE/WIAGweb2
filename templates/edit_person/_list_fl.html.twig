@@ -24,18 +24,10 @@
     <div data-controller="submit-form">
 	<div class="row mx-2">
 	    <div class="col">
-		{% if formType == "new_entry" %}
-		    <button type="submit"
-			    name="formType"
-			    value="{{ formType }}"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% else %}
-		    <button type="button"
-			    name="formType"
-			    value="{{ formType }}"
-			    data-action="submit-form#submitList"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% endif %}
+		<button type="button"
+			name="formType"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	    <div class="col-12">
 		{% for person in personList %}
@@ -53,25 +45,14 @@
 		{% set debug = false %}
 		{% if debug %}
 		    <button type="submit"
-			    name="formType"
-			    value="standalone"
 			    data-submit-by-key-target="button"
 			    class="btn btn-primary btn-sm float-end">Speichern (debug)</button>
 		{% endif %}
-		{% if formType == "new_entry"%}
-		    <button type="submit"
-			    name="formType"
-			    value="{{ formType }}"
-			    data-submit-by-key-target="button"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% else %}
-		    <button type="button"
-			    name="formType"
-			    value="{{ formType }}"
-			    data-submit-by-key-target="button"
-			    data-action="submit-form#submitList"
-			    class="btn btn-primary btn-sm float-end">Speichern</button>
-		{% endif %}
+		<button type="button"
+			name="formType"
+			data-submit-by-key-target="button"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
 	    </div>
 	</div>
     </div>

@@ -40,12 +40,32 @@ export default class extends Controller {
 	    const isEdited_id = form_loop.id + "_item_formIsEdited"
 	    const isEdited_elem = document.getElementById(isEdited_id);
 	    if (isEdited_elem.checked) {
-		this.#submitFormElement(form_loop);
+		this.#submitListElement(form_loop);
 	    }
 	}
     }
 
-    async #submitFormElement(element) {
+    /**
+     * submit a form via a submit button and replace it's content with the result
+     */
+    async submitSingle(event) {
+	event.preventDefault();
+
+	var body = new URLSearchParams(new FormData(event.target.form));
+	var url = event.target.getAttribute("formaction");
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: body
+        });
+
+	const wrap_element = document.createElement("div");
+	wrap_element.innerHTML = await response.text();
+	event.target.form.replaceWith(wrap_element.firstElementChild);
+
+    }
+
+    async #submitListElement(element) {
 
 	var body = new URLSearchParams(new FormData(element));
 
@@ -58,8 +78,26 @@ export default class extends Controller {
 
 	const wrap_element = document.createElement("div");
 	wrap_element.innerHTML = await response.text();
-	const new_form = wrap_element.getElementsByTagName('form').item(0);
-	element.firstElementChild.replaceWith(new_form.firstElementChild);
+	element.replaceWith(wrap_element.firstElementChild);
+    }
+
+    /**
+     * delete a form element, e.g. a person form
+     */
+    async deleteLocal(event) {
+	event.preventDefault();
+	const btn = event.currentTarget;
+
+	const form = btn.form; // cool
+	const url = btn.getAttribute('formaction');
+	var body = new URLSearchParams(new FormData(form));
+
+        const response = await fetch(url, {
+            method: "POST",
+            body: body
+        });
+
+	form.remove();
 
     }
 

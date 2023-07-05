@@ -1,10 +1,11 @@
 <div class="container-fluid"
      data-controller="hide-on-input">
-    {{ form_start(form) }}
+    {{ form_start(form, {
+	'action': path("edit_person_merge_query", { 'itemTypeId': itemTypeId }),
+	'attr': { 'id': form.vars.id } }) }}
 	{# submit form via ENTER key #}
 	<div data-controller="trigger">
-	    <div data-action="keyup->modal-form#submitQuery">
-		{{ include("edit_person/_form_elements.html.twig", {
+	    {{ include("edit_person/_form_elements.html.twig", {
 		    indent_class: "",
 		    input_width_name: 27,
 		    input_width_institution: 11,
@@ -17,9 +18,9 @@
 		    input_width_misc: 18,
 		    input_width_date: 16,
 		}) }}
-	    </div>
 	    <div class="row mt-2">
-		{% if debug_flag is defined %}
+		{% set query_modal_debug = false %}
+		{% if query_modal_debug %}
 		    <div class="col-12">
 			<button type="submit"
 				data-trigger-target="click"
@@ -27,8 +28,9 @@
 		    </div>
 		{% else %}
 		    <div class="col-12">
-			<button type="button"
+			<button type="submit"
 				id="modal-submit"
+				form="{{ form.vars.id }}"
 				data-trigger-target="click"
 				class="btn btn-secondary btn-light btn-sm"
 				data-action="modal-form#submitQuery">Suche</button>

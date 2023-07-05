@@ -57,9 +57,7 @@
     {{ form_end(form) }}
     {# use the same div because of the scope of hide-on-input #}
     {% if personList is defined and count > 0 %}
-	{{ include('edit_person/_list_fl.html.twig', {
-	    formType: 'list',
-	}) }}
+	{{ include('edit_person/_list_fl.html.twig') }}
     {% endif %}
     <div class="row mt-2 mx-1">
 	<div class="col-12">

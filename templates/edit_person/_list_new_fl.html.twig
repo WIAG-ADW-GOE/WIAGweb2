@@ -1,0 +1,49 @@
+<div data-hide-on-input-target="result">
+    <div data-controller="submit-form">
+	<div class="row mx-2">
+	    <div class="col">
+		<button type="button"
+			name="formType"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
+	    </div>
+	    <div class="col-12">
+		<div data-controller="insert"
+		     data-insert-url-value="{{ path('edit_person_new_entry', {
+					    'itemTypeId': itemTypeId,
+					    }) }}"
+		     data-insert-point-value="lastButOne">
+		    <button class="btn btn-sm btn-outline-secondary show-new-element"
+				   type="button"
+				   data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+		    {% for person in personList %}
+			{{ include('edit_person/_item_fl.html.twig', {
+			    personIndex: loop.index0,
+			    person: person,
+			}) }}
+		    {% endfor %}
+		    <button class="btn btn-sm btn-outline-secondary"
+			    type="button"
+			    data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+		</div>
+	    </div>
+	</div>
+	{# submit #}
+	<div class="row mx-2"
+	     data-controller="submit-by-key"> {# attaches an event listener to window #}
+	    <div class="col">
+		{% set debug = false %}
+		{% if debug %}
+		    <button type="submit"
+			    data-submit-by-key-target="button"
+			    class="btn btn-primary btn-sm float-end">Speichern (debug)</button>
+		{% endif %}
+		<button type="button"
+			name="formType"
+			data-submit-by-key-target="button"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
+	    </div>
+	</div>
+    </div>
+</div>

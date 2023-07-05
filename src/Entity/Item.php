@@ -220,6 +220,12 @@ class Item {
     private $formIsExpanded = false;
 
     /**
+     * no DB-mapping
+     * hold form input data ('insert'|'edit')
+     */
+    private $formType = "edit";
+
+    /**
      * collection of InputError
      */
     private $inputError;
@@ -236,7 +242,7 @@ class Item {
 
     /**
      * no DB-mapping
-     * hold ancestor
+     * hold ancestor (array of Item);
      */
     private $ancestor = null;
 
@@ -262,6 +268,8 @@ class Item {
         $this->editStatus = self::ITEM_TYPE[$item_type_id]['edit_status_default'];
 
         $this->inputError = new ArrayCollection();
+
+        $this->formType = "edit";
     }
 
     /**
@@ -646,6 +654,16 @@ class Item {
     public function getFormIsExpanded() {
         return $this->formIsExpanded;
     }
+
+    public function setFormType($value): self {
+        $this->formType = $value;
+        return $this;
+    }
+
+    public function getFormType() {
+        return $this->formType;
+    }
+
 
     public function setMergeParent($value): self {
         $this->mergeParent = $value;
