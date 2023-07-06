@@ -17,7 +17,7 @@
 				   type="button"
 				   data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
 		    {% for person in personList %}
-			{{ include('edit_person/_item_fl.html.twig', {
+			{{ include('edit_person/_item.html.twig', {
 			    personIndex: loop.index0,
 			    person: person,
 			}) }}

@@ -79,13 +79,6 @@
 				    form="{{ base_id }}"
 				    formaction="{{ path("edit_person_merge_local") }}"
 				    data-action="modal-form#openMergeQuery">Zusammenführen ...</button></li>
-			{# 2023-04-05 old version #}
-			<li><button class="dropdown-item"
-				    type="button"
-				    value="{{ base_id }}"
-				    data-person-id="{{ person.id }}"
-				    data-list-index="{{ personIndex }}"
-				    data-action="modal-form#openModal">Zusammenführen (legacy) ...</button></li>
 			{% if person.item.commentDuplicate %}
 			    <li><button class="dropdown-item"
 					type="submit"
@@ -94,9 +87,6 @@
 						    'selected': person.item.commentDuplicate
 						    }) }}"
 				data-action="submit-form#submitSingle">Zusammenführen mit {{ person.item.commentDuplicate }}.</button></li>
-			    {# 2023-04-07 old version #}
-			    <li><a class="dropdown-item" href="{{ path('edit_person_merge_item', { 'itemTypeId': itemTypeId, 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}" target="_blank" rel="noopener">Zusammenführen mit {{ person.item.commentDuplicate }} (legacy)</a>
-			    </li>
 			{% endif %}
 			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"

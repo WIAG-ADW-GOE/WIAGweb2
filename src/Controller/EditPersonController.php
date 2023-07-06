@@ -140,7 +140,7 @@ class EditPersonController extends AbstractController {
             ];
         }
 
-        $template = 'edit_person/query_fl.html.twig';
+        $template = 'edit_person/query.html.twig';
         return $this->renderEditElements($template, $itemTypeId, $template_params);
 
     }
@@ -195,6 +195,7 @@ class EditPersonController extends AbstractController {
 
 
     /**
+     * 2023-07-06 not in use any more; save separate forms separately
      * map data to objects and save them to the database
      * @Route("/edit/person/save", name="edit_person_save")
      */
@@ -402,7 +403,7 @@ class EditPersonController extends AbstractController {
         $person->addEmptyDefaultElements($auth_list);
         $person->getItem()->setFormType($form_data['item']['formType']);
 
-        $template = "edit_person/_item_fl.html.twig";
+        $template = "edit_person/_item.html.twig";
 
         return $this->renderEditElements($template, $item_type_id, [
             'person' => $person,
@@ -482,7 +483,7 @@ class EditPersonController extends AbstractController {
             return !$v->getItem()->getIsDeleted();
         });
 
-        $template = 'edit_person/_list_fl.html.twig';
+        $template = 'edit_person/_list.html.twig';
 
         return $this->renderEditElements($template, $item_type_id, [
             'personList' => $person_list,
@@ -501,7 +502,7 @@ class EditPersonController extends AbstractController {
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
 
-        $template = 'edit_person/new_person_fl.html.twig';
+        $template = 'edit_person/new_person.html.twig';
 
         return $this->renderEditElements($template, $itemTypeId, [
             'personList' => array($person),
@@ -511,7 +512,7 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * display edit form for new bishop
+     * display edit form for new person
      *
      * @Route("/edit/person/new-entry/{itemTypeId}", name="edit_person_new_entry")
      */
@@ -519,7 +520,7 @@ class EditPersonController extends AbstractController {
         $person = $this->makePerson($itemTypeId);
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
-        $template = 'edit_person/_item_fl.html.twig';
+        $template = 'edit_person/_item.html.twig';
         $personIndex = $request->query->get('current_idx');
 
         return $this->renderEditElements($template, $itemTypeId, [
@@ -727,8 +728,6 @@ class EditPersonController extends AbstractController {
                 'sortByChoices' => $sort_by_choices,
             ]);
 
-        // $form = $this->createForm(EditBishopFormType::class);
-
         $offset = 0;
 
         $form->handleRequest($request);
@@ -776,7 +775,6 @@ class EditPersonController extends AbstractController {
                 'personList' => $person_list,
                 'offset' => $offset,
                 'pageSize' => $model->listSize,
-                // 'mergeSelectFormId' => 'merge_select', // 2023-02-15 drop?
             ];
 
         }
@@ -814,105 +812,45 @@ class EditPersonController extends AbstractController {
         $second = $itemRepository->findMergeCandidate($id_in_source_second, $item_type_id);
         $id_list = array($form_data['id']);
         if (is_null($second)) {
-            $msg = "Zu {$second_id} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
-            $person->getInputError()->add(new InputError("status", $msg));
+            $msg = "Zu {$id_in_source_second} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
+            $q_person = $personRepository->findList($id_list);
+            $person = $q_person[0];
+            $person->getItem()->getInputError()->add(new InputError("status", $msg));
+        } elseif ($second->getId() == $form_data['id']) {
+            $msg = "Eine Person kann nicht mit sich selbst zusammengeführt werden.";
+            $q_person = $personRepository->findList($id_list);
+            $person = $q_person[0];
+            $person->getItem()->getInputError()->add(new InputError("status", $msg));
         } else {
             $id_list[] = $second->getId();
+
+            // get parent data
+            $parent_list = $personRepository->findList($id_list);
+
+            // create new person
+            $person = new Person($item_type_id, $current_user);
+
+            $person->merge($parent_list);
+            $person->getItem()->setMergeStatus('merging');
+
+            // set public id
+            $person->getItem()->setIdPublic($parent_list[0]->getItem()->getIdPublic());
+            $person->getItem()->setFormIsEdited(true);
         }
 
-        // get parent data
-        $parent_list = $personRepository->findList($id_list);
-
-        // create new person
-        $person = new Person($item_type_id, $current_user);
-
-        $person->merge($parent_list);
-        $person->getItem()->setMergeStatus('merging');
-
-        // set public id
-        $person->getItem()->setIdPublic($parent_list[0]->getItem()->getIdPublic());
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
         $person->addEmptyDefaultElements($auth_list);
 
         $person->getItem()->setFormIsExpanded(true);
-        $person->getItem()->setFormIsEdited(true);
         $person->getItem()->setFormType("edit");
 
-        $template = "edit_person/_item_fl.html.twig";
+        $template = "edit_person/_item.html.twig";
 
         return $this->renderEditElements($template, $item_type_id, [
             'person' => $person,
             'personIndex' => $person_index,
-        ]);
-
-    }
-
-    /**
-     * 2023-07-04 see mergeItemByFormData
-     * merge data; display merged data in a new window
-     *
-     * @Route("/edit/person/merge-item/{itemTypeId}/{first}/{second_id}", name="edit_person_merge_item")
-     *
-     * merge $first (id) with $second_id (id_in_source) into a new person
-     * route paramters are optional, because the JS controller needs the base path.
-     */
-    public function mergeItem(Request $request,
-                              int $itemTypeId,
-                              $first = null,
-                              $second_id = null) {
-
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $personRepository = $this->entityManager->getRepository(Person::class);
-
-        // create new person
-        $current_user = $this->getUser()->getId();
-        $person = new Person($itemTypeId, $current_user);
-
-        // get parent data
-        $parent_list = $itemRepository->findById($first);
-        $id_in_source = $parent_list[0]->getIdInSource();
-
-        $second = $itemRepository->findMergeCandidate($second_id, $itemTypeId);
-        if (is_null($second)) {
-            $msg = "Zu {$second_id} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
-            $person->getInputError()->add(new InputError("status", $msg));
-        } else {
-            $parent_list[] = $second;
-        }
-
-        // store parents in $person and merge data
-        $parent_person_list = array();
-
-        // we need completely inilialized Person objects
-        $id_list = array_map(
-            function ($v) {return $v->getId(); },
-            $parent_list);
-        $parent_person_list = $personRepository->findList($id_list);
-
-
-        $person->merge($parent_person_list);
-        $person->getItem()->setMergeStatus('merging');
-
-        // set public id
-        $person->getItem()->setIdPublic($parent_list[0]->getIdPublic());
-        $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-        $person->extractSeeAlso();
-        $person->addEmptyDefaultElements($auth_list);
-
-        $person->getItem()->setFormIsExpanded(true);
-        $person->getItem()->setFormIsEdited(true);
-        $person->getItem()->setFormType("insert");
-
-        // child should be searchable via the IDs of its parents: use item.merged_into_id
-
-        $template = 'edit_person/new_person_fl.html.twig';
-
-        return $this->renderEditElements($template, $itemTypeId, [
-            'personList' => array($person),
-            'count' => 1,
         ]);
 
     }
@@ -1030,7 +968,7 @@ class EditPersonController extends AbstractController {
             $person->getItem()->setFormType('insert');
         }
 
-        $template = 'edit_person/new_person_fl.html.twig';
+        $template = 'edit_person/new_person.html.twig';
 
         return $this->renderEditElements($template, $itemTypeId, [
             'personList' => $person_list,
