@@ -31,6 +31,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
@@ -1012,5 +1013,107 @@ class EditPersonController extends AbstractController {
         return $canon_lookup;
     }
 
+    /**
+     * display query form for doublets
+     *
+     * @Route("/edit/person/query-doublet/{itemTypeId}", name="edit_person_query_doublet")
+     */
+    public function queryDoublet(Request $request, int $itemTypeId) {
+        // parameters
+        $list_size = 20;
+
+        // set defaults
+        $edit_status_default_list = [
+            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
+            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
+        ];
+
+        $status_choices = $this->statusChoices($itemTypeId);
+
+        $authority_choices = [
+            'GSN' => Authority::ID['GS'],
+            'GND' => Authority::ID['GND'],
+            'Wikidata' => Authority::ID['Wikidata']
+        ];
+
+        $model = [
+            'editStatus' => [$edit_status_default_list[$itemTypeId]],
+            'authority' => Authority::ID['GS'],
+            'itemTypeId' => $itemTypeId
+        ];
+
+        $form = $this->createFormBuilder($model)
+                     ->setMethod('GET')
+                     ->add('editStatus', ChoiceType::class, [
+                         'required' => false,
+                         'label' => 'Status',
+                         'multiple' => true,
+                         'expanded' => false,
+                         'choices' => $status_choices,
+                     ])
+                     ->add('authority', ChoiceType::class, [
+                         'label' => 'Normdaten',
+                         'choices' => $authority_choices,
+                     ])
+                     ->getForm();
+
+
+        $offset = 0;
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+
+        $person_list = array();
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+
+        $limit = 0; $offset = 0;
+        $id_all = $itemRepository->personDoubletIds($model, $limit, $offset);
+        $count = count($id_all);
+
+            //
+            $offset = $request->query->get('offset');
+            $page_number = $request->query->get('pageNumber');
+
+            // set offset to page begin
+            if (!is_null($offset)) {
+                $offset = intdiv($offset, $list_size) * $list_size;
+            } elseif (!is_null($page_number) && $page_number > 0) {
+                $page_number = min($page_number, intdiv($count, $list_size) + 1);
+                $offset = ($page_number - 1) * $list_size;
+                // this may happen if elements were deleted
+                while ($offset >= $count) {
+                    $offset -= $list_size;
+                }
+            } else {
+                $offset = 0;
+            }
+
+            $id_list = array_slice($id_all, $offset, $list_size);
+
+            $person_list = $personRepository->findList($id_list);
+
+            // add empty role, reference and url external if not present
+            $authorityRepository = $this->entityManager->getRepository(Authority::class);
+            $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
+            foreach ($person_list as $person) {
+                $person->extractSeeAlso();
+                $person->addEmptyDefaultElements($auth_list);
+            }
+
+            $template_params = [
+                'itemTypeId' => $itemTypeId,
+                'personList' => $person_list,
+                'form' => $form,
+                'error_list' => null,
+                'count' => $count,
+                'offset' => $offset,
+                'pageSize' => $list_size,
+            ];
+
+        $template = 'edit_person/query_doublet.html.twig';
+        return $this->renderEditElements($template, $itemTypeId, $template_params);
+
+    }
 
 }

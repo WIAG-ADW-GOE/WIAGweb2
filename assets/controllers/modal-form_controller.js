@@ -28,12 +28,12 @@ export default class extends Controller {
 
     async openMergeQuery(event) {
 	this.openBtn = event.currentTarget;
-
 	return this.openModal(event);
     }
 
     // generic open modal function
     async openModal(event) {
+	event.preventDefault();
         this.modal = new Modal(this.modalTarget);
         this.modal.show();
 
