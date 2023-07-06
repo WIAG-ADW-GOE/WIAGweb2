@@ -426,10 +426,12 @@ class EditPersonService {
         $item->setIdPublic($data['item']['idPublic']);
         $item->setIdInSource($data['item']['idInSource']);
 
-        if (array_key_exists('isDeleted', $data['item']) && $data['item']['isDeleted'] == 1) {
-            $item->setIsOnline(0);
-            $item->setIsDeleted(1);
-        }
+        // 2023-07-03
+        // obsolete
+        // if (array_key_exists('isDeleted', $data['item']) && $data['item']['isDeleted'] == 1) {
+        //     $item->setIsOnline(0);
+        //     $item->setIsDeleted(1);
+        // }
 
         // item: status values, editorial notes
         $key_list = [
@@ -439,6 +441,7 @@ class EditPersonService {
             'commentDuplicate',
             'normdataEditedBy'
         ];
+
         UtilService::setByKeys($item, $data['item'], $key_list);
 
         $collect_merge_parent = array();
@@ -651,6 +654,10 @@ class EditPersonService {
         $role_role = $roleRoleRepository->findOneByName($role_name);
         if ($role_role) {
             $role->setRole($role_role);
+        } elseif ($role_name == "") {
+            $role->setRole(null);
+            $msg = "Warnung: Es ist kein Amt angegeben.";
+            $role->getInputError()->add(new InputError('role', $msg, 'warning'));
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";

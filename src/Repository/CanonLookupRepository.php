@@ -248,12 +248,11 @@ class CanonLookupRepository extends ServiceEntityRepository
                 $itemRepository = $this->getEntityManager()->getRepository(Item::class);
                 $with_id_in_source = $model->isEdit;
                 $list_size_max = 200;
-                $descendant_list = $itemRepository->findCurrentChildById(
+                $descendant_id_list = $itemRepository->findIdByAncestor(
                     $someid,
                     $with_id_in_source,
-                    $list_size_max
+                    $list_size_max,
                 );
-                $descendant_id_list = array_map(function($v) { return $v->getId(); }, $descendant_list);
 
                 // look for $someid in external links
                 $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);

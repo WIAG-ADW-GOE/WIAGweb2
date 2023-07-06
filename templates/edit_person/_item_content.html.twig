@@ -44,6 +44,7 @@
 	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ person.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
 	{# store data into the form #}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}
+	{{ util.hiddenInput(base_id, base_input_name, ['item', 'formType'], person.item.formType) }}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], person.item.changedBy) }}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'dateChanged'], person.item.dateChanged|format_datetime()) }}
     </div>

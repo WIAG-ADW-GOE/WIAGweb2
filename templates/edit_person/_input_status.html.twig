@@ -65,7 +65,7 @@
 			style="max-width: 20rem;"></ul>
 		</div>
 	    {% endif %}
-	    {% if formType == 'list' %}
+	    {% if person.item.formType == 'edit' %}
 		{# dropdown "Aktion" #}
 		<div class="dropdown ms-auto">
 		    <button class="btn btn-sm btn-secondary dropdown-toggle"
@@ -73,30 +73,35 @@
 			    data-bs-toggle="dropdown"
 			    aria-expanded="false">Aktion</button>
 		    <ul class="dropdown-menu">
+			{# open modal; url see data-modal-form-query-url-value; template: modal/_modal.html.twig #}
 			<li><button class="dropdown-item"
 				    type="button"
-				    value="{{ base_id }}"
-				    data-person-id="{{ person.id }}"
-				    data-list-index="{{ personIndex }}"
-				    data-action="modal-form#openModal">Zusammenführen ...</button></li>
+				    form="{{ base_id }}"
+				    formaction="{{ path("edit_person_merge_local") }}"
+				    data-action="modal-form#openMergeQuery">Zusammenführen ...</button></li>
 			{% if person.item.commentDuplicate %}
-			    <li><a class="dropdown-item" href="{{ path('edit_person_merge_item', { 'itemTypeId': itemTypeId, 'first': person.item.id, 'second_id': person.item.commentDuplicate }) }}" target="_blank" rel="noopener">Zusammenführen mit {{ person.item.commentDuplicate }}</a>
-			    </li>
+			    <li><button class="dropdown-item"
+					type="submit"
+					form="{{ base_id }}"
+					formaction="{{ path("edit_person_merge_local", {
+						    'selected': person.item.commentDuplicate
+						    }) }}"
+				data-action="submit-form#submitSingle">Zusammenführen mit {{ person.item.commentDuplicate }}.</button></li>
 			{% endif %}
 			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"
-						 data-submit-confirm-title-value="Eintrag aufteilen?"
-						 data-submit-confirm-button-id-value="split_{{ person.id }}"
-						 data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
-						 data-submit-confirm-confirm-button-text-value="Aufteilen"
-						 data-submit-confirm-cancel-button-text-value="Abbrechen">
+				data-submit-confirm-title-value="Eintrag aufteilen?"
+				data-submit-confirm-button-id-value="split_{{ person.id }}"
+				data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
+				data-submit-confirm-confirm-button-text-value="Aufteilen"
+				data-submit-confirm-cancel-button-text-value="Abbrechen">
 				{# use this hidden element to trigger the confirmed action #}
 				<a id="split_{{ person.id }}"
 				   class="d-none"
 				   href="{{ path('edit_person_split_item', { 'itemTypeId': itemTypeId, 'id': person.id }) }}">Link zum Aufteilen</a>
 				<button type="button"
-					      class="dropdown-item"
-					      data-action="submit-confirm#confirm">Eintrag aufteilen</button>
+					class="dropdown-item"
+					data-action="submit-confirm#confirm">Eintrag aufteilen</button>
 			    </li>
 			{% endif %}
 			<li data-controller="submit-confirm"
@@ -109,11 +114,11 @@
 			    {# set delete flag and save the edit form list #}
 			    <button type="submit"
 				    id="delete_{{ person.id }}"
-				    data-action="submit-form#submit"
-				    form="{{ editFormId }}"
-				    formaction="{{ path('edit_person_delete', { 'q_id': person.id }) }}"
+				    data-action="submit-form#deleteLocal"
+				    form="{{ base_id }}"
+				    formaction="{{ path('edit_person_delete_local') }}"
 				    class="d-none"></button>
-			    <button type="BUTTON"
+			    <button type="button"
 				    class="dropdown-item"
 				    data-action="submit-confirm#confirm">Eintrag löschen</button>
 			</li>
