@@ -232,6 +232,9 @@ class UtilService {
     // regular expressions for dates
     // - test for first century only if other alternatives yield no result
     const RGPCENTURY = "([1-9][0-9]?)\\. (Jahrh|Jh)";
+
+    // these characters are removed, if a pure number is expected
+    const DECORATIONYEAR = "()[]?+† \t";
     const RGPYEAR = "([1-9][0-9][0-9]+)";
     const RGPYEARFC = "([1-9][0-9]+)";
 
@@ -433,6 +436,8 @@ class UtilService {
         }
 
         // plain year
+        // 2023-07-07 allow decorations in date specifications if only a number is expected)
+        $s = trim($s, self::DECORATIONYEAR);
         $rgm = preg_match(self::RGXYEAR, $s, $matches);
         if ($rgm === 1) {
             $year = intval($matches[2]);
@@ -537,11 +542,22 @@ class UtilService {
             new ParseDate(self::RGXEARLYDECADE, 2, 305),
             new ParseDate(self::RGXAFTER, 2, 309),
             new ParseDate(self::RGXDECADE, 1, 310),
-            new ParseDate(self::RGXYEAR, 2, 150),
-            new ParseDate(self::RGXYEARFC, 2, 150)
         ];
         return $rgx_year_list;
     }
+
+    /**
+     * like rgxYearList but for pure numbers
+     */
+    private function rgxYearNumList() {
+        $rgx_year_num_list = [
+            new ParseDate(self::RGXYEAR, 2, 150),
+            new ParseDate(self::RGXYEARFC, 2, 150)
+        ];
+        return $rgx_year_num_list;
+    }
+
+
 
     const SORT_KEY_MAX = 9000900;
 
@@ -573,6 +589,18 @@ class UtilService {
         }
 
         foreach ($this->rgxYearList() as $rgx_obj) {
+            $matches = null;
+            $rgm = preg_match($rgx_obj->rgx, $s, $matches);
+            if ($rgm === 1) {
+                $sort = $rgx_obj->sortKey;
+                $year = $matches[$rgx_obj->match_index];
+                return $year * 1000 + $sort;
+            }
+        }
+
+        // 2023-07-07 allow decorations in date specifications if only a number is expected)
+        $s = trim($s, self::DECORATIONYEAR);
+        foreach ($this->rgxYearNumList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
