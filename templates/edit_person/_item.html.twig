@@ -14,6 +14,12 @@
 	     data-toggle-arrow-img-open-value="down"
 	     data-toggle-arrow-img-closed-value="right"
 	     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
+	    {# catch ENTER events #}
+	    <button type="submit"
+		    hidden="hidden"
+		    disabled
+		    class="btn btn-secondary btn-sm"
+		    aria-hidden="true">Catch Enter</button>
 	    {% set expanded = person.item.inputError|length > 0 or person.item.formIsExpanded %}
 	    {# headline with collapse button#}
 	    {{ include('edit_person/_item_headline.html.twig') }}
