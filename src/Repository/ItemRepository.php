@@ -522,7 +522,9 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('i.urlExternal', 'uext')
                    ->addOrderBy("uext.value")
                    ->andWhere("uext.value in (:value_list)")
-                   ->setParameter("value_list", $value_list);
+                   ->andWhere("i.itemTypeId = :item_type_id")
+                   ->setParameter("value_list", $value_list)
+                   ->setParameter("item_type_id", $model['itemTypeId']);
 
         if (!is_null($edit_status) and count($edit_status) > 0) {
             $qb->andWhere("i.editStatus in (:q_status)")
