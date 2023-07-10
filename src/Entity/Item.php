@@ -993,4 +993,38 @@ class Item {
 
     }
 
+
+    public function mergeItemProperty(Item $candidate) {
+        $this->mergeCollection('itemProperty', $candidate);
+
+        // combine entries for the same attribute type
+        $list = $this->itemProperty->toArray();
+        // sort by type
+        usort($list, function($a, $b) {
+            $cmp = 0;
+            if ($a->getPropertyTypeId() < $b->getPropertyTypeId()) {
+                $cmp = -1;
+            } elseif ($a->getPropertyTypeId() > $b->getPropertyTypeId())  {
+                $cmp = 1;
+            }
+            return $cmp;
+        });
+
+        $merged_list = new ArrayCollection();
+        $last_prop = new ItemProperty();
+        foreach ($list as $prop) {
+            if ($prop->getPropertyTypeId() != $last_prop->getPropertyTypeId()) { // other type
+                $last_prop = $prop;
+                $merged_list->add($prop);
+            } else {
+                $last_value = $last_prop->getValue();
+                $merge_value = $prop->getValue();
+                if ($last_value != $merge_value) {
+                    $last_prop->setValue(implode([$last_value, $merge_value], " | "));
+                }
+            }
+        }
+        $this->itemProperty = $merged_list;
+    }
+
 }

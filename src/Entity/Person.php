@@ -746,13 +746,13 @@ class Person {
 
         $item_collection_list = [
             'reference',
-            'itemProperty',
         ];
 
         foreach($item_collection_list as $item_collection_name) {
             $this->item->mergeCollection($item_collection_name, $candidate->getItem());
         }
 
+        $this->item->mergeItemProperty($candidate->getItem());
         $this->item->mergeUrlExternal($candidate->getItem());
 
         return $this;
