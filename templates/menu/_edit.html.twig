@@ -20,10 +20,9 @@
 	<li><a class="dropdown-item" href="{{ path('edit_prop') }}" target="_blank" rel="noopener">Attribute</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_role_query') }}" target="_blank" rel="noopener">Ämter</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
-	{% if is_granted('ROLE_EDIT_USER') %}
+	{% if is_granted('ROLE_DATA_EDIT') %}
 	    <li><hr class="dropdown-divider"></li>
-	    <li><a class="dropdown-item" href="{{ path('user_register') }}" target="_blank" rel="noopener">Benutzer eintragen</a></li>
-	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>
-	{% endif  %}
+	    <li><a class="dropdown-item" href="{{ path('edit_data_date_range') }}" target="_blank" rel="noopener">Zeitspanne neu einlesen</a></li>
+	{% endif %}
     </ul>
 </li>

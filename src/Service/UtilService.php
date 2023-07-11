@@ -318,7 +318,7 @@ class UtilService {
             self::RGX4QCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 25);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 25);
         if (!is_null($year)) { return $year; }
 
         // begin, middle, end
@@ -328,7 +328,7 @@ class UtilService {
             self::RGX3TCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 33);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 33);
         if (!is_null($year)) { return $year; }
 
         // third
@@ -338,7 +338,7 @@ class UtilService {
             self::RGX3TRDCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 33);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 33);
         if (!is_null($year)) { return $year; }
 
 
@@ -348,7 +348,7 @@ class UtilService {
             self::RGX2HCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 50);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 50);
         if (!is_null($year)) { return $year; }
 
         // between
@@ -387,40 +387,40 @@ class UtilService {
 
         // decade
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXEARLYDECADE, $s, 0, 4, $dir, $match_index);
+        $year = self::parseApprox(self::RGXEARLYDECADE, $s, 0, 4, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 1;
-        $year = $this->parseApprox(self::RGXDECADE, $s, 0, 10, $dir, $match_index);
+        $year = self::parseApprox(self::RGXDECADE, $s, 0, 10, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         // before, around after
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXSBEFORE, $s, 10, 0, $dir, $match_index);
+        $year = self::parseApprox(self::RGXSBEFORE, $s, 10, 0, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXBEFORE, $s, 50, 0, $dir, $match_index);
+        $year = self::parseApprox(self::RGXBEFORE, $s, 50, 0, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXFIRST, $s, 5, 5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXFIRST, $s, 5, 5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXSAFTER, $s, 0, 10, $dir, $match_index);
+        $year = self::parseApprox(self::RGXSAFTER, $s, 0, 10, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXAFTER, $s, 0, 50, $dir, $match_index);
+        $year = self::parseApprox(self::RGXAFTER, $s, 0, 50, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXAROUND, $s, 5, +5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXAROUND, $s, 5, +5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXCA, $s, 5, +5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXCA, $s, 5, +5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         // century
@@ -457,7 +457,7 @@ class UtilService {
     /**
      * parse dates related to a fraction of a century
      */
-    private function parseFractionCentury($rgx_list, $s, $dir, $span) {
+    static function parseFractionCentury($rgx_list, $s, $dir, $span) {
         $year = null;
 
         foreach($rgx_list as $q => $rgx) {
@@ -480,7 +480,7 @@ class UtilService {
     /**
      * parse an approximate date information
      */
-    private function parseApprox($rgx, $s, $left, $right, $dir, $match_index) {
+    static function parseApprox($rgx, $s, $left, $right, $dir, $match_index) {
         $year = null;
         $matches = null;
         $rgm = preg_match($rgx, $s, $matches);

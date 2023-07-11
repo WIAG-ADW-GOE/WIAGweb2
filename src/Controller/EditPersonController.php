@@ -264,7 +264,7 @@ class EditPersonController extends AbstractController {
                     // update auxiliary tables
                     $nameLookupRepository->update($target);
                     if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                        $canonLookupRepository->update($target);
+                        canonLookupRepository->update($target);
                     }
 
                     // form status

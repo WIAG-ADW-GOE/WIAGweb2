@@ -182,4 +182,27 @@ class PersonRepository extends ServiceEntityRepository {
         return null;
     }
 
+    /**
+     * adjust data
+     * @return IDs of entries with missing date range information
+     */
+    public function findMissingDateRange($limit = null, $offset = null) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p.id as personId')
+                   ->andWhere('p.dateMin is NULL OR p.dateMax is NULL');
+
+        if (!is_null($limit)) {
+            $qb->setMaxResults($limit);
+        }
+        if (!is_null($offset)) {
+            $qb->setFirstResult($offset);
+        }
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        return array_column($result, 'personId');
+
+    }
+
 }

@@ -269,7 +269,7 @@ class EditPersonService {
      *
      * update dateMin and dateMax
      */
-    private function updateDateRange($person) {
+    static function updateDateRange($person) {
         $date_min = null;
         $date_max = null;
 
@@ -486,31 +486,7 @@ class EditPersonService {
         $this->mapNameVariants($person, $data);
 
         // numerical values for dates
-        $date_birth = $person->getDateBirth();
-        if (!is_null($date_birth)) {
-            $year = $this->utilService->parseDate($date_birth, 'lower');
-            if (!is_null($year)) {
-                $person->setNumDateBirth($year);
-            } else {
-                $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
-                $item->getInputError()->add(new InputError('name', $msg));
-            }
-        } else {
-            $person->setNumDateBirth(null);
-        }
-
-        $date_death = $person->getDateDeath();
-        if (!is_null($date_death)) {
-            $year = $this->utilService->parseDate($date_death, 'upper');
-            if (!is_null($year)) {
-                $person->setNumDateDeath($year);
-            } else {
-                $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
-                $item->getInputError()->add(new InputError('name', $msg));
-            }
-        } else {
-            $person->setNumDateDeath(null);
-        }
+        self::setNumDates($person);
 
         // reference to a bishop is stored as an external url
         if (array_key_exists('bishop', $data)) {
@@ -554,7 +530,7 @@ class EditPersonService {
         $this->checkRoleList($person);
 
         // date min/date max
-        $this->updateDateRange($person);
+        self::updateDateRange($person);
 
         // validation
         if ($item->getIsOnline() && $item->getIsDeleted()) {
@@ -584,6 +560,34 @@ class EditPersonService {
             $person->getItem()->getInputError()->add(new InputError('role', $msg, 'warning'));
         }
 
+    }
+
+    static function setNumDates($person) {
+        $date_birth = $person->getDateBirth();
+        if (!is_null($date_birth)) {
+            $year = UtilService::parseDate($date_birth, 'lower');
+            if (!is_null($year)) {
+                $person->setNumDateBirth($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
+            }
+        } else {
+            $person->setNumDateBirth(null);
+        }
+
+        $date_death = $person->getDateDeath();
+        if (!is_null($date_death)) {
+            $year = UtilService::parseDate($date_death, 'upper');
+            if (!is_null($year)) {
+                $person->setNumDateDeath($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
+            }
+        } else {
+            $person->setNumDateDeath(null);
+        }
     }
 
     /**

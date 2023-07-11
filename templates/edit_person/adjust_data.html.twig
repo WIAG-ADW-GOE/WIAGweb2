@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container-fluid">
+	<div class="row ms-2 col-12">
+	    <table>
+		<thead class="thead-light">
+		    <tr>
+			<th scope="col">Id</th>
+			<th scope="col">Name</th>
+			<th scope="col">Lebensdaten</th>
+			<th scope="col">Zeitspanne</th>
+		    </tr>
+		</thead>
+		<tbody>
+		    {% for person in personList|filter(p => p.item.inputError|length > 0) %}
+		    <tr>
+			    <td>{{ person.id }} - {{ person.item.idPublic }}</td>
+			    <td>{{ person.displayname }}</td>
+			    <td>{{ person.dateBirth }} - {{ person.dateDeath }}</td>
+			    <td>{{ person.dateMin }} - {{ person.dateMax }}</td>
+			</tr>
+			{% for error in person.item.inputError %}
+			    <tr>
+				<td colspan="4"><span class="text-danger">{{ error.msg }}</span></td>
+			    </tr>
+			{% endfor %}
+		    {% endfor %}
+		</tbody>
+	    </table>
+	</div>
+	<div class="row ms-2 col-12">
+	    Verarbeitete Einträge: {{ personList|length }}
+	</div>
+    </div>
+{% endblock %}
