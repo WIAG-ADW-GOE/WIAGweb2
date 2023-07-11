@@ -165,6 +165,7 @@ class EditReferenceController extends AbstractController {
                 $reference->setFormIsExpanded($form_is_expanded);
             }
             if (isset($data['isEdited'])) {
+                $reference->setIsEdited(1);
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;
@@ -212,13 +213,15 @@ class EditReferenceController extends AbstractController {
         // save
 
         if (!$error_flag) {
+            $next_id = $referenceRepository->nextId();
             foreach ($reference_list as $reference) {
                 $id = $reference->getId();
                 if ($id < 1) {
-                    $next_id = $referenceRepository->nextId();
                     $reference->setReferenceId($next_id);
                     $entityManager->persist($reference);
+                    $next_id += 1;
                 }
+                $reference->setIsEdited(0);
             }
             $entityManager->flush();
         }
