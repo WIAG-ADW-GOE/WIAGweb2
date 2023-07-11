@@ -263,8 +263,9 @@ class EditPersonController extends AbstractController {
 
                     // update auxiliary tables
                     $nameLookupRepository->update($target);
+                    // only the canon entry is responsible for the content of canonLookupRepository
                     if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                        canonLookupRepository->update($target);
+                        $canonLookupRepository->update($target);
                     }
 
                     // form status
@@ -999,7 +1000,7 @@ class EditPersonController extends AbstractController {
                 $item_id = $uext->getItemId();
                 // is there a reference by a bishop already
                 $current = $canonLookupRepository->findOneByPersonIdRole($item_id);
-                if (is_null($current)) {
+                if (is_null($current) or $current->getPersonIdName() == $source->getId()) {
                     $person = $personRepository->find($item_id);
                     $canon_lookup = new CanonLookup();
                     $canon_lookup->setPerson($person);
