@@ -93,6 +93,24 @@ class UrlExternalRepository extends ServiceEntityRepository
         return array_column($query->getResult(), 'itemId');
     }
 
+    public function findItemId($someid, $item_type_id = null) {
+
+        $qb = $this->createQueryBuilder('u')
+                   ->select('DISTINCT u.itemId')
+                   ->andWhere('u.value like :someid')
+                   ->setParameter(':someid', '%'.$someid.'%');
+
+        if (!is_null($item_type_id)) {
+            $qb->join('u.item', 'i')
+               ->andWhere('i.itemTypeId = :item_type_id')
+               ->setParameter('item_type_id', $item_type_id);
+        }
+
+        $q_result = $qb->getQuery()->getResult();
+        return array_column($q_result, 'itemId');
+    }
+
+
 
     /**
      *

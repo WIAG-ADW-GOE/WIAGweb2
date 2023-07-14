@@ -373,18 +373,17 @@ class EditPersonController extends AbstractController {
             // read complete tree to perform deletions if necessary
             $query_result = $personRepository->findList([$person_id]);
             $target = $query_result[0];
-            $wiag_id_ep = $target->getItem()->getUrlExternalByAuthority('WIAG-ID');
-            $gsn = $target->getItem()->getUrlExternalByAuthority('GS');
-            // is bishop referred by a canon?
-            $canon_id_list = null; // usually only with 0 or 1 entry
-            if ($target->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
-                $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($target->getItem()->getIdPublic());
+
+            $online_involved = ($target->getItem()->getIsOnline() or $person->getItem()->getIsOnline());
+
+            // collect list of persons for update of canon_lookup
+            $affected_person_id_list = array();
+            if ($online_involved) {
+                $affected_person_id_list = array_merge($this->getIdLinkedPersons($target), $this->getIdLinkedPersons($person));
+                $affected_person_id_list = array_unique($affected_person_id_list);
             }
 
-            // clear auxiliary tables
             $nameLookupRepository->clearForPerson($target);
-            $canonLookupRepository->clearForPerson($target);
-            $canonLookupRepository->clearForPerson($person); // new link to a bishop?
 
             // transfer data from $person to $target
             $this->editService->update($target, $person, $current_user_id);
@@ -412,13 +411,6 @@ class EditPersonController extends AbstractController {
 
             // update auxiliary tables see also below: global update for canons GS and bishops
             $nameLookupRepository->insert($target);
-            $canonLookupRepository->insert($target);
-            // take care of referring canon (bishop has cleared everything in canon_lookup)
-            if ($canon_id_list and count($canon_id_list) > 0) {
-                $canon_list = $personRepository->findList($canon_id_list);
-                $canonLookupRepository->clearForPerson($canon_list[0]);
-                $canonLookupRepository->insert($canon_list[0]);
-            }
 
             // form status
             $expanded = $person->getItem()->getFormIsExpanded();
@@ -427,14 +419,12 @@ class EditPersonController extends AbstractController {
 
             $this->entityManager->flush();
 
+            if ($online_involved) {
+                $canonLookupRepository->clearByIdRole($affected_person_id_list);
+                $canonLookupRepository->insertByListMayBe($affected_person_id_list);
+            }
+
             $person=$target;
-
-            // restore bishop in canon_lookup? (after flush!)
-            $canonLookupRepository->addBishopMayBe($wiag_id_ep);
-
-            // restore canon GS in canon_lookup? (after flush!)
-            $canonLookupRepository->addCanonGsMayBe($gsn);
-
         }
 
         // add empty elements for blank form sections
@@ -455,6 +445,38 @@ class EditPersonController extends AbstractController {
             'person' => $person,
             'personIndex' => $person_index,
         ]);
+    }
+
+    private function getIdLinkedPersons($person) {
+        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+
+        // bishop
+        $id_list = array($person->getId());
+        $uext = $person->getItem()->getUrlExternalObj('WIAG-ID');
+        if (!is_null($uext)) {
+            $item_ep_list = $itemRepository->findByIdPublic($uext->getValue());
+            if (!is_null($item_ep_list) and count($item_ep_list) > 0) {
+                $id_list[] = $item_ep_list[0]->getId();
+            }
+        }
+
+        // canon GS
+        $uext = $person->getItem()->getUrlExternalObj('GS');
+        if (!is_null($uext)) {
+            $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+            $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
+        }
+
+        // is bishop referred to by a canon?
+        if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
+            $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($person->getItem()->getIdPublic());
+            foreach($canon_id_list as $canon_id) {
+                $id_list[] = $canon_id;
+            }
+        }
+
+        return($id_list);
     }
 
 

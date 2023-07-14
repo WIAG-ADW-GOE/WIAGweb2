@@ -705,6 +705,21 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
 
+    public function clearByIdRole($id_list) {
+        $entityManager = $this->getEntityManager();
+        $qb = $this->createQueryBuilder('c')
+                   ->andWhere ('c.personIdRole in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+        $canon_lookup_list = $qb->getQuery()->getResult();
+        $n_del = count($canon_lookup_list);
+        foreach ($canon_lookup_list as $canon_lookup_del) {
+            $entityManager->remove($canon_lookup_del);
+        }
+        $entityManager->flush();
+        return ($n_del);
+    }
+
+
     /**
      * clear entries for $person, its parents and referred persons
      */
@@ -769,7 +784,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $n_persist;
     }
 
-    private function persistForCanon($person) {
+    private function addCanon($person) {
         $n_persist = 0;
         $em = $this->getEntityManager();
         $c2 = null;
@@ -811,6 +826,7 @@ class CanonLookupRepository extends ServiceEntityRepository
             $em->persist($c2);
             $n_persist += 1;
         }
+        $em->flush();
         return $n_persist;
     }
 
@@ -932,46 +948,25 @@ class CanonLookupRepository extends ServiceEntityRepository
     /**
      * add entry for an independent canon GS
      */
-    public function addCanonGsMayBe(?string $uext_gs) {
+    public function addCanonGsMayBe(Person $person) {
         $n_persist = 0;
-        if (is_null($uext_gs) or trim($uext_gs) == "") {
-            return $n_persist;
-        }
 
         $entityManager = $this->getEntityManager();
-        // find canon_gs with $uext_gs
-        $qb = $this->getEntityManager()
-                   ->getRepository(Item::class)
-                   ->createQueryBuilder('i')
-                   ->join('i.urlExternal', 'uext')
-                   ->andWhere('uext.value = :value')
-                   ->andWhere('i.itemTypeId = :item_type_gs')
-                   ->setParameter('value', $uext_gs)
-                   ->setParameter('item_type_gs', Item::ITEM_TYPE_ID['Domherr GS']['id']);
 
-        $item_cn_gs = $qb->getQuery()->getOneOrNullResult();
-
-        if (is_null($item_cn_gs)) {
-            return $n_persist;
-        }
-
-        // is an entry for this canon already/still there?
-        $item_id = $item_cn_gs->getId();
+        // is there already/still an entry for this canon?
         $qb = $this->createQueryBuilder('c')
                    ->andWhere('c.personIdRole = :item_id')
-                   ->setParameter('item_id', $item_id);
+                   ->setParameter('item_id', $person->getId());
 
         $result = $qb->getQuery()->getResult();
         if ($result and count($result) > 0) {
             return $n_persist;
         }
 
-        $person = $entityManager->getRepository(Person::class)
-                                ->find($item_id);
 
         $canon_lookup = new CanonLookup();
         $canon_lookup->setPerson($person);
-        $canon_lookup->setPersonIdName($item_id);
+        $canon_lookup->setPersonIdName($person->getId());
         $canon_lookup->setPrioRole(1);
         $entityManager->persist($canon_lookup);
         $entityManager->flush();
@@ -1029,72 +1024,54 @@ class CanonLookupRepository extends ServiceEntityRepository
     /**
      * restore entry for bishop
      */
-    public function addBishopMayBe(?string $wiag_id) {
-        $n_persist = 0;
-        if (is_null($wiag_id) or trim($wiag_id) == "") {
-            return $n_persist;
-        }
-        $entityManager = $this->getEntityManager();
-        $type_id_bishop = Item::ITEM_TYPE_ID['Bischof']['id'];
-        $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-
-        // find IDs for bishop and canon GS
-        $urlExtRepository = $entityManager->getRepository(UrlExternal::class);
-        $qb = $urlExtRepository->createQueryBuilder('uext_ep')
-                               ->addSelect('uext_ep.itemId as id_ep, uext_gs.itemId as id_gs')
-                               ->join('uext_ep.item', 'i_ep')
-                               ->join('App\Entity\UrlExternal', 'uext_gs', 'WITH', 'uext_ep.value = uext_gs.value')
-                               ->join('uext_gs.item', 'i_gs')
-                               ->andWhere('uext_gs.authorityId = :auth_gs')
-                               ->andWhere('i_ep.itemTypeId = :type_id_bishop')
-                               ->andWhere('i_gs.itemTypeId = :type_id_canon_gs')
-                               ->andWhere('i_ep.isOnline = 1')
-                               ->andWhere('i_ep.idPublic = :wiag_id')
-                               ->setParameter('auth_gs', Authority::ID['GS'])
-                               ->setParameter('type_id_canon_gs', $type_id_canon_gs)
-                               ->setParameter('type_id_bishop', $type_id_bishop)
-                               ->setParameter('wiag_id', $wiag_id);
-        $uext_pair = $qb->getQuery()->getOneOrNullResult();
-
-        if (is_null($uext_pair)) {
-            return $n_persist;
-        }
-
-        $id_ep = $uext_pair['id_ep'];
-        $id_gs = $uext_pair['id_gs'];
+    public function addBishopMayBe(Person $person) {
 
         // is an entry for this bishop already/still there?
         $qb = $this->createQueryBuilder('c')
                    ->andWhere('c.personIdRole = :item_id')
-                   ->setParameter('item_id', $id_ep);
+                   ->setParameter('item_id', $person->getId());
 
         $result = $qb->getQuery()->getResult();
+        $n_persist = 0;
         if ($result and count($result) > 0) {
             return $n_persist;
         }
 
-        $personRepository = $entityManager->getRepository(Person::class);
+        return $this->persistForBishop($person);
+    }
 
-        $canon_gs = $personRepository->find($id_gs);
+    /**
+     *
+     */
+    public function insertByListMayBe($id_list) {
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+        $person_list = $personRepository->findList($id_list);
+        // canons
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+                    $this->addCanon($person);
+                }
+            }
+        }
+        // bishops
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
+                    $this->addBishopMayBe($person);
+                }
+            }
+        }
 
-        $c2 = new CanonLookup();
-        $c2->setPerson($canon_gs);
-        $c2->setPersonIdName($id_ep);
-        $c2->setPrioRole(1);
-        $entityManager->persist($c2);
-        $n_persist += 1;
+        // canons GS
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr GS']['id']) {
+                    $this->addCanonGsMayBe($person);
+                }
+            }
+        }
 
-        $bishop = $personRepository->find($id_gs);
-
-        $c1 = new CanonLookup();
-        $c1->setPerson($bishop); // corresponds to person_id_role
-        $c1->setPrioRole(2);
-        $c1->setPersonIdName($id_ep);
-        $entityManager->persist($c1);
-        $n_persist += 1;
-        $entityManager->flush();
-
-        return $n_persist;
     }
 
 
