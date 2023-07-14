@@ -78,7 +78,7 @@ class Item {
     ];
 
     // map authority name
-    const AUTHORITY_ID = [
+    const AUTHORITY_ID_LEGACY = [
             "GND" => 1,
             "Wikidata" => 2,
             "Wikipedia" => 3,
@@ -203,7 +203,7 @@ class Item {
 
     /**
      * no DB-mapping
-     * hold merge parents
+     * hold IDs of merge parents
      */
     private $mergeParent = array();
 
@@ -224,6 +224,18 @@ class Item {
      * hold form input data ('insert'|'edit')
      */
     private $formType = "edit";
+
+    /**
+     * no DB-mapping
+     * flag
+     */
+    private $wiagChanged = false;
+
+    /**
+     * no DB-mapping
+     * flag
+     */
+    private $gsChanged = false;
 
     /**
      * collection of InputError
@@ -628,13 +640,30 @@ class Item {
     public function setIsOnline(?bool $isOnline): self
     {
         $this->isOnline = $isOnline;
-
         return $this;
     }
 
     public function updateIsOnline() {
         $online_status = self::ITEM_TYPE[$this->itemTypeId]['online_status'];
         $this->isOnline = $this->editStatus == $online_status ? 1 : 0;
+    }
+
+    public function setWiagChanged(?bool $value): self {
+        $this->wiagChanged = $value;
+        return $this;
+    }
+
+    public function getWiagChanged() {
+        return $this->wiagChanged;
+    }
+
+    public function setGsChanged(?bool $value): self {
+        $this->gsChanged = $value;
+        return $this;
+    }
+
+    public function getGsChanged() {
+        return $this->gsChanged;
     }
 
     public function setFormIsEdited($value): self {
@@ -723,7 +752,7 @@ class Item {
     private function findAuthorityId($authorityIdOrName) {
         $authority_id = intval($authorityIdOrName, 10);
         if ($authority_id == 0) {
-            $authority_id = self::AUTHORITY_ID[$authorityIdOrName];
+            $authority_id = Authority::ID[$authorityIdOrName];
         }
         return $authority_id;
     }

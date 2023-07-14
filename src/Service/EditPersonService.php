@@ -96,17 +96,32 @@ class EditPersonService {
 
         // item property
         $target_item = $target->getItem();
+        $source_item = $person->getItem();
         $target_prop = $target_item->getItemProperty();
         $source_prop = $person->getItem()->getItemProperty();
         $this->setItemAttributeList($target_item, $target_prop, $source_prop);
         // reference
         $target_ref = $target_item->getReference();
-        $source_ref = $person->getItem()->getReference();
+        $source_ref = $source_item->getReference();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
         // url external
         $target_uext = $target_item->getUrlExternal();
-        $source_uext = $person->getItem()->getUrlExternal();
+        $source_uext = $source_item->getUrlExternal();
+        // - look for changes
+        $target_uext_wiag = $target_item->getUrlExternalByAuthority('WIAG-ID');
+        $source_uext_wiag = $source_item->getUrlExternalByAuthority('WIAG-ID');
+        if ($target_uext_wiag != $source_uext_wiag) {
+            $target_item->setWiagChanged(true);
+        }
+
+        $target_uext_gs = $target_item->getUrlExternalByAuthority('GS');
+        $source_uext_gs = $source_item->getUrlExternalByAuthority('GS');
+        if ($target_uext_gs != $source_uext_gs) {
+            $target_item->setGsChanged(true);
+        }
+        // - copy url external
         $this->setItemAttributeList($target_item, $target_uext, $source_uext);
+
 
         $this->copyCore($target, $person);
 
@@ -175,6 +190,10 @@ class EditPersonService {
             $get_fnc = 'get'.ucfirst($field);
             $set_fnc = 'set'.ucfirst($field);
             $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
+        }
+
+        foreach ($source->getItem()->getMergeParent() as $parent_id) {
+            $target->getItem()->getMergeParent()->add($parent_id);
         }
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);

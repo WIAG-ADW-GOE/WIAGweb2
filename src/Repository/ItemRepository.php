@@ -654,20 +654,29 @@ class ItemRepository extends ServiceEntityRepository
 
     public function setSibling($person) {
         // get person from Domherrendatenbank
+        $f_found = false;
+        $sibling = $this->findSibling($person);
+        if ($sibling) {
+            $person->setSibling($sibling);
+            $f_found = true;
+        }
+        return $f_found;
+    }
+
+    public function findSibling($person) {
         $authorityWIAG = Authority::ID['WIAG-ID'];
         $wiagid = $person->getItem()->getIdPublic();
-        $f_found = false;
+        $sibling = null;
         if (!is_null($wiagid) && $wiagid != "") {
             $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
             $item = $this->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
             if ($item) {
                 $personRepository = $this->getEntityManager()->getRepository(Person::class);
-                $sibling_no_list = $personRepository->findList([$item[0]->getId()]);
-                $person->setSibling($sibling_no_list[0]);
-                $f_found = true;
+                $sibling_list = $personRepository->findList([$item[0]->getId()]);
+                $sibling = $sibling_list[0];
             }
         }
-        return $f_found;
+        return $sibling;
     }
 
     public function findByUrlExternal($itemTypeId, $value, $authId, $isonline = true) {

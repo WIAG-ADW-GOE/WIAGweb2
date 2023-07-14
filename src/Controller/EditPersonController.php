@@ -200,121 +200,134 @@ class EditPersonController extends AbstractController {
      * map data to objects and save them to the database
      * @Route("/edit/person/save", name="edit_person_save")
      */
-    public function save(Request $request) {
+    // public function save(Request $request) {
 
-        $form_data = $request->request->get(self::EDIT_FORM_ID);
-        $item_type_id = $form_data[0]['item']['itemTypeId'];
-        $current_user_id = $this->getUser()->getId();
+    //     $form_data = $request->request->get(self::EDIT_FORM_ID);
+    //     $item_type_id = $form_data[0]['item']['itemTypeId'];
+    //     $current_user_id = $this->getUser()->getId();
 
-        /* map/validate form */
-        // fill person_list
-        $person_list = $this->editService->mapFormdata($form_data, $current_user_id);
+    //     /* map/validate form */
+    //     // fill person_list
+    //     $person_list = $this->editService->mapFormdata($form_data, $current_user_id);
 
-        $error_flag = false;
-        foreach($person_list as $person) {
-            if ($person->getItem()->hasError('error')) {
-                $error_flag = true;
-            }
-        }
+    //     $error_flag = false;
+    //     foreach($person_list as $person) {
+    //         if ($person->getItem()->hasError('error')) {
+    //             $error_flag = true;
+    //         }
+    //     }
 
-        $form_display_type = $request->request->get('formType') ?? 'list';
+    //     $form_display_type = $request->request->get('formType') ?? 'list';
 
-        /* save data */
-        $entity_manager = $this->entityManager;
-        if (!$error_flag) {
-            $personRepository = $entity_manager->getRepository(Person::class);
-            $nameLookupRepository = $entity_manager->getRepository(NameLookup::class);
-            $canonLookupRepository = $entity_manager->getRepository(CanonLookup::class);
-            foreach ($person_list as $key => $person) {
-                if ($person->getItem()->getFormIsEdited()) {
-                    $person_id = $person->getId();
-                    if ($person_id == 0) { // new entry
-                        // start out with a new object to avoid cascade errors
-                        $person_new = new Person($item_type_id, $current_user_id);
-                        $this->editService->initMetaData($person_new, $item_type_id);
-                        $this->entityManager->persist($person_new);
-                        $this->entityManager->flush();
-                        $person_id = $person_new->getItem()->getId();
-                    }
-                    // read complete tree to perform deletions if necessary
-                    // 2023-05-25 here, we get a second object for the same
-                    // person from the database. Which one takes precedence when
-                    // data are written to the database?
-                    $query_result = $personRepository->findList([$person_id]);
-                    $target = $query_result[0];
+    //     /* save data */
+    //     $entity_manager = $this->entityManager;
+    //     if (!$error_flag) {
+    //         $personRepository = $entity_manager->getRepository(Person::class);
+    //         $nameLookupRepository = $entity_manager->getRepository(NameLookup::class);
+    //         $canonLookupRepository = $entity_manager->getRepository(CanonLookup::class);
+    //         foreach ($person_list as $key => $person) {
+    //             if ($person->getItem()->getFormIsEdited()) {
+    //                 $person_id = $person->getId();
+    //                 if ($person_id == 0) { // new entry
+    //                     // start out with a new object to avoid cascade errors
+    //                     $person_new = new Person($item_type_id, $current_user_id);
+    //                     $this->editService->initMetaData($person_new, $item_type_id);
+    //                     $this->entityManager->persist($person_new);
+    //                     $this->entityManager->flush();
+    //                     $person_id = $person_new->getItem()->getId();
+    //                 }
+    //                 // read complete tree to perform deletions if necessary
+    //                 // 2023-05-25 here, we get a second object for the same
+    //                 // person from the database. Which one takes precedence when
+    //                 // data are written to the database?
+    //                 $query_result = $personRepository->findList([$person_id]);
+    //                 $target = $query_result[0];
 
-                    // restore canon from Digitales Personenregister?
-                    $this->restoreCanonGs($target, $person);
-                    // transfer data from $person to $target
-                    $this->editService->update($target, $person, $current_user_id);
+    //                 // restore canon from Digitales Personenregister?
+    //                 $this->restoreCanonGs($target, $person);
+    //                 // transfer data from $person to $target
+    //                 $this->editService->update($target, $person, $current_user_id);
 
-                    // merging process?
-                    $target_item = $target->getItem();
-                    if ($target_item->getMergeStatus() == 'merging') {
-                        $parent_list = $this->editService->readParentList($person);
-                        $target_item->setMergeStatus('child');
-                        $idPublic = $parent_list[0]->getItem()->getIdPublic();
-                        $target_item->setIdPublic($idPublic);
-                        $target_id = $target->getId();
-                        foreach ($parent_list as $parent) {
-                            $this->editService->updateAsParent($parent, $target_id);
-                        }
-                    }
+    //                 // merging process?
+    //                 $target_item = $target->getItem();
+    //                 if ($target_item->getMergeStatus() == 'merging') {
+    //                     $parent_list = $this->editService->readParentList($person);
+    //                     $target_item->setMergeStatus('child');
+    //                     $idPublic = $parent_list[0]->getItem()->getIdPublic();
+    //                     $target_item->setIdPublic($idPublic);
+    //                     $target_id = $target->getId();
+    //                     foreach ($parent_list as $parent) {
+    //                         $this->editService->updateAsParent($parent, $target_id);
+    //                     }
+    //                 }
 
-                    // update auxiliary tables
-                    $nameLookupRepository->update($target);
-                    // only the canon entry is responsible for the content of canonLookupRepository
-                    if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                        $canonLookupRepository->update($target);
-                    }
+    //                 // update auxiliary tables
+    //                 $nameLookupRepository->update($target);
+    //                 // only the canon entry is responsible for the content of canonLookupRepository
+    //                 if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+    //                     $canonLookupRepository->update($target);
+    //                 }
 
-                    // form status
-                    $expanded = $person->getItem()->getFormIsExpanded();
-                    $target->getItem()->setFormIsExpanded($expanded);
-                    $target->getItem()->setFormIsEdited(0);
+    //                 // form status
+    //                 $expanded = $person->getItem()->getFormIsExpanded();
+    //                 $target->getItem()->setFormIsExpanded($expanded);
+    //                 $target->getItem()->setFormIsEdited(0);
 
-                    $person_list[$key] = $target; // show updated object
-                }
-            }
+    //                 $person_list[$key] = $target; // show updated object
+    //             }
+    //         }
 
 
-            $this->entityManager->flush();
+    //         $this->entityManager->flush();
 
-            // add an empty form in case the user wants to add more items
-            if ($form_display_type == "new_entry") {
-                $person = new Person($item_type_id, $current_user_id);
-                // add empty elements for blank form sections
-                $authorityRepository = $this->entityManager->getRepository(Authority::class);
-                $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-                $person->addEmptyDefaultElements($auth_list);
-                $person->getItem()->setFormIsExpanded(true);
-                $person_list[] = $person;
-            }
+    //         // add an empty form in case the user wants to add more items
+    //         if ($form_display_type == "new_entry") {
+    //             $person = new Person($item_type_id, $current_user_id);
+    //             // add empty elements for blank form sections
+    //             $authorityRepository = $this->entityManager->getRepository(Authority::class);
+    //             $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
+    //             $person->addEmptyDefaultElements($auth_list);
+    //             $person->getItem()->setFormIsExpanded(true);
+    //             $person_list[] = $person;
+    //         }
 
-        }
+    //     }
 
-        // add empty elements for blank form sections
-        $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-        foreach ($person_list as $person) {
-            $person->extractSeeAlso();
-            $person->addEmptyDefaultElements($auth_list);
-        }
+    //     // add empty elements for blank form sections
+    //     $authorityRepository = $this->entityManager->getRepository(Authority::class);
+    //     $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
+    //     foreach ($person_list as $person) {
+    //         $person->extractSeeAlso();
+    //         $person->addEmptyDefaultElements($auth_list);
+    //     }
 
-        $template = "";
-        if ($form_display_type == 'list') {
-            $template = 'edit_person/_list.html.twig';
-        } else {
-            $template = 'edit_person/new_person.html.twig';
-        }
+    //     $template = "";
+    //     if ($form_display_type == 'list') {
+    //         $template = 'edit_person/_list.html.twig';
+    //     } else {
+    //         $template = 'edit_person/new_person.html.twig';
+    //     }
 
-        return $this->renderEditElements($template, $item_type_id, [
-            'personList' => $person_list,
-            'count' => count($person_list),
-            'formType' => $form_display_type,
-        ]);
+    //     return $this->renderEditElements($template, $item_type_id, [
+    //         'personList' => $person_list,
+    //         'count' => count($person_list),
+    //         'formType' => $form_display_type,
+    //     ]);
 
+    // }
+
+    /**
+     * TEST: map data to objects and save them to the database
+     * @Route("/edit/person/restore-cn-gs-in-cl")
+     */
+    public function restoreCnGsInClTmp (request $request) {
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+
+        $id_cand_list = $canonLookupRepository->addCanonGsGlob();
+
+        return $this->render("base.html.twig");
     }
+
 
 
     /**
@@ -346,6 +359,7 @@ class EditPersonController extends AbstractController {
             $personRepository = $em->getRepository(Person::class);
             $nameLookupRepository = $em->getRepository(NameLookup::class);
             $canonLookupRepository = $em->getRepository(CanonLookup::class);
+            $urlExternalRepository = $em->getRepository(UrlExternal::class);
             // this function is only called if form data have changed
             if ($person_id == 0) { // new entry
                 // start out with a new object to avoid cascade errors
@@ -355,25 +369,39 @@ class EditPersonController extends AbstractController {
                 $this->entityManager->flush();
                 $person_id = $person_new->getItem()->getId();
             }
+
             // read complete tree to perform deletions if necessary
             $query_result = $personRepository->findList([$person_id]);
             $target = $query_result[0];
+            $wiag_id_ep = $target->getItem()->getUrlExternalByAuthority('WIAG-ID');
+            $gsn = $target->getItem()->getUrlExternalByAuthority('GS');
+            // is bishop referred by a canon?
+            $canon_id_list = null; // usually only with 0 or 1 entry
+            if ($target->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
+                $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($target->getItem()->getIdPublic());
+            }
 
-            // restore canon from Digitales Personenregister?
-            $this->restoreCanonGs($target, $person);
+            // clear auxiliary tables
+            $nameLookupRepository->clearForPerson($target);
+            $canonLookupRepository->clearForPerson($target);
+            $canonLookupRepository->clearForPerson($person); // new link to a bishop?
+
             // transfer data from $person to $target
             $this->editService->update($target, $person, $current_user_id);
 
             // merging process?
             $target_item = $target->getItem();
             if ($target_item->getMergeStatus() == 'merging') {
-                $parent_list = $this->editService->readParentList($person);
+                $itemRepository = $this->entityManager->getRepository(Item::class);
+                $parent_list = $this->editService->readParentList($target);
                 $target_item->setMergeStatus('child');
                 $idPublic = $parent_list[0]->getItem()->getIdPublic();
                 $target_item->setIdPublic($idPublic);
                 $target_id = $target->getId();
                 $ancestor_list = array();
                 foreach ($parent_list as $parent) {
+                    $nameLookupRepository->clearForPerson($parent);
+                    $canonLookupRepository-clearForPerson($parent);
                     $ancestor_list[] = $parent->getItem();
                     $q_ancestor_list = $itemRepository->findAncestor($parent->getItem());
                     $ancestor_list = array_merge($ancestor_list, $q_ancestor_list);
@@ -382,10 +410,14 @@ class EditPersonController extends AbstractController {
                 $target->getItem()->setAncestor($ancestor_list);
             }
 
-            // update auxiliary tables
-            $nameLookupRepository->update($target);
-            if ($target->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                $canonLookupRepository->update($target);
+            // update auxiliary tables see also below: global update for canons GS and bishops
+            $nameLookupRepository->insert($target);
+            $canonLookupRepository->insert($target);
+            // take care of referring canon (bishop has cleared everything in canon_lookup)
+            if ($canon_id_list and count($canon_id_list) > 0) {
+                $canon_list = $personRepository->findList($canon_id_list);
+                $canonLookupRepository->clearForPerson($canon_list[0]);
+                $canonLookupRepository->insert($canon_list[0]);
             }
 
             // form status
@@ -396,6 +428,13 @@ class EditPersonController extends AbstractController {
             $this->entityManager->flush();
 
             $person=$target;
+
+            // restore bishop in canon_lookup? (after flush!)
+            $canonLookupRepository->addBishopMayBe($wiag_id_ep);
+
+            // restore canon GS in canon_lookup? (after flush!)
+            $canonLookupRepository->addCanonGsMayBe($gsn);
+
         }
 
         // add empty elements for blank form sections
@@ -406,6 +445,11 @@ class EditPersonController extends AbstractController {
         $person->getItem()->setFormType($form_data['item']['formType']);
 
         $template = "edit_person/_item.html.twig";
+
+        $debug_submit = $request->request->get('debug');
+        if ($debug_submit == 'debug') {
+            $template = "edit_person/item_debug.html.twig";
+        }
 
         return $this->renderEditElements($template, $item_type_id, [
             'person' => $person,
@@ -790,7 +834,7 @@ class EditPersonController extends AbstractController {
 
     /**
      * @Route("/edit/person/merge-item-local", name="edit_person_merge_local")
-     * merge items using form data
+     * merge items using form data; show form with combined data
      * see modal-form.submitForm
      */
     public function mergeItemLocal(Request $request) {
@@ -980,6 +1024,9 @@ class EditPersonController extends AbstractController {
 
     }
 
+    /**
+     * 2023-07-14 obsolete
+     */
     private function restoreCanonGs($target, $source) {
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal:: class);
         $personRepository = $this->entityManager->getRepository(Person::class);
