@@ -42,12 +42,6 @@
 	<div class="row mx-2"
 	     data-controller="submit-by-key"> {# attaches an event listener to window #}
 	    <div class="col">
-		{% set debug = false %}
-		{% if debug %}
-		    <button type="submit"
-			    data-submit-by-key-target="button"
-			    class="btn btn-primary btn-sm float-end">Speichern (debug)</button>
-		{% endif %}
 		<button type="button"
 			name="formType"
 			data-submit-by-key-target="button"

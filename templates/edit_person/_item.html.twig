@@ -62,6 +62,14 @@
 			{{ include('edit_person/_item_content.html.twig') }}
 		    </div>
 		{% endif %}
+		{% set debug = false %}
+		{% if debug %}
+		    <button type="submit"
+				  name="debug"
+				  value="debug"
+				  data-submit-by-key-target="button"
+				  class="btn btn-primary btn-sm">Speichern (debug)</button>
+		{% endif %}
 	    </div>
 	</div>
     </div>
