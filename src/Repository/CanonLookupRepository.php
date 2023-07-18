@@ -440,7 +440,10 @@ class CanonLookupRepository extends ServiceEntityRepository
         return null;
     }
 
-    public function findWithOffice($personIdName) {
+    /**
+     * 2023-07-18 obsolete?
+     */
+    public function findWithOffice_legacy($personIdName) {
         $qb = $this->createQueryBuilder('c')
                    ->select('c, p_head, p, role, role_type, institution')
                    ->join('App\Entity\Person', 'p_head', 'WITH', 'c.personIdName = p_head.id')
@@ -487,9 +490,10 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-07-18 obsolete?
      * find person with offices and sort by date
      */
-    public function findWithOfficesByModel($model) {
+    public function findWithOfficesByModel_legacy($model) {
         // c is subject to query conditions, c_sel collects data
         // to select person and item and to combine them in the controller is only possible because they are unique (?)
         $qb = $this->createQueryBuilder('c')
@@ -704,7 +708,9 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $result;
     }
 
-
+    /**
+     * clear entries related to $id_list, they may be restored by insertByListMayBe
+     */
     public function clearByIdRole($id_list) {
         $entityManager = $this->getEntityManager();
         $qb = $this->createQueryBuilder('c')
@@ -720,51 +726,6 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
 
-    /**
-     * clear entries for $person, its parents and referred persons
-     */
-    public function clearForPerson($person) {
-        $em = $this->getEntityManager();
-        $urlExternalRepository = $em->getRepository(UrlExternal::class);
-        $itemRepository = $em->getRepository(Item::class);
-        $personRepository = $em->getRepository(Person::class);
-
-        // remove direct entries
-        // $person is of type 'Bischof' or 'Domherr'
-        $id = $person->getId();
-        $qb = $this->createQueryBuilder('c')
-                   ->join('App\Entity\CanonLookup', 'c_role', 'WITH', 'c_role.personIdName = c.personIdName')
-                   ->andWhere ('c_role.personIdRole = :id')
-                   ->setParameter('id', $id);
-        $canon_lookup_list = $qb->getQuery()->getResult();
-        foreach ($canon_lookup_list as $canon_lookup_del) {
-            $em->remove($canon_lookup_del);
-        }
-
-        // remove entries for associated Bishop
-        $wiag_id = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['WIAG-ID']);
-        if ($wiag_id) {
-            $item_list = $itemRepository->findByIdPublic($wiag_id);
-            foreach($item_list as $item) {
-                $canon_lookup_list = $this->findBy(['personIdName' => $item->getId()]);
-                foreach ($canon_lookup_list as $canon_lookup_del) {
-                    $em->remove($canon_lookup_del);
-                }
-            }
-        }
-
-        // remove independent entry for associated Domherr GS
-        $gsn = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GS']);
-        if ($gsn) {
-            $person_id_name_list = $urlExternalRepository->findIdBySomeNormUrl($gsn);
-            foreach($person_id_name_list as $person_id_name) {
-                $canon_lookup_list = $this->findBy(['personIdName' => $person_id_name]);
-                foreach ($canon_lookup_list as $canon_lookup_del) {
-                    $em->remove($canon_lookup_del);
-                }
-            }
-        }
-    }
 
     /**
      * update entries for $person
@@ -907,6 +868,7 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-07-18 not in use; keep it for potential data corrections
      * restore entries for canons from Digitales Personenregister
      * this approach is brute force but avoids complicated procedures to identify relevant changes
      */
@@ -976,6 +938,7 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-07-18 not in use; keep it for potential data corrections
      * restore entries for bishops
      * this approach is brute force but avoids complicated procedures to identify relevant changes
      */
@@ -1076,93 +1039,5 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
     }
-
-
-    /**
-     * 2023-03-30 obsolete: see PersonRepository
-     * AJAX
-     */
-    // public function suggestCanonName($name, $hintSize) {
-    //     // join name_lookup via personIdRole (all canons)
-    //     // show version with prefix if present!
-    //     $qb = $this->createQueryBuilder('c')
-    //                ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-    //                         "THEN n.gnPrefixFn ELSE n.gnFn END ".
-    //                         "AS suggestion")
-    //                ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-    //                ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
-    //                ->setParameter('name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
-
-    /**
-     * 2023-03-30 see PersonRepository
-     * AJAX
-     */
-    // public function suggestCanonDomstift($name, $hintSize) {
-    //     $itemTypeIdDomstift = 3;
-    //     $qb = $this->createQueryBuilder('c')
-    //                ->select("DISTINCT inst.name AS suggestion")
-    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-    //                ->join('pr.institution', 'inst')
-    //                ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
-    //                ->andWhere('inst.name like :name')
-    //                ->setParameter('name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
-
-    /**
-     * AJAX
-     *
-     * 2023-03-30 see PersonRepository
-     */
-    // public function suggestCanonOffice($name, $hintSize) {
-    //     $qb = $this->createQueryBuilder('c')
-    //                ->select("DISTINCT pr.roleName AS suggestion")
-    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-    //                ->andWhere('pr.roleName like :name')
-    //                ->setParameter('name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
-
-    /**
-     * AJAX
-     *
-     * 2023-03-30 see PersonRepository
-     */
-    // public function suggestCanonPlace($name, $hintSize) {
-    //     $qb = $this->createQueryBuilder('c')
-    //                ->select("DISTINCT ip.placeName AS suggestion")
-    //                ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-    //                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
-    //                ->andWhere('ip.placeName like :name')
-    //                ->setParameter('name', '%'.$name.'%');
-
-    //     $qb->setMaxResults($hintSize);
-
-    //     $query = $qb->getQuery();
-    //     $suggestions = $query->getResult();
-
-    //     return $suggestions;
-    // }
-
 
 }
