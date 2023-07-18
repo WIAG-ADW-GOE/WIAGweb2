@@ -1037,7 +1037,8 @@ class CanonLookupRepository extends ServiceEntityRepository
             return $n_persist;
         }
 
-        return $this->persistForBishop($person);
+        $n_persist = $this->persistForBishop($person);
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -1046,6 +1047,7 @@ class CanonLookupRepository extends ServiceEntityRepository
     public function insertByListMayBe($id_list) {
         $personRepository = $this->getEntityManager()->getRepository(Person::class);
         $person_list = $personRepository->findList($id_list);
+
         // canons
         foreach ($person_list as $person) {
             if ($person->getItem()->getIsOnline()) {
@@ -1054,6 +1056,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                 }
             }
         }
+
         // bishops
         foreach ($person_list as $person) {
             if ($person->getItem()->getIsOnline()) {

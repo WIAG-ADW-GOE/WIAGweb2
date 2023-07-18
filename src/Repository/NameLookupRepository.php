@@ -50,16 +50,14 @@ class NameLookupRepository extends ServiceEntityRepository
     */
 
     /**
-     * clear entries for $person and it's parents
+     * clear entries for $person
      * do not flush
      */
     public function clearForPerson($person) {
         $entityManager = $this->getEntityManager();
 
         $id_list = array($person->getId());
-        foreach ($person->getItem()->getMergeParent() as $parent_id) {
-            $id_list[] = $parent_id;
-        }
+
         $qb = $this->createQueryBuilder('nl')
                    ->andWhere('nl.personId in (:id_list)')
                    ->setParameter('id_list', $id_list);

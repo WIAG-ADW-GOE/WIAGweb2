@@ -348,7 +348,6 @@ class EditPersonController extends AbstractController {
         // fill person_list
         $person_list = $this->editService->mapFormdata([$form_data], $current_user_id);
         $person = $person_list[0];
-
         $error_flag = $person->getItem()->hasError('error');
         $person_id = $person->getId();
 
@@ -380,7 +379,6 @@ class EditPersonController extends AbstractController {
             $affected_person_id_list = array();
             if ($online_involved) {
                 $affected_person_id_list = array_merge($this->getIdLinkedPersons($target), $this->getIdLinkedPersons($person));
-                $affected_person_id_list = array_unique($affected_person_id_list);
             }
 
             $nameLookupRepository->clearForPerson($target);
@@ -393,19 +391,27 @@ class EditPersonController extends AbstractController {
             if ($target_item->getMergeStatus() == 'merging') {
                 $itemRepository = $this->entityManager->getRepository(Item::class);
                 $parent_list = $this->editService->readParentList($target);
+
                 $target_item->setMergeStatus('child');
                 $idPublic = $parent_list[0]->getItem()->getIdPublic();
                 $target_item->setIdPublic($idPublic);
                 $target_id = $target->getId();
                 $ancestor_list = array();
                 foreach ($parent_list as $parent) {
-                    $nameLookupRepository->clearForPerson($parent);
-                    $canonLookupRepository-clearForPerson($parent);
-                    $ancestor_list[] = $parent->getItem();
-                    $q_ancestor_list = $itemRepository->findAncestor($parent->getItem());
+                    $item_loop = $parent->getItem();
+                    $online_involved = ($online_involved or $item_loop->getIsOnline());
+                    $ancestor_list[] = $item_loop;
+                    $q_ancestor_list = $itemRepository->findAncestor($item_loop);
                     $ancestor_list = array_merge($ancestor_list, $q_ancestor_list);
-                    $this->editService->updateAsParent($parent, $target_id);
+                    $this->editService->updateItemAsParent($item_loop, $target_id);
                 }
+                if ($online_involved) {
+                    foreach ($parent_list as $parent) {
+                        $affected_id_list_loop = $this->getIdLinkedPersons($parent);
+                        $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
+                    }
+                }
+
                 $target->getItem()->setAncestor($ancestor_list);
             }
 
@@ -420,6 +426,7 @@ class EditPersonController extends AbstractController {
             $this->entityManager->flush();
 
             if ($online_involved) {
+                $affected_person_id_list = array_unique($affected_person_id_list);
                 $canonLookupRepository->clearByIdRole($affected_person_id_list);
                 $canonLookupRepository->insertByListMayBe($affected_person_id_list);
             }
@@ -447,9 +454,14 @@ class EditPersonController extends AbstractController {
         ]);
     }
 
+    /**
+     * @return list of included persons and own id
+     */
     private function getIdLinkedPersons($person) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+
+        $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
 
         // bishop
         $id_list = array($person->getId());
@@ -457,14 +469,22 @@ class EditPersonController extends AbstractController {
         if (!is_null($uext)) {
             $item_ep_list = $itemRepository->findByIdPublic($uext->getValue());
             if (!is_null($item_ep_list) and count($item_ep_list) > 0) {
-                $id_list[] = $item_ep_list[0]->getId();
+                $item_ep_id = $item_ep_list[0]->getId();
+                $id_list[] = $item_ep_id;
+                $item_ep = $itemRepository->find($item_ep_id);
+
+                // canon GS
+                $uext = $item_ep->getUrlExternalObj('GS');
+                if (!is_null($uext)) {
+                    $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
+                }
+
             }
         }
 
         // canon GS
         $uext = $person->getItem()->getUrlExternalObj('GS');
         if (!is_null($uext)) {
-            $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
             $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
         }
 
@@ -505,7 +525,9 @@ class EditPersonController extends AbstractController {
      * @Route("/edit/person/delete-local", name="edit_person_delete_local")
      */
     public function deleteEntryLocal(Request $request) {
+        $personRepository = $this->entityManager->getRepository(Person::class);
         $itemRepository = $this->entityManager->getRepository(Item::class);
+        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
         // get first element independent from indexing
@@ -513,8 +535,22 @@ class EditPersonController extends AbstractController {
         $item_id = $form_data['id'];
 
         $item = $itemRepository->find($item_id);
+        $item_was_online = $item->getIsOnline();
+
         $item->setIsDeleted(1);
         $item->setIsOnline(0);
+        $item->updateChangedMetaData($this->getUser());
+
+        // clear/update canon_lookup
+        if ($item_was_online) {
+            $q_person = $personRepository->findList([$item_id]);
+            if (!is_null($q_person) and count($q_person) > 0) {
+                $affected_id_list = $this->getIdLinkedPersons($q_person[0]);
+                $canonLookupRepository->clearByIdRole($affected_id_list);
+                $canonLookupRepository->insertByListMayBe($affected_id_list);
+            }
+        }
+
 
         $this->entityManager->flush();
 
@@ -990,16 +1026,23 @@ class EditPersonController extends AbstractController {
         if (!is_null($item)) {
             $parent_list = $itemRepository->findParents($item);
             // dd ($parent_list);
+            $online_involved = $item->getIsOnline();
 
             $item->setIsDeleted(1);
             $item->setMergeStatus('orphan');
             $item->setIsOnline(0);
             $orphan_person = $personRepository->find($id);
-            $canonLookupRepository->update($orphan_person);
+
+            $affected_person_id_list = array();
+            if ($online_involved) {
+                $affected_person_id_list = $this->getIdLinkedPersons($orphan_person);
+            }
+
 
             $id_list = array();
             foreach($parent_list as $parent_item) {
                 $parent_item->updateIsOnline();
+                $online_involved = $online_involved or $parent_item->getIsOnline();
 
                 // merge_status
                 $parent_parent_list = $itemRepository->findParents($parent_item);
@@ -1016,11 +1059,19 @@ class EditPersonController extends AbstractController {
             $with_deleted = true;
             $person_list = $personRepository->findList($id_list, $with_deleted);
 
-            foreach ($person_list as $parent_person) {
-                $canonLookupRepository->update($parent_person);
-            }
 
             $this->entityManager->flush();
+
+            if ($online_involved) {
+                foreach ($person_list as $parent_person) {
+                    $affected_id_list_loop = $this->getIdLinkedPersons($parent_person);
+                    $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
+                }
+                $affected_person_id_list = array_unique($affected_person_id_list);
+                $canonLookupRepository->clearByIdRole($affected_person_id_list);
+                $canonLookupRepository->insertByListMayBe($affected_person_id_list);
+            }
+
 
         } else {
             throw $this->createNotFoundException('ID is nicht gültig: '.$id);

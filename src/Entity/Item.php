@@ -205,7 +205,7 @@ class Item {
      * no DB-mapping
      * hold IDs of merge parents
      */
-    private $mergeParent = array();
+    private $mergeParent = null;
 
     /**
      * no DB-mapping
@@ -267,7 +267,7 @@ class Item {
         $this->idPublic = "";
         $this->idInSource = "";
         $this->mergeStatus = 'original';
-        $this->mergeParent = array();
+        $this->mergeParent = new ArrayCollection();
         $this->isNew = true;
         $this->ancestor = array();
 

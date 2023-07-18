@@ -389,20 +389,14 @@ class EditPersonService {
     }
 
     /**
-     * updateAsParent(Person $parent, $childId)
+     * updateItemAsParent(Person $parent, $childId)
      *
      * update internal merge meta data and table canon_lookup
      */
-    public function updateAsParent(Person $parent, $childId) {
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
-        $item = $parent->getItem();
+    public function updateItemAsParent(Item $item, $childId) {
         $item->setMergedIntoId($childId);
         $item->setMergeStatus('parent');
         $item->setIsOnline(0);
-
-        if ($item->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
-            $canonLookupRepository->update($parent);
-        }
     }
 
     /**
@@ -449,13 +443,6 @@ class EditPersonService {
         $item->setIdPublic($data['item']['idPublic']);
         $item->setIdInSource($data['item']['idInSource']);
 
-        // 2023-07-03
-        // obsolete
-        // if (array_key_exists('isDeleted', $data['item']) && $data['item']['isDeleted'] == 1) {
-        //     $item->setIsOnline(0);
-        //     $item->setIsDeleted(1);
-        // }
-
         // item: status values, editorial notes
         $key_list = [
             'editStatus',
@@ -466,6 +453,9 @@ class EditPersonService {
         ];
 
         UtilService::setByKeys($item, $data['item'], $key_list);
+
+        // online?
+        $item->updateIsOnline();
 
         $collect_merge_parent = array();
         if (array_key_exists('mergeParent', $data['item'])) {
