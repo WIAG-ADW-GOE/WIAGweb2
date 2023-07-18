@@ -60,7 +60,6 @@ class IdController extends AbstractController {
         $itemTypeRepository = $this->entityManager->getRepository(ItemType::class);
 
         $itemResult = $itemRepository->findByIdPublicOrParent($id);
-        dump($itemResult);
         if (!is_null($itemResult) && count($itemResult) > 0) {
             $item = $itemResult[0];
             $itemTypeId = $item->getItemTypeId();
