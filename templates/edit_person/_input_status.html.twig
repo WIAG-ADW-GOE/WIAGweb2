@@ -46,13 +46,13 @@
 		{% endfor %}
 	    {% endif %}
 	    {% if itemTypeId == '5' %}
-		<span class="input-group-text ms-2">WIAG_ID Bischof</span>
+		{% set bishop_wiag_id = person.item.urlExternalByAuthority('WIAG-ID') %}
+		<span class="input-group-text">{% if bishop_wiag_id %}<a href="{{ path('id', { 'id': bishop_wiag_id }) }}" target="_blank" rel="noopener">WIAG_ID Bischof</a>{% else %}WIAG_ID Bischof{% endif %}</span>
 		<div
 		    {{ stimulus_controller('autocomplete', {
 			url: path('person_suggest_base', { 'field': 'bishop' }),
 		    }) }}
 		    class="w-25">
-		    {% set bishop_wiag_id = person.item.urlExternalByAuthority('WIAG-ID') %}
 		    <input type="text"
 			   id="{{ base_id }}_bishop"
 			   name="{{ base_input_name}}[bishop]"
