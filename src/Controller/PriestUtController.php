@@ -134,10 +134,6 @@ class PriestUtController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
         $person_id = $ids[$idx];
 
-        // old version 2022-10-07
-        // $person = $personRepository->findWithOffice($person_id);
-        // $entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
-
         $person_list = $personRepository->findList([$person_id]);
         if (!is_null($person_list) && count($person_list) > 0) {
             $person = $person_list[0];
@@ -201,8 +197,6 @@ class PriestUtController extends AbstractController {
 
         $node_list = array();
         foreach($person_list as $person) {
-            // not really expensive
-            $itemReferenceRepository->setReferenceVolume([$person]);
             $birthplace = $person->getBirthplace();
             if ($birthplace) {
                 $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);

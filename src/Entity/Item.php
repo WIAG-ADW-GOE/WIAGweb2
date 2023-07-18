@@ -38,6 +38,7 @@ class Item {
         self::ITEM_TYPE_ID['Domherr']['id'],
         self::ITEM_TYPE_ID['Bischof GS']['id'],
         self::ITEM_TYPE_ID['Domherr GS']['id'],
+        self::ITEM_TYPE_ID['Priester Utrecht']['id'],
     ];
 
     const ITEM_TYPE = [

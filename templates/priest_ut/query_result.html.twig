@@ -30,7 +30,7 @@
 			    {format: 'Json', text: 'JSON'},
 			    {format: 'Jsonld', text: 'JSON-LD'},
 			] %}
-			    <button type="submit" form="form" formaction={{ path('priest_ut_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
+			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('priest_ut_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
 			{% endfor %}
 		    {% endif %}
 		    <a href="{{ path('priest_ut_query') }}" type="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
