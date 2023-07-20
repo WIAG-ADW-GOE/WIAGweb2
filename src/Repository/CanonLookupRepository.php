@@ -232,7 +232,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         if ($name) {
-            // check all persons mapped to this canon
             $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
                ->andWhere('name_lookup.gnPrefixFn LIKE :q_name '.
                           'OR name_lookup.gnFn LIKE :q_name')

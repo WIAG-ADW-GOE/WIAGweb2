@@ -815,4 +815,38 @@ class UtilService {
         return $arr;
     }
 
+    /**
+     * permute the elements of $items and store the result in $result
+     */
+    static public function pc_permute($items, &$result, $perms = array( )) {
+        if (empty($items)) {
+            $result[] = $perms;
+        }  else {
+            for ($i = count($items) - 1; $i >= 0; --$i) {
+                $newitems = $items;
+                $newperms = $perms;
+                list($foo) = array_splice($newitems, $i, 1);
+                array_unshift($newperms, $foo);
+                self::pc_permute($newitems, $result, $newperms);
+            }
+        }
+    }
+
+    /**
+     * see https://stackoverflow.com/questions/2516599/cartesian-product-of-n-arrays
+     */
+    static public function array_cartesian() {
+        $_ = func_get_args();
+        if(count($_) == 0)
+            return array(array());
+        $a = array_shift($_);
+        $c = call_user_func_array(__METHOD__, $_);
+        // (__FUNCTION__, $_);
+        $r = array();
+        foreach($a as $v)
+            foreach($c as $p)
+                $r[] = array_merge(array($v), $p);
+        return $r;
+    }
+
 }

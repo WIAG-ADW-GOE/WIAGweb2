@@ -116,6 +116,8 @@ class NameLookupRepository extends ServiceEntityRepository
                     $lookup_list[] =  array($fn_loop, null);
                 }
             }
+
+            $lookup_list = $this->addNoteName($lookup_list, $note_name);
             return $lookup_list;
         }
 
@@ -149,29 +151,45 @@ class NameLookupRepository extends ServiceEntityRepository
             }
         }
 
+        $lookup_list = $this->addNoteName($lookup_list, $note_name);
+
         return $lookup_list;
     }
 
-    private function makeVariant($givenname, $prefix, $familyname, $note_name) {
+    private function addNoteName($list, $note_name) {
+        if (is_null($note_name) or trim($note_name) == "") {
+            return $list;
+        }
+        $note_name = str_replace(';', ',', $note_name);
+        $note_list = explode(',', $note_name);
+        $list_with_note = array();
+        foreach ($list as $e) {
+            foreach ($note_list as $note_loop) {
+                $note_loop = trim($note_loop);
+                $e_note = is_null($e[0]) ? $e[0] : $e[0].' '.$note_loop;
+                $e_prefix_note = is_null($e[1]) ? $e[1] : $e[1].' '.$note_loop;
+                $list_with_note[] = array($e_note, $e_prefix_note);
+            }
+        }
+        return $list_with_note;
+    }
+
+    private function makeVariant($givenname, $prefix, $familyname) {
         $vn_0 = null;
         $vn_1 = null;
 
+        // without prefix
         $vn_list_0 = [$givenname];
         if (!is_null($familyname) and trim($familyname) != "") {
             $vn_list_0[] = $familyname;
         }
-        if (!is_null($note_name) and trim($note_name) != "") {
-            $vn_list_0[] = $note_name;
-        }
         $vn_0 = implode($vn_list_0, ' ');
 
+        // with prefix
         if (!is_null($prefix) and trim($prefix) != "") {
             $vn_list_1 = [$givenname, $prefix];
             if (!is_null($familyname) and trim($familyname) != "") {
                 $vn_list_1[] = $familyname;
-            }
-            if (!is_null($note_name) and trim($note_name) != "") {
-                $vn_list_1[] = $note_name;
             }
             $vn_1 = implode($vn_list_1, ' ');
         }

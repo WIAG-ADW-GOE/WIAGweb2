@@ -421,7 +421,12 @@ class Person {
     public function getDisplayname() {
         $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
         $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
-        $agnomenpart = strlen($this->noteName) > 0 ? ' '.$this->noteName : '';
+        $agnomenpart = '';
+        if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
+            $note_name = str_replace(';', ',', $this->noteName);
+            $note_list = explode(',', $note_name);
+            $agnomenpart = ' '.$note_list[0];
+        }
         return $this->givenname.$prefixpart.$familypart.$agnomenpart;
     }
 

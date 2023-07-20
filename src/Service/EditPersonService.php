@@ -632,6 +632,8 @@ class EditPersonService {
         $person_fnv = $person->getFamilynameVariants();
 
         // - set new entries
+        // -- ';' is an alternative separator
+        $fnv_data = str_replace(';', ',', $fnv_data);
         $fnv_list = explode(',', $fnv_data);
         foreach ($fnv_list as $fnv) {
             if (trim($fnv) != "") {

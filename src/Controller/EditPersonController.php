@@ -358,7 +358,7 @@ class EditPersonController extends AbstractController {
             $personRepository = $em->getRepository(Person::class);
             $nameLookupRepository = $em->getRepository(NameLookup::class);
             $canonLookupRepository = $em->getRepository(CanonLookup::class);
-            $urlExternalRepository = $em->getRepository(UrlExternal::class);
+
             // this function is only called if form data have changed
             if ($person_id == 0) { // new entry
                 // start out with a new object to avoid cascade errors
@@ -389,7 +389,6 @@ class EditPersonController extends AbstractController {
             // merging process?
             $target_item = $target->getItem();
             if ($target_item->getMergeStatus() == 'merging') {
-                $itemRepository = $this->entityManager->getRepository(Item::class);
                 $parent_list = $this->editService->readParentList($target);
 
                 $target_item->setMergeStatus('child');
