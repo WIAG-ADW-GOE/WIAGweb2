@@ -177,7 +177,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
     }
 
-
     public function addCanonConditions($qb, $model, $add_joins = true) {
         $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
@@ -234,7 +233,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         if ($name) {
             $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole');
             // require that every word of the search query occurs in the name, regardless of the order
-            $q_list = explode(" ", $name);
+            $q_list = UtilService::nameQueryComponents($name);
             foreach($q_list as $key => $q_name) {
                 $qb->andWhere('name_lookup.gnPrefixFn LIKE :q_name_'.$key)
                    ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');

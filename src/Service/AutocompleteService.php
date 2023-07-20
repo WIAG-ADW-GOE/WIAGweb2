@@ -326,7 +326,7 @@ class AutocompleteService extends ServiceEntityRepository {
         }
 
         // require that every word of the search query occurs in the name, regardless of the order
-        $q_list = explode(" ", $q_param);
+        $q_list = Utilservice::nameQueryComponents($q_param);
         foreach($q_list as $key => $q_name) {
             $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
                ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');

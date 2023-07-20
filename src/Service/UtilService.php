@@ -833,6 +833,7 @@ class UtilService {
     }
 
     /**
+     * return cartesian product of the input arrays
      * see https://stackoverflow.com/questions/2516599/cartesian-product-of-n-arrays
      */
     static public function array_cartesian() {
@@ -849,6 +850,26 @@ class UtilService {
             }
         }
         return $r;
+    }
+
+    /**
+     * split up $param but not words beginning with lowercase characters
+     */
+    static public function nameQueryComponents(string $param) {
+        $param_list = array_filter(explode(" ", trim($param)));
+        $list = array();
+        $rest = array();
+        foreach ($param_list as $p) {
+            $rest[] = $p;
+            if (\IntlChar::isupper($p[0])) {
+                $list[] = implode(" ", $rest);
+                $rest = array();
+            }
+        }
+        if (count($rest) > 0) {
+            $list[] = implode(" ", $rest);
+        }
+        return $list;
     }
 
 }
