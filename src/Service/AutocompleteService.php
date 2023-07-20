@@ -298,9 +298,11 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestName($itemTypeId, $queryParam, $resultSize, $online_only = false) {
+    public function suggestName($itemTypeId, $q_param, $resultSize, $online_only = false) {
         // canons: case $online_only == false is relevant for the editing query
+
         if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {
+
             $qb = $this->createQueryBuilder('p')
                        ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                                 "THEN n.gnPrefixFn ELSE n.gnFn END ".
@@ -309,9 +311,8 @@ class AutocompleteService extends ServiceEntityRepository {
                        ->leftjoin('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
                        ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId OR clu.personIdRole = n.personId')
                        ->andWhere('i.itemTypeId = :itemType')
-                       ->setParameter(':itemType', $itemTypeId)
-                       ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
-                       ->setParameter(':name', '%'.$queryParam.'%');
+                       ->setParameter(':itemType', $itemTypeId);
+
             if ($online_only) {
                 $qb->andWhere('i.isOnline = 1');
             }
@@ -321,12 +322,15 @@ class AutocompleteService extends ServiceEntityRepository {
                              ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                                       "THEN n.gnPrefixFn ELSE n.gnFn END ".
                                       "AS suggestion")
-                             ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-                             ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
-                             ->setParameter('name', '%'.$queryParam.'%');
-
+                             ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole');
         }
 
+        // require that every word of the search query occurs in the name, regardless of the order
+        $q_list = explode(" ", $q_param);
+        foreach($q_list as $key => $q_name) {
+            $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
+               ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+        }
 
         $qb->setMaxResults($resultSize);
 

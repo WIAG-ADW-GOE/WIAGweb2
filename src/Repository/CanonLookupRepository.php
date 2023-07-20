@@ -232,10 +232,13 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
 
         if ($name) {
-            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
-               ->andWhere('name_lookup.gnPrefixFn LIKE :q_name '.
-                          'OR name_lookup.gnFn LIKE :q_name')
-               ->setParameter('q_name', '%'.$name.'%');
+            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole');
+            // require that every word of the search query occurs in the name, regardless of the order
+            $q_list = explode(" ", $name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('name_lookup.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
         }
 
         if ($someid || $year) {

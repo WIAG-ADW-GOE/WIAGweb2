@@ -242,9 +242,14 @@ class ItemRepository extends ServiceEntityRepository
                ->join('\App\Entity\NameLookup',
                       'nlu',
                       'WITH',
-                      'clu.personIdRole = nlu.personId OR p.id = nlu.personId')
-               ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
-               ->setParameter('q_name', '%'.$name.'%');
+                      'clu.personIdRole = nlu.personId OR p.id = nlu.personId');
+            // require that every word of the search query occurs in the name, regardless of the order
+            $q_list = explode(" ", $name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
+
         }
 
         $someid = $model->someid;
@@ -620,9 +625,12 @@ class ItemRepository extends ServiceEntityRepository
 
         $name = $model->name;
         if ($name) {
-            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId')
-               ->andWhere("nlu.gnFn LIKE :q_name OR nlu.gnPrefixFn LIKE :q_name")
-               ->setParameter('q_name', '%'.$name.'%');
+            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId');
+            $q_list = explode(" ", $name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
         }
 
         $someid = $model->someid;
@@ -746,9 +754,12 @@ class ItemRepository extends ServiceEntityRepository
                    ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('\App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
                    ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht'])
-                   ->andWhere('n.gnFn LIKE :name OR n.gnPrefixFn LIKE :name')
-                   ->setParameter(':name', '%'.$name.'%');
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht']);
+        $q_list = explode(" ", $name);
+        foreach($q_list as $key => $q_name) {
+            $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
+               ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+        }
 
         $qb->setMaxResults($hintSize);
 
