@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\NameLookup;
+use App\Service\UtilService;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -88,12 +90,58 @@ class NameLookupRepository extends ServiceEntityRepository
         }
     }
 
+    private function makeVariantList($person) {
+        $givenname = $person->getGivenname();
+        $prefix = $person->getPrefixName();
+        $familyname = $person->getFamilyname();
+        $givenname_variants = $person->getGivennameVariants();
+        $familyname_variants = $person->getFamilynameVariants();
+        $note_name = $person->getNoteName();
+
+        $choice_list = array();
+        if (!is_null($givenname)) {
+            if (!$givenname_variants->isEmpty()) {
+                $gnv = $givenname_variants->map(function($v) { return $v->getName(); });
+                $choice_list[] = array($givenname, ...$gnv);
+            } else {
+                $choice_list[] = array($givenname);
+            }
+        }
+        if (!is_null($prefix)) {
+            $choice_list[] = array($prefix);
+        }
+        if (!is_null($familyname)) {
+            if (!$familyname_variants->isEmpty()) {
+                $fnv = $familyname_variants->map(function($v) { return $v->getName(); });
+                $choice_list[] = array($familyname, ...$fnv);
+            } else {
+                $choice_list[] = array($familyname);
+            }
+        }
+        if (trim($note_name) != "") {
+            $note_name = str_replace(';', ',', $note_name);
+            $note_name_list = explode(",", $note_name);
+            $note_name_list = array_map('trim', $note_name_list);
+            $choice_list[] = $note_name_list;
+        }
+
+        $choice_prod_list = Utilservice::array_cartesian(...$choice_list);
+        // name_lookup.gn_fn is obsolete but is still filled to be consistent
+        $lookup_list = array();
+        foreach($choice_prod_list as $p_list) {
+            $lookup_str = join(" ", $p_list);
+            $lookup_list[] = array($lookup_str, $lookup_str);
+        }
+        return $lookup_list;
+    }
+
+
     /**
      * makeVariantList($person);
      *
      * return array of combinations of name elements
      */
-    private function makeVariantList($person) {
+    private function makeVariantList_legacy($person) {
         $givenname = $person->getGivenname();
         $prefix = $person->getPrefixName();
         $familyname = $person->getFamilyname();
@@ -152,7 +200,6 @@ class NameLookupRepository extends ServiceEntityRepository
         }
 
         $lookup_list = $this->addNoteName($lookup_list, $note_name);
-
         return $lookup_list;
     }
 

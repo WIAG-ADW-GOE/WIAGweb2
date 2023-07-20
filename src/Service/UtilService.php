@@ -843,9 +843,11 @@ class UtilService {
         $c = call_user_func_array(__METHOD__, $_);
         // (__FUNCTION__, $_);
         $r = array();
-        foreach($a as $v)
-            foreach($c as $p)
+        foreach($a as $v) {
+            foreach($c as $p) {
                 $r[] = array_merge(array($v), $p);
+            }
+        }
         return $r;
     }
 
