@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {% set chunk_size=40 %}
+    <div class="container-fluid">
+	<div class="row ms-2">
+	    <div class="col-12">
+		<div class="topic-title">Daten aus dem Digitalen Personenregister übernehmen</div>
+	    </div>
+	</div>
+	<div class="row ms-2">
+	    <div class="col-12"
+		<p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
+		<button type="button"
+			      class="btn btn-primary btn-sm"
+			      data-action="submit#start">Start</button>
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>Datensätze mit neueren Daten</h4>
+		{% for person in updateList %}
+		    {{ include("gso/_item.html.twig", { 'person': person }) }}
+                {% else %}
+		    <span>keine</span>
+		{% endfor %}
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>Neue Datensätze im Digitalen Personenregister</h4>
+		{% for person in newList %}
+		    {{ include("gso/_item.html.twig", { 'person': person }) }}
+                {% else %}
+		    <span>keine</span>
+		{% endfor %}
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>Fehlende Datensätze im Digitalen Personenregister</h4>
+		{% for person in missingList %}
+		    {{ include("gso/_item.html.twig", { 'person': person }) }}
+                {% else %}
+		    <span>keine</span>
+		{% endfor %}
+	    </div>
+	</div>
+
+    </div>
+{% endblock %}

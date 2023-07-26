@@ -104,7 +104,7 @@ class Item {
     private $itemProperty;
 
     /**
-     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"}, fetch="EAGER")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $urlExternal;

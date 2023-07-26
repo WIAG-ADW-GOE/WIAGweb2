@@ -11,7 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 class ItemProperty {
 
     const ITEM_PROPERTY_TYPE_ID = [
-        'ordination_priest' => ['id' => 11],
+        'ordination_priest' => 11,
+        'domstift_short' => 10,
     ];
 
     /**

@@ -5,7 +5,7 @@ doctrine:
                 url: '%env(resolve:DATABASE_URL)%'
                 password: '%env(DATABASE_PASSWORD)%'
             gso:
-                dbname: 'gso_in_202306'
+                dbname: 'gsdatenbank'
                 url: '%env(resolve:DATABASE_GSO_URL)%'
                 password: '%env(DATABASE_PASSWORD)%'
 

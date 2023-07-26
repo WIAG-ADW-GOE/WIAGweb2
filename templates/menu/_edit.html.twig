@@ -19,10 +19,9 @@
 	<li><a class="dropdown-item" href="{{ path('edit_authority_query') }}" target="_blank" rel="noopener">Normdaten/Externe Ressourcen</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_prop') }}" target="_blank" rel="noopener">Attribute</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_role_query') }}" target="_blank" rel="noopener">Ämter</a></li>
+	<li><hr class="dropdown-divider"></li>
+	<li><span class="dropdown-header">Externe Quellen</span></li>
 	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
-	{% if is_granted('ROLE_DATA_EDIT') %}
-	    <li><hr class="dropdown-divider"></li>
-	    <li><a class="dropdown-item" href="{{ path('edit_data_date_range') }}" target="_blank" rel="noopener">Zeitspanne neu einlesen</a></li>
-	{% endif %}
+	<li><a class="dropdown-item" href="{{ path('gso_update_canons') }}" target="_blank" rel="noopener">Domherren aus dem Digitalen Personenregister</a></li>
     </ul>
 </li>

@@ -564,7 +564,7 @@ class ItemRepository extends ServiceEntityRepository
                           'ip_ord_date.itemId = i.id AND ip_ord_date.propertyTypeId = :ordination')
                    ->andWhere('i.itemTypeId = :itemTypePriestUt')
                    ->andWhere('i.isOnline = 1')
-                   ->setParameter(':ordination', ItemProperty::ITEM_PROPERTY_TYPE_ID['ordination_priest']['id'])
+                   ->setParameter(':ordination', ItemProperty::ITEM_PROPERTY_TYPE_ID['ordination_priest'])
                    ->setParameter(':itemTypePriestUt', $itemTypePriestUt);
 
         $qb = $this->addPriestUtConditions($qb, $model);
@@ -1026,6 +1026,25 @@ class ItemRepository extends ServiceEntityRepository
             }
         }
         return $max;
+    }
+
+    /**
+     * @return meta data and GSN for items with type in $item_type_id_list
+     */
+    public function findGsnByItemTypeId($item_type_id_list) {
+        $authority_id = Authority::ID['GS'];
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.id, i.dateChanged, uext.value as gsn')
+                   ->join('i.urlExternal', 'uext')
+                   ->andWhere('uext.authorityId = :authority_id')
+                   ->andWhere('i.itemTypeId in (:item_type_id_list)')
+                   ->setParameter('authority_id', $authority_id)
+                   ->setParameter('item_type_id_list', $item_type_id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
     }
 
 

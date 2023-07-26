@@ -2,16 +2,18 @@
 
 namespace App\Entity\Gso;
 
-use App\Repository\GsoItemsRepository;
+use App\Service\UtilService;
+
+use App\Repository\Gso\ItemsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
 /**
- * @ORM\Entity(repositoryClass=GsoItemsRepository::class)
+ * @ORM\Entity(repositoryClass=ItemsRepository::class)
  * 2023-07-12 the framework does not assign the correct database automatically (see doctrine.yaml and .env.local)
- * @ORM\Table(name="items", schema="gso_in_202306")
+ * @ORM\Table(name="items", schema="gsdatenbank")
  */
-class GsoItems
+class Items
 {
     /**
      * @ORM\Id
@@ -19,6 +21,23 @@ class GsoItems
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Gsn", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $gsn;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Locations", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $reference;
+
+     /**
+     * no db mapping
+     */
+    private $currentGsn;
 
     /**
      * @ORM\Column(type="boolean")
@@ -75,6 +94,31 @@ class GsoItems
         $this->deleted = $deleted;
 
         return $this;
+    }
+
+    /**
+     * return current GSN
+     */
+    public function getIdPublic() {
+        if ($this->gsn->isEmpty()) {
+            return null;
+        }
+
+        $gsn_active = $this->gsn->filter(function($v) {
+            return !$v->isDeleted();
+        });
+
+        if ($gsn_active->isEmpty()) {
+            return null;
+        }
+
+        $gsn_sorted = UtilService::sortByFieldList($this->gsn_active->toArray(), 'id');
+        $current_gsn = array_values($gsn_sorted)[0];
+        return $current_gsn->getNummer();
+    }
+
+    public function getReference() {
+        return $this->reference;
     }
 
     public function getCreated(): ?\DateTimeInterface

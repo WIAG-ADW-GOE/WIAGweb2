@@ -872,4 +872,55 @@ class UtilService {
         return $list;
     }
 
+    /**
+     * array diff by field
+     */
+    static public function arrayDiffByField($a, $b, string $field) {
+        $delta = array();
+        if (count($a) == 0) {
+            return $delta;
+        }
+        if (count($b) == 0) {
+            return $a;
+        }
+
+        $a_sorted = self::sortByFieldList($a, [$field]);
+        $b_sorted = self::sortByFieldList($b, [$field]);
+        $key = 0;
+        $current_a = current($a_sorted);
+        $current_b = current($b_sorted);
+        while(true) {
+            if ($current_a[$field] == $current_b[$field]) {
+                $current_a = next($a_sorted);
+                $current_b = next($b_sorted);
+                if ($current_a === false and is_null(key($a_sorted))) {
+                    break;
+                }
+                if ($current_b === false and is_null(key($b_sorted))) {
+                    while ($current_a and !is_null(key($a_sorted))) {
+                        $delta[] = $current_a;
+                        $current_a = next($a_sorted);
+                    }
+                    break;
+                }
+            } elseif ($current_a[$field] < $current_b[$field]) {
+                $delta[] = $current_a;
+                $current_a = next($a_sorted);
+                if ($current_a === false and key($a_sorted) == null) {
+                    break;
+                }
+            } else {
+                $current_b = next($b_sorted);
+                if ($current_b === false and is_null(key($b_sorted))) {
+                    while ($current_a and !is_null(key($a_sorted))) {
+                        $delta[] = $current_a;
+                        $current_a = next($a_sorted);
+                    } break;
+                }
+            }
+        }
+        return $delta;
+
+    }
+
 }

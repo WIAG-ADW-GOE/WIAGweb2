@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 class ItemReference
 {
 
-    /**
+     /**
      * @ORM\ManyToOne(targetEntity="Item", inversedBy="reference")
      * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
      */
