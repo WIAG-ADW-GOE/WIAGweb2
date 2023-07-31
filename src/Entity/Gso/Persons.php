@@ -143,6 +143,10 @@ class Persons
         return $this->item;
     }
 
+    public function getRole() {
+        return $this->role;
+    }
+
     public function setItemId(int $itemId): self
     {
         $this->itemId = $itemId;

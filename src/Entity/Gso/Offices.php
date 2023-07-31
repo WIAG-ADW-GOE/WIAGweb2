@@ -271,4 +271,12 @@ class Offices
 
     }
 
+    public function isEmpty() {
+        return (
+            (is_null($this->bezeichnung) or trim($this->bezeichnung) == "")
+            and (is_null($this->institution) or trim($this->institution) == "")
+            and (is_null($this->klosterid) or trim($this->klosterid) == "")
+        );
+    }
+
 }

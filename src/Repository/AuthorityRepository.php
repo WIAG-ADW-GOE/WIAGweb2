@@ -95,27 +95,6 @@ class AuthorityRepository extends ServiceEntityRepository
 
     }
 
-
-    /**
-     * 2023-03-02 obsolete?
-     */
-    public function baseUrlList_legacy($id_list) {
-        $qb = $this->createQueryBuilder('a')
-                   ->select('a.id, a.url')
-                   ->andWhere('a.id in (:auth_id_list)')
-                   ->setParameter('auth_id_list', $id_list);
-
-        $query = $qb->getQuery();
-        $query_result = $query->getResult();
-
-        $result = array();
-        foreach($query_result as $r) {
-            $result[$r['id']] = $r['url'];
-        }
-
-        return $result;
-    }
-
     public function findList($id_list) {
         $qb = $this->createQueryBuilder('a')
                    ->andWhere('a.id in (:auth_id_list)')

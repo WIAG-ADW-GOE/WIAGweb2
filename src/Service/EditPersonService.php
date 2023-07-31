@@ -279,8 +279,8 @@ class EditPersonService {
         }
     }
 
-    private function emptyDate($s) {
-        return (is_null($s) || $s == '?' || $s == 'unbekannt');
+    static function emptyDate($s) {
+        return (is_null($s) || $s == "" || $s == '?' || $s == 'unbekannt');
     }
 
     /**
@@ -492,7 +492,9 @@ class EditPersonService {
         }
 
         // name variants
-        $this->mapNameVariants($person, $data);
+        $givenname_variants = trim($data['givennameVariants']);
+        $familyname_variants = trim($data['familynameVariants']);
+        self::mapNameVariants($person, $givenname_variants, $familyname_variants);
 
         // numerical values for dates
         self::setNumDates($person);
@@ -573,7 +575,7 @@ class EditPersonService {
 
     static function setNumDates($person) {
         $date_birth = $person->getDateBirth();
-        if (!is_null($date_birth)) {
+        if (!self::emptyDate($date_birth)) {
             $year = UtilService::parseDate($date_birth, 'lower');
             if (!is_null($year)) {
                 $person->setNumDateBirth($year);
@@ -586,7 +588,7 @@ class EditPersonService {
         }
 
         $date_death = $person->getDateDeath();
-        if (!is_null($date_death)) {
+        if (!self::emptyDate($date_death)) {
             $year = UtilService::parseDate($date_death, 'upper');
             if (!is_null($year)) {
                 $person->setNumDateDeath($year);
@@ -602,10 +604,9 @@ class EditPersonService {
     /**
      * map name variants do not mark them as persistent
      */
-    private function mapNameVariants($person, $data) {
+    static function mapNameVariants($person, $gnv_str, $fnv_str) {
         // givenname
-        $gnv_data = trim($data['givennameVariants']);
-        $person->setFormGivennameVariants($gnv_data);
+        $person->setFormGivennameVariants($gnv_str);
         $person_id = $person->getId();
 
         // - remove entries; not neccessary since $person is empty
@@ -613,8 +614,8 @@ class EditPersonService {
 
         // - set new entries
         // -- ';' is an alternative separator
-        $gnv_data = str_replace(';', ',', $gnv_data);
-        $gnv_list = explode(',', $gnv_data);
+        $gnv_str = str_replace(';', ',', $gnv_str);
+        $gnv_list = explode(',', $gnv_str);
         foreach ($gnv_list as $gnv) {
             if (trim($gnv) != "") {
                 $gnv_new = new GivenNameVariant();
@@ -625,16 +626,15 @@ class EditPersonService {
         }
 
         // familyname
-        $fnv_data = trim($data['familynameVariants']);
-        $person->setFormFamilynameVariants($fnv_data);
+        $person->setFormFamilynameVariants($fnv_str);
 
         // - remove entries; not neccessary since $person is empty
         $person_fnv = $person->getFamilynameVariants();
 
         // - set new entries
         // -- ';' is an alternative separator
-        $fnv_data = str_replace(';', ',', $fnv_data);
-        $fnv_list = explode(',', $fnv_data);
+        $fnv_str = str_replace(';', ',', $fnv_str);
+        $fnv_list = explode(',', $fnv_str);
         foreach ($fnv_list as $fnv) {
             if (trim($fnv) != "") {
                 $fnv_new = new FamilyNameVariant();
@@ -700,7 +700,7 @@ class EditPersonService {
 
         // numerical values for dates
         $date_begin = $role->getDateBegin();
-        if (!$this->emptyDate($date_begin)) {
+        if (!self::emptyDate($date_begin)) {
             $year = $this->utilService->parseDate($date_begin, 'lower');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateBegin']);
@@ -715,7 +715,7 @@ class EditPersonService {
 
         $date_end = $role->getDateEnd();
 
-        if (!$this->emptyDate($date_end)) {
+        if (!self::emptyDate($date_end)) {
             $year = $this->utilService->parseDate($date_end, 'upper');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateEnd']);
@@ -970,6 +970,279 @@ class EditPersonService {
         }
 
         return $url_external;
+    }
+
+    /**
+     * update $target with data in $person_gso
+     */
+    public function updateFromGso($person, $person_gso, $current_user_id) {
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+        // item
+
+        $user = $userWiagRepository->find($current_user_id);
+        $person->getItem()->updateChangedMetaData($user);
+
+        $edit_status = $person_gso->getItem()->getStatus();
+        $person->getItem()->setEditStatus($edit_status);
+
+        // item property: no data in $person_gso
+
+        // reference
+        $this->copyReferenceFromGso($person, $person_gso);
+
+        // GND
+        $this->copyGndFromGso($person->getItem(), $person_gso);
+
+        // core
+        $this->copyCoreFromGso($person, $person_gso);
+
+        // name variants
+        // - function call is the same for form data
+        $givenname_variants = $person_gso->getVornamenVarianten();
+        $familyname_variants = $person_gso->getFamiliennamenVarianten();
+        self::mapNameVariants($person, $givenname_variants, $familyname_variants);
+        // call of persist can not be part of mapNameVariants
+        foreach ($person->getGivennameVariants() as $gnv) {
+            $this->entityManager->persist($gnv);
+        }
+        foreach ($person->getFamilynameVariants() as $fnv) {
+            $this->entityManager->persist($fnv);
+        }
+
+        // roles
+        $this->mapRoleFromGso($person, $person_gso);
+
+        $this->updateDateRange($person);
+
+    }
+
+    /**
+     * clear $target_list; copy collection $source_list to $target_list;
+     */
+    private function copyReferenceFromGso($person, $person_gso) {
+        $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
+
+        $ref_list_gso = $person_gso->getItem()->getReference();
+        $ref_list = $person->getItem()->getReference();
+
+
+        // - remove entries
+        foreach ($ref_list as $r) {
+            $ref_list->removeElement($r);
+            $r->setItem(null);
+            $this->entityManager->remove($r);
+        }
+
+        // - set new entries
+        foreach ($ref_list_gso as $ref_gso) {
+            $page = $ref_gso->getSeiten();
+            $is_bio = str_contains($page, "<b>");
+            if ($is_bio) {
+                $gs_volume_nr = $ref_gso->getReferenceVolume()->getNummer();
+                $vol = $volumeRepository->findOneByGsVolumeNr($gs_volume_nr);
+
+                $ref = new ItemReference();
+                $ref->setReferenceId($vol->getReferenceId());
+                $ref->setPage($page);
+
+                $ref_list->add($ref);
+                $ref->setItem($person->getItem());
+                $ref->setItemTypeId(0); // 2023-07-28; field is obsolete but still required
+                $this->entityManager->persist($ref);
+            }
+        }
+
+        return count($ref_list);
+
+    }
+
+    private function copyGndFromGso($item, $person_gso) {
+        $auth_gnd_id = Authority::ID['GND'];
+        $auth_gs_id = Authority::ID['GS'];
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+
+        // - remove entries, but not GSN
+        $target_uext = $item->getUrlExternal();
+        foreach ($target_uext as $t) {
+            if ($t->getAuthorityId() != $auth_gs_id) {
+                $target_uext->removeElement($t);
+                $t->setItem(null);
+                $this->entityManager->remove($t);
+            }
+        }
+
+        $count_url = 0;
+        $gnd = $person_gso->getGndnummer();
+        if (!is_null($gnd) and trim($gnd) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_gnd = $authorityRepository->find($auth_gnd_id);
+            $uext->setAuthority($authority_gnd);
+            $uext->setValue($gnd);
+            $this->entityManager->persist($uext);
+
+            $count_url = 1;
+        }
+
+        return $count_url;
+    }
+
+    private function copyCoreFromGso($person, $person_gso) {
+        $field_list = [
+            ['givenname', 'vorname'],
+            ['familyname', 'familienname'],
+            ['prefixname', 'namenspraefix'],
+            ['dateBirth', 'geburtsdatum'],
+            ['dateDeath', 'sterbedatum'],
+            ['noteName', 'namenszusatz'],
+            ['academicTitle', 'titel'],
+            ['notePerson', 'anmerkungen'],
+        ];
+
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field[1]);
+            $set_fnc = 'set'.ucfirst($field[0]);
+            $person->$set_fnc($person_gso->$get_fnc());
+        }
+
+        // numerical values for dates
+        self::setNumDates($person);
+
+        return $person;
+    }
+
+    /**
+     *
+     */
+    private function mapRoleFromGso($person, $person_gso) {
+        $roleRepository = $this->entityManager->getRepository(PersonRole::class);
+        $roleRoleRepository = $this->entityManager->getRepository(Role::class);
+
+        // clear roles in $person
+        $role_list = $person->getRole();
+        foreach($role_list as $r) {
+            $r_prop = $r->getRoleProperty();
+            // $r_prop should always be empty
+            foreach($r_prop as $r_p) {
+                $r_prop->removeElement($r_p);
+                $this->entityManager->remove($r_p);
+            }
+            $role_list->removeElement($r);
+            $r->setPerson(null);
+            $this->entityManager->remove($r);
+        }
+
+        $role_list_gso = $person_gso->getRole();
+        $count_role = 0;
+        foreach ($role_list_gso as $role_gso) {
+            if ($role_gso->isEmpty()) {
+                continue;
+            }
+
+            $role = new PersonRole();
+            $person->getRole()->add($role);
+            $role->setPerson($person);
+
+            $this->fillRoleFromGso($person->getItem()->getInputError(), $role, $role_gso);
+            $this->entityManager->persist($role);
+
+            $count_role += 1;
+        }
+        return $count_role;
+    }
+
+    /**
+     * parse data in $role_gso and fill $role
+     */
+    private function fillRoleFromGso($inputError, $role, $role_gso) {
+
+        $field_list = [
+            ['roleName', 'bezeichnung'],
+            ['dioceseName', 'dioezese'],
+            ['dateBegin', 'von'],
+            ['dateEnd', 'bis'],
+            ['note', 'anmerkung']
+        ];
+
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field[1]);
+            $set_fnc = 'set'.ucfirst($field[0]);
+            $role->$set_fnc($role_gso->$get_fnc());
+        }
+
+        $role->setUncertain(0);
+
+        $roleRepository = $this->entityManager->getRepository(Role::class);
+        $role_role = $roleRepository->findOneByName($role->getRoleName());
+        if ($role_role) {
+            $role->setRole($role_role);
+        } else {
+            $role->setRole(null);
+            $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
+            $inputError->add(new InputError('role', $msg, 'warning'));
+        }
+
+        // set institution
+        $institutionRepository = $this->entityManager->getRepository(Institution::class);
+        $institution_id_gsn = $role_gso->getKlosterid();
+        $institution = $institutionRepository->findOneByIdGsn($institution_id_gsn);
+        if (!is_null($institution)) {
+            $role->setInstitution($institution);
+        }
+
+        // set diocese
+        $dioceseRepository = $this->entityManager->getRepository(Diocese::class);
+        $diocese_name = $role->getDioceseName();
+        if (!is_null($diocese_name) and trim($diocese_name) != "") {
+            $diocese = $dioceseRepository->findOneByName($role->getDioceseName());
+            if (!is_null($diocese)) {
+                $role->setDiocese($diocese);
+            }
+        }
+
+        // numerical values for dates
+        $date_begin = $role->getDateBegin();
+        if (!$this->emptyDate($date_begin)) {
+            $year = $this->utilService->parseDate($date_begin, 'lower');
+            if (!is_null($year)) {
+                $role->setNumDateBegin($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
+                $inputError->add(new InputError('role', $msg, 'warning'));
+            }
+        } else {
+            $role->setNumDateBegin(null);
+        }
+
+        $date_end = $role->getDateEnd();
+
+        if (!$this->emptyDate($date_end)) {
+            $year = $this->utilService->parseDate($date_end, 'upper');
+            if (!is_null($year)) {
+                $role->setNumDateEnd($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
+                $inputError->add(new InputError('role', $msg, 'warning'));
+            }
+        } else {
+            $role->setNumDateEnd(null);
+        }
+
+        // sort key
+        $sort_key = UtilService::SORT_KEY_MAX;
+        if (!$this->emptyDate($date_begin)) {
+            $sort_key = $this->utilService->sortKeyVal($date_begin);
+        } elseif (!$this->emptyDate($date_end)) {
+            $sort_key = $this->utilService->sortKeyVal($date_end);
+        }
+
+        // - we got a parse result or both, $date_begin and $date_end are empty
+        $role->setDateSortKey($sort_key);
+
+        // free role properties are not present in GSO
+
+        return $role;
     }
 
 }

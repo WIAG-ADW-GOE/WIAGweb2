@@ -204,6 +204,12 @@ class Item {
 
     /**
      * no DB-mapping
+     * hold id of referencing person
+     */
+    private $idPublicVisible;
+
+    /**
+     * no DB-mapping
      * hold IDs of merge parents
      */
     private $mergeParent = null;
@@ -368,6 +374,14 @@ class Item {
     }
 
     /**
+     * short cut
+     */
+    public function getGsn() {
+        $gsn_id = Authority::ID['GS'];
+        return $this->getUrlExternalByAuthority($gsn_id);
+    }
+
+    /**
      *
      */
     public function getUrlExternalNonEssential() {
@@ -496,6 +510,18 @@ class Item {
     public function setIdPublic(?string $idPublic): self
     {
         $this->idPublic = $idPublic;
+
+        return $this;
+    }
+
+    public function getIdPublicVisible(): ?string
+    {
+        return $this->idPublicVisible;
+    }
+
+    public function setIdPublicVisible(?string $idPublic): self
+    {
+        $this->idPublicVisible = $idPublic;
 
         return $this;
     }

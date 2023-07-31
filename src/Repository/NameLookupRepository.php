@@ -55,7 +55,7 @@ class NameLookupRepository extends ServiceEntityRepository
      * clear entries for $person
      * do not flush
      */
-    public function clearForPerson($person) {
+    public function clearPerson($person) {
         $entityManager = $this->getEntityManager();
 
         $id_list = array($person->getId());
@@ -72,11 +72,13 @@ class NameLookupRepository extends ServiceEntityRepository
 
 
     /**
-     * insert entries for $person
+     * update entries for $person
      * do not flush
      */
-    public function insert($person) {
+    public function update($person) {
         $entityManager = $this->getEntityManager();
+
+        $this->clearPerson($person);
 
         // insert new entries
         $variant_list = $this->makeVariantList($person);

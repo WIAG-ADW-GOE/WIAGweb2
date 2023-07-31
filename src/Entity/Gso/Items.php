@@ -112,7 +112,7 @@ class Items
             return null;
         }
 
-        $gsn_sorted = UtilService::sortByFieldList($this->gsn_active->toArray(), 'id');
+        $gsn_sorted = UtilService::sortByFieldList($gsn_active->toArray(), ['id']);
         $current_gsn = array_values($gsn_sorted)[0];
         return $current_gsn->getNummer();
     }

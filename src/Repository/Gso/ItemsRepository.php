@@ -71,8 +71,9 @@ class ItemsRepository extends ServiceEntityRepository
      */
     public function findIdsByGsnList($gsn_list) {
         $qb = $this->createQueryBuilder('i')
-                   ->select('i.id, i.modified as dateChanged, g.nummer as gsn')
+                   ->select('i.id, i.modified as dateChanged, p.id as person_id, g.nummer as gsn')
                    ->join('i.gsn', 'g')
+                   ->join('App\Entity\Gso\Persons', 'p', 'WITH', 'p.itemId = i.id')
                    ->andWhere('i.deleted = 0')
                    ->andWhere("i.status = 'online'")
                    ->andWhere("g.deleted = 0")

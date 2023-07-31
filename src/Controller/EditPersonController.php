@@ -378,10 +378,13 @@ class EditPersonController extends AbstractController {
             // collect list of persons for update of canon_lookup
             $affected_person_id_list = array();
             if ($online_involved) {
-                $affected_person_id_list = array_merge($this->getIdLinkedPersons($target), $this->getIdLinkedPersons($person));
+                $affected_person_id_list = array_merge(
+                    $this->getIdLinkedPersons($target),
+                    $this->getIdLinkedPersons($person)
+                );
             }
 
-            $nameLookupRepository->clearForPerson($target);
+            // $nameLookupRepository->clearPerson($target);
 
             // transfer data from $person to $target
             $this->editService->update($target, $person, $current_user_id);
@@ -415,7 +418,7 @@ class EditPersonController extends AbstractController {
             }
 
             // update auxiliary tables see also below: global update for canons GS and bishops
-            $nameLookupRepository->insert($target);
+            $nameLookupRepository->update($target);
 
             // form status
             $expanded = $person->getItem()->getFormIsExpanded();

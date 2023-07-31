@@ -25,7 +25,6 @@ class Locations
      */
     private $item;
 
-
     /**
      * @ORM\OneToOne(targetEntity="Books")
      * @ORM\JoinColumn(name="book_id", referencedColumnName="id")

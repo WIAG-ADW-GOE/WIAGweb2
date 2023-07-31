@@ -175,6 +175,9 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * @return number of items with an URL external for $authority_id
+     */
     public function referenceCount($authority_id) {
         $qb = $this->createQueryBuilder('uext')
                    ->select('COUNT(DISTINCT(uext.id)) as count')
@@ -186,6 +189,76 @@ class UrlExternalRepository extends ServiceEntityRepository
 
         return $query->getSingleResult()['count'];
     }
+
+    /**
+     * change GSN, do not flush
+     */
+    public function updateGsn($old, $new) {
+        $uext_list = $this->findByValue($old);
+        foreach ($uext_list as $uext) {
+            $uext->setValue($new);
+        }
+
+        return count($uext_list);
+    }
+
+    /**
+     * set idPublicVisible for external URLs in $person_list via GSN
+     */
+    public function setIdPublicVisible($person_list) {
+        $gsn_list = array();
+        foreach ($person_list as $person) {
+            $gsn_list[$person->getId()] = $person->getItem()->getGsn();
+        }
+
+        $type_id_list = [
+            Item::ITEM_TYPE_ID['Domherr']['id'],
+            Item::ITEM_TYPE_ID['Bischof']['id'],
+        ];
+
+        $qb = $this->createQueryBuilder('uext')
+                   ->select('uext.itemId as item_id, '.
+                            'i_vis.idPublic as id_public_vis, '.
+                            'i_vis.itemTypeId as item_type_id')
+                   ->join('\App\Entity\UrlExternal', 'uext_vis', 'WITH', 'uext_vis.value = uext.value')
+                   ->join('uext_vis.item', 'i_vis')
+                   ->andWhere('i_vis.itemTypeId in (:type_id_list)')
+                   ->andWhere('uext.value in (:gsn_list)')
+                   ->andWhere('uext.itemId in (:id_list)')
+                   ->setParameter('type_id_list', $type_id_list)
+                   ->setParameter('gsn_list', $gsn_list)
+                   ->setParameter('id_list', array_keys($gsn_list));
+
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+
+        // match id_public by id
+        // the result list is not large so the filter is no performance problem
+        foreach ($person_list as $person) {
+            $item_id = $person->getId();
+            // look for canon IDs first, bishop wins if present
+            $match_flag = false;
+            foreach ($type_id_list as $type_id) {
+                $cand_list = array_filter($result, function($v) use ($item_id, $type_id) {
+                    return ($v['item_id'] == $item_id and $v['item_type_id'] == $type_id);
+                });
+                foreach($cand_list as $cand) {
+                    $person->getItem()->setIdPublicVisible($cand['id_public_vis']);
+                    $match_flag = true;
+                }
+            }
+            // default: own id_public
+            if (!$match_flag) {
+                $person->getItem()->setIdPublicVisible($person->getItem()->getIdPublic());
+            }
+        }
+
+        return count($person_list);
+
+    }
+
 
 
 }

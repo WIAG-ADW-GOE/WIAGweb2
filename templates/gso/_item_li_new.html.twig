@@ -1,0 +1,23 @@
+{% if person.describeRole %}
+    {% set head_line %}
+    <strong>{{ person.describe }}</strong>, {{ person.describeRole }}
+   {% endset %}
+{% else %}
+   {% set head_line %}
+   <strong>{{ person.describe }}</strong>
+   {% endset %}
+{% endif %}
+
+<li class="list-group-item">
+    <div><span class="text-truncate" style="max-width: 35rem;">{{ head_line }}</span>
+    {% if person.describeReference %}
+	<span class="text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
+    {% endif %}
+    </div>
+    <div>
+	{% set id_public=person.item.idpublic %}
+	{% if id_public and id_public != "" %}
+	    <a href="{{ gsUrl~id_public }}" target="_blank" rel="noopener">{{ id_public }}</a>
+	{% endif %}
+    </div>
+</li>
