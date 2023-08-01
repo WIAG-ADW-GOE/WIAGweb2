@@ -247,7 +247,7 @@ class ItemRepository extends ServiceEntityRepository
             $q_list = UtilService::nameQueryComponents($name);
             foreach($q_list as $key => $q_name) {
                 $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
-                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+                   ->setParameter('q_name_'.$key, '%'.$q_name.'%');
             }
 
         }
