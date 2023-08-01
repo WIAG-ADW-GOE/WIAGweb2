@@ -838,6 +838,24 @@ class Item {
     }
 
     /**
+     *
+     */
+    public function getItemPropertyByName($name) {
+        if (is_null($this->itemProperty)) {
+            return null;
+        }
+        $match = $this->itemProperty->filter(function($v) use ($name) {
+            return $v->getType()->getName() == $name;
+        });
+        if (count($match) > 0) {
+            return $match->current();
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
      * @return elements of `itemProperty` as array with `item_property_type.name` as key
      */
     public function arrayItemProperty() {
@@ -894,9 +912,10 @@ class Item {
 
 
     /**
-     * get a value in `itemProperty` if present or null
+     * get a value in `itemProperty` if present or empty array
      */
     public function itemPropertyValue(string $key) {
+
         $prop = array();
         foreach ($this->itemProperty as $ip) {
             if ($ip->getType()->getName() == $key) {

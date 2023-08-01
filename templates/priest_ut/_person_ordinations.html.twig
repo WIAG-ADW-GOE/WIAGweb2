@@ -1,15 +1,18 @@
 {# ordinations, parameter: properties #}
-<dt class="col-sm-3">Weihen</dt>
-<dd class="col-sm-9 mb-1">
-    <ul class="list-unstyled mb-1">
-	{% set propkeys = properties|keys %}
-	<li>
-	    <ul class="list-inlined list-unstyled">
-		<li class="list-inline-item">{{ properties['ordination_priest'][0].value }}</li>
-		{% if 'ordination_priest_place' in propkeys %}<li class="list-inline-item">{{ properties['ordination_priest_place'][0].value }}</li>{% endif %}
-		{% if properties['ordination_priest'][0].date is defined %}<li class="list-inline-item">{{ properties['ordination_priest'][0].date|date("d.m.Y") }}</li>{% endif %}
-		{% if 'contribution' in propkeys %}<li class="list-inline-item comment">(verminderte Weihegebühr)</li>{% endif %}
-	    </ul>
-	</li>
-    </ul>
-</dd>
+{% set ordination = item.getitempropertybyname('Weihe') %}
+{% if ordination %}
+    <dt class="col-sm-3">Weihen</dt>
+    <dd class="col-sm-9 mb-1">
+	<ul class="list-unstyled mb-1">
+	    <li>
+		<ul class="list-inlined list-unstyled">
+		    <li class="list-inline-item">{{ ordination.value }}</li>
+		    {% if ordination.placevalue %}<li class="list-inline-item">{{ ordination.placevalue }}</li>{% endif %}
+		    {% if ordination.datevalue %}<li class="list-inline-item">{{ ordination.datevalue|date("d.m.Y") }}</li>{% endif %}
+		    {% set contribution = item.getitempropertybyname('Weihegebühr') %}
+		    {% if contribution %}<li class="list-inline-item comment">({{ contribution.value }})</li>{% endif %}
+		</ul>
+	    </li>
+	</ul>
+    </dd>
+{% endif %}

@@ -13,6 +13,7 @@ use App\Form\Model\PriestUtFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
+use App\Service\UtilService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -72,14 +73,7 @@ class PriestUtController extends AbstractController {
             $page_number = $request->request->get('pageNumber');
 
             // set offset to page begin
-            if (!is_null($offset)) {
-                $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
-            } elseif (!is_null($page_number) && $page_number > 0) {
-                $page_number = min($page_number, intdiv($count, self::PAGE_SIZE) + 1);
-                $offset = ($page_number - 1) * self::PAGE_SIZE;
-            } else {
-                $offset = 0;
-            }
+            $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
 
             $personRepository = $entityManager->getRepository(Person::class);
 

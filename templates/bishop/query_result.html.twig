@@ -50,7 +50,7 @@
 			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
 			    {% if count > pageSize %}
 				{# forward/backward buttons #}
-				{{ include('person/_page_browse.html.twig') }}
+				{{ include('person/_page_browse.html.twig', {'withPageNumber': true }) }}
 			    {% endif %}
 			{% endif %}
 		    </div>
@@ -88,7 +88,7 @@
 		{% if count > pageSize %}
 		    <div class ="row col-12 mx-2">
 			{# forward/backward buttons; controllers: hide-on-input, sync #}
-			{{ include('person/_page_browse.html.twig') }}
+			{{ include('person/_page_browse.html.twig', {'withPageNumber': true }) }}
 		    </div>
 		{% endif %}
 	    </div>

@@ -237,7 +237,8 @@ class GsoController extends AbstractController {
 
         $institutionRepository = $entityManager->getRepository(Institution::class, 'default');
 
-        $domstift_list = $institutionRepository->findIfHasItemProperty('domstift_short');
+        $item_type_domstift = Item::ITEM_TYPE_ID['Domstift']['id'];
+        $domstift_list = $institutionRepository->findByItemTypeId($item_type_domstift);
 
         $domstift_gsn_list = array();
         foreach($domstift_list as $domstift) {

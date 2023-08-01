@@ -50,8 +50,7 @@ class InstitutionRepository extends ServiceEntityRepository
     }
     */
 
-    public function findIfHasItemProperty(string $property_name) {
-        $item_prop_id = ItemProperty::ITEM_PROPERTY_TYPE_ID[$property_name];
+    public function findIfHasItemProperty(int $item_prop_id) {
 
         $qb = $this->createQueryBuilder('inst')
                    ->join('inst.item', 'i')

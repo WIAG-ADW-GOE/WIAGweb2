@@ -64,6 +64,11 @@ class ItemProperty {
      */
     private $deleteFlag;
 
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $placeValue;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -152,6 +157,18 @@ class ItemProperty {
     public function setDeleteFlag(?string $deleteFlag): self
     {
         $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
+    public function getPlaceValue(): ?string
+    {
+        return $this->placeValue;
+    }
+
+    public function setPlaceValue(?string $placeValue): self
+    {
+        $this->placeValue = $placeValue;
 
         return $this;
     }

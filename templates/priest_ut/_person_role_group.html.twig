@@ -3,11 +3,9 @@
 	<div class="card">
 	    <span class="card-header"><strong>{{ title }}</strong></span>
 	    <dl class="card-body row pb-1 mb-1">
-		{% if properties and 'ordination_priest' in properties|keys %}
-		    {{ include('priest_ut/_person_ordinations.html.twig', {
-			properties: properties
-		    }) }}
-		{% endif %}
+		{{ include('priest_ut/_person_ordinations.html.twig', {
+			item: person.item
+		}) }}
 		{% if person.role|length > 0 %}
 		    {{ include('priest_ut/_person_roles.html.twig', {
 			roles: person.role

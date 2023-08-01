@@ -9,7 +9,7 @@
 	</thead>
 	<tbody>
 	    {% for person in personList %}
-		{% set patronym_prop = person.item.itemPropertyValue('patronym') %}
+		{% set patronym_prop = person.item.itemPropertyValue('Patronym') %}
 		{# there is usually only one patronym #}
 		{% set patronym = patronym_prop ? patronym_prop[0].value : '' %}
 		{% set personname %}{{ [person.givenname, patronym, person.prefixname, person.familyname]|join(' ') }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}

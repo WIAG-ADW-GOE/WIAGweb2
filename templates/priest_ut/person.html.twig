@@ -63,9 +63,9 @@
 	    {# comments, dates #}
 	    {% set with_names, with_properties = true, false %}
 	    {% set commentline = person.commentline(with_names, with_properties) %}
-	    {% set persontitle = person.item.itemPropertyValue('title') %}
+	    {% set persontitle = person.item.itemPropertyValue('Titel') %}
 	    {% set persontitle = persontitle ? persontitle[0].value %}
-	    {% set patronym = person.item.itemPropertyValue('patronym') %}
+	    {% set patronym = person.item.itemPropertyValue('Patronym') %}
 	    {% set patronym = patronym ? 'Patronym: '~patronym[0].value : '' %}
 	    {% if commentline or persontitle or patronym%}
 		<div class="row mx-2">

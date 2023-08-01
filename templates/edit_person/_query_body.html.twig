@@ -47,7 +47,7 @@
 			{% else %}
 			    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
 			    {% if count > pageSize %}
-				{{ include('person/_page_browse.html.twig') }}
+				{{ include('person/_page_browse.html.twig', { 'withPageNumber': true }) }}
 			    {% endif %}
 			{% endif %}
 		    </div>
@@ -62,7 +62,7 @@
     <div class="row mt-2 mx-1">
 	<div class="col-12">
 	    {% if count > pageSize %}
-		{{ include('person/_page_browse.html.twig') }}
+		{{ include('person/_page_browse.html.twig', { 'withPageNumber': false }) }}
 	    {% endif %}
 	</div>
     </div>
