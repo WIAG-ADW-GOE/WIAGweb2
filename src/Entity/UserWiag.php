@@ -21,6 +21,7 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
     const ROLE_DICT_EXTRA = [
         'ROLE_EDIT_USER' => 'Benutzerverwaltung',
         'ROLE_ADMIN' => 'alle Rechte',
+        'ROLE_DATA_EDIT' => 'Datenbereinigung',
     ];
     /**
      * @ORM\Id

@@ -65,8 +65,10 @@ class Item {
         6 => [
             'name' => 'Domherr GS',
             'id_public_mask' => 'WIAG-Pers-CANON-#-001',
+            'numeric_field_start' => 17,
             'numeric_field_width' => 5,
             'online_status' => 'online',
+            'edit_status_default' => 'online', // import only if online
         ],
         8 => [
             'name' => 'Amt',
@@ -204,7 +206,7 @@ class Item {
 
     /**
      * no DB-mapping
-     * hold id of referencing person
+     * hold idPublic of referencing item
      */
     private $idPublicVisible;
 
@@ -514,9 +516,16 @@ class Item {
         return $this;
     }
 
+    /**
+     * get idPublic of a related canon or bishop for canons gs
+     */
     public function getIdPublicVisible(): ?string
     {
-        return $this->idPublicVisible;
+        if (!is_null($this->idPublicVisible)) {
+            return $this->idPublicVisible;
+        } else {
+            return $this->idPublic;
+        }
     }
 
     public function setIdPublicVisible(?string $idPublic): self
@@ -789,10 +798,9 @@ class Item {
      */
     public function getUrlExternalObj($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
-
         $result = null;
         foreach ($this->urlExternal as $id) {
-            if ($id->getAuthorityId() == $authorityId) {
+            if ($id->getAuthority()->getId() == $authorityId) {
                 $result = $id;
                 break;
             }

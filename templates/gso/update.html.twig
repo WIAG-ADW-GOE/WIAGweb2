@@ -31,11 +31,13 @@
 	<div class="row ms-2 mt-2">
 	    <div class="col-12">
 		<h4>neu übernommen</h4>
-		{% for person in newList %}
-		    {{ include("gso/_item_li.html.twig", { 'person': person }) }}
-                {% else %}
-		    <span>keine</span>
-		{% endfor %}
+		<ul class="list-group list-group-flush">
+		    {% for person in newList %}
+			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                    {% else %}
+			<li class="list-group-item">keine</li>
+		    {% endfor %}
+		</ul>
 	    </div>
 	</div>
     </div>

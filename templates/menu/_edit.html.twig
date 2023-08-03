@@ -19,9 +19,16 @@
 	<li><a class="dropdown-item" href="{{ path('edit_authority_query') }}" target="_blank" rel="noopener">Normdaten/Externe Ressourcen</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_prop') }}" target="_blank" rel="noopener">Attribute</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_role_query') }}" target="_blank" rel="noopener">Ämter</a></li>
-	<li><hr class="dropdown-divider"></li>
-	<li><span class="dropdown-header">Externe Quellen</span></li>
-	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
-	<li><a class="dropdown-item" href="{{ path('gso_update_info') }}" target="_blank" rel="noopener">Domherren aus dem Digitalen Personenregister</a></li>
+	{% if is_granted('ROLE_ADMIN') %}
+	    <li><hr class="dropdown-divider"></li>
+	    <li><span class="dropdown-header">Externe Quellen</span></li>
+	    <li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
+	    <li><a class="dropdown-item" href="{{ path('gso_update_info') }}" target="_blank" rel="noopener">Domherren aus dem Digitalen Personenregister</a></li>
+	{% endif %}
+	{% if is_granted('ROLE_EDIT_USER') %}
+	    <li><hr class="dropdown-divider"></li>
+	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benutzerverwaltung</a></li>
+	{% endif %}
+
     </ul>
 </li>

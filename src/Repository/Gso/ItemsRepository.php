@@ -67,7 +67,7 @@ class ItemsRepository extends ServiceEntityRepository
 //    }
 
     /**
-     * @return meta data for entries in $gsn_list
+     * @return items.id and other meta data for entries in $gsn_list
      */
     public function findIdsByGsnList($gsn_list) {
         $qb = $this->createQueryBuilder('i')

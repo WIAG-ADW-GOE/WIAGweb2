@@ -333,7 +333,7 @@ class EditPersonService {
     /**
      * compose ID public
      */
-    public function makeIdPublic($item_type_id, $numeric_part)  {
+    static function makeIdPublic($item_type_id, $numeric_part)  {
 
         $width = Item::ITEM_TYPE[$item_type_id]['numeric_field_width'];
         $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
@@ -358,7 +358,7 @@ class EditPersonService {
     }
 
     /**
-     * create person object and persist
+     * create person object, sed idPublic and persist
      */
     public function initMetaData($person, $item_type_id) {
 
@@ -369,7 +369,7 @@ class EditPersonService {
         $id_in_source = strval($id_in_source);
         $item->setIdInSource($id_in_source);
 
-        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
+        $id_public = self::makeIdPublic($item_type_id, $id_in_source);
         $item->setIdPublic($id_public);
 
         return $person;
@@ -1080,13 +1080,36 @@ class EditPersonService {
             $authority_gnd = $authorityRepository->find($auth_gnd_id);
             $uext->setAuthority($authority_gnd);
             $uext->setValue($gnd);
+            $item->getUrlExternal()->add($uext);
             $this->entityManager->persist($uext);
 
-            $count_url = 1;
+            $count_url += 1;
         }
 
         return $count_url;
     }
+
+    public function setGsn($item, $gsn) {
+        $auth_gs_id = Authority::ID['GS'];
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+
+        $count_url = 1;
+        if (!is_null($gsn) and trim($gsn) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_gs = $authorityRepository->find($auth_gs_id);
+            $uext->setAuthority($authority_gs);
+            $uext->setValue($gsn);
+            $item->getUrlExternal()->add($uext);
+            $this->entityManager->persist($uext);
+
+            $count_url += 1;
+        }
+
+        return $count_url;
+    }
+
 
     private function copyCoreFromGso($person, $person_gso) {
         $field_list = [
@@ -1174,7 +1197,8 @@ class EditPersonService {
         $role->setUncertain(0);
 
         $roleRepository = $this->entityManager->getRepository(Role::class);
-        $role_role = $roleRepository->findOneByName($role->getRoleName());
+        $role_name = $role->getRoleName();
+        $role_role = $roleRepository->findOneByName($role_name);
         if ($role_role) {
             $role->setRole($role_role);
         } else {

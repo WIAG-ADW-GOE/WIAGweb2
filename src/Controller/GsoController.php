@@ -6,6 +6,8 @@ use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
 use App\Entity\UrlExternal;
+use App\Entity\NameLookup;
+use App\Entity\CanonLookup;
 use App\Entity\Gso\Persons;
 use App\Entity\Gso\Items;
 
@@ -75,8 +77,8 @@ class GsoController extends AbstractController {
         // find all canons in GSO (by Domstift)
         $canon_gso_ids = $this->canonGsoIds($doctrine);
 
-        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'id');
-        $id_new_list = array_column($canon_gso_ids_new, 'id');
+        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
+        $id_new_list = array_column($canon_gso_ids_new, 'person_id');
 
         $person_new_list = $gsoPersonsRepository->findList($id_new_list);
 
@@ -99,6 +101,8 @@ class GsoController extends AbstractController {
         $itemRepository = $doctrine->getRepository(Item::class, 'default');
         $personRepository = $doctrine->getRepository(Person::class, 'default');
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
+        $nameLookupRepository = $doctrine->getRepository(NameLookup::class, 'default');
+        $canonLookupRepository = $doctrine->getRepository(CanonLookup::class, 'default');
 
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
 
@@ -117,7 +121,7 @@ class GsoController extends AbstractController {
         // missing list holds elements of $item_list not found in GSO
         list($update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
 
-        // set new data
+        // update data
         $person_update_list = $this->updateList($doctrine, $update_list);
         $entityManager->flush();
         // - read list from database (e.g. with reference volumes)
@@ -133,18 +137,29 @@ class GsoController extends AbstractController {
         // find all canons in GSO (by Domstift)
         $canon_gso_ids = $this->canonGsoIds($doctrine);
 
-        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'id');
-        $id_new_list = array_column($canon_gso_ids_new, 'id');
+        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
+        $id_new_list = array_column($canon_gso_ids_new, 'person_id');
 
-        // TODO 2023-07-28
-        //$person_new_list = $gsoPersonsRepository->findList($id_new_list);
-        $person_new_list = array();
+        // insert new data
+        $person_gso_list = $gsoPersonsRepository->findList($id_new_list);
+
+        $person_insert_list = $this->insertList($doctrine, $person_gso_list);
+
+        $entityManager->flush();
+
+        // update lookup_tables
+        $insert_id_list = array();
+        foreach ($person_insert_list as $person_insert) {
+            $insert_id_list[] = $person_insert->getId();
+            $nameLookupRepository->update($person_insert);
+            $canonLookupRepository->addCanonGsMayBe($person_insert);
+        }
 
         return $this->render("gso/update.html.twig", [
             'countReferenced' => count($item_list),
             'updateList' => $person_update_list,
             'missingList' => $person_missing_list,
-            'newList' => $person_new_list,
+            'newList' => $person_insert_list
         ]);
 
     }
@@ -227,7 +242,7 @@ class GsoController extends AbstractController {
 
 
     /**
-     * @return id, gsn and modification date for canons (by Domstift)
+     * @return items.id, gsn and modification date for canons (by Domstift)
      */
     private function canonGsoIds(ManagerRegistry $doctrine) {
         $entityManager_gso = $doctrine->getManager('gso');
@@ -280,5 +295,42 @@ class GsoController extends AbstractController {
         return $person_update_list;
     }
 
+    private function insertList($doctrine, $gso_insert_list) {
+        $entityManager = $doctrine->getManager('default');
+
+        $personRepository = $doctrine->getRepository(Person::class, 'default');
+        $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
+        $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
+        $itemRepository = $doctrine->getRepository(Item::class, 'default');
+
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+        $current_user_id = $this->getUser()->getId();
+
+        $person_insert_list = array();
+
+        $next_num_id_public = $itemRepository->findMaxNumIdPublic($item_type_id) + 1;
+
+        foreach($gso_insert_list as $person_gso) {
+            $person_new = new Person($item_type_id, $current_user_id);
+            $this->editPersonService->initMetaData($person_new, $item_type_id);
+            $id_public = EditPersonService::makeIdPublic($item_type_id, $next_num_id_public);
+            $next_num_id_public += 1;
+            $person_new->getItem()->setIdPublic($id_public);
+            $entityManager->persist($person_new);
+            $entityManager->flush();
+            // read object to obtain ID for roles etc. (ID is only available via Item);
+            $person_id = $person_new->getItem()->getId();
+            $person_new = $personRepository->findOneById($person_id);
+
+            $this->editPersonService->updateFromGso($person_new, $person_gso, $current_user_id);
+            // set GSN in an extra step
+            $this->editPersonService->setGsn($person_new->getItem(), $person_gso->getItem()->getIdPublic());
+            // canons from GSO are always online
+            $person_new->getItem()->setIsOnline(1);
+            $person_insert_list[] = $person_new;
+        }
+        return $person_insert_list;
+
+    }
 
 }

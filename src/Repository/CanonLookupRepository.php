@@ -732,7 +732,7 @@ class CanonLookupRepository extends ServiceEntityRepository
      * update entries for $person
      * do not flush
      */
-    public function insert($person) {
+    public function insert_obsolete($person) {
 
         $n_persist = 0;
         if ($person->getItem()->getIsOnline()) {

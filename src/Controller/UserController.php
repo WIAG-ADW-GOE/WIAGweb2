@@ -17,7 +17,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/user/edit/{email}", name="user_edit")
+     * @Route("/user/edit/{email}", name="edit_user")
      * @IsGranted("ROLE_EDIT_USER")
      */
     public function edit(Request $request,

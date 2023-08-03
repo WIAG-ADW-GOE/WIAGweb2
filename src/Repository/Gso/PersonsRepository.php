@@ -70,7 +70,7 @@ class PersonsRepository extends ServiceEntityRepository
      */
     public function findCanonIDs($domstift_gsn_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('i.id')
+                   ->select('p.id as person_id')
                    ->join('p.role', 'o')
                    ->join('p.item', 'i')
                    ->andWhere('o.klosterid in (:mon_list)')

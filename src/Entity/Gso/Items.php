@@ -117,6 +117,28 @@ class Items
         return $current_gsn->getNummer();
     }
 
+    /**
+     * compatible with class Item
+     */
+    public function getIdPublicVisible() {
+        return $this->getIdPublic();
+    }
+
+    /**
+     * compatible with class Item
+     */
+    public function getUrlExternalObj($authorityIdOrName) {
+        return null;
+    }
+
+    /**
+     * compatible with class Item
+     */
+    public function getInputError() {
+        return null;
+    }
+
+
     public function getReference() {
         return $this->reference;
     }

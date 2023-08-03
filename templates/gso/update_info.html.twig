@@ -35,7 +35,7 @@
 		    {% for person in newList %}
 			{{ include("gso/_item_li_new.html.twig", { 'person': person }) }}
                     {% else %}
-			<li>keine</li>
+			<li class="list-group-item">keine</li>
 		    {% endfor %}
 		</ul>
 	    </div>
@@ -47,7 +47,7 @@
 		    {% for person in missingList %}
 			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
                     {% else %}
-			<li>keine</li>
+			<li class="list-group-item">keine</li>
 		    {% endfor %}
 		</ul>
 	    </div>
