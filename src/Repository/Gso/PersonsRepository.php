@@ -73,10 +73,12 @@ class PersonsRepository extends ServiceEntityRepository
                    ->select('p.id as person_id')
                    ->join('p.role', 'o')
                    ->join('p.item', 'i')
+                   ->join('i.gsn', 'gsn') // exclude the rare case where a GSN is missing
                    ->andWhere('o.klosterid in (:mon_list)')
                    ->andWhere('o.deleted = 0')
                    ->andWhere('i.deleted = 0')
                    ->andWhere("i.status = 'online'")
+                   ->andWhere("gsn.deleted = 0")
                    ->addGroupBy('i.id')
                    ->setParameter('mon_list', $domstift_gsn_list);
 

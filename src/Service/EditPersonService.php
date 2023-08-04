@@ -352,8 +352,7 @@ class EditPersonService {
             $url_external->setItemId($item->getId());
         }
         $url_external->setItem($item);
-        $url_external->setAuthorityId($authority->getId());
-        $url_external->setAuthority($authority);
+        $url_external->setAuthority($authority); // sets authorityId
         return $url_external;
     }
 
@@ -1078,7 +1077,7 @@ class EditPersonService {
 
             $uext->setItem($item);
             $authority_gnd = $authorityRepository->find($auth_gnd_id);
-            $uext->setAuthority($authority_gnd);
+            $uext->setAuthority($authority_gnd); // sets authorityId
             $uext->setValue($gnd);
             $item->getUrlExternal()->add($uext);
             $this->entityManager->persist($uext);

@@ -800,7 +800,7 @@ class Item {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
         $result = null;
         foreach ($this->urlExternal as $id) {
-            if ($id->getAuthority()->getId() == $authorityId) {
+            if ($id->getAuthorityId() == $authorityId) {
                 $result = $id;
                 break;
             }

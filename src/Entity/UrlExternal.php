@@ -70,6 +70,7 @@ class UrlExternal
 
     public function setAuthority($authority): self {
         $this->authority = $authority;
+        $this->authorityId = $authority->getId();
         return $this;
     }
 
