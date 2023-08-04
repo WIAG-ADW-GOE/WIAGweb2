@@ -182,6 +182,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
         $domstift = $model->institution;
+        $diocese = $model->diocese;
         $office = $model->office;
         $name = $model->name;
         $place = $model->place;
@@ -197,6 +198,15 @@ class CanonLookupRepository extends ServiceEntityRepository
             } elseif ($office) {
                 $qb->join('App\Entity\PersonRole', 'r', 'WITH', 'r.personId = c.personIdRole');
             }
+        }
+
+        // if a diocese is given via diocese_id, there is also a value for diocese_name
+        if ($diocese) {
+            $qb ->join('App\Entity\PersonRole', 'r_dioc', 'WITH', 'r_dioc.personId = c.personIdRole')
+                ->andWhere("(r_dioc.dioceseName LIKE :paramDiocese ".
+                          "OR CONCAT('erzbistum ', r_dioc.dioceseName) LIKE :paramDiocese ".
+                          "OR CONCAT('bistum ', r_dioc.dioceseName) LIKE :paramDiocese) ")
+               ->setParameter('paramDiocese', '%'.$diocese.'%');
         }
 
         if ($domstift) {

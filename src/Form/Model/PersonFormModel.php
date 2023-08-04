@@ -17,6 +17,8 @@ class PersonFormModel {
     public $itemTypeId = 0;
     public $name = null;
     public $institution = null;
+    public $diocese = null;
+    public $monastery = null;
     public $office = null;
     public $place = null;
     public $year = null;
@@ -85,6 +87,8 @@ class PersonFormModel {
             'listSize' => 5,
             'name' => null,
             'institution' => null,
+            'diocese' => null,
+            'monastery' => null,
             'office' => null,
             'place' => null,
             'year' => null,

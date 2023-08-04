@@ -61,6 +61,13 @@ class CanonFormType extends AbstractType
                     'placeholder' => 'Domstift',
                 ],
             ])
+            ->add('diocese', TextType::class, [
+                'label' => 'Erzbistum/Bistum',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Erzbistum/Bistum',
+                ],
+            ])
             ->add('office', TextType::class, [
                 'label' => 'Amt',
                 'required' => false,

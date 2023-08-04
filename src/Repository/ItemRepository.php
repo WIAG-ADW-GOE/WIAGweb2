@@ -86,11 +86,8 @@ class ItemRepository extends ServiceEntityRepository
         $itemTypeId = $model->itemTypeId;
         $diocese = null;
         $monastery = null;
-        if ($itemTypeId == 4) {
-            $diocese = $model->institution;
-        } else {
-            $monastery = $model->institution;
-        }
+        $diocese = $model->diocese;
+        $monastery = $model->monastery;
         $office = $model->office;
         $year = $model->year;
         $name = $model->name;
@@ -177,11 +174,8 @@ class ItemRepository extends ServiceEntityRepository
         $diocese = null;
         $monastery = null;
         $itemTypeId = $model->itemTypeId;
-        if ($itemTypeId == 4) {
-            $diocese = $model->institution;
-        } else {
-            $monastery = $model->institution;
-        }
+        $diocese = $model->diocese;
+        $monastery = $model->monastery;
         $office = $model->office;
         $place = $model->place;
         $misc = $model->misc;

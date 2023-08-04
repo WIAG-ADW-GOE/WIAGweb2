@@ -21,23 +21,44 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
-	    {# institution #}
-	    {% set autocomplete_field = { '4': 'diocese', '5': 'institution' } %}
+	    {# monastery #}
+	    {% if itemTypeId == 5 %} {# Domherr #}
+		<div class="me-2 mt-1"
+		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest_base', {
+			     'field': 'institution',
+			     'itemTypeId': itemTypeId }),
+		     }) }}>
+		    {{ form_label(form.monastery) }}
+		    {{ form_errors(form.monastery) }}
+		    {{ form_widget(form.monastery, {
+			'attr': {
+			    'data-autocomplete-target': "input",
+			    'size': input_width_institution,
+			    'class': 'wiag-input'
+			} })
+		    }}
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 25em;"></ul>
+		</div>
+	    {% endif %}
+	    {# diocese #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
 		     url: path('person_suggest_base', {
-			 'field': autocomplete_field[itemTypeId],
+			 'field': 'diocese',
 			 'itemTypeId': itemTypeId }),
 		 }) }}>
-		{{ form_label(form.institution) }}
-		{{ form_errors(form.institution) }}
-		{{ form_widget(form.institution, {
+		{{ form_label(form.diocese) }}
+		{{ form_errors(form.diocese) }}
+		{{ form_widget(form.diocese, {
 		    'attr': {
 			'data-autocomplete-target': "input",
 			'size': input_width_institution,
 			'class': 'wiag-input'
-		    }
-		}) }}
+		    } })
+		}}
 		<ul class="list-group autocomplete-target"
 		    data-autocomplete-target="results"
 		    style="max-width: 25em;"></ul>

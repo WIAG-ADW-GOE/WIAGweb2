@@ -212,7 +212,7 @@ class Item {
 
     /**
      * no DB-mapping
-     * hold IDs of merge parents
+     * hold IDs of merge parents in the merging process
      */
     private $mergeParent = null;
 
@@ -291,20 +291,6 @@ class Item {
         $this->inputError = new ArrayCollection();
 
         $this->formType = "edit";
-    }
-
-    /**
-     * 2023-05-24 obsolete
-     */
-    static public function newItem_legacy($item_type_id, $user_wiag_id) {
-        $now = new \DateTimeImmutable('now');
-        $item = new Item();
-        $item->setItemTypeId($item_type_id);
-        $item->setCreatedBy($user_wiag_id);
-        $item->setDateCreated($now);
-        $item->setChangedBy($user_wiag_id);
-        $item->setDateChanged($now);
-        return $item;
     }
 
     public function setId($id): self {
@@ -732,6 +718,11 @@ class Item {
 
     public function setMergeParent($value): self {
         $this->mergeParent = $value;
+        return $this;
+    }
+
+    public function clearMergeParent(): self {
+        $this->mergeParent = new ArrayCollection();
         return $this;
     }
 

@@ -395,6 +395,7 @@ class EditPersonController extends AbstractController {
                 $parent_list = $this->editService->readParentList($target);
 
                 $target_item->setMergeStatus('child');
+                $target_item->clearMergeParent();
                 $idPublic = $parent_list[0]->getItem()->getIdPublic();
                 $target_item->setIdPublic($idPublic);
                 $target_id = $target->getId();

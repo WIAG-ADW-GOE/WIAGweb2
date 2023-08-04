@@ -45,13 +45,6 @@ class EditPersonFormType extends AbstractType
         $model = $options['data'] ?? null;
         $itemTypeId = $model->itemTypeId;
 
-        $institution_label_list = [
-            '4' => 'Erzbistum/Bistum',
-            '5' => 'Domstift/Kloster'
-        ];
-
-        $institution_label = $institution_label_list[$itemTypeId];
-
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Name',
@@ -60,11 +53,11 @@ class EditPersonFormType extends AbstractType
                     'placeholder' => 'Vor- oder Nachname',
                 ],
             ])
-            ->add('institution', TextType::class, [
-                'label' => $institution_label,
+            ->add('diocese', TextType::class, [
+                'label' => 'Erzbistum/Bistum',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => $institution_label,
+                    'placeholder' => 'Bistum',
                 ],
             ])
             ->add('office', TextType::class, [
@@ -151,15 +144,22 @@ class EditPersonFormType extends AbstractType
             // data set via JavaScript
             ->add('sortOrder', HiddenType::class);
 
-        if ($itemTypeId == 5) { // canons
-            $builder->add('place', TextType::class, [
-                'label' => 'Ort',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'Ort',
-                ],
-            ]);
-        } else {
+        if ($itemTypeId == Item::ITEM_TYPE_ID['Domherr']['id']) {
+            $builder
+                ->add('monastery', TextType::class, [
+                    'label' => 'Domstift/Kloster',
+                    'required' => false,
+                    'attr' => [
+                        'placeholder' => 'Domstift/Kloster',
+                    ],
+                ])
+                ->add('place', TextType::class, [
+                    'label' => 'Ort',
+                    'required' => false,
+                    'attr' => [
+                        'placeholder' => 'Ort',
+                    ],
+                ]);
         }
     }
 }
