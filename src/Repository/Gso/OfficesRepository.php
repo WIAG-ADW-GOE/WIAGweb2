@@ -3,7 +3,7 @@
 namespace App\Repository\Gso;
 
 use App\Entity\Gso\Offices;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Offices[]    findAll()
  * @method Offices[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class OfficesRepository extends ServiceEntityRepository
+class OfficesRepository extends EntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

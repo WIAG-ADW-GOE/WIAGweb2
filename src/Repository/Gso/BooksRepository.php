@@ -3,7 +3,7 @@
 namespace App\Repository\Gso;
 
 use App\Entity\Gso\Books;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,12 +14,8 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Books[]    findAll()
  * @method Books[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class BooksRepository extends ServiceEntityRepository
+class BooksRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Books::class);
-    }
 
     public function add(Books $entity, bool $flush = false): void
     {

@@ -3,7 +3,7 @@
 namespace App\Repository\Gso;
 
 use App\Entity\Gso\Gsn;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,12 +14,8 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Gsn[]    findAll()
  * @method Gsn[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class GsnRepository extends ServiceEntityRepository
+class GsnRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Gsn::class);
-    }
 
     public function add(Gsn $entity, bool $flush = false): void
     {

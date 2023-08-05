@@ -7,8 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=BooksRepository::class)
- * 2023-07-12 the framework does not assign the correct database automatically (see doctrine.yaml and .env.local)
- * @ORM\Table(name="books", schema="gsdatenbank")
  */
 class Books
 {

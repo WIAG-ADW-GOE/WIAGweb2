@@ -5,23 +5,20 @@ namespace App\Repository\Gso;
 use App\Entity\Gso\Items;
 use App\Entity\Item;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+// use Doctrine\Bundle\DoctrineBundle\Repository\EntityRepository;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Items>
+ * @extends EntityRepository<Items>
  *
  * @method GsoItems|null find($id, $lockMode = null, $lockVersion = null)
  * @method GsoItems|null findOneBy(array $criteria, array $orderBy = null)
  * @method GsoItems[]    findAll()
  * @method GsoItems[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ItemsRepository extends ServiceEntityRepository
+class ItemsRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Items::class, 'gso');
-    }
 
     public function add(Items $entity, bool $flush = false): void
     {

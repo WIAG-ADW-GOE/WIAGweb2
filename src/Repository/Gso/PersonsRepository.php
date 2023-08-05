@@ -3,23 +3,19 @@
 namespace App\Repository\Gso;
 
 use App\Entity\Gso\Persons;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Persons>
+ * @extends EntityRepository<Persons>
  *
  * @method Persons|null find($id, $lockMode = null, $lockVersion = null)
  * @method Persons|null findOneBy(array $criteria, array $orderBy = null)
  * @method Persons[]    findAll()
  * @method Persons[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class PersonsRepository extends ServiceEntityRepository
+class PersonsRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Persons::class);
-    }
 
     public function add(Persons $entity, bool $flush = false): void
     {

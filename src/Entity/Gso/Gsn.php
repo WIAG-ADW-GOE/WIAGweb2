@@ -7,7 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=GsnRepository::class)
- * @ORM\Table(name="gsn", schema="gsdatenbank")
  */
 class Gsn
 {

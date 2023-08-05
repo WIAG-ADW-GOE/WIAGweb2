@@ -46,7 +46,7 @@ class GsoController extends AbstractController {
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
         $auth_gs = $authorityRepository->findOneByUrlNameFormatter('Personendatenbank der Germania Sacra');
 
-        $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
+        $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
 
         // get canons in WIAG
         $item_type_id = [
