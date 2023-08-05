@@ -75,7 +75,7 @@ class PersonsRepository extends EntityRepository
                    ->andWhere('i.deleted = 0')
                    ->andWhere("i.status = 'online'")
                    ->andWhere("gsn.deleted = 0")
-                   ->addGroupBy('i.id')
+                   ->addGroupBy('person_id')
                    ->setParameter('mon_list', $domstift_gsn_list);
 
         $query = $qb->getQuery();
