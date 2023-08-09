@@ -465,6 +465,7 @@ class EditPersonController extends AbstractController {
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
         $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+        $type_id_episc_gs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
 
         // bishop
         $id_list = array($person->getId());
@@ -479,7 +480,9 @@ class EditPersonController extends AbstractController {
                 // canon GS
                 $uext = $item_ep->getUrlExternalObj('GS');
                 if (!is_null($uext)) {
-                    $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
+                    $id_list_cn_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs);
+                    $id_list_ep_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_episc_gs);
+                    $id_list = array_merge($id_list, $id_list_cn_gs, $id_list_ep_gs);
                 }
 
             }
