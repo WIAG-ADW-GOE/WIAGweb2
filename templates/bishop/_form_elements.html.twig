@@ -25,9 +25,9 @@
 		 {{ stimulus_controller('autocomplete', {
 		     url: path('person_suggest_base', { 'field': 'diocese' }),
 		 }) }}>
-		{{ form_label(form.institution) }}
-		{{ form_errors(form.institution) }}
-		{{ form_widget(form.institution, {
+		{{ form_label(form.diocese) }}
+		{{ form_errors(form.diocese) }}
+		{{ form_widget(form.diocese, {
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 15,
