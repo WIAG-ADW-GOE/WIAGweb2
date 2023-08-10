@@ -79,7 +79,7 @@ class MonasteryService {
     /**
      * update($gsn)
      *
-     * update institution where institution.idGsn is $gsn
+     * update institution where institution.idGsn is $gsn; fetch $data via call to the Klosterdatenbank API
      */
     public function update($monastery) {
 

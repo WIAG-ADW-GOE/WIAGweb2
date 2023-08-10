@@ -48,6 +48,20 @@ class Item {
             'edit_status_default' => 'angelegt',
             'online_status' => 'online',
         ],
+        2 => [
+            'name' => 'Kloster',
+            'id_public_mask' => '#',
+            'numeric_field_width' => 5,
+            'edit_status_default' => 'online',
+            'online_status' => 'online',
+        ],
+        3 => [
+            'name' => 'Domstift',
+            'id_public_mask' => '#',
+            'numeric_field_width' => 5,
+            'edit_status_default' => 'online',
+            'online_status' => 'online',
+        ],
         4 => [
             'name' => 'Bischof',
             'id_public_mask' => 'WIAG-Pers-EPISCGatz-#-001',

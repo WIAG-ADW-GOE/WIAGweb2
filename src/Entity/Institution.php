@@ -89,6 +89,11 @@ class Institution
         $this->itemTypeId = $item_type_id;
     }
 
+    public function getItem()
+    {
+        return $this->item;
+    }
+
     public function setItem($item) {
         $this->item = $item;
         return $this;
@@ -119,6 +124,7 @@ class Institution
     public function setIdGsn(?int $idGsn): self
     {
         $this->idGsn = $idGsn;
+        $this->item->setIdInSource($idGsn);
 
         return $this;
     }
