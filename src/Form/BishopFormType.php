@@ -53,7 +53,7 @@ class BishopFormType extends AbstractType
                     'placeholder' => 'Vor- oder Nachname',
                 ],
             ])
-            ->add('institution', TextType::class, [
+            ->add('diocese', TextType::class, [
                 'label' => 'Erzbistum/Bistum',
                 'required' => false,
                 'attr' => [
