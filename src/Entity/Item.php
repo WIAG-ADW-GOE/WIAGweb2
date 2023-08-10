@@ -114,6 +114,12 @@ class Item {
     private $id = 0;
 
     /**
+     * @ORM\OneToMany(targetEntity="ItemCorpus", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
+     */
+    private $itemCorpus;
+
+    /**
      * @ORM\OneToMany(targetEntity="ItemProperty", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
@@ -287,6 +293,7 @@ class Item {
         $this->reference = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
+        $this->itemCorpus = new ArrayCollection();
         $this->idPublic = "";
         $this->idInSource = "";
         $this->mergeStatus = 'original';
@@ -315,6 +322,10 @@ class Item {
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getItemCorpus() {
+        return $this->itemCorpus;
     }
 
     /**

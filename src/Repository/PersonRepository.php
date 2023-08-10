@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
@@ -204,5 +205,152 @@ class PersonRepository extends ServiceEntityRepository {
         return array_column($result, 'personId');
 
     }
+
+    /**
+     * return list of IDs matching conditions in $model
+     */
+    public function priestUtIds($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $name = $model->name;
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+        $year = $model->year;
+        $someid = $model->someid;
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('distinct(p.id) as personId, ip_ord_date.dateValue as sort')
+                   ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
+                   ->join('i.itemCorpus', 'corpus')
+                   ->join('\App\Entity\ItemProperty',
+                          'ip_ord_date',
+                          'WITH',
+                          'ip_ord_date.itemId = i.id AND ip_ord_date.propertyTypeId = :ordination')
+                   ->andWhere("corpus.corpusId = 'utp'")
+                   ->andWhere('i.isOnline = 1')
+                   ->setParameter(':ordination', ItemProperty::ITEM_PROPERTY_TYPE_ID['ordination_priest']);
+
+        $qb = $this->addPriestUtConditions($qb, $model);
+        $qb = $this->addPriestUtFacets($qb, $model);
+
+        if ($religious_order) {
+            $qb->addOrderBy('rlgord.abbreviation');
+        }
+        if ($birthplace) {
+            $qb->addSelect('bp.placeName as birthplace')
+               ->addOrderBy('birthplace');
+        }
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname')
+           ->addOrderBy('sort', 'ASC')
+           ->addOrderBy('p.id');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
+
+        $query = $qb->getQuery();
+        $result =  $query->getResult();
+
+        // doctrine distinct function returns a string
+        $result = array_map(function($el) {
+            $val = $el['personId'];
+            return is_null($val) ? $val : intval($val);
+        }, $result);
+
+        return $result;
+    }
+
+    private function addPriestUtConditions($qb, $model) {
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+
+        if ($birthplace) {
+            $qb->join('\App\Entity\PersonBirthplace', 'bp', 'WITH', 'p.id = bp.personId')
+               ->andWhere('bp.placeName LIKE :birthplace')
+               ->setParameter('birthplace', '%'.$birthplace.'%');
+        }
+
+        if ($religious_order) {
+            $qb->join('p.religiousOrder', 'rlgord')
+               ->andWhere("rlgord.abbreviation LIKE :religious_order")
+               ->setParameter('religious_order', '%'.$religious_order.'%');
+        }
+
+        $year = $model->year;
+        if ($year) {
+            $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                          " AND :q_year < p.dateMax + :mgnyear")
+               ->setParameter(':mgnyear', self::MARGINYEAR)
+               ->setParameter('q_year', $year);
+        }
+
+        $name = $model->name;
+        if ($name) {
+            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId');
+            $q_list = UtilService::nameQueryComponents($name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
+        }
+
+        $someid = $model->someid;
+        if ($someid) {
+            $qb->andWhere("i.idPublic = :q_id OR i.idInSource = :q_id OR i.idInSource = :q_id_long")
+               ->setParameter('q_id', $someid)
+               ->setParameter('q_id_long', 'id_'.$someid);
+        }
+        return $qb;
+    }
+
+    /**
+     * add conditions set by facets
+     */
+    private function addPriestUtFacets($qb, $model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+        $facetReligiousOrder = $model->facetReligiousOrder;
+        if ($facetReligiousOrder) {
+            $valFctRo = array_column($facetReligiousOrder, 'name');
+            $qb->join('\App\Entity\Person', 'pfctro', 'WITH', 'i.id = pfctro.id')
+               ->join('pfctro.religiousOrder', 'rofct')
+               ->andWhere("rofct.abbreviation IN (:valFctRo)")
+               ->setParameter('valFctRo', $valFctRo);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * countPriestUtOrder($model)
+     *
+     * return array of religious orders
+     */
+    public function countPriestUtOrder($model) {
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('ro.abbreviation AS name, COUNT(DISTINCT(p.id)) AS n')
+                   ->join('p.item', 'i')
+                   ->join('i.itemCorpus', 'corpus')
+                   ->join('p.religiousOrder', 'ro')
+                   ->andWhere("corpus.corpusId = 'utp'")
+                   ->andWhere("i.isOnline = 1")
+                   ->andWhere("i.isDeleted = 0")
+                   ->andWhere("ro.abbreviation IS NOT NULL");
+
+        $this->addPriestUtConditions($qb, $model);
+        // only relevant if there is more than one facet
+        // $this->addPriestUtFacets($qb, $model);
+
+        $qb->groupBy('ro.id')
+           ->orderBy('ro.abbreviation');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
 
 }

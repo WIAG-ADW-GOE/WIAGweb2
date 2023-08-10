@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Person;
+use App\Entity\PersonBirthplace;
 use App\Entity\Diocese;
 use App\Entity\Institution;
 use App\Entity\Item;
@@ -20,7 +21,7 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class AutocompleteService extends ServiceEntityRepository {
 
-    public function __construct(ManagerRegistry $registry, UtilService $utilService)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Person::class);
 
@@ -135,7 +136,7 @@ class AutocompleteService extends ServiceEntityRepository {
     public function suggestInstitution($queryParam, $hintSize) {
         $itemTypeInst = [2, 3];
 
-        // 2023-05-02 for editing the list should not be restricted to institution
+        // 2023-05-02 for editing the list should not be restricted to institutions
         // that are already referenced by a canon
         // $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
         // $qb = $repository->createQueryBuilder('c')
@@ -434,6 +435,85 @@ class AutocompleteService extends ServiceEntityRepository {
 
         return $suggestions;
     }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtName($name, $hintSize) {
+
+        $qb = $this->createQueryBuilder('i')
+                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
+                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
+                            "AS suggestion")
+                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+                   ->join('\App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
+                   ->andWhere('i.itemTypeId = :itemType')
+                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht']);
+        $q_list = UtilService::nameQueryComponents($name);
+        foreach($q_list as $key => $q_name) {
+            $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
+               ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+        }
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtBirthplace($name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(PersonBirthplace::class);
+
+        $qb = $repository->createQueryBuilder('b')
+                         ->select("DISTINCT b.placeName as suggestion")
+                         ->join('App\Entity\Item', 'i', 'WITH', 'i.id = b.personId')
+                         ->join('i.itemCorpus', 'corpus')
+                         ->andWhere("i.isOnline = 1")
+                         ->andWhere("i.isDeleted = 0")
+                         ->andWhere("corpus.corpusId = 'utp'")
+                         ->andWhere('b.placeName LIKE :value')
+                         ->setParameter('value', '%'.$name.'%')
+                         ->orderBy('suggestion');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    /**
+     * AJAX
+     */
+    public function suggestPriestUtReligiousOrder($name, $hintSize) {
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+
+        $qb = $itemRepository->createQueryBuilder('i')
+                             ->select("DISTINCT r.abbreviation as suggestion")
+                             ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
+                             ->join('p.religiousOrder', 'r')
+                             ->join('i.itemCorpus', 'corpus')
+                             ->andWhere("i.isOnline = 1")
+                             ->andWhere("i.isDeleted = 0")
+                             ->andWhere("corpus.corpusId = 'utp'")
+                             ->andWhere('r.abbreviation LIKE :value')
+                             ->setParameter('value', '%'.$name.'%')
+                             ->orderBy('suggestion');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 
 
 }
