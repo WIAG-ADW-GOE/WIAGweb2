@@ -18,13 +18,19 @@
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
 		{% if form is defined %}
-		    {{ include('person/_button_step.html.twig',
-			{formaction: path('bishop_list_detail'), value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
-		    {{ include('person/_button_step.html.twig',
-			{formaction: path('bishop_list_detail'), value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
+		    {{ include('person/_button_step.html.twig',	{
+			'formaction': path('person_list_detail', { 'corpusId': corpus }),
+			'value': offset - 1,
+			'disabled': offset == 0,
+			'text': 'vorheriger Treffer'}) }}
+		    {{ include('person/_button_step.html.twig', {
+			'formaction': path('person_list_detail', { 'corpusId': corpus }),
+			'value': offset + 1,
+			'disabled': not hassuccessor,
+			'text': 'nächster Treffer'}) }}
 		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
 		{% else %}
-		    <a href="{{ path('bishop_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
+		    <a href="{{ path('person_query', { 'corpusId': corpus }) }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
 		{# button data #}
 		{% for fmtft in [
@@ -41,12 +47,12 @@
 	<div class="container-fluid"
 	     data-controller="hide-on-input facet-state">
 	    <div class="row ms-2 col-12">
-		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+		<span class="topic-title">{{ pageTitle }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
 	    </div>
 	    {% if form is defined %}
 		{{ form_start(form, {'attr': {
 		    'id':'form',
-		    'action':path('bishop_query'),
+		    'action':path('person_query', { 'corpusId': corpus }),
 		    'data-action': 'input->facet-state#clearFacet',
 		} }) }}
 		    {{ include('person/_form_elements.html.twig', {hide_facets: true}) }}

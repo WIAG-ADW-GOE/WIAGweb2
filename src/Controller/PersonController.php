@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Corpus;
 use App\Entity\Item;
+use App\Entity\ItemDreg;
 use App\Entity\Role;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -43,7 +44,6 @@ class PersonController extends AbstractController {
     public function __construct(AutocompleteService $service) {
         $this->autocomplete = $service;
     }
-
 
     /**
      * display query form for persons; handle query
@@ -121,6 +121,9 @@ class PersonController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
+        $itemDregRepository = $entityManager->getRepository(ItemDreg::class);
 
         $model = new PersonFormModel;
 
@@ -151,26 +154,33 @@ class PersonController extends AbstractController {
 
         $person_id = $ids[$idx];
 
-        // collect office data in Person[] from different sources
-        $personRole = $personRepository->getBishopOfficeData($person_id);
-        // set person
-        $person = null;
-        foreach($personRole as $person_loop) {
-            if ($person_loop->getId() == $person_id) {
-                $person = $person_loop;
-                break;
-            }
-        }
+        // get office data from Digitales Personenregister
+        $dreg_list = $itemDregRepository->findByItemId($person_id);
+        $dreg_id_list = UtilService::collectionColumn($dreg_list, 'itemIdDreg');
+        $person_id_list = array_merge(array($person_id), $dreg_id_list);
+        $person_role_list = $personRepository->findList($person_id_list);
+        $person = $person_role_list[0];
 
-        $personRepository->setSibling([$person]);
+        // set person
+        // $person = null;
+        // foreach($person_role_list as $person_loop) {
+        //     if ($person_loop->getId() == $person_id) {
+        //         $person = $person_loop;
+        //         break;
+        //     }
+        // }
+
+        // TODO 2023-08-15 clean up sibling
+        // $personRepository->setSibling([$person]);
 
         return $this->render('person/person.html.twig', [
             'form' => $form->createView(),
             'corpus' => $model->corpus,
             'personName' => $person,
-            'personRole' => $personRole,
+            'personRole' => $person_role_list,
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
+            'pageTitle' => $corpus->getPageTitle(),
         ]);
 
     }
@@ -178,7 +188,7 @@ class PersonController extends AbstractController {
     /**
      * return bishop data
      *
-     * @Route("/bischof/data", name="bishop_query_data")
+     * @Route("/person/data", name="person_query_data")
      */
     public function queryData(Request $request,
                               ItemRepository $itemRepository,

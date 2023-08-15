@@ -878,6 +878,7 @@ class UtilService {
 
     /**
      * array diff by field
+     * @return elements in $a missing in $b
      */
     static public function arrayDiffByField($a, $b, string $field) {
         $delta = array();
@@ -925,6 +926,18 @@ class UtilService {
         }
         return $delta;
 
+    }
+
+    /**
+     * like array_column, but for Collections
+     */
+    static public function collectionColumn($collection, $column) {
+        $getfnc = 'get'.ucfirst($column);
+        $value_list = array();
+        foreach($collection as $c) {
+            $value_list[] = $c->$getfnc();
+        }
+        return $value_list;
     }
 
 }

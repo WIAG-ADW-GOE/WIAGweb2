@@ -80,9 +80,8 @@ class PersonRepository extends ServiceEntityRepository {
                    ->join('i.itemCorpus', 'c')
                    ->leftjoin('p.role', 'pr')
                    ->andWhere('c.corpusId = :corpus')
-                   ->andWhere('i.mergeStatus <> :merged')
-                   ->setParameter(':corpus', $corpus)
-                   ->setParameter(':merged', 'parent');
+                   ->andWhere("i.mergeStatus in ('original', 'child')")
+                   ->setParameter(':corpus', $corpus);
 
         if ($online_only) {
             $qb->andWhere('i.isOnline = 1');
@@ -120,7 +119,6 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         $sort_list = Person::SORT_LIST[$sort_by];
-
         $result = UtilService::sortByFieldList($result, $sort_list, $sort_order);
 
         if ($limit > 0) {
@@ -141,42 +139,52 @@ class PersonRepository extends ServiceEntityRepository {
         $place = $model->place;
         $misc = $model->misc;
 
-        if ($diocese) {
-            $qb->andWhere("(pr.dioceseName LIKE :paramDiocese ".
-                          "OR CONCAT('erzbistum ', pr.dioceseName) LIKE :paramDiocese ".
-                          "OR CONCAT('bistum ', pr.dioceseName) LIKE :paramDiocese) ")
-               ->setParameter('paramDiocese', '%'.$diocese.'%');
-        }
-
-        // if monastery is given, it should be AND-combined with office
-        if ($monastery) {
-            $qb->leftjoin('p.role', 'pr_cond')
-               ->leftjoin('pr_cond.institution', 'inst')
-               ->andWhere("(pr_cond.institutionName LIKE :paramInst ".
-                          "OR inst.name LIKE :paramInst)")
-               ->setParameter('paramInst', '%'.$monastery.'%');
-            if ($office) {
-                $this->addPersonConditionOffice($qb, $office);
-            }
-        } elseif ($office) {
-            $qb->leftjoin('p.role', 'pr_cond');
-        }
-
         if ($office) {
+            $qb->leftjoin('p.role', 'pr_ofc');
             $this->addPersonConditionOffice($qb, $office);
+        }
+
+        if ($monastery) {
+            // AND-combine $office and $monastery
+            if ($office) {
+                $qb->leftjoin('pr_ofc.institution', 'inst')
+                   ->andWhere("(pr_ofc.institutionName LIKE :paramInst ".
+                              "OR inst.name LIKE :paramInst)");
+            } else {
+                $qb->leftjoin('pr.institution', 'inst')
+                   ->andWhere("(pr.institutionName LIKE :paramInst ".
+                              "OR inst.name LIKE :paramInst)");
+            }
+            $qb->setParameter('paramInst', '%'.$monastery.'%');
+        }
+
+        if ($diocese) {
+            // AND-combine $office and $diocese, but not
+            if ($office and (is_null($monastery) or trim($monastery) == "")) {
+                $qb->leftjoin('pr_ofc.diocese', 'dioc')
+                   ->andWhere("(pr_ofc.dioceseName LIKE :paramDioc ".
+                              "OR dioc.name LIKE :paramDioc)");
+            } else {
+                // do not combine $monastery and $diocese
+                $qb->leftjoin('p.role', 'pr_dioc')
+                   ->leftjoin('pr_dioc.diocese', 'dioc')
+                   ->andWhere("(pr_dioc.dioceseName LIKE :paramDioc ".
+                              "OR dioc.name LIKE :paramDioc)");
+            }
+            $qb->setParameter('paramDioc', '%'.$diocese.'%');
         }
 
         if ($place) {
             // Join places independently from role (other query condition)
-            $qb->join('p.role', 'role_place')
+            $qb->join('p.role', 'pr_place')
                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'role_place.institutionId = ip.institutionId '.
+                          'pr_place.institutionId = ip.institutionId '.
                           'AND ( '.
-                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
+                          'pr_place.numDateBegin IS NULL AND pr_place.numDateEnd IS NULL '.
+                          'OR (ip.numDateBegin < pr_place.numDateBegin AND pr_place.numDateBegin < ip.numDateEnd) '.
+                          'OR (ip.numDateBegin < pr_place.numDateEnd AND pr_place.numDateEnd < ip.numDateEnd) '.
+                          'OR (pr_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < pr_place.numDateEnd) '.
+                          'OR (pr_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < pr_place.numDateEnd))')
                 ->andWhere('ip.placeName LIKE :q_place')
                 ->setParameter('q_place', '%'.$place.'%');
         }
@@ -308,8 +316,8 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     private function addPersonConditionOffice($qb, $office) {
-                $qb->leftjoin('pr_cond.role', 'r_office')
-                   ->andWhere("pr_cond.roleName LIKE :q_office OR r_office.name LIKE :q_office")
+                $qb->leftjoin('pr_ofc.role', 'r_office')
+                   ->andWhere("pr_ofc.roleName LIKE :q_office OR r_office.name LIKE :q_office")
                    ->setParameter('q_office', '%'.$office.'%');
                 return $qb;
             }
@@ -404,53 +412,54 @@ class PersonRepository extends ServiceEntityRepository {
      * 2023-08-15 obsolete?
      * collect office data from different sources
      */
-    public function getBishopOfficeData($person_id) {
-        $entityManager = $this->getEntityManager();
-        $itemRepository = $entityManager->getRepository(Item::class);
+    // public function getBishopOfficeData($person_id) {
+    //     $entityManager = $this->getEntityManager();
+    //     $itemRepository = $entityManager->getRepository(Item::class);
 
-        $item = array($itemRepository->find($person_id));
-        // get item from Germania Sacra
-        $authorityGs = Authority::ID['GS'];
-        $gsn = $item[0]->getUrlExternalByAuthorityId($authorityGs);
-        if (!is_null($gsn)) {
-            // Each person from Germania Sacra should have an entry in table id_external with its GSN.
-            // If data are up to date at most one of these types is successful.
-            $itemTypeGs = [
-                Item::ITEM_TYPE_ID['Domherr GS']['id'],
-                Item::ITEM_TYPE_ID['Bischof GS']['id']
-            ];
-            $itemGs = $itemRepository->findByUrlExternal($itemTypeGs, $gsn, $authorityGs);
-            $item = array_merge($item, $itemGs);
-        }
+    //     $item = array($itemRepository->find($person_id));
+    //     // get item from Germania Sacra
+    //     $authorityGs = Authority::ID['GS'];
+    //     $gsn = $item[0]->getUrlExternalByAuthorityId($authorityGs);
+    //     if (!is_null($gsn)) {
+    //         // Each person from Germania Sacra should have an entry in table id_external with its GSN.
+    //         // If data are up to date at most one of these types is successful.
+    //         $itemTypeGs = [
+    //             Item::ITEM_TYPE_ID['Domherr GS']['id'],
+    //             Item::ITEM_TYPE_ID['Bischof GS']['id']
+    //         ];
+    //         $itemGs = $itemRepository->findByUrlExternal($itemTypeGs, $gsn, $authorityGs);
+    //         $item = array_merge($item, $itemGs);
+    //     }
 
-        // get item from Domherrendatenbank
-        $authorityWIAG = Authority::ID['WIAG-ID'];
-        $wiagid = $item[0]->getIdPublic();
-        if (!is_null($wiagid)) {
-            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
-            $canon = $itemRepository->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
-            $item = array_merge($item, $canon);
-        }
+    //     // get item from Domherrendatenbank
+    //     $authorityWIAG = Authority::ID['WIAG-ID'];
+    //     $wiagid = $item[0]->getIdPublic();
+    //     if (!is_null($wiagid)) {
+    //         $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
+    //         $canon = $itemRepository->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+    //         $item = array_merge($item, $canon);
+    //     }
 
 
-        // set places and references and authorities in one query
+    //     // set places and references and authorities in one query
 
-        $id_list = array_map(function ($i) {
-            return $i->getId();
-        }, $item);
+    //     $id_list = array_map(function ($i) {
+    //         return $i->getId();
+    //     }, $item);
 
-        $person_role = $this->findList($id_list);
+    //     $person_role = $this->findList($id_list);
 
-        $role_list = $this->getRoleList($person_role);
-        $entityManager->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
+    //     $role_list = $this->getRoleList($person_role);
+    //     $entityManager->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-        $item_role = array_map(function($p) {return $p->getItem();}, $person_role);
-        $entityManager->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role);
-        $entityManager->getRepository(Authority::class)->setAuthority($item_role);
+    //     $item_role = array_map(function($p) {return $p->getItem();}, $person_role);
+    //     $entityManager->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role);
+    //     $entityManager->getRepository(Authority::class)->setAuthority($item_role);
 
-        return $person_role;
+    //     return $person_role;
 
-    }
+    // }
+
 
     /**
      *
