@@ -26,6 +26,20 @@ class Person {
         'notePerson' => 'Bemerkung zur Person (online)'
     ];
 
+    const SORT_LIST = [
+        'familienname' => ['familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
+        'givenname' => ['givenname',  'familyname', 'inst_name', 'dateSortKey', 'personId'],
+        'institution' => ['inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'],
+        'diocese' => ['dioceseName', 'dateSortKey', 'familyname', 'givenname', 'personId'],
+        'year' => ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId'],
+        'commentDuplicate' => ['commentDuplicate', 'inst_name', 'familyname', 'givenname', 'personId'],
+        'idInSource' => ['idInSource', 'familyname', 'givenname', 'personId'],
+        'editStatus' => ['editStatus', 'idInSource', 'personId'],
+        'office' => ['dioceseName', 'inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'],
+        'name' => ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
+        'year' => ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId']
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

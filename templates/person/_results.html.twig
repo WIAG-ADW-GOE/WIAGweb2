@@ -1,0 +1,46 @@
+<div class="table-responsive">
+    <table class="table">
+	<thead class="thead-light">
+	    <tr>
+		<th scope="col">Name</th>
+		<th scope="col">Ämter</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    {% for person in personList %}
+		{% set displayname = person.combine('displayname') %}
+		{% set datebirth = person.combine('datebirth') %}
+		{% set datedeath = person.combine('datedeath') %}
+		<tr>
+		    <td><button
+			    type="submit"
+			    form="{{ form.vars.id }}"
+			    formaction="{{ path('person_list_detail', { 'corpusId': corpus })  }}"
+			    class="btn btn-link p-0 text-sm-start"
+			    name="offset"
+			    value="{{ offset + loop.index0 }}">{{ displayname }}</button>
+			{% if not datebirth and not datedeath %}
+			{% elseif datebirth and not datedeath %}
+			    <p class="ms-3">* {{ datebirth }}</p>
+			{% elseif not datebirth and datedeath %}
+			    <p class="ms-3">&dagger; {{ datedeath }}</p>
+			{% else %}
+			    <p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
+			{% endif %}
+		    </td>
+		    <td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}{% if r.uncertain %}? {% endif %}
+			    {% if r.diocese %}({{ r.diocese.name }})
+			    {% elseif r.diocesename %}({{ r.diocesename }})
+			    {% endif %}
+			    {% if r.placename %}({{ r.placename }}) {% endif %}
+			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
+			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
+			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
+			</small><br/>{% endfor %}
+		    </td>
+		</tr>
+	    {% endfor %}
+	</tbody>
+    </table>
+</div> {# table-responsive #}

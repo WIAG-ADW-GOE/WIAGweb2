@@ -72,7 +72,7 @@
 				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" role="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
 				{% endif %}
 				<ul class="dropdown-menu" aria-labelledby="collections">
-				    <li><a class="dropdown-item" href="{{ path('bishop_query') }}">Bischöfe des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('person_query', { 'corpusId': 'epc' }) }}">Bischöfe des Alten Reiches</a></li>
 				    <li><a class="dropdown-item" href="{{ path('diocese_query') }}">Bistümer des Alten Reiches</a></li>
 				    <li><a class="dropdown-item" href="{{ path('canon_query') }}">Domherren des Alten Reiches</a></li>
 				    <li><a class="dropdown-item" href="{{ path('priest_ut_query') }}">Priester des Bistums Utrecht</a></li>

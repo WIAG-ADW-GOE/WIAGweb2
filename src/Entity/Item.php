@@ -41,6 +41,7 @@ class Item {
         self::ITEM_TYPE_ID['Priester Utrecht']['id'],
     ];
 
+    // 2023-08-11 obsolete in WIAGweb3
     const ITEM_TYPE = [
         1 => [
             'name' => 'Bistum',

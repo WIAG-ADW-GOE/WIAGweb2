@@ -2,15 +2,18 @@
 
 namespace App\Service;
 
+use App\Entity\Item;
+use App\Entity\Role;
 use App\Entity\Person;
 use App\Entity\PersonBirthplace;
 use App\Entity\Diocese;
 use App\Entity\Institution;
-use App\Entity\Item;
-use App\Entity\Role;
+use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
 use App\Entity\CanonLookup;
+
+use App\Service\UtilService;
 
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -32,7 +35,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * $item_type_id is not used here (needed for uniform signature)
      */
-    public function suggestRole($itemTypeId, $queryParam, $hintSize) {
+    public function suggestRole($corpus, $queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Role::class);
         $qb = $repository->createQueryBuilder('r')
                          ->select("DISTINCT r.name AS suggestion")
@@ -50,31 +53,18 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * $item_type_id is not used here (needed for uniform signature)
+     * $corpus and $isOnline are not used here (needed for uniform signature)
      */
-    public function suggestOffice($itemTypeId, $queryParam, $hintSize, $online_only = false) {
-        if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {
-            $repository = $this->getEntityManager()->getRepository(Item::class);
-            $qb = $repository->createQueryBuilder('i')
-                             ->select("DISTINCT pr.roleName AS suggestion")
-                             ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = i.id')
-                             ->andWhere('i.itemTypeId = :itemType')
-                             ->setParameter(':itemType', $itemTypeId)
-                             ->andWhere('pr.roleName like :name')
-                             ->setParameter(':name', '%'.$queryParam.'%')
-                             ->orderBy('pr.roleName');
-            if ($online_only) {
-                $qb->andWhere('i.isOnline = 1');
-            }
-        } elseif ($itemTypeId == 5) {
-            $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-            $qb = $repository->createQueryBuilder('c')
-                             ->select("DISTINCT pr.roleName AS suggestion")
-                             ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                             ->andWhere('pr.roleName like :name')
-                             ->setParameter('name', '%'.$queryParam.'%')
-                             ->orderBy('pr.roleName');
-        }
+    public function suggestOffice($corpus, $queryParam, $hintSize, $isOnline = 0) {
+        // use all office names as a basis;
+        // this is simple and it does no harm, if office names show up that are not referenced anywhere
+        $repository = $this->getEntityManager()->getRepository(PersonRole::class);
+        $qb = $repository->createQueryBuilder('pr')
+                         ->select("DISTINCT (CASE WHEN pr.roleId IS NULL THEN pr.roleName ELSE r.name END) AS suggestion")
+                         ->leftjoin('pr.role', 'r')
+                         ->andWhere('pr.roleName like :name OR r.name like :name')
+                         ->setParameter(':name', '%'.$queryParam.'%')
+                         ->orderBy('suggestion');
 
         $qb->setMaxResults($hintSize);
 
@@ -299,38 +289,26 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestName($itemTypeId, $q_param, $resultSize, $online_only = false) {
-        // canons: case $online_only == false is relevant for the editing query
+    public function suggestName($corpus, $q_param, $resultSize, $isOnline = 0) {
 
-        if ($itemTypeId == 4 or ($itemTypeId == 5 and !$online_only)) {
-
-            $qb = $this->createQueryBuilder('p')
-                       ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                                "THEN n.gnPrefixFn ELSE n.gnFn END ".
-                                "AS suggestion")
-                       ->join('App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
-                       ->leftjoin('App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
-                       ->join('App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId OR clu.personIdRole = n.personId')
-                       ->andWhere('i.itemTypeId = :itemType')
-                       ->setParameter(':itemType', $itemTypeId);
-
-            if ($online_only) {
-                $qb->andWhere('i.isOnline = 1');
-            }
-        } elseif ($itemTypeId == 5) {
-            $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-            $qb = $repository->createQueryBuilder('c')
-                             ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                                      "THEN n.gnPrefixFn ELSE n.gnFn END ".
-                                      "AS suggestion")
-                             ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole');
-        }
+        $repository = $this->getEntityManager()->getRepository(Item::class);
+        $qb = $repository->createQueryBuilder('i')
+                         ->select("DISTINCT n.gnPrefixFn AS suggestion")
+                         ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
+                         ->join('i.itemCorpus', 'c')
+                         ->andWhere('c.corpusId = :corpus')
+                         ->setParameter('corpus', $corpus);
 
         // require that every word of the search query occurs in the name, regardless of the order
         $q_list = Utilservice::nameQueryComponents($q_param);
         foreach($q_list as $key => $q_name) {
             $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
                ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+        }
+
+        if ($isOnline != 0) {
+            $qb->andWhere('i.isOnline = :is_online')
+            ->setParameter('is_online', $isOnline);
         }
 
         $qb->setMaxResults($resultSize);

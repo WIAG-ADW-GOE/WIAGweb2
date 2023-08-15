@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\Collection;
  * Facets depend on form data. Therefore it makes sense to store them in a class.
  */
 class PersonFormModel {
-    public $itemTypeId = 0;
+    public $corpus = null;
     public $name = null;
     public $institution = null;
     public $diocese = null;
@@ -76,7 +76,7 @@ class PersonFormModel {
 
         // set defaults
         $default_list = [
-            'itemTypeId' => 0,
+            'corpus' => '',
             'isOnline' => true,
             'isDeleted' => false,
             'commentDuplicate' => null,

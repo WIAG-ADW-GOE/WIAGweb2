@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+{% set menuItem='collections' %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {% set itemTypeId = 4 %}
+    {% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
+    {% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+
+    {# person is passed as an object #}
+    {% if not personName %}
+	<p class="em">Person nicht gefunden.</p>
+    {% else %}
+	{% set btnpanel %}
+	<div class="row mx-2 col-12 mt-4 mb-2">
+	    <div class="d-flex">
+		{% if form is defined %}
+		    {{ include('person/_button_step.html.twig',
+			{formaction: path('bishop_list_detail'), value: offset - 1, disabled: offset == 0, text: 'vorheriger Treffer'}) }}
+		    {{ include('person/_button_step.html.twig',
+			{formaction: path('bishop_list_detail'), value: offset + 1, disabled: not hassuccessor, text: 'nächster Treffer'}) }}
+		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
+		{% else %}
+		    <a href="{{ path('bishop_query') }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
+		{% endif %}
+		{# button data #}
+		{% for fmtft in [
+		    {format: 'Csv', text: 'CSV'},
+		    {format: 'Rdf', text: 'RDF-XML'},
+		    {format: 'Json', text: 'JSON'},
+		    {format: 'Jsonld', text: 'JSON-LD'},
+		] %}
+		    <a href="{{ path('id', {id: personName.item.idpublic, format: fmtft.format}) }}" type="button" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</a>
+		{% endfor %}
+	    </div>
+	</div>
+	{% endset %}
+	<div class="container-fluid"
+	     data-controller="hide-on-input facet-state">
+	    <div class="row ms-2 col-12">
+		<span class="topic-title">{{ bishop_title }} <a href="{{ path('reference_list', { 'itemTypeId': 4}) }}"><span class="text-nowrap">(nach Erwin Gatz)</span></a></span>
+	    </div>
+	    {% if form is defined %}
+		{{ form_start(form, {'attr': {
+		    'id':'form',
+		    'action':path('bishop_query'),
+		    'data-action': 'input->facet-state#clearFacet',
+		} }) }}
+		    {{ include('person/_form_elements.html.twig', {hide_facets: true}) }}
+		    <div class="row mt-2 mx-2">
+			<div class="col-12">
+			    <button type="submit" class="btn btn-secondary btn-light btn-sm me-1">Suche</button>
+			</div>
+		    </div>
+		{{ form_end(form) }}
+	    {% endif %}
+	    <div data-hide-on-input-target="result">
+		{{ btnpanel }}
+		{# name, comments, dates of birth and death #}
+		{{ include('person/_person_header.html.twig', {person: personName, idpublic: personName.item.idpublic }, with_context = false) }}
+		{# offices #}
+		{% for person_loop in personRole %}
+		    {% if person_loop.item.getsource == 'Bischof' %}
+			{% set office_title = 'Amtsangaben aus Referenzwerken' %}
+			{{ include('person/_person_role_group.html.twig', {
+			    person: person_loop,
+			    title: office_title,
+			    with_context: false
+			}) }}
+		    {% endif %}
+		{% endfor %}
+		{% for person_loop in personRole %}
+		    {% if person_loop.item.getsource == 'Bischof GS' or person_loop.item.getsource == 'Domherr GS' %}
+			{% set gsnid = person_loop.item.geturlexternalobj('GS') %}
+			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
+			{{ include('person/_person_role_group.html.twig', {
+			    person: person_loop,
+			    title: office_title,
+			    with_context: false
+			}) }}
+		    {% endif %}
+		{% endfor %}
+		{% for person_loop in personRole %}
+		    {% if person_loop.item.getsource == 'Domherr' %}
+			{% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
+			{{ include('person/_person_role_group.html.twig', {
+			    person: person_loop,
+			    title: office_title,
+			    with_context: false
+			}) }}
+		    {% endif %}
+		{% endfor %}
+
+		{# external IDs #}
+		{{ include('person/_person_url_external.html.twig') }}
+
+		{# citation #}
+		<div class="row mx-2">
+		    <div class="col-12">
+			Empfohlene Zitierweise:
+			<button type="button"
+				class="btn btn-sm"
+				title="Kopiere die Zitierweise"
+				{{ stimulus_controller('clipboard') }}
+				data-action="clipboard#copyCitation"><img src="{{ asset('images/clipboard.svg') }}"></button><br/>
+			<span id="citation">{{ citation }}</span>
+		    </div>
+		</div>
+		{# button line #}
+		{{ btnpanel }}
+	    </div>
+	</div>
+    {% endif %}
+{% endblock %}

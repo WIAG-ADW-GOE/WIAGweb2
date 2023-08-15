@@ -30,7 +30,7 @@ class Corpus
     /**
      * @ORM\Column(type="string", length=31, nullable=true)
      */
-    private $idPublicKey;
+    private $idPublicMask;
 
     /**
      * @ORM\Column(type="string", length=31)
@@ -41,6 +41,24 @@ class Corpus
      * @ORM\Column(type="string", length=511, nullable=true)
      */
     private $comment;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $pageTitle;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $onlineStatus;
+
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $defaultStatus;
+
+
 
     public function getId(): ?int
     {
@@ -71,14 +89,14 @@ class Corpus
         return $this;
     }
 
-    public function getIdPublicKey(): ?string
+    public function getIdPublicMask(): ?string
     {
-        return $this->idPublicKey;
+        return $this->idPublicMask;
     }
 
-    public function setIdPublicKey(?string $idPublicKey): self
+    public function setIdPublicMask(?string $idPublicMask): self
     {
-        $this->idPublicKey = $idPublicKey;
+        $this->idPublicMask = $idPublicMask;
 
         return $this;
     }
@@ -106,4 +124,28 @@ class Corpus
 
         return $this;
     }
+
+    public function getPageTitle(): ?string
+    {
+        return $this->pageTitle;
+    }
+
+    public function setPageTitle(?string $pageTitle): self
+    {
+        $this->pageTitle = $pageTitle;
+
+        return $this;
+    }
+
+    public function getOnlineStatus(): ?string
+    {
+        return $this->onlineStatus;
+    }
+
+    public function getDefaultStatus(): ?string
+    {
+        return $this->defaultStatus;
+    }
+
+
 }
