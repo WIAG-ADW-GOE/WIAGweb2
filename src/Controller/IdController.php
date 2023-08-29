@@ -2,7 +2,8 @@
 namespace App\Controller;
 
 use App\Entity\Item;
-use App\Entity\ItemType;
+use App\Entity\ItemCorpus;
+use App\Entity\ItemNameRole;
 use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Diocese;
@@ -57,20 +58,20 @@ class IdController extends AbstractController {
         $format = $request->query->get('format') ?? 'html';
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
-        $itemTypeRepository = $this->entityManager->getRepository(ItemType::class);
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
         $itemResult = $itemRepository->findByIdPublicOrParent($id);
         if (!is_null($itemResult) && count($itemResult) > 0) {
             $item = $itemResult[0];
-            $itemTypeId = $item->getItemTypeId();
-            $itemId = $item->getId();
+            $item_id = $item->getId();
+            $corpus = $itemCorpusRepository->findCorpusPrio($item_id);
+            $corpus_id = $corpus->getCorpusId();
 
-            $itemTypeResult = $itemTypeRepository->find($itemTypeId);
-
-            $typeName = $itemTypeResult->getNameApp();
-
-            # e.g. bishop($itemId, $format)
-            return $this->$typeName($itemId, $format);
+            if ($corpus_id == 'epc' or $corpus_id == 'can') {
+                return $this->person($item_id, $corpus, $format);
+            } elseif ($corpus_id = 'dioc') {
+                return $this->diocese($item_id, $format);
+            }
 
         } else {
             return $this->render('home\message.html.twig', [
@@ -81,9 +82,12 @@ class IdController extends AbstractController {
 
      }
 
-    public function bishop($id, $format) {
+    /**
+     * @return HTML or data for ID $id
+     */
+    public function person($id, $corpus, $format) {
 
-        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
@@ -91,7 +95,7 @@ class IdController extends AbstractController {
         // collect office data in an array of Items
 
         $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($id);
-        $person_id_list = array_merge(array($person_id), $dreg_id_list);
+        $person_id_list = array_merge(array($id), $dreg_id_list);
         $person_role_list = $personRepository->findList($person_id_list);
 
         if ($format == 'html') {
@@ -99,6 +103,8 @@ class IdController extends AbstractController {
             return $this->render('person/person.html.twig', [
                 'personName' => $person,
                 'personRole' => $person_role_list,
+                'corpus' => $corpus->getCorpusId(),
+                'pageTitle' => $corpus->getPageTitle(),
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {

@@ -63,4 +63,16 @@ class ItemCorpusRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function findCorpusPrio($id) {
+        $qb = $this->createQueryBuilder('ic')
+                   ->select('c')
+                   ->join('App\Entity\Corpus', 'c', 'WITH', 'c.corpusId = ic.corpusId')
+                   ->andWhere('ic.itemId = :q_id')
+                   ->setParameter('q_id', $id)
+                   ->orderBy('c.id');
+
+        $query = $qb->getQuery();
+        return $query->getResult()[0];
+    }
 }
