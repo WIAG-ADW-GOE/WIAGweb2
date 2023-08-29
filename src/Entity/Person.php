@@ -26,6 +26,7 @@ class Person {
         'notePerson' => 'Bemerkung zur Person (online)'
     ];
 
+    // 2023-08-29 obsolete?
     const SORT_LIST = [
         'familienname' => ['familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
         'givenname' => ['givenname',  'familyname', 'inst_name', 'dateSortKey', 'personId'],
@@ -39,6 +40,8 @@ class Person {
         'name' => ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
         'year' => ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId']
     ];
+
+    const MARGINYEAR = 1;
 
     /**
      * @ORM\Id

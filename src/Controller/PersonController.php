@@ -3,7 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Corpus;
 use App\Entity\Item;
-use App\Entity\ItemDreg;
+use App\Entity\ItemNameRole;
 use App\Entity\Role;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -48,17 +48,18 @@ class PersonController extends AbstractController {
     /**
      * display query form for persons; handle query
      *
-     * @Route("/person/{corpusId}", name="person_query")
+     * @Route("/person/query/{corpusId}", name="person_query")
      */
     public function query($corpusId,
                           Request $request,
                           EntityManagerInterface $entityManager,
                           RouterInterface $router) {
 
-
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
+
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
@@ -69,6 +70,7 @@ class PersonController extends AbstractController {
 
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => $flagInit,
+            'repository' => $itemNameRoleRepository,
         ]);
 
         $offset = 0;
@@ -88,7 +90,8 @@ class PersonController extends AbstractController {
             $page_number = $request->request->get('pageNumber');
 
             $model->editStatus = [$corpus->getOnlineStatus()];
-            $id_all = $personRepository->personIds($model);
+            $id_all = null;
+            $id_all = $itemNameRoleRepository->findPersonIds($model);
             $count = count($id_all);
 
             // set offset to page begin
@@ -123,11 +126,14 @@ class PersonController extends AbstractController {
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
-        $itemDregRepository = $entityManager->getRepository(ItemDreg::class);
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
 
         $model = new PersonFormModel;
 
-        $form = $this->createForm(PersonFormType::class, $model);
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+        ]);
         $form->handleRequest($request);
 
         $offset = $request->request->get('offset');
@@ -139,15 +145,15 @@ class PersonController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $personRepository->personIds($model,
-                                                2,
-                                                $offset);
+            $ids = $itemNameRoleRepository->findPersonIds($model,
+                                                          2,
+                                                          $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $personRepository->personIds($model,
-                                                3,
-                                                $offset - 1);
+            $ids = $itemNameRoleRepository->findPersonIds($model,
+                                                          3,
+                                                          $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
             $idx += 1;
         }
@@ -155,8 +161,7 @@ class PersonController extends AbstractController {
         $person_id = $ids[$idx];
 
         // get office data from Digitales Personenregister
-        $dreg_list = $itemDregRepository->findByItemId($person_id);
-        $dreg_id_list = UtilService::collectionColumn($dreg_list, 'itemIdDreg');
+        $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
         $person_id_list = array_merge(array($person_id), $dreg_id_list);
         $person_role_list = $personRepository->findList($person_id_list);
         $person = $person_role_list[0];
@@ -186,17 +191,22 @@ class PersonController extends AbstractController {
     }
 
     /**
-     * return bishop data
+     * return person data
      *
-     * @Route("/person/data", name="person_query_data")
+     * @Route("/person/data/{corpusId}", name="person_query_data")
      */
-    public function queryData(Request $request,
-                              ItemRepository $itemRepository,
-                              PersonRepository $personRepository,
+    public function queryData($corpusId,
+                              Request $request,
+                              EntityManagerInterface $entityManager,
                               PersonService $personService) {
 
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
+
         if ($request->isMethod('POST')) {
-            $model = PersonFormModel::newByArray($request->request->get('bishop_form'));
+            $model = PersonFormModel::newByArray($request->request->get('person_form'));
             $format = $request->request->get('format') ?? 'json';
         } else {
             $model = PersonFormModel::newByArray($request->query->all());
@@ -204,9 +214,8 @@ class PersonController extends AbstractController {
         }
         $format = ucfirst(strtolower($format));
 
-        $model->itemTypeId = 4;
         $model->isDeleted = 0;
-        $id_all = $itemRepository->personIds($model);
+        $id_all = $itemNameRoleRepository->findPersonIds($model);
 
         $chunk_offset = 0;
         $chunk_size = 50;
@@ -220,8 +229,12 @@ class PersonController extends AbstractController {
             // find all sources (persons with roles) for the elements of $canon_personName
             foreach($person_list as $person) {
                 // get roles
-                $personRole = $itemRepository->getBishopOfficeData($person);
-                $node = $personService->personData($format, $person, $personRole);
+                $person_id = $person->getId();
+                $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
+                $person_id_list = array_merge(array($person_id), $dreg_id_list);
+                $person_role_list = $personRepository->findList($person_id_list);
+
+                $node = $personService->personData($format, $person, $person_role_list);
                 $node_list[] = $node;
 
             }

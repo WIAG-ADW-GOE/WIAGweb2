@@ -4,7 +4,6 @@ namespace App\Form;
 use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\PersonFormModel;
-use App\Repository\PersonRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,16 +26,12 @@ use Symfony\Component\Routing\RouterInterface;
 
 class PersonFormType extends AbstractType
 {
-    private $repository;
-
-    public function __construct(PersonRepository $repository) {
-        $this->repository = $repository;
-    }
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
             'forceFacets' => false,
+            'repository' => null,
         ]);
 
     }
@@ -44,6 +39,7 @@ class PersonFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
         $forceFacets = $options['forceFacets'];
+        $repository = $options['repository'];
 
         $builder
             ->add('name', TextType::class, [
@@ -92,14 +88,14 @@ class PersonFormType extends AbstractType
             ]);
 
         if ($forceFacets) {
-            $this->createFacetInstitution($builder, $model);
-            $this->createFacetOffice($builder, $model);
+            $this->createFacetDiocese($builder, $model, $repository);
+            $this->createFacetOffice($builder, $model, $repository);
         }
 
         // add facets with current model data
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            function ($event) {
+            function ($event) use ($repository) {
                 $data = $event->getData();
                 if (!$data) {
                     $model = new PersonFormModel();
@@ -107,17 +103,17 @@ class PersonFormType extends AbstractType
                     $model = PersonFormModel::newByArray($data);
                 }
 
-                $this->createFacetInstitution($event->getForm(), $model);
-                $this->createFacetOffice($event->getForm(), $model);
+                $this->createFacetDiocese($event->getForm(), $model, $repository);
+                $this->createFacetOffice($event->getForm(), $model, $repository);
             });
     }
 
-    public function createFacetInstitution($form, $modelIn) {
+    public function createFacetDiocese($form, $modelIn, $repository) {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
         $model->facetInstitution = null;
 
-        $dioceses = $this->repository->countBishopDiocese($model);
+        $dioceses = $repository->countDiocese($model);
 
         $choices = array();
         foreach($dioceses as $diocese) {
@@ -141,12 +137,12 @@ class PersonFormType extends AbstractType
         }
     }
 
-    public function createFacetOffice($form, $modelIn) {
+    public function createFacetOffice($form, $modelIn, $repository) {
         // do not filter by office themselves
         $model = clone $modelIn;
         $model->facetOffice = null;
 
-        $offices = $this->repository->countBishopOffice($model);
+        $offices = $repository->countOffice($model);
 
         $choices = array();
 

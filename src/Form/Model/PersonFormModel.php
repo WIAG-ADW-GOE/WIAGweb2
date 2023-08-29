@@ -117,7 +117,7 @@ class PersonFormModel {
     public function isEmpty() {
         $value = true;
         // list only elements that are relevant in a regular query (not edit)
-        $keys = ['name', 'institution', 'place', 'office', 'year', 'someid'];
+        $keys = ['name', 'diocese', 'institution', 'place', 'office', 'year', 'someid'];
         foreach($keys as $key) {
             $value = $value && is_null($this->$key);
         }

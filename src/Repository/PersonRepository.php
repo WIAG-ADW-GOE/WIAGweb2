@@ -60,7 +60,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * @return list of IDs compatible with $model
      */
-    public function personIds($model, $limit = 0, $offset = 0, $online_only = true) {
+    public function personIds($model, $limit = 0, $offset = 0, $isOnline = true) {
         $result = null;
 
         $corpus = $model->corpus;
@@ -74,18 +74,24 @@ class PersonRepository extends ServiceEntityRepository {
         $place = $model->place;
         $someid = $model->someid;
         $sort_order = $model->sortOrder;
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
 
-        $qb = $this->createQueryBuilder('p')
-                   ->join('p.item', 'i')
-                   ->join('i.itemCorpus', 'c')
-                   ->leftjoin('p.role', 'pr')
-                   ->andWhere('c.corpusId = :corpus')
-                   ->andWhere("i.mergeStatus in ('original', 'child')")
-                   ->setParameter(':corpus', $corpus);
+        $corpus = 'epc';
 
-        if ($online_only) {
-            $qb->andWhere('i.isOnline = 1');
-        }
+
+
+        // 2023-08-15
+        // version that intergrates office data from Digitales Personregister
+        // changes sort order!?
+        // $qb = $this->createQueryBuilder('p_corpus')
+        //            ->join('p_corpus.item', 'i')
+        //            ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', 'i.id = ic.itemId AND ic.corpusId = :corpus')
+        //            ->leftjoin('\App\Entity\ItemDreg', 'dreg', 'WITH', 'dreg.itemId = i.id')
+        //            ->join('\App\Entity\Person', 'p', 'WITH', 'p.id = p_corpus.id OR p.id = dreg.itemIdDreg')
+        //            ->leftjoin('p.role', 'pr')
+        //            ->andWhere("i.mergeStatus in ('original', 'child')")
+        //            ->setParameter(':corpus', $corpus);
+
 
         $qb = $this->addPersonConditions($qb, $model);
 
@@ -140,39 +146,60 @@ class PersonRepository extends ServiceEntityRepository {
         $misc = $model->misc;
 
         if ($office) {
-            $qb->leftjoin('p.role', 'pr_ofc');
             $this->addPersonConditionOffice($qb, $office);
         }
 
         if ($monastery) {
-            // AND-combine $office and $monastery
-            if ($office) {
-                $qb->leftjoin('pr_ofc.institution', 'inst')
-                   ->andWhere("(pr_ofc.institutionName LIKE :paramInst ".
-                              "OR inst.name LIKE :paramInst)");
-            } else {
-                $qb->leftjoin('pr.institution', 'inst')
-                   ->andWhere("(pr.institutionName LIKE :paramInst ".
-                              "OR inst.name LIKE :paramInst)");
-            }
-            $qb->setParameter('paramInst', '%'.$monastery.'%');
+            $qb->leftjoin('pr.institution', 'inst')
+               ->andWhere("(pr.institutionName LIKE :paramInst ".
+                          "OR inst.name LIKE :paramInst)")
+               ->setParameter('paramInst', '%'.$monastery.'%');
         }
 
         if ($diocese) {
-            // AND-combine $office and $diocese, but not
-            if ($office and (is_null($monastery) or trim($monastery) == "")) {
-                $qb->leftjoin('pr_ofc.diocese', 'dioc')
-                   ->andWhere("(pr_ofc.dioceseName LIKE :paramDioc ".
-                              "OR dioc.name LIKE :paramDioc)");
-            } else {
-                // do not combine $monastery and $diocese
+            if ($monastery) {
                 $qb->leftjoin('p.role', 'pr_dioc')
                    ->leftjoin('pr_dioc.diocese', 'dioc')
                    ->andWhere("(pr_dioc.dioceseName LIKE :paramDioc ".
                               "OR dioc.name LIKE :paramDioc)");
+            } else {
+                // do not combine monastery with diocese
+                $qb->leftjoin('pr.diocese', 'dioc')
+                   ->andWhere("(pr.dioceseName LIKE :paramDioc ".
+                              "OR dioc.name LIKE :paramDioc)");
             }
             $qb->setParameter('paramDioc', '%'.$diocese.'%');
         }
+
+        // if ($monastery) {
+        //     // AND-combine $office and $monastery
+        //     if ($office) {
+        //         $qb->leftjoin('pr_ofc.institution', 'inst')
+        //            ->andWhere("(pr_ofc.institutionName LIKE :paramInst ".
+        //                       "OR inst.name LIKE :paramInst)");
+        //     } else {
+        //         $qb->leftjoin('pr.institution', 'inst')
+        //            ->andWhere("(pr.institutionName LIKE :paramInst ".
+        //                       "OR inst.name LIKE :paramInst)");
+        //     }
+        //     $qb->setParameter('paramInst', '%'.$monastery.'%');
+        // }
+
+        // if ($diocese) {
+        //     // AND-combine $office and $diocese, but not
+        //     if ($office and (is_null($monastery) or trim($monastery) == "")) {
+        //         $qb->leftjoin('pr_ofc.diocese', 'dioc')
+        //            ->andWhere("(pr_ofc.dioceseName LIKE :paramDioc ".
+        //                       "OR dioc.name LIKE :paramDioc)");
+        //     } else {
+        //         // do not combine $monastery and $diocese
+        //         $qb->leftjoin('p.role', 'pr_dioc')
+        //            ->leftjoin('pr_dioc.diocese', 'dioc')
+        //            ->andWhere("(pr_dioc.dioceseName LIKE :paramDioc ".
+        //                       "OR dioc.name LIKE :paramDioc)");
+        //     }
+        //     $qb->setParameter('paramDioc', '%'.$diocese.'%');
+        // }
 
         if ($place) {
             // Join places independently from role (other query condition)
@@ -316,12 +343,11 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     private function addPersonConditionOffice($qb, $office) {
-                $qb->leftjoin('pr_ofc.role', 'r_office')
-                   ->andWhere("pr_ofc.roleName LIKE :q_office OR r_office.name LIKE :q_office")
-                   ->setParameter('q_office', '%'.$office.'%');
-                return $qb;
-            }
-
+        $qb->leftjoin('pr.role', 'r_office')
+           ->andWhere("pr.roleName LIKE :q_office OR r_office.name LIKE :q_office")
+           ->setParameter('q_office', '%'.$office.'%');
+        return $qb;
+    }
 
     /**
      * add conditions set by facets
@@ -350,7 +376,8 @@ class PersonRepository extends ServiceEntityRepository {
         return $qb;
     }
 
-        /**
+    /**
+     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
      * countBishopDiocese($model)
      *
      * return array of dioceses related to a person's role (used for facet)
@@ -380,6 +407,7 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
+     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
      * countBishopOffice($model)
      *
      * return array of offices related to a person's role (used for facet)
@@ -756,5 +784,10 @@ class PersonRepository extends ServiceEntityRepository {
         return $result;
     }
 
+    public function findPersonWithDreg() {
+
+        return $result;
+
+    }
 
 }

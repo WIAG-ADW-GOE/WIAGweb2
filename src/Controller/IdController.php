@@ -89,16 +89,16 @@ class IdController extends AbstractController {
 
         $person = $personRepository->find($id);
         // collect office data in an array of Items
-        $personRole = $itemRepository->getBishopOfficeData($person);
 
+        $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($id);
+        $person_id_list = array_merge(array($person_id), $dreg_id_list);
+        $person_role_list = $personRepository->findList($person_id_list);
 
         if ($format == 'html') {
 
-            $personRepository->setSibling([$person]);
-
-            return $this->render('bishop/person.html.twig', [
+            return $this->render('person/person.html.twig', [
                 'personName' => $person,
-                'personRole' => $personRole,
+                'personRole' => $person_role_list,
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
@@ -106,7 +106,7 @@ class IdController extends AbstractController {
             }
 
             // build data array
-            $node_list = [$this->personService->personData($format, $person, $personRole)];
+            $node_list = [$this->personService->personData($format, $person, $person_role_list)];
 
             return $this->personService->createResponse($format, $node_list);
         }

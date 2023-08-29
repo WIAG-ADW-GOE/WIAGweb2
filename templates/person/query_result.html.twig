@@ -32,7 +32,7 @@
 			    {format: 'Json', text: 'JSON'},
 			    {format: 'Jsonld', text: 'JSON-LD'},
 			] %}
-			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_query_data') }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
+			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_query_data', { 'corpusId': corpus }) }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
 			{% endfor %}
 		    {% endif %}
 		    <a href="{{ path('person_query', { 'corpusId': corpus }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>

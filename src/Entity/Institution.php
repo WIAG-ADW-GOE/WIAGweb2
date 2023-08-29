@@ -83,6 +83,11 @@ class Institution
      */
     private $itemTypeId;
 
+    /**
+     * @ORM\Column(type="string", length=31)
+     */
+    private $corpusId;
+
     public function __construct($item_type_id, $user_id) {
         $this->institutionPlace = new ArrayCollection();
         $this->item = new Item($item_type_id, $user_id);
@@ -227,6 +232,18 @@ class Institution
 
     public function getInstitutionPlace() {
         return $this->institutionPlace;
+    }
+
+    public function getCorpusId(): ?string
+    {
+        return $this->corpusId;
+    }
+
+    public function setCorpusId(string $corpusId): self
+    {
+        $this->corpusId = $corpusId;
+
+        return $this;
     }
 
 }
