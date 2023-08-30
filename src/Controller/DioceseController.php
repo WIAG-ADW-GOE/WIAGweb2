@@ -74,7 +74,7 @@ class DioceseController extends AbstractController {
     }
 
     /**
-     * display details for a bishop
+     * display details
      *
      * @Route("/bistum/listenelement", name="diocese_list_detail")
      */

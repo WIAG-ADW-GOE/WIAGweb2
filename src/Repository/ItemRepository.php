@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\Authority;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -228,13 +229,25 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return entry matching $id or having $id as a parent (merging); is_online = true
+     * @return entry matching $id_public or having $id_public as a parent (merging); is_online = true
      */
-    public function findByIdPublicOrParent($id) {
+    public function findByIdPublicOrParent($id_public) {
+        $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
+        $id = $itemCorpusRepository->findItemIdByIdPublic($id_public);
+        if (is_null($id)) {
+            return null;
+        }
+
+        $corpus_id = $itemCorpusRepository->findCorpusPrio($id);
+        if ($corpus_id !== 'epc' && $corpus_id !== 'can') {
+            return array($this->find($id));
+        }
+        // else: check if id_public points to a current item or to an ancestor
+
         $with_id_in_source = false;
         $list_size_max = 200;
         $descendant_id_list = $this->findIdByAncestor(
-            $id,
+            $id_public,
             $with_id_in_source,
             $list_size_max,
         );
@@ -294,6 +307,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
+     * call this function only for persons
      * @return items containing $id in ancestor list
      */
     public function findIdByAncestor(string $q_id, $with_id_in_source, $list_size_max) {
@@ -301,14 +315,10 @@ class ItemRepository extends ServiceEntityRepository
         if ($with_id_in_source) {
             $qb = $this->createQueryBuilder('i')
                        ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
-                       ->andWhere("i.itemTypeId in (:item_type_list)")
-                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
                        ->setParameter('q_id', '%'.$q_id.'%');
         } else {
             $qb = $this->createQueryBuilder('i')
                        ->andWhere("i.idPublic like :q_id")
-                       ->andWhere("i.itemTypeId in (:item_type_list)")
-                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
                        ->setParameter('q_id', '%'.$q_id.'%');
         }
 
