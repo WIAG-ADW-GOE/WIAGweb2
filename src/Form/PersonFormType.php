@@ -80,16 +80,55 @@ class PersonFormType extends AbstractType
                 ],
             ])
             ->add('corpus', HiddenType::class)
-            ->add('stateFctInst', HiddenType::class, [
+            ->add('stateFctDioc', HiddenType::class, [
+                'mapped' => false,
+            ])
+            ->add('stateFctCap', HiddenType::class, [
                 'mapped' => false,
             ])
             ->add('stateFctOfc', HiddenType::class, [
                 'mapped' => false,
+            ])
+            ->add('stateFctPlc', HiddenType::class, [
+                 'mapped' => false,
+            ])
+            ->add('stateFctUrl', HiddenType::class, [
+                 'mapped' => false,
             ]);
 
+
+        if ($model->corpus == 'can') {
+            $builder
+                ->add('institution', TextType::class, [
+                    'label' => 'Domstift',
+                    'required' => false,
+                    'attr' => [
+                        'placeholder' => 'Domstift',
+                    ],
+                ])
+                ->add('place', TextType::class, [
+                    'label' => 'Ort',
+                    'required' => false,
+                    'attr' => [
+                        'placeholder' => 'Ort',
+                        'size' => '8',
+                    ],
+                ]);
+        }
+
         if ($forceFacets) {
-            $this->createFacetDiocese($builder, $model, $repository);
+
             $this->createFacetOffice($builder, $model, $repository);
+
+            if ($model->corpus == 'can') {
+                $this->createFacetDomstift($builder, $model, $repository);
+                $this->createFacetPlace($builder, $model, $repository);
+                $this->createFacetUrl($builder, $model, $repository);
+            }
+
+            if ($model->corpus == 'epc') {
+                $this->createFacetDiocese($builder, $model, $repository);
+            }
         }
 
         // add facets with current model data
@@ -103,15 +142,26 @@ class PersonFormType extends AbstractType
                     $model = PersonFormModel::newByArray($data);
                 }
 
-                $this->createFacetDiocese($event->getForm(), $model, $repository);
-                $this->createFacetOffice($event->getForm(), $model, $repository);
+                $form = $event->getForm();
+
+                $this->createFacetOffice($form, $model, $repository);
+
+                if ($model->corpus == 'can') {
+                    $this->createFacetDomstift($form, $model, $repository);
+                    $this->createFacetPlace($form, $model, $repository);
+                    $this->createFacetUrl($form, $model, $repository);
+                }
+
+                if ($model->corpus == 'epc') {
+                    $this->createFacetDiocese($form, $model, $repository);
+                }
             });
     }
 
     public function createFacetDiocese($form, $modelIn, $repository) {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
-        $model->facetInstitution = null;
+        $model->facetDiocese = null;
 
         $dioceses = $repository->countDiocese($model);
 
@@ -121,11 +171,11 @@ class PersonFormType extends AbstractType
         }
 
         // add selected fields, that are not contained in $choices
-        $choicesIn = $modelIn->facetInstitution;
+        $choicesIn = $modelIn->facetDomstift;
         FacetChoice::mergeByName($choices, $choicesIn);
 
         if ($dioceses) {
-            $form->add('facetInstitution', ChoiceType::class, [
+            $form->add('facetDiocese', ChoiceType::class, [
                 'label' => 'Filter Bistum',
                 'expanded' => true,
                 'multiple' => true,
@@ -157,6 +207,96 @@ class PersonFormType extends AbstractType
         if ($offices) {
             $form->add('facetOffice', ChoiceType::class, [
                 'label' => 'Filter Amt',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
+    public function createFacetDomstift($form, $modelIn, $repository) {
+        // do not filter by filter domstift itsself
+        $model = clone $modelIn;
+        $model->facetDomstift = null;
+
+        $domstifte = $repository->countDomstift($model);
+
+        $choices = array();
+        foreach($domstifte as $domstift) {
+            $choices[] = new FacetChoice($domstift['name'], $domstift['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetDomstift;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+
+        if ($domstifte) {
+            $form->add('facetDomstift', ChoiceType::class, [
+                'label' => 'Filter Domstift',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
+    public function createFacetPlace($form, $modelIn, $repository) {
+        // do not filter by facet place itsself
+        $model = clone $modelIn;
+        $model->facetPlace = null;
+
+        $places = $repository->countPlace($model);
+
+        $choices = array();
+        foreach($places as $place) {
+            $choices[] = new FacetChoice($place['name'], $place['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetPlace;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+
+        if ($places) {
+            $form->add('facetPlace', ChoiceType::class, [
+                'label' => 'Filter Ort',
+                'expanded' => true,
+                'multiple' => true,
+                'choices' => $choices,
+                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_value' => 'name',
+            ]);
+
+        }
+    }
+
+    public function createFacetUrl($form, $modelIn, $repository) {
+        // do not filter by facet URL itsself
+        $model = clone $modelIn;
+        $model->facetUrl = null;
+
+        $url_list = $repository->countUrl($model);
+
+        $choices = array();
+
+        foreach($url_list as $url) {
+            $choices[] = new FacetChoice($url['name'], $url['n']);
+        }
+
+        // add selected fields, that are not contained in $choices
+        $choicesIn = $modelIn->facetUrl;
+        FacetChoice::mergeByName($choices, $choicesIn);
+
+        if ($url_list) {
+            $form->add('facetUrl', ChoiceType::class, [
+                'label' => 'Filter Externe URL',
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,

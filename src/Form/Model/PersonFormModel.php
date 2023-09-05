@@ -33,7 +33,8 @@ class PersonFormModel {
     public $dateCreated = null;
     public $dateChanged = null;
     public $listSize = null;
-    public $facetInstitution = null;
+    public $facetDiocese = null;
+    public $facetDomstift = null;
     public $facetOffice = null;
     public $facetPlace = null;
     public $facetUrl = null;
@@ -106,7 +107,8 @@ class PersonFormModel {
             }
         }
 
-        $model->facetInstitution = self::makeChoices($data, 'facetInstitution');
+        $model->facetDomstift = self::makeChoices($data, 'facetDomstift');
+        $model->facetDiocese = self::makeChoices($data, 'facetDiocese');
         $model->facetOffice = self::makeChoices($data, 'facetOffice');
         $model->facetPlace = self::makeChoices($data, 'facetPlace');
         $model->facetUrl = self::makeChoices($data, 'facetUrl');

@@ -329,6 +329,19 @@ class Item {
         return $this->itemCorpus;
     }
 
+    public function getCorpusIdList() {
+        $list = array();
+        if (is_null($this->itemCorpus)) {
+            return $list;
+        }
+
+        foreach($this->itemCorpus as $ic) {
+            $list[] = $ic->getCorpusId();
+        }
+
+        return $list;
+    }
+
     /**
      * @return sorted list of item properties
      */

@@ -64,14 +64,23 @@
 			</div>
 			{# facets #}
 			<div class="col-3" data-facet-state-target="facets">
-			    {% if form.facetInstitution is defined %}
+			    {% if form.facetDiocese is defined %}
 				{{ include('person/_facet.html.twig', {
-				    facet: form.facetInstitution,
+				    facet: form.facetDiocese,
 				    facetTitle: 'Filter Bistum',
-				    facetState: form.stateFctInst.vars.value,
-				    facetShort: 'Inst'
+				    facetState: form.stateFctDioc.vars.value,
+				    facetShort: 'Dioc'
 				}) }}
-				{{ form_row(form.stateFctInst) }}
+				{{ form_row(form.stateFctDioc) }}
+			    {% endif %}
+			    {% if form.facetDomstift is defined %}
+				{{ include('person/_facet.html.twig', {
+				    facet: form.facetDomstift,
+				    facetTitle: 'Filter Domstift',
+				    facetState: form.stateFctCap.vars.value,
+				    facetShort: 'Cap'
+				}) }}
+				{{ form_row(form.stateFctCap) }}
 			    {% endif %}
 			    {% if form.facetOffice is defined %}
 				{{ include('person/_facet.html.twig', {
@@ -81,6 +90,24 @@
 				    facetShort: 'Ofc'
 				}) }}
 				{{ form_row(form.stateFctOfc) }}
+			    {% endif %}
+			    {% if form.facetPlace is defined %}
+				{{ include('person/_facet.html.twig', {
+				    facet: form.facetPlace,
+				    facetTitle: 'Filter Ort',
+				    facetState: form.stateFctPlc.vars.value,
+				    facetShort: 'Plc'
+				}) }}
+				{{ form_row(form.stateFctPlc) }}
+			    {% endif %}
+			    {% if form.facetUrl is defined %}
+				{{ include('person/_facet.html.twig', {
+				    facet: form.facetUrl,
+				    facetTitle: 'Filter externe URL',
+				    facetState: form.stateFctUrl.vars.value,
+				    facetShort: 'Url'
+				}) }}
+				{{ form_row(form.stateFctUrl) }}
 			    {% endif %}
 			</div>
 		    </div>

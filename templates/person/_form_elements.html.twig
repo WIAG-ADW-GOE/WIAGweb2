@@ -20,6 +20,26 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
+	    {% if corpus == "can" %}
+		{# domstift #}
+		<div class="me-2 mt-1"
+		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest_base', { 'field': 'domstift' }),
+		     }) }}>
+		    {{ form_label(form.institution) }}
+		    {{ form_errors(form.institution) }}
+		    {{ form_widget(form.institution, {
+			attr: {
+			    'data-autocomplete-target': "input",
+			    'size': 15,
+			    'class': 'wiag-input',
+			},
+		    }) }}
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 14em;"></ul>
+		</div>
+	    {% endif %}
 	    {# diocese #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
@@ -56,6 +76,26 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 14em;"></ul>
 	    </div>
+	    {# place #}
+	    {% if corpus == "can" %}
+		<div class="me-2 mt-1"
+		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest_online', { 'corpus': corpus, 'field': 'place'}),
+		     }) }}>
+		    {{ form_label(form.place) }}
+		    {{ form_errors(form.place) }}
+		    {{ form_widget(form.place, {
+			attr: {
+			    'data-autocomplete-target': "input",
+			    'size': 12,
+			    'class': 'wiag-input',
+			},
+		    }) }}
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 12em;"></ul>
+		</div>
+	    {% endif %}
 	    {{  form_row(form.year, {
 		row_attr: {class: 'me-2 mt-1'},
 		attr: {

@@ -447,6 +447,18 @@ class Person {
         return $this->givenname.$prefixpart.$familypart.$agnomenpart;
     }
 
+    public function getDisplaynameWithSeparators() {
+        $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
+        $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
+        $agnomenpart = '';
+        if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
+            $note_name = str_replace(';', ',', $this->noteName);
+            $note_list = explode(',', $note_name);
+            $agnomenpart = ' ('.$note_list[0].')';
+        }
+        return $this->givenname.$prefixpart.$familypart.$agnomenpart;
+    }
+
     public function getGivennameVariants() {
         return $this->givennameVariants;
     }
@@ -527,19 +539,6 @@ class Person {
     }
 
     /**
-     * 2023-05-08 see combinePropertyList
-     * combine item properties
-     */
-    public function combineProperty_legacy($key) {
-        if (is_null($this->sibling)) {
-            return $this->item->itemPropertyValue($key);
-        }
-        $a = $this->item->itemPropertyValue($key);
-        $b = $this->sibling->getItem()->itemPropertyValue($key);
-        return $this->concatData($a, $b);
-    }
-
-    /**
      * combine complete item property list
      */
     public function combinePropertyList() {
@@ -565,7 +564,6 @@ class Person {
 
         return $prop_list;
     }
-
 
     public function getSibling(): ?Person {
         return $this->sibling;

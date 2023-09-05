@@ -63,6 +63,7 @@ class PersonController extends AbstractController {
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
+
         $model->corpus = $corpusId;
 
         // call with empty $request?
@@ -82,7 +83,7 @@ class PersonController extends AbstractController {
             return $this->renderForm('person/query.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
-                'corpus' => $model->corpus,
+                'corpus' => $corpusId,
                 'pageTitle' => $corpus->getPageTitle(),
             ]);
         } else {
@@ -100,16 +101,18 @@ class PersonController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
-            return $this->renderForm('person/query_result.html.twig', [
+            $template_param_list = [
                 'menuItem' => 'collections',
                 'form' => $form,
-                'corpus' => $model->corpus,
+                'corpus' => $corpusId,
                 'count' => $count,
                 'personList' => $person_list,
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
                 'pageTitle' => $corpus->getPageTitle(),
-            ]);
+            ];
+
+            return $this->renderForm('person/query_result.html.twig', $template_param_list);
         }
     }
 
@@ -129,6 +132,7 @@ class PersonController extends AbstractController {
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
 
         $model = new PersonFormModel;
+        $model->corpus = $corpusId;
 
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
@@ -139,8 +143,6 @@ class PersonController extends AbstractController {
         $offset = $request->request->get('offset');
 
         $model = $form->getData();
-        // one of 'epc', 'can', ..
-        $model->corpus = $corpusId;
 
         $hassuccessor = false;
         $idx = 0;
@@ -161,19 +163,18 @@ class PersonController extends AbstractController {
         $person_id = $ids[$idx];
 
         // get office data from Digitales Personenregister
-        $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
-        $person_id_list = array_merge(array($person_id), $dreg_id_list);
-        $person_role_list = $personRepository->findList($person_id_list);
-        $person = $person_role_list[0];
+        $person_role_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
+        $person_role_list = $personRepository->findList($person_role_id_list);
+        // $person = $person_role_list[0];
 
         // set person
-        // $person = null;
-        // foreach($person_role_list as $person_loop) {
-        //     if ($person_loop->getId() == $person_id) {
-        //         $person = $person_loop;
-        //         break;
-        //     }
-        // }
+        $person = null;
+         foreach($person_role_list as $person_loop) {
+             if ($person_loop->getId() == $person_id) {
+                $person = $person_loop;
+                break;
+            }
+        }
 
         // TODO 2023-08-15 clean up sibling
         // $personRepository->setSibling([$person]);

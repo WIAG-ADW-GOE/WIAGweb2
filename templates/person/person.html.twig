@@ -6,14 +6,15 @@
 {% endblock %}
 
 {% block body %}
-    {% set itemTypeId = 4 %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
-    {% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
     {# person is passed as an object #}
     {% if not personName %}
-	<p class="em">Person nicht gefunden.</p>
+	<div class="row mx-2 col-12 mt-4 mb-2">
+	    <span class="em">Person nicht gefunden.</span>
+	</div>
     {% else %}
+	{% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
+	{% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
@@ -69,7 +70,7 @@
 		{{ include('person/_person_header.html.twig', {person: personName, idpublic: personName.item.idpublic }, with_context = false) }}
 		{# offices #}
 		{% for person_loop in personRole %}
-		    {% if person_loop.item.getsource == 'Bischof' %}
+		    {% if 'epc' in person_loop.item.corpusIdList or 'can' in person_loop.item.corpusIdList %}
 			{% set office_title = 'Amtsangaben aus Referenzwerken' %}
 			{{ include('person/_person_role_group.html.twig', {
 			    person: person_loop,
@@ -79,7 +80,7 @@
 		    {% endif %}
 		{% endfor %}
 		{% for person_loop in personRole %}
-		    {% if person_loop.item.getsource == 'Bischof GS' or person_loop.item.getsource == 'Domherr GS' %}
+		    {% if 'dreg' in person_loop.item.corpusIdList %}
 			{% set gsnid = person_loop.item.geturlexternalobj('GS') %}
 			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 			{{ include('person/_person_role_group.html.twig', {
@@ -89,17 +90,6 @@
 			}) }}
 		    {% endif %}
 		{% endfor %}
-		{% for person_loop in personRole %}
-		    {% if person_loop.item.getsource == 'Domherr' %}
-			{% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
-			{{ include('person/_person_role_group.html.twig', {
-			    person: person_loop,
-			    title: office_title,
-			    with_context: false
-			}) }}
-		    {% endif %}
-		{% endfor %}
-
 		{# external IDs #}
 		{{ include('person/_person_url_external.html.twig') }}
 

@@ -520,10 +520,10 @@ class PersonRepository extends ServiceEntityRepository {
         $em = $this->getEntityManager();
         $itemRepository = $em->getRepository(Item::class);
 
-        // there is not much potential for optimization
-        foreach($person_list as $person) {
-            $itemRepository->setSibling($person);
-        }
+        // 2023-08-30 obsolete
+        // foreach($person_list as $person) {
+        //     $itemRepository->setSibling($person);
+        // }
 
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);

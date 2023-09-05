@@ -8,7 +8,7 @@
 	</thead>
 	<tbody>
 	    {% for person in personList %}
-		{% set displayname = person.combine('displayname') %}
+		{% set displayname = person.combine('displaynameWithSeparators') %}
 		{% set datebirth = person.combine('datebirth') %}
 		{% set datedeath = person.combine('datedeath') %}
 		<tr>
@@ -29,11 +29,11 @@
 			{% endif %}
 		    </td>
 		    <td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}{% if r.uncertain %}? {% endif %}
-			    {% if r.diocese %}({{ r.diocese.name }})
+			<small>{% if r.displayRoleName %}{{ r.displayRoleName }}{% endif %}{% if r.uncertain %}? {% endif %}
+			    {% if r.placename %}({{ r.placename }})
+			    {% elseif r.diocese %}({{ r.diocese.name }})
 			    {% elseif r.diocesename %}({{ r.diocesename }})
 			    {% endif %}
-			    {% if r.placename %}({{ r.placename }}) {% endif %}
 			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
 			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
 			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
