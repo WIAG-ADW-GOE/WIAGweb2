@@ -99,13 +99,12 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      */
     public function suggestDomstift($queryParam, $hintSize) {
-        $itemTypeIdDomstift = 3;
         $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
         $qb = $repository->createQueryBuilder('c')
                          ->select("DISTINCT inst.name AS suggestion")
                          ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
                          ->join('pr.institution', 'inst')
-                         ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
+                         ->andWhere("inst.corpusId = 'cap'")
                          ->andWhere('inst.name like :name')
                          ->setParameter('name', '%'.$queryParam.'%')
                          ->orderBy('inst.name');

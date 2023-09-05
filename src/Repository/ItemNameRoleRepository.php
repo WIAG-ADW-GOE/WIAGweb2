@@ -84,22 +84,11 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $name = $model->name;
         $someid = $model->someid;
 
-        // bishops: consider only offices in Gatz
-        $bishop_only = false; // obsolete 2023-09-04
-        if ($bishop_only) {
-            $qb = $this->createQueryBuilder('inr')
-                       ->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId = :corpus')
-                       ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName')
-                       ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName')
-                       ->setParameter('corpus', $corpus);
-        } else {
-            $qb = $this->createQueryBuilder('inr');
-        }
+        $qb = $this->createQueryBuilder('inr');
 
         // table item_name_role only contains entries with status 'online'
         $this->addConditions($qb, $model);
         $this->addFacets($qb, $model);
-
 
         // do sorting in an extra step, see below
         $qb->select('inr.itemIdName,'.
@@ -167,95 +156,6 @@ class ItemNameRoleRepository extends ServiceEntityRepository
             $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
         } elseif ($someid) {
             $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
-        } elseif ($place) {
-            $sort_list = ['place_name', 'dateSortKey', 'familyname', 'givenname', 'itemIdName'];
-        }
-
-        $result = UtilService::sortByFieldList($result, $sort_list);
-
-        if ($limit > 0) {
-            $result = array_slice($result, $offset, $limit);
-        }
-
-        return array_column($result, "itemIdName");
-
-    }
-
-    /**
-     * 2023-08-30 part of findPersonIds?
-     */
-    public function findCanonIds($model, $limit = 0, $offset = 0) {
-        $result = null;
-
-        $corpus = $model->corpus;
-        $domstift = $model->monastery;
-        $office = $model->office;
-        $place = $model->place;
-        $year = $model->year;
-        $name = $model->name;
-        $someid = $model->someid;
-
-        // TODO clean up
-        // c (group by and query conditions)
-        $qb = $this->createQueryBuilder('inr')
-                   ->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId = :corpus')
-                   ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName')
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole')
-                   ->setParameter('corpus', $corpus);
-
-        // table item_name_role only contains entries with status 'online'
-        $add_joins = false;
-        $this->addConditions($qb, $model, $add_joins);
-        $this->addFacets($qb, $model);
-
-        // do sorting in an extra step, see below
-        // domstift takes priority in sorting, therefore it is joined via pr
-        if ($domstift) {
-            // Use institution and dateSortKey of all roles for sorting, which is not transparent for the user
-            // if a role is present in 'Domherr GS' but not in 'Domherr'.
-            $qb->join('App\Entity\Institution', 'domstift', 'WITH',
-                      "domstift.id = pr.institutionId and domstift.corpusId = 'cap'");
-            $qb->select('inr.itemIdName,'.
-                        'p_name.givenname,'.
-                        '(CASE WHEN p_name.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname,'.
-                        'p_name.familyname,'.
-                        'min(domstift.nameShort) as sort_domstift,'.
-                        'min(pr.dateSortKey) as dateSortKey');
-        }
-        elseif ($model->isEmpty() || $office || $name || $year || $someid) {
-            // Join domstift (sorting) independently from role (query condition).
-            $qb->leftjoin('App\Entity\PersonRole', 'pr_sort', 'WITH', 'pr_sort.personId = inr.itemIdRole')
-               ->leftjoin('App\Entity\Institution', 'domstift_sort', 'WITH', 'domstift_sort.id = pr_sort.institutionId');
-            $qb->select('inr.itemIdName,'.
-                        'p_name.givenname,'.
-                        '(CASE WHEN p_name.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname,'.
-                        'p_name.familyname,'.
-                        'min(domstift_sort.nameShort) as sort_domstift,'.
-                        'min(pr_sort.dateSortKey) as dateSortKey');
-        }
-
-        $qb->groupBy('inr.itemIdName');
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-
-        // sort
-        // doctrine min function returns a string
-        $result = array_map(function($el) {
-            $val = $el['dateSortKey'];
-            $el['dateSortKey'] = is_null($val) ? $val : intval($val);
-            return $el;
-        }, $result);
-
-        // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
-        if ($model->isEmpty() || $domstift || $office) {
-            $sort_list = ['sort_domstift', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-        } elseif ($name) {
-            $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'sort_domstift', 'dateSortKey', 'itemIdName'];
-        } elseif ($year) {
-            $sort_list = ['dateSortKey', 'sort_domstift', 'familyname', 'givenname', 'itemIdName'];
-        } elseif ($someid) {
-            $sort_list = ['sort_domstift', 'dateSortKey', 'familyname', 'givenname', 'itemIdName'];
         } elseif ($place) {
             $sort_list = ['place_name', 'dateSortKey', 'familyname', 'givenname', 'itemIdName'];
         }
