@@ -188,8 +188,13 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId in (:corpus)')
            ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName')
-           ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole')
            ->setParameter('corpus', $query_corpus);
+
+        if ($corpus == 'epc') {
+            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+        } else {
+            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+        }
 
 
         if ($domstift) {
@@ -389,16 +394,25 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $facetDiocese = isset($model->facetDiocese) ? $model->facetDiocese : null;
         if ($facetDiocese) {
             $valFctDioc = array_column($facetDiocese, 'name');
-            $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdRole')
-               ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
+            if ($model->corpus == 'epc') {
+                $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdName');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdRole');
+            }
+            $qb->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
                ->setParameter('valFctDioc', $valFctDioc);
         }
 
         $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
         if ($facetOffice) {
             $valFctOfc = array_column($facetOffice, 'name');
-            $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdRole')
-               ->leftjoin('App\Entity\Role', 'rfctofc', 'WITH', 'rfctofc.id = prfctofc.roleId')
+            if ($model->corpus == 'epc') {
+                $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdName');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdRole');
+            }
+
+            $qb->leftjoin('App\Entity\Role', 'rfctofc', 'WITH', 'rfctofc.id = prfctofc.roleId')
                 ->andWhere("rfctofc.name in (:valFctOfc)")
                 ->setParameter('valFctOfc', $valFctOfc);
         }
