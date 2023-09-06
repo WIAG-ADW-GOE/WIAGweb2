@@ -77,7 +77,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         $corpus = $model->corpus;
         $diocese = $model->diocese;
-        $domstift = $model->institution;
+        $domstift = $model->domstift;
         $office = $model->office;
         $place = $model->place;
         $year = $model->year;
@@ -173,7 +173,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     public function addConditions($qb, $model) {
 
         $corpus = $model->corpus;
-        $domstift = $model->institution;
+        $domstift = $model->domstift;
         $diocese = $model->diocese;
         $office = $model->office;
         $name = $model->name;

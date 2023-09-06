@@ -18,6 +18,12 @@ class ItemNameRole
     private $id;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Item", inversedBy="itemNameRole")
+     * @ORM\JoinColumn(name="item_id_name", referencedColumnName="id")
+     */
+    private $item;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $itemIdName;

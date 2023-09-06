@@ -494,8 +494,9 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findList($id_list, $with_deleted = false) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, ip, bp, role, role_type, institution, urlext, ref')
+                   ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
                    ->join('p.item', 'i') # avoid query in twig ...
+                   ->leftjoin('i.itemNameRole', 'inr')
                    ->leftjoin('i.itemProperty', 'ip')
                    ->leftjoin('i.urlExternal', 'urlext')
                    ->leftjoin('i.reference', 'ref')

@@ -121,6 +121,12 @@ class Item {
     private $itemCorpus;
 
     /**
+     * @ORM\OneToMany(targetEntity="ItemNameRole", mappedBy="item")
+     * @ORM\JoinColumn(name="id", referencedColumnName="item_id_name")
+     */
+    private $itemNameRole;
+
+    /**
      * @ORM\OneToMany(targetEntity="ItemProperty", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
@@ -327,6 +333,10 @@ class Item {
 
     public function getItemCorpus() {
         return $this->itemCorpus;
+    }
+
+    public function getItemNameRole() {
+        return $this->itemNameRole;
     }
 
     public function getCorpusIdList() {

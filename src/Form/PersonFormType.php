@@ -99,7 +99,7 @@ class PersonFormType extends AbstractType
 
         if ($model->corpus == 'can') {
             $builder
-                ->add('institution', TextType::class, [
+                ->add('domstift', TextType::class, [
                     'label' => 'Domstift',
                     'required' => false,
                     'attr' => [

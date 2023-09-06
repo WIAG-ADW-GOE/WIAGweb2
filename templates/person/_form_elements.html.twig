@@ -26,9 +26,9 @@
 		     {{ stimulus_controller('autocomplete', {
 			 url: path('person_suggest_base', { 'field': 'domstift' }),
 		     }) }}>
-		    {{ form_label(form.institution) }}
-		    {{ form_errors(form.institution) }}
-		    {{ form_widget(form.institution, {
+		    {{ form_label(form.domstift) }}
+		    {{ form_errors(form.domstift) }}
+		    {{ form_widget(form.domstift, {
 			attr: {
 			    'data-autocomplete-target': "input",
 			    'size': 15,
