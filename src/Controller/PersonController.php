@@ -345,7 +345,7 @@ class PersonController extends AbstractController {
      * respond to asynchronous JavaScript request
      *
      * @Route("/person-suggest-base/{field}", name="person_suggest_base")
-     * response is independent from item type
+     * response is independent from corpus
      */
     public function autocompleteBase(Request $request,
                                      String $field) {

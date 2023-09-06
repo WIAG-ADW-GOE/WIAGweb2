@@ -84,13 +84,15 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $name = $model->name;
         $someid = $model->someid;
 
+        // avoid to join the same table twice
         $joined_list = array();
+        // p_name is required for sorting
         $qb = $this->createQueryBuilder('inr')
                    ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
         $joined_list[] = 'p_name';
 
-        // table item_name_role only contains entries with status 'online'
-
+        // pr is required for sorting
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
         if ($corpus == 'epc') {
             $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
         } else {
@@ -192,6 +194,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $year = $model->year;
         $someid = $model->someid;
 
+        // include in queries for corpus 'can' also canons from the Digitales Personenregister
+        // bishops from Digitales Personenregister have no independent entries in item_name_role,
+        // however their offices are visible in detail view (query via item_name_role)
         $query_corpus = [
             'epc' => ['epc'],
             'can' => ['can', 'dreg'],
@@ -204,6 +209,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
             $qb->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
         }
 
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
         if (!in_array('pr', $joined_list) and ($office or $domstift or $diocese or $place)) {
             if ($corpus == 'epc') {
                 $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
@@ -234,7 +240,6 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                       'OR (pr_place.numDateBegin < inst_place.numDateBegin AND inst_place.numDateBegin < pr_place.numDateEnd) '.
                       'OR (pr_place.numDateBegin < inst_place.numDateEnd AND inst_place.numDateEnd < pr_place.numDateEnd))');
         }
-
 
         // add conditions
 
@@ -330,6 +335,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $facetDiocese = isset($model->facetDiocese) ? $model->facetDiocese : null;
         if ($facetDiocese) {
             $valFctDioc = array_column($facetDiocese, 'name');
+            // queries for bishops only consider Gatz-offices (query, sort, facet)
             if ($model->corpus == 'epc') {
                 $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdName');
             } else {
@@ -342,6 +348,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
         if ($facetOffice) {
             $valFctOfc = array_column($facetOffice, 'name');
+            // queries for bishops only consider Gatz-offices (query, sort, facet)
             if ($model->corpus == 'epc') {
                 $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdName');
             } else {
@@ -393,6 +400,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addConditions($qb, $model);
         $this->addFacets($qb, $model);
 
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
         if ($model->corpus == 'epc') {
             $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName')
                ->andWhere("pr_count.dioceseName IS NOT NULL");
@@ -476,6 +484,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addConditions($qb, $model);
         $this->addFacets($qb, $model);
 
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
         if ($model->corpus == 'epc') {
             $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName');
         } else {

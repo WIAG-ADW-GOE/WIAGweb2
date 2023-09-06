@@ -47,7 +47,7 @@
 			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
 			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
 			</div>{% endfor %}
-			{% if  person.item.itemNameRole|length > 1 %}
+			{% if  corpus == 'can' and person.item.itemNameRole|length > 1 %}
 			    <button
 				type="submit"
 				form="{{ form.vars.id }}"

@@ -8,10 +8,10 @@ use App\Entity\Person;
 use App\Entity\PersonBirthplace;
 use App\Entity\Diocese;
 use App\Entity\Institution;
+use App\Entity\InstitutionPlace;
 use App\Entity\PersonRole;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
-use App\Entity\CanonLookup;
 
 use App\Service\UtilService;
 
@@ -26,7 +26,7 @@ class AutocompleteService extends ServiceEntityRepository {
 
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Person::class);
+        parent::__construct($registry, Item::class);
 
     }
 
@@ -93,17 +93,13 @@ class AutocompleteService extends ServiceEntityRepository {
         return $suggestions;
     }
 
-
     /**
-     * usually used for asynchronous JavaScript request
-     *
+     * usually used for asynchronous JavaScript request     *
      */
     public function suggestDomstift($queryParam, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-        $qb = $repository->createQueryBuilder('c')
+        $repository = $this->getEntityManager()->getRepository(Institution::class);
+        $qb = $repository->createQueryBuilder('inst')
                          ->select("DISTINCT inst.name AS suggestion")
-                         ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                         ->join('pr.institution', 'inst')
                          ->andWhere("inst.corpusId = 'cap'")
                          ->andWhere('inst.name like :name')
                          ->setParameter('name', '%'.$queryParam.'%')
@@ -118,32 +114,18 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO check how and where this is used in edit mode
      * usually used for asynchronous JavaScript request
      *
-     * return the names of  monasteries and domstifte (type 2 und 3)
+     * return the names of monasteries and domstifte
      */
     public function suggestInstitution($queryParam, $hintSize) {
-        $itemTypeInst = [2, 3];
-
-        // 2023-05-02 for editing the list should not be restricted to institutions
-        // that are already referenced by a canon
-        // $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-        // $qb = $repository->createQueryBuilder('c')
-        //                  ->select("DISTINCT inst.name AS suggestion")
-        //                  ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-        //                  ->join('pr.institution', 'inst')
-        //                  ->andWhere("inst.itemTypeId in (:itemTypeInst)")
-        //                  ->andWhere('inst.name like :name')
-        //                  ->setParameter('itemTypeInst', $itemTypeInst)
-        //                  ->setParameter('name', '%'.$queryParam.'%')
-        //                  ->orderBy('inst.name');
 
         $repository = $this->getEntityManager()->getRepository(Institution::class);
         $qb = $repository->createQueryBuilder('inst')
                          ->select("DISTINCT inst.name AS suggestion")
-                         ->andWhere("inst.itemTypeId in (:itemTypeInst)")
+                         ->andWhere("inst.corpusId in ('cap', 'mon')")
                          ->andWhere('inst.name like :name')
-                         ->setParameter('itemTypeInst', $itemTypeInst)
                          ->setParameter('name', '%'.$queryParam.'%')
                          ->orderBy('inst.name');
 
@@ -177,6 +159,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
     public function suggestPropertyValue($item_type_id, $name, $hintSize) {
@@ -199,6 +182,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
     public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
@@ -220,6 +204,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
     public function suggestRolePropertyValue($item_type_id, $name, $hintSize) {
@@ -242,6 +227,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO replace item_type_id by corpus_id
      * usually used for asynchronous JavaScript request
      */
     public function suggestEditStatus($item_type_id, $name, $hintSize) {
@@ -264,6 +250,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-09-06 TODO replace item_type_id by corpus_id
      * usually used for asynchronous JavaScript request
      */
     public function suggestNormdataEditedBy($item_type_id, $name, $hintSize) {
@@ -318,6 +305,9 @@ class AutocompleteService extends ServiceEntityRepository {
         return $suggestions;
     }
 
+    /**
+     * 2023-09-06 TODO replace item_type_id by corpus_id
+     */
     public function suggestCommentDuplicate($itemTypeId, $queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
@@ -338,34 +328,21 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * AJAX
      */
-    public function suggestPlace($itemTypeId, $queryParam, $hintSize, $online_only = false) {
-        if ($itemTypeId == 5) {
-            if ($online_only) {
-                $repository = $this->getEntityManager()->getRepository(CanonLookup::class);
-                $qb = $repository->createQueryBuilder('c')
-                                 ->select("DISTINCT ip.placeName AS suggestion")
-                                 ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                                 ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
-                                 ->andWhere('ip.placeName like :name')
-                                 ->setParameter('name', '%'.$queryParam.'%');
-            } else {
-                $qb = $this->createQueryBuilder('p')
-                           ->select("DISTINCT ip.placeName AS suggestion")
-                           ->join('p.role', 'pr')
-                           ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
-                           ->andWhere('ip.placeName like :name')
-                           ->setParameter('name', '%'.$queryParam.'%');
-            }
+    public function suggestPlace($queryParam, $hintSize) {
+        // restrict suggestions to places referenced by person_role (any corpus)
+        $repository = $this->getEntityManager()->getRepository(InstitutionPlace::class);
+        $qb = $repository->createQueryBuilder('ip')
+                         ->select("DISTINCT ip.placeName AS suggestion")
+                         ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.institutionId = ip.institutionId')
+                         ->andWhere('ip.placeName like :name')
+                         ->setParameter('name', '%'.$queryParam.'%');
 
-            $qb->setMaxResults($hintSize);
+        $qb->setMaxResults($hintSize);
 
-            $query = $qb->getQuery();
-            $suggestions = $query->getResult();
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
 
-            return $suggestions;
-        } else { // not relevent up to now 2023-03-30
-            return array();
-        }
+        return $suggestions;
     }
 
     /**
@@ -375,9 +352,10 @@ class AutocompleteService extends ServiceEntityRepository {
         $repository = $this->getEntityManager()->getRepository(Item::class);
 
         $qb = $repository->createQueryBuilder('i')
+                         ->join('i.itemCorpus', 'corpus')
                          ->select("DISTINCT i.idPublic AS suggestion")
                          ->andWhere('i.idPublic LIKE :queryParam')
-                         ->andWhere("i.itemTypeId = 4")
+                         ->andWhere("corpus.corpusId = 'epc'")
                          ->setParameter('queryParam', '%'.$queryParam.'%');
 
         $qb->setMaxResults($hint_size);
@@ -417,15 +395,14 @@ class AutocompleteService extends ServiceEntityRepository {
      * AJAX
      */
     public function suggestPriestUtName($name, $hintSize) {
-
         $qb = $this->createQueryBuilder('i')
                    ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
                             "THEN n.gnPrefixFn ELSE n.gnFn END ".
                             "AS suggestion")
-                   ->join('\App\Entity\Person', 'p', 'WITH', 'i.id = p.id')
                    ->join('\App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
-                   ->andWhere('i.itemTypeId = :itemType')
-                   ->setParameter(':itemType', Item::ITEM_TYPE_ID['Priester Utrecht']);
+                   ->join('i.itemCorpus', 'corpus')
+                   ->andWhere("corpus.corpusId = 'utp'");
+
         $q_list = UtilService::nameQueryComponents($name);
         foreach($q_list as $key => $q_name) {
             $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)

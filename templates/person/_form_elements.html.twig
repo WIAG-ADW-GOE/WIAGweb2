@@ -80,7 +80,7 @@
 	    {% if corpus == "can" %}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_online', { 'corpus': corpus, 'field': 'place'}),
+			 url: path('person_suggest_base', { 'field': 'place' }),
 		     }) }}>
 		    {{ form_label(form.place) }}
 		    {{ form_errors(form.place) }}
