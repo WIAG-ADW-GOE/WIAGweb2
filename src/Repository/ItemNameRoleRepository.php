@@ -84,10 +84,21 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $name = $model->name;
         $someid = $model->someid;
 
-        $qb = $this->createQueryBuilder('inr');
+        $joined_list = array();
+        $qb = $this->createQueryBuilder('inr')
+                   ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
+        $joined_list[] = 'p_name';
 
         // table item_name_role only contains entries with status 'online'
-        $this->addConditions($qb, $model);
+
+        if ($corpus == 'epc') {
+            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+        } else {
+            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+        }
+        $joined_list[] = 'pr';
+
+        $this->addConditions($qb, $model, $joined_list);
         $this->addFacets($qb, $model);
 
         // do sorting in an extra step, see below
@@ -170,7 +181,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
     }
 
-    public function addConditions($qb, $model) {
+    public function addConditions($qb, $model, $joined_list = array()) {
 
         $corpus = $model->corpus;
         $domstift = $model->domstift;
@@ -187,15 +198,19 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         ][$corpus];
 
         $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId in (:corpus)')
-           ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName')
            ->setParameter('corpus', $query_corpus);
 
-        if ($corpus == 'epc') {
-            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
-        } else {
-            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+        if (!in_array('p_name', $joined_list) and ($name)) {
+            $qb->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
         }
 
+        if (!in_array('pr', $joined_list) and ($office or $domstift or $diocese or $place)) {
+            if ($corpus == 'epc') {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+            }
+        }
 
         if ($domstift) {
             $qb->join('App\Entity\Institution', 'domstift', 'WITH',
@@ -296,85 +311,6 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         }
 
         return $qb;
-
-    }
-
-    /**
-     * countDiocese($model)
-     * return array of dioceses related to a person's role (used for facet)
-     */
-    public function countDiocese($model) {
-        $corpus = $model->corpus;
-
-        $qb = $this->createQueryBuilder('inr')
-                   ->select('DISTINCT pr_count.dioceseName AS name, COUNT(DISTINCT(p_name.id)) AS n');
-
-        $this->addConditions($qb, $model);
-        $this->addFacets($qb, $model);
-
-        // pr is defined in addConditions
-        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = pr.personId')
-           ->andWhere("pr_count.dioceseName IS NOT NULL");
-
-        $qb->groupBy('pr_count.dioceseName');
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        return $result;
-    }
-
-    /**
-     * countDomstift($model)
-     *
-     * return array of domstift names related to a person's role (used for facet)
-     */
-    public function countDomstift($model) {
-        // $model should not contain domstift facet
-
-        $em = $this->getEntityManager();
-        $qbi = $em->getRepository(Institution::class)
-                  ->createQueryBuilder('i')
-                  ->select('i.id AS id, i.nameShort AS name')
-                  ->andWhere("i.corpusId = 'cap'")
-                  ->addOrderBy('i.nameShort');
-
-        $domstift_list = $qbi->getQuery()->getResult();
-
-        $qb = $this->createQueryBuilder('inr')
-                   ->select('pr_count.institutionId AS id, COUNT(DISTINCT(p_name.id)) AS n');
-
-        $this->addConditions($qb, $model, true);
-        $this->addFacets($qb, $model);
-
-        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = pr.personId')
-           ->andWhere('pr_count.institutionId IN (:instId_list)')
-           ->setParameter('instId_list', array_column($domstift_list, 'id'));
-
-
-        $qb->groupBy('pr_count.institutionId');
-
-        $query = $qb->getQuery();
-        $count_list = $query->getResult();
-
-        // add names to the list of domstifte
-
-        $count_simple_list = array();
-        foreach($count_list as $c_loop) {
-            $count_simple_list[$c_loop['id']] = $c_loop['n'];
-        }
-        $result = array();
-        // loop over $name_list to keep order
-        foreach($domstift_list as $d_loop) {
-            $id = $d_loop['id'];
-            if (array_key_exists($id, $count_simple_list)) {
-                $result[] = [
-                    'name' => $d_loop['name'],
-                    'n' => $count_simple_list[$id],
-                ];
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -446,6 +382,88 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
     /**
+     * countDiocese($model)
+     * return array of dioceses related to a person's role (used for facet)
+     */
+    public function countDiocese($model) {
+
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('DISTINCT pr_count.dioceseName AS name, COUNT(DISTINCT(inr.itemIdName)) AS n');
+
+        $this->addConditions($qb, $model);
+        $this->addFacets($qb, $model);
+
+        if ($model->corpus == 'epc') {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName')
+               ->andWhere("pr_count.dioceseName IS NOT NULL");
+        } else {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
+               ->andWhere("pr_count.dioceseName IS NOT NULL");
+        }
+
+        $qb->groupBy('pr_count.dioceseName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * countDomstift($model)
+     *
+     * return array of domstift names related to a person's role (used for facet)
+     */
+    public function countDomstift($model) {
+        // $model should not contain domstift facet
+
+        $em = $this->getEntityManager();
+        $qbi = $em->getRepository(Institution::class)
+                  ->createQueryBuilder('i')
+                  ->select('i.id AS id, i.nameShort AS name')
+                  ->andWhere("i.corpusId = 'cap'")
+                  ->addOrderBy('i.nameShort');
+
+        $domstift_list = $qbi->getQuery()->getResult();
+
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('pr_count.institutionId AS id, COUNT(DISTINCT(inr.itemIdName)) AS n');
+
+        $this->addConditions($qb, $model);
+        $this->addFacets($qb, $model);
+
+        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
+           ->andWhere('pr_count.institutionId IN (:instId_list)')
+           ->setParameter('instId_list', array_column($domstift_list, 'id'));
+
+
+        $qb->groupBy('pr_count.institutionId');
+
+        $query = $qb->getQuery();
+        $count_list = $query->getResult();
+
+        // add names to the list of domstifte
+
+        $count_simple_list = array();
+        foreach($count_list as $c_loop) {
+            $count_simple_list[$c_loop['id']] = $c_loop['n'];
+        }
+        $result = array();
+        // loop over $name_list to keep order
+        foreach($domstift_list as $d_loop) {
+            $id = $d_loop['id'];
+            if (array_key_exists($id, $count_simple_list)) {
+                $result[] = [
+                    'name' => $d_loop['name'],
+                    'n' => $count_simple_list[$id],
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
      * countOffice($model)
      *
      * return array of offices related to a person's role (used for facet)
@@ -458,8 +476,12 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addConditions($qb, $model);
         $this->addFacets($qb, $model);
 
-        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = pr.personId')
-           ->join('pr_count.role', 'role_count')
+        if ($model->corpus == 'epc') {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName');
+        } else {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole');
+        }
+        $qb->join('pr_count.role', 'role_count')
            ->andWhere("role_count.name IS NOT NULL");
 
         $qb->groupBy('role_count.name');
@@ -483,7 +505,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addConditions($qb, $model);
         $this->addFacets($qb, $model);
 
-        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = pr.personId')
+        $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
            ->join('pr_count.institution', 'inst_count')
            ->join('App\Entity\InstitutionPlace', 'ip_count', 'WITH',
                   'pr_count.institutionId = ip_count.institutionId '.
