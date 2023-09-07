@@ -90,8 +90,6 @@ class PersonController extends AbstractController {
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
-            $model->editStatus = [$corpus->getOnlineStatus()];
-            $id_all = null;
             $id_all = $itemNameRoleRepository->findPersonIds($model);
             $count = count($id_all);
 
@@ -162,19 +160,10 @@ class PersonController extends AbstractController {
 
         $person_id = $ids[$idx];
 
-        // get office data from Digitales Personenregister
+        // get office data, e.g. from Digitales Personenregister
         $person_role_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
         $person_role_list = $personRepository->findList($person_role_id_list);
-        // $person = $person_role_list[0];
-
-        // set person
-        $person = null;
-         foreach($person_role_list as $person_loop) {
-             if ($person_loop->getId() == $person_id) {
-                $person = $person_loop;
-                break;
-            }
-        }
+        $person = array_values($person_role_list)[0];
 
         // TODO 2023-08-15 clean up sibling
         // $personRepository->setSibling([$person]);
@@ -251,55 +240,6 @@ class PersonController extends AbstractController {
         return $personService->createResponse($format, $node_list);
 
     }
-
-    // /**
-    //  * 2023-08-11 obsolete?
-    //  * usually used for asynchronous JavaScript request
-    //  *
-    //  * @Route("/bischof-suggest/{field}", name="bishop_suggest")
-    //  */
-    // public function autocomplete(Request $request,
-    //                              ItemRepository $repository,
-    //                              String $field) {
-    //     $name = $request->query->get('q');
-
-    //     $online_only = true;
-    //     return $this->handleAutocomplete($repository, $name, $field, $online_only);
-
-    // }
-
-    // /**
-    //  * 2023-08-11 obsolete?
-    //  * usually used for asynchronous JavaScript request
-    //  *
-    //  * @Route("/bischof-suggest-all/{field}", name="bishop_suggest_all")
-    //  */
-    // public function autocompleteAll(Request $request,
-    //                                 ItemRepository $repository,
-    //                                 String $field) {
-    //     $name = $request->query->get('q');
-
-    //     $online_only = false;
-    //     return $this->handleAutocomplete($repository, $name, $field, $online_only);
-    // }
-
-
-    // private function handleAutocomplete($repository,
-    //                                     $name,
-    //                                     $field,
-    //                                     $online_only){
-
-    //     $fnName = 'suggestBishop'.ucfirst($field);
-    //     if ($field == 'name') {
-    //         $suggestions = $repository->$fnName($name, self::HINT_SIZE, $online_only);
-    //     } else {
-    //         $suggestions = $repository->$fnName($name, self::HINT_SIZE);
-    //     }
-
-    //     return $this->render('bishop/_autocomplete.html.twig', [
-    //         'suggestions' => array_column($suggestions, 'suggestion'),
-    //     ]);
-    // }
 
 
     /**

@@ -27,7 +27,7 @@ class Person {
     ];
 
     // 2023-08-29 obsolete?
-    const SORT_LIST = [
+    const SORT_LIST_LEGACY = [
         'familienname' => ['familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
         'givenname' => ['givenname',  'familyname', 'inst_name', 'dateSortKey', 'personId'],
         'institution' => ['inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'],
@@ -238,8 +238,8 @@ class Person {
     }
 
     public function setRole($role) {
-       $this->role = $role;
-       return $this;
+        $this->role = new ArrayCollection($role);
+        return $this;
     }
 
     public function getComment(): ?string

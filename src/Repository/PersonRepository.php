@@ -492,7 +492,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      *
      */
-    public function findList($id_list, $with_deleted = false) {
+    public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
         $qb = $this->createQueryBuilder('p')
                    ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
                    ->join('p.item', 'i') # avoid query in twig ...
@@ -532,7 +532,9 @@ class PersonRepository extends ServiceEntityRepository {
         $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
 
         // set ancestors
-        $itemRepository->setAncestor($item_list);
+        if ($with_ancestors) {
+            $itemRepository->setAncestor($item_list);
+        }
 
         // set reference volumes
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);

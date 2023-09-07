@@ -563,6 +563,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
      */
     public function findPersonIdRole($person_id_name) {
             $inr_list = $this->findByItemIdName($person_id_name);
+            // sort corpus 'dreg' last
+            uasort($inr_list, function($a, $b) {
+                return $a->getCorpusId() == 'dreg' ? 1 : -1;
+            });
             return UtilService::collectionColumn($inr_list, 'itemIdRole');
     }
 
