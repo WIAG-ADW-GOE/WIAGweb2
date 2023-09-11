@@ -50,7 +50,20 @@ class InstitutionRepository extends ServiceEntityRepository
     }
     */
 
-    public function findIfHasItemProperty(int $item_prop_id) {
+    /**
+     * @return Domstifte
+     */
+    public function findDomstifte() {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.id AS id, i.nameShort AS name')
+                   ->andWhere("i.corpusId = 'cap'")
+                   ->addOrderBy('i.nameShort');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    public function findIfHasItemProperty_legacy(int $item_prop_id) {
 
         $qb = $this->createQueryBuilder('inst')
                    ->join('inst.item', 'i')

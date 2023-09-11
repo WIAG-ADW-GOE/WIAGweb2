@@ -69,8 +69,10 @@ class IdController extends AbstractController {
 
             if ($corpus_id == 'epc' or $corpus_id == 'can') {
                 return $this->person($item_id, $corpus, $format);
-            } elseif ($corpus_id = 'dioc') {
+            } elseif ($corpus_id == 'dioc') {
                 return $this->diocese($item_id, $format);
+            } elseif ($corpus_id == 'utp') {
+                return $this->priestOfUtrecht($item_id, $format);
             }
 
         } else {
@@ -184,7 +186,7 @@ class IdController extends AbstractController {
         }
     }
 
-    public function priest_ut($id, $format) {
+    public function priestOfUtrecht($id, $format) {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         // old version 2022-10-07

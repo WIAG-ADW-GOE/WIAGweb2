@@ -233,15 +233,20 @@ class ItemRepository extends ServiceEntityRepository
      */
     public function findByIdPublicOrParent($id_public) {
         $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
-        $id = $itemCorpusRepository->findItemIdByIdPublic($id_public);
-        if (is_null($id)) {
+
+        $item_corpus_list = $itemCorpusRepository->findByIdPublic($id_public);
+
+        if (count($item_corpus_list) == 0) {
             return null;
         }
 
-        $corpus_id = $itemCorpusRepository->findCorpusPrio($id);
-        if ($corpus_id !== 'epc' && $corpus_id !== 'can') {
-            return array($this->find($id));
+        $id = $item_corpus_list[0]->getItemId();
+        $corpus_id = $item_corpus_list[0]->getCorpusId();
+
+        if ($corpus_id != 'epc' && $corpus_id != 'can' && $corpus_id != 'dreg') {
+            return (array($this->find($id)));
         }
+
         // else: check if id_public points to a current item or to an ancestor
 
         $with_id_in_source = false;

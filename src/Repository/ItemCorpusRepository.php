@@ -76,11 +76,12 @@ class ItemCorpusRepository extends ServiceEntityRepository
         return $query->getResult()[0];
     }
 
-    public function findItemIdByIdPublic($id_public) {
-        $cand_list = $this->findByIdPublic($id_public);
-        if (is_null($cand_list) or count($cand_list) == 0) {
-            return null;
-        }
-        return $cand_list[0]->getItemId();
-    }
+    // 2023-09-08 obsolete
+    // public function findItemIdByIdPublic($id_public) {
+    //     $cand_list = $this->findByIdPublic($id_public);
+    //     if (is_null($cand_list) or count($cand_list) == 0) {
+    //         return null;
+    //     }
+    //     return $cand_list[0]->getItemId();
+    // }
 }

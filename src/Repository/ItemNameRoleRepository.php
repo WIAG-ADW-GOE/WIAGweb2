@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\ItemNameRole;
+use App\Entity\Item;
 use App\Entity\Person;
 use App\Entity\Institution;
+use App\Entity\UrlExternal;
 use App\Service\UtilService;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -116,9 +118,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $qb->join('App\Entity\Institution', 'domstift_sort',
                           'WITH', "domstift_sort.id = pr.institutionId and domstift_sort.corpusId = 'cap'");
             } else {
-                $qb->leftjoin('App\Entity\PersonRole', 'pr_domstift',
-                              'WITH', 'pr_domstift.personId = pr.personId')
-                   ->leftjoin('App\Entity\Institution', 'domstift_sort',
+                $qb->join('App\Entity\PersonRole', 'pr_domstift',
+                              'WITH', 'pr_domstift.personId = inr.itemIdRole')
+                   ->join('App\Entity\Institution', 'domstift_sort',
                               'WITH', "domstift_sort.id = pr_domstift.institutionId and domstift_sort.corpusId = 'cap'");
             }
             $qb->addSelect('min(domstift_sort.nameShort) as domstift_name');
@@ -197,13 +199,24 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         // include in queries for corpus 'can' also canons from the Digitales Personenregister
         // bishops from Digitales Personenregister have no independent entries in item_name_role,
         // however their offices are visible in detail view (query via item_name_role)
-        $query_corpus = [
-            'epc' => ['epc'],
-            'can' => ['can', 'dreg'],
-        ][$corpus];
 
-        $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId in (:corpus)')
-           ->setParameter('corpus', $query_corpus);
+
+        if ($corpus == 'epc') {
+            $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = inr.itemIdName AND c.corpusId = 'epc'");
+        }
+
+        // if $corpus == 'can' no additional restriction is needed here,
+        // because domstift_sort is always part of the query (where domstift_sort.corpus_id = 'cap')
+
+        // evaluate query type ('epc' or 'can'); version before 2023-09-11
+        // $query_corpus = [
+        //     'epc' => ['epc'],
+        //     'can' => ['can', 'dreg'],
+        // ][$corpus];
+
+        // $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', 'c.itemId = inr.itemIdName AND c.corpusId in (:corpus)')
+        //    ->setParameter('corpus', $query_corpus);
+        // }
 
         if (!in_array('p_name', $joined_list) and ($name)) {
             $qb->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
@@ -424,14 +437,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     public function countDomstift($model) {
         // $model should not contain domstift facet
 
-        $em = $this->getEntityManager();
-        $qbi = $em->getRepository(Institution::class)
-                  ->createQueryBuilder('i')
-                  ->select('i.id AS id, i.nameShort AS name')
-                  ->andWhere("i.corpusId = 'cap'")
-                  ->addOrderBy('i.nameShort');
-
-        $domstift_list = $qbi->getQuery()->getResult();
+        $domstift_list = $this->getEntityManager()
+                              ->getRepository(Institution::class)
+                              ->findDomstifte();
 
         $qb = $this->createQueryBuilder('inr')
                    ->select('pr_count.institutionId AS id, COUNT(DISTINCT(inr.itemIdName)) AS n');
