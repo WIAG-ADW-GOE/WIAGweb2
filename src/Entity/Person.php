@@ -238,7 +238,11 @@ class Person {
     }
 
     public function setRole($role) {
-        $this->role = new ArrayCollection($role);
+        if (is_array($role)) {
+            $this->role = new ArrayCollection($role);
+        } else {
+            $this->role = $role;
+        }
         return $this;
     }
 

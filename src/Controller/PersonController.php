@@ -99,6 +99,13 @@ class PersonController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
+
+            // set person->role to dreg-roles for the combination epc-dreg
+            // (relatively rare cases)
+            if ($corpusId == 'can') {
+                $this->setListViewRole($person_list, $entityManager);
+            }
+
             $template_param_list = [
                 'menuItem' => 'collections',
                 'form' => $form,
@@ -112,6 +119,28 @@ class PersonController extends AbstractController {
 
             return $this->renderForm('person/query_result.html.twig', $template_param_list);
         }
+    }
+
+    /**
+     * set $person->role to dreg-roles if present
+     */
+    private function setListViewRole($person_list, $entityManager) {
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+
+        foreach ($person_list as $p_epc_maybe) {
+            $corpus_id_list = $p_epc_maybe->getItem()->getCorpusIdList();
+            if (count($corpus_id_list) == 1 and $corpus_id_list[0] == 'epc') {
+                // look up item_name_role
+                $pir_list = $itemNameRoleRepository->findPersonIdRole($p_epc_maybe->getId());
+                // find person, set role
+                if (count($pir_list) > 1) {
+                    $p_dreg = $personRepository->find($pir_list[1]);
+                    $p_epc_maybe->setRole($p_dreg->getRole());
+                }
+            }
+        }
+        return $person_list;
     }
 
     /**
