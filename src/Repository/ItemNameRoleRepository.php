@@ -289,7 +289,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
             // require that every word of the search query occurs in the name, regardless of the order
             $q_list = UtilService::nameQueryComponents($name);
             foreach($q_list as $key => $q_name) {
-                $qb->andWhere('name_lookup.gnPrefixFn LIKE :q_name_'.$key)
+                $qb->andWhere('name_lookup.nameVariant LIKE :q_name_'.$key)
                    ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
             }
         }

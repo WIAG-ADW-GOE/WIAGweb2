@@ -532,9 +532,27 @@ class Item {
         return $this;
     }
 
+    /**
+     *
+     */
     public function getIdPublic(): ?string
     {
-        return $this->idPublic;
+        if (is_null($this->itemCorpus)) {
+            return null;
+        }
+        $id_public_cand = null;
+        foreach($this->itemCorpus as $ic_loop) {
+            if ($ic_loop->getCorpusId() == 'epc') {
+                $id_public_cand = $ic_loop->getIdPublic();
+            } elseif ($ic_loop->getCorpusId() == 'can' and is_null($id_public_cand)) {
+                $id_public_cand = $ic_loop->getIdPublic();
+            } elseif (is_null($id_public_cand)) {
+                $id_public_cand = $ic_loop->getIdPublic();
+            }
+        }
+
+        return $id_public_cand;
+
     }
 
     public function getIdPublicNumber(): ?string {

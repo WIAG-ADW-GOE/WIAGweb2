@@ -134,7 +134,10 @@ class PersonRepository extends ServiceEntityRepository {
         return array_column($result, 'personId');
     }
 
-    private function addPersonConditions($qb, $model) {
+    /**
+     * 2023-09-21 see ItemNameRoleRepository
+     */
+    private function addPersonConditions_legacy($qb, $model) {
         // parameters
 
         $diocese = null;

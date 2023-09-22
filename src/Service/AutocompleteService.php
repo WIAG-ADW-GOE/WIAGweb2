@@ -279,7 +279,7 @@ class AutocompleteService extends ServiceEntityRepository {
 
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT n.gnPrefixFn AS suggestion")
+                         ->select("DISTINCT n.nameVariant AS suggestion")
                          ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
                          ->join('i.itemCorpus', 'c')
                          ->andWhere('c.corpusId = :corpus')
@@ -288,7 +288,7 @@ class AutocompleteService extends ServiceEntityRepository {
         // require that every word of the search query occurs in the name, regardless of the order
         $q_list = Utilservice::nameQueryComponents($q_param);
         foreach($q_list as $key => $q_name) {
-            $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
+            $qb->andWhere('n.nameVariant LIKE :q_name_'.$key)
                ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
         }
 
@@ -396,8 +396,8 @@ class AutocompleteService extends ServiceEntityRepository {
      */
     public function suggestPriestUtName($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
+                   ->select("DISTINCT CASE WHEN n.nameVariant IS NOT NULL ".
+                            "THEN n.nameVariant ELSE n.gnFn END ".
                             "AS suggestion")
                    ->join('\App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
                    ->join('i.itemCorpus', 'corpus')
@@ -405,7 +405,7 @@ class AutocompleteService extends ServiceEntityRepository {
 
         $q_list = UtilService::nameQueryComponents($name);
         foreach($q_list as $key => $q_name) {
-            $qb->andWhere('n.gnPrefixFn LIKE :q_name_'.$key)
+            $qb->andWhere('n.nameVariant LIKE :q_name_'.$key)
                ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
         }
 

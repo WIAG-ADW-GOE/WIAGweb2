@@ -32,6 +32,12 @@ class NameLookup
      */
     private $gnPrefixFn;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $nameVariant;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -80,5 +86,11 @@ class NameLookup
 
         return $this;
     }
+
+    public function getNameVariant(): ?string
+    {
+        return $this->nameVariant;
+    }
+
 
 }
