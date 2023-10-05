@@ -6,7 +6,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { 'field': 'name', 'itemTypeId': itemTypeId }),
+		     url: path('person_suggest', { 'field': 'name' }),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}
@@ -22,33 +22,27 @@
 		    style="max-width: 20rem;"></ul>
 	    </div>
 	    {# monastery #}
-	    {% if itemTypeId == 5 %} {# Domherr #}
-		<div class="me-2 mt-1"
-		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_base', {
-			     'field': 'institution',
-			     'itemTypeId': itemTypeId }),
-		     }) }}>
-		    {{ form_label(form.monastery) }}
-		    {{ form_errors(form.monastery) }}
-		    {{ form_widget(form.monastery, {
-			'attr': {
-			    'data-autocomplete-target': "input",
-			    'size': input_width_institution,
-			    'class': 'wiag-input'
-			} })
-		    }}
-		    <ul class="list-group autocomplete-target"
-			data-autocomplete-target="results"
-			style="max-width: 25em;"></ul>
-		</div>
-	    {% endif %}
+	    <div class="me-2 mt-1"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('person_suggest', { 'field': 'institution' }),
+		 }) }}>
+		{{ form_label(form.monastery) }}
+		{{ form_errors(form.monastery) }}
+		{{ form_widget(form.monastery, {
+		    'attr': {
+			'data-autocomplete-target': "input",
+			'size': input_width_institution,
+			'class': 'wiag-input'
+		    } })
+		}}
+		<ul class="list-group autocomplete-target"
+			   data-autocomplete-target="results"
+			   style="max-width: 25em;"></ul>
+	    </div>
 	    {# diocese #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest_base', {
-			 'field': 'diocese',
-			 'itemTypeId': itemTypeId }),
+		     url: path('person_suggest', {'field': 'diocese' }),
 		 }) }}>
 		{{ form_label(form.diocese) }}
 		{{ form_errors(form.diocese) }}
@@ -66,7 +60,7 @@
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { 'field': 'office', 'itemTypeId': itemTypeId }),
+		     url: path('person_suggest', { 'field': 'office' }),
 		 }) }}>
 		{{ form_label(form.office) }}
 		{{ form_errors(form.office) }}
@@ -101,11 +95,11 @@
     <div class="col-12">
 	<div class="d-flex flex-wrap"
 	     data-action="input->hide-on-input#hideResults">
-	    {% if itemTypeId == 5 %} {# canons #}
+	    {% if true %} {# canons 2023-09-27 obsolete?#}
 		{# place #}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest', { 'field': 'place', 'itemTypeId': itemTypeId }),
+			 url: path('person_suggest', { 'field': 'place' }),
 		     }) }}>
 		    {{ form_label(form.place) }}
 		    {{ form_errors(form.place) }}
@@ -124,7 +118,7 @@
 	    {# reference #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { 'field': 'titleShort', 'itemTypeId': itemTypeId }),
+		     url: path('person_suggest', { 'field': 'titleShort' }),
 		 }) }}>
 		{{ form_label(form.reference) }}
 		{{ form_errors(form.reference) }}
@@ -141,7 +135,7 @@
 	    </div>
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { 'field': 'commentduplicate', 'itemTypeId': itemTypeId }),
+		     url: path('person_suggest', { 'field': 'commentduplicate' }),
 		 }) }}>
 		{{ form_label(form.commentDuplicate) }}
 		{{ form_errors(form.commentDuplicate) }}

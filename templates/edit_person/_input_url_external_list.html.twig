@@ -1,7 +1,8 @@
 {{ include('edit_person/_input_url_external_essential.html.twig') }}
+{# TODO remove itemTypeId #}
 <div data-controller="insert"
      data-insert-url-value="{{ path('edit_person_new_urlexternal', {
-			    'itemTypeId': itemTypeId,
+			    'itemTypeId': 0,
 			    'personIndex': personIndex
 			    }) }}"
      data-insert-hide-trigger-value="yes"
@@ -19,7 +20,7 @@
 	<div class="input-group input-group-sm mb-1 mt-1">
 	    <span class="input-group-text">Normdaten recherchiert von </span>
 	    <div {{ stimulus_controller('autocomplete', {
-		 url: path('person_suggest', {itemTypeId: itemTypeId, field: 'normdataEditedBy'}),
+		 url: path('person_suggest', {itemTypeId: 0, field: 'normdataEditedBy'}),
 		 }) }} >
 		<input type="text" id="{{ base_id }}_item_normdataEditedBy"
 		       name="{{ base_input_name}}[item][normdataEditedBy]"

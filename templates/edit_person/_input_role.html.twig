@@ -56,9 +56,10 @@
 			style="max-width: 18rem;"></ul>
 		</div>
 		{# default for inst_type_id is '1' (diocese) #}
+		{# TODO remove itemTypeId #}
 		{% set inst_type_default = { '4': 1, '5': 2 } %}
 		{{ include('edit_person/_input_institution.html.twig', {
-		    inst_type_id: role.getInstitutionTypeId(itemTypeId) ?? inst_type_default[itemTypeId]
+		    inst_type_id: role.getInstitutionTypeId(0) ?? inst_type_default['5']
 		})  }}
 		<span class="input-group-text wiag-input-text-blue">von, bis</span>
 		<input type="text" id="{{ base_id_role }}_dateBegin"

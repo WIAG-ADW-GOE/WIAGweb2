@@ -26,16 +26,16 @@
 		     url: path('person_suggest_base', { field: 'urlName' }),
 		 }) }}>
 		{% set url_auth_name = urlext.authority ? urlext.authority.urlNameFormatter : "" %}
- 		    <input type="text" id="{{ base_id_urlext }}_urlName"
-			   name="{{ base_input_name_urlext}}[urlName]"
-			   class="form-control form-control-sm wiag-input"
-			   value="{{ url_auth_name }}"
-			   spellcheck="false"
-			   aria-label="Institution/Katalog"
-			   data-autocomplete-target="input">
+ 		<input type="text" id="{{ base_id_urlext }}_urlName"
+		       name="{{ base_input_name_urlext}}[urlName]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ url_auth_name }}"
+		       spellcheck="false"
+		       aria-label="Institution/Katalog"
+		       data-autocomplete-target="input">
 		<ul class="list-group autocomplete-target"
-			   data-autocomplete-target="results"
-			   style="max-width: 30rem;"></ul>
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
 	    </div>
 	    {% if urlext.authority %}
 		<span class="input-group-text"><a href="{{ urlext.url }}" target="_blank" rel="noopener">ID/Nr.</a></span>
@@ -50,23 +50,20 @@
 		   spellcheck="false"
 		   aria-label="Id/Nummer">
 	</div>
-	{% if itemTypeId == 5 %}
-	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text">URL Beschreibung</span>
-		<input type="text" id="{{ base_id_urlext }}_note"
-		       name="{{ base_input_name_urlext}}[note]"
-		       class="form-control form-control-sm wiag-input"
-		       value="{{ urlext.note }}"
-		       spellcheck="false"
-		       aria-label="Bemerkung">
-	    </div>
-	{% else %}
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text">URL Beschreibung</span>
 	    <input type="text" id="{{ base_id_urlext }}_note"
 		   name="{{ base_input_name_urlext}}[note]"
-		   class="d-none"
+		   class="form-control form-control-sm wiag-input"
 		   value="{{ urlext.note }}"
 		   spellcheck="false"
 		   aria-label="Bemerkung">
-	{% endif %}
+	</div>
+	<input type="text" id="{{ base_id_urlext }}_note"
+	       name="{{ base_input_name_urlext}}[note]"
+	       class="d-none"
+	       value="{{ urlext.note }}"
+	       spellcheck="false"
+	       aria-label="Bemerkung">
     </div>
 </div>

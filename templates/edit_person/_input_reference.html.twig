@@ -20,7 +20,7 @@
 		   value="{{ ref.id }}">
 	    <div class="w-50"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { field: 'titleShort', itemTypeId: itemTypeId }),
+		     url: path('person_suggest', { field: 'titleShort' }),
 		 }) }}>
  		<input type="text" id="{{ base_id_ref }}_volume"
 		       name="{{ base_input_name_ref}}[volume]"

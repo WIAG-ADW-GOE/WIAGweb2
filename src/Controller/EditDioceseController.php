@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Item;
-use App\Entity\ItemType;
 use App\Entity\Diocese;
 use App\Entity\PersonRole;
 use App\Entity\UrlExternal;

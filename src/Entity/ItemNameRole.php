@@ -33,10 +33,6 @@ class ItemNameRole
      */
     private $itemIdRole;
 
-    /**
-     * @ORM\Column(type="string", length=31)
-     */
-    private $corpusId;
 
     public function getId(): ?int
     {
@@ -67,15 +63,4 @@ class ItemNameRole
         return $this;
     }
 
-    public function getCorpusId(): ?string
-    {
-        return $this->corpusId;
-    }
-
-    public function setCorpusId(string $corpusId): self
-    {
-        $this->corpusId = $corpusId;
-
-        return $this;
-    }
 }

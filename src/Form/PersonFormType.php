@@ -96,7 +96,6 @@ class PersonFormType extends AbstractType
                  'mapped' => false,
             ]);
 
-
         if ($model->corpus == 'can') {
             $builder
                 ->add('domstift', TextType::class, [

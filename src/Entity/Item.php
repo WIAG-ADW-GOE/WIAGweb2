@@ -53,14 +53,14 @@ class Item {
             'name' => 'Kloster',
             'id_public_mask' => '#',
             'numeric_field_width' => 5,
-            'edit_status_default' => 'online',
-            'online_status' => 'online',
+            'edit_status_default_legacy' => 'online',
+            'online_status_legacy' => 'online',
         ],
         3 => [
             'name' => 'Domstift',
             'id_public_mask' => '#',
             'numeric_field_width' => 5,
-            'edit_status_default' => 'online',
+            'edit_status_default_legacy' => 'online',
             'online_status' => 'online',
         ],
         4 => [
@@ -352,6 +352,20 @@ class Item {
         return $list;
     }
 
+    public function getAllIdInCorpusWithPrefix() {
+        $list = null;
+        if (is_null($this->itemCorpus)) {
+            return $list;
+        }
+
+        foreach($this->itemCorpus as $ic) {
+            $list[] = $ic->getCorpusId().'-'.$ic->getIdInCorpus();
+        }
+
+        return implode($list, ", ");
+    }
+
+
     /**
      * @return sorted list of item properties
      */
@@ -533,7 +547,7 @@ class Item {
     }
 
     /**
-     *
+     * @return public ID (epc > can)
      */
     public function getIdPublic(): ?string
     {

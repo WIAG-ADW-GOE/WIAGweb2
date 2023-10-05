@@ -5,10 +5,8 @@
 	<a class="nav-link dropdown-toggle fw-bold" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
-	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '4'}) }}">Bischöfe</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query') }}">Personen</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '4' }) }}" target="_blank" rel="noopener">Bischöfe anlegen (neuer Tab)</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'itemTypeId' : '5'}) }}">Domherren</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '5'}) }}" target="_blank" rel="noopener">Domherren anlegen (neuer Tab)</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
 	<li><hr class="dropdown-divider"></li>
 	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'itemTypeId' : '4'}) }}">Dubletten Bischöfe</a></li>

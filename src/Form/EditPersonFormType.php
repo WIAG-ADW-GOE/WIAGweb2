@@ -43,7 +43,6 @@ class EditPersonFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $model = $options['data'] ?? null;
-        $itemTypeId = $model->itemTypeId;
 
         $builder
             ->add('name', TextType::class, [
@@ -142,24 +141,20 @@ class EditPersonFormType extends AbstractType
             ])
             ->add('isEdit', HiddenType::class)
             // data set via JavaScript
-            ->add('sortOrder', HiddenType::class);
-
-        if ($itemTypeId == Item::ITEM_TYPE_ID['Domherr']['id']) {
-            $builder
-                ->add('monastery', TextType::class, [
-                    'label' => 'Domstift/Kloster',
-                    'required' => false,
-                    'attr' => [
-                        'placeholder' => 'Domstift/Kloster',
-                    ],
-                ])
-                ->add('place', TextType::class, [
-                    'label' => 'Ort',
-                    'required' => false,
-                    'attr' => [
-                        'placeholder' => 'Ort',
-                    ],
-                ]);
-        }
+            ->add('sortOrder', HiddenType::class)
+            ->add('monastery', TextType::class, [
+                'label' => 'Domstift/Kloster',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Domstift/Kloster',
+                ],
+            ])
+            ->add('place', TextType::class, [
+                'label' => 'Ort',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ort',
+                ],
+            ]);
     }
 }

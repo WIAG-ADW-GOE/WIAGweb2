@@ -33,7 +33,7 @@
 	<span class="input-group-text">Attribut-Wert</span>
 	<div class="w-50"
 	     {{ stimulus_controller('autocomplete', {
-		 url: path('person_suggest', { 'itemTypeId': itemTypeId, field: 'propertyValue' }),
+		 url: path('person_suggest', { field: 'propertyValue' }),
 	     }) }}>
 	    <input type="text" id="{{ base_id_prop }}_value"
 		   name="{{ base_input_name_prop }}[value]"

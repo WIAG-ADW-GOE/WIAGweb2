@@ -100,11 +100,11 @@ class PersonController extends AbstractController {
             $person_list = $personRepository->findList($id_list);
 
 
-            // set person->role to dreg-roles for the combination epc-dreg
+            // set person->role to dreg-roles for the combination can, epc, dreg-epc
             // (relatively rare cases)
-            if ($corpusId == 'can') {
-                $this->setListViewRole($person_list, $entityManager);
-            }
+            // if ($corpusId == 'can') {
+            //     $this->setListViewRole($person_list, $entityManager);
+            // }
 
             $template_param_list = [
                 'menuItem' => 'collections',
@@ -122,6 +122,7 @@ class PersonController extends AbstractController {
     }
 
     /**
+     * 2023-09-29 obsolete? was relevant for can, epc, dreg-epc
      * set $person->role to dreg-roles if present
      */
     private function setListViewRole($person_list, $entityManager) {
@@ -159,6 +160,7 @@ class PersonController extends AbstractController {
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
 
         $model = new PersonFormModel;
+
         $model->corpus = $corpusId;
 
         $form = $this->createForm(PersonFormType::class, $model, [
@@ -189,17 +191,23 @@ class PersonController extends AbstractController {
 
         $person_id = $ids[$idx];
 
-        // get office data, e.g. from Digitales Personenregister
-        $person_role_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
-        $person_role_list = $personRepository->findList($person_role_id_list);
-        $person = array_values($person_role_list)[0];
+        // get person data with offices
+        $inr = $itemNameRoleRepository->findByItemIdName($person_id);
+        $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
+        $person_role_list = $personRepository->findList($p_id_list);
+        $person = 0;
+        foreach($person_role_list as $person_role) {
+            if ($person_role->getId() == $person_id) {
+                $person = $person_role;
+            }
+        }
 
         // TODO 2023-08-15 clean up sibling
         // $personRepository->setSibling([$person]);
 
         return $this->render('person/person.html.twig', [
             'form' => $form->createView(),
-            'corpus' => $model->corpus,
+            'corpus' => $corpusId,
             'personName' => $person,
             'personRole' => $person_role_list,
             'offset' => $offset,
@@ -274,16 +282,15 @@ class PersonController extends AbstractController {
     /**
      * respond to asynchronous JavaScript request
      *
-     * @Route("/person-suggest/{corpus}/{field}", name="person_suggest")
+     * @Route("/person-suggest/{field}", name="person_suggest")
      * response depends on item type
      */
     public function autocomplete(Request $request,
-                                 String $corpus,
                                  String $field) {
         $query_param = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        $suggestions = $this->autocomplete->$fnName($corpus, $query_param, self::HINT_SIZE);
+        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE);
 
         return $this->render('person/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
@@ -303,7 +310,7 @@ class PersonController extends AbstractController {
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
         $is_online = 1;
-        $suggestions = $this->autocomplete->$fnName($corpus, $query_param, self::HINT_SIZE, $is_online);
+        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE, $is_online, $corpus);
 
         return $this->render('person/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
@@ -312,6 +319,7 @@ class PersonController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
+     * 2023-09-27 obsolete? see above: autocomplete
      *
      * @Route("/person-suggest-base/{field}", name="person_suggest_base")
      * response is independent from corpus

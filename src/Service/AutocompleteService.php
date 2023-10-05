@@ -35,7 +35,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * $item_type_id is not used here (needed for uniform signature)
      */
-    public function suggestRole($corpus, $queryParam, $hintSize) {
+    public function suggestRole($queryParam, $hintSize, $corpus) {
         $repository = $this->getEntityManager()->getRepository(Role::class);
         $qb = $repository->createQueryBuilder('r')
                          ->select("DISTINCT r.name AS suggestion")
@@ -55,7 +55,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * $corpus and $isOnline are not used here (needed for uniform signature)
      */
-    public function suggestOffice($corpus, $queryParam, $hintSize, $isOnline = 0) {
+    public function suggestOffice($queryParam, $hintSize) {
         // use all office names as a basis;
         // this is simple and it does no harm, if office names show up that are not referenced anywhere
         $repository = $this->getEntityManager()->getRepository(PersonRole::class);
@@ -142,7 +142,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * usually used for asynchronous JavaScript request
      */
-    public function suggestTitleShort($item_type_id, $name, $hintSize) {
+    public function suggestTitleShort($name, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
         $qb = $repository->createQueryBuilder('v')
                          ->select("DISTINCT v.titleShort AS suggestion")
@@ -159,17 +159,14 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
-    public function suggestPropertyValue($item_type_id, $name, $hintSize) {
+    public function suggestPropertyValue($name, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT prop.value AS suggestion")
                          ->join('i.itemProperty', 'prop')
                          ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId LIKE :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
@@ -182,17 +179,14 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
-    public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
+    public function suggestRolePropertyName($name, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT prop.name AS suggestion")
                          ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
                          ->andWhere('prop.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 
         $qb->setMaxResults($hintSize);
@@ -204,17 +198,14 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace itemTypeId
      * usually used for asynchronous JavaScript request
      */
-    public function suggestRolePropertyValue($item_type_id, $name, $hintSize) {
+    public function suggestRolePropertyValue($name, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT prop.value AS suggestion")
                          ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
                          ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%');
 
 
@@ -227,18 +218,16 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace item_type_id by corpus_id
      * usually used for asynchronous JavaScript request
      */
-    public function suggestEditStatus($item_type_id, $name, $hintSize) {
+    public function suggestEditStatus($name, $hintSize) {
         // do not filter by name 'i.editStatus LIKE :name'
+        // in a new single entry.
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.editStatus AS suggestion")
-                         ->andWhere('i.itemTypeId = :item_type_id')
                          ->andWhere('i.editStatus IS NOT NULL')
                          ->andWhere("i.mergeStatus <> 'parent'")
-                         ->setParameter('item_type_id', $item_type_id)
                          ->orderBy('i.editStatus');
 
         $qb->setMaxResults($hintSize);
@@ -250,17 +239,14 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace item_type_id by corpus_id
      * usually used for asynchronous JavaScript request
      */
-    public function suggestNormdataEditedBy($item_type_id, $name, $hintSize) {
+    public function suggestNormdataEditedBy($name, $hintSize) {
         // do not filter by name 'i.editStatus LIKE :name'
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.normdataEditedBy AS suggestion")
-                         ->andWhere('i.itemTypeId = :item_type_id')
                          ->andWhere('i.normdataEditedBy like :name')
-                         ->setParameter('item_type_id', $item_type_id)
                          ->setParameter('name', '%'.$name.'%')
                          ->orderBy('i.normdataEditedBy');
 
@@ -275,15 +261,18 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestName($corpus, $q_param, $resultSize, $isOnline = 0) {
+    public function suggestName($q_param, $resultSize, $isOnline = 0, $corpus = null) {
 
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT n.nameVariant AS suggestion")
                          ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
-                         ->join('i.itemCorpus', 'c')
-                         ->andWhere('c.corpusId = :corpus')
-                         ->setParameter('corpus', $corpus);
+                         ->join('i.itemCorpus', 'c');
+
+        if (!is_null($corpus)) {
+            $qb->andWhere('c.corpusId = :corpus')
+               ->setParameter('corpus', $corpus);
+        }
 
         // require that every word of the search query occurs in the name, regardless of the order
         $q_list = Utilservice::nameQueryComponents($q_param);
@@ -308,12 +297,10 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * 2023-09-06 TODO replace item_type_id by corpus_id
      */
-    public function suggestCommentDuplicate($itemTypeId, $queryParam, $hintSize) {
+    public function suggestCommentDuplicate($queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.commentDuplicate AS suggestion")
-                         ->andWhere('i.itemTypeId = :itemType')
-                         ->setParameter(':itemType', $itemTypeId)
                          ->andWhere('i.commentDuplicate like :name')
                          ->setParameter(':name', '%'.$queryParam.'%');
 

@@ -4,7 +4,7 @@
 	<div class="input-group input-group-sm mb-1 mt-1">
 	    <span class="input-group-text">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
-		 url: path('person_suggest', {itemTypeId: itemTypeId, field: 'editStatus'}),
+		 url: path('person_suggest', { field: 'editStatus' }),
 		 }) }} >
 		<input type="text" id="{{ base_id }}_item_editStatus"
 		       name="{{ base_input_name}}[item][editStatus]"
@@ -45,26 +45,6 @@
 			   aria-label="Zusammengesetzt aus">
 		{% endfor %}
 	    {% endif %}
-	    {% if itemTypeId == '5' %}
-		{% set bishop_wiag_id = person.item.urlExternalByAuthority('WIAG-ID') %}
-		<span class="input-group-text">{% if bishop_wiag_id %}<a href="{{ path('id', { 'id': bishop_wiag_id }) }}" target="_blank" rel="noopener">WIAG_ID Bischof</a>{% else %}WIAG_ID Bischof{% endif %}</span>
-		<div
-		    {{ stimulus_controller('autocomplete', {
-			url: path('person_suggest_base', { 'field': 'bishop' }),
-		    }) }}
-		    class="w-25">
-		    <input type="text"
-			   id="{{ base_id }}_bishop"
-			   name="{{ base_input_name}}[bishop]"
-			   class="form-control form-control-sm wiag-input"
-			   value="{{ bishop_wiag_id }}"
-			   aria-label="Verweis auf Bischof"
-			   data-autocomplete-target="input">
-		    <ul class="list-group autocomplete-target"
-			data-autocomplete-target="results"
-			style="max-width: 20rem;"></ul>
-		</div>
-	    {% endif %}
 	    {% if person.item.formType == 'edit' %}
 		{# dropdown "Aktion" #}
 		<div class="dropdown ms-auto">
@@ -96,9 +76,10 @@
 				data-submit-confirm-confirm-button-text-value="Aufteilen"
 				data-submit-confirm-cancel-button-text-value="Abbrechen">
 				{# use this hidden element to trigger the confirmed action #}
+				{# TODO remove itemTypeId #}
 				<a id="split_{{ person.id }}"
 				   class="d-none"
-				   href="{{ path('edit_person_split_item', { 'itemTypeId': itemTypeId, 'id': person.id }) }}">Link zum Aufteilen</a>
+				   href="{{ path('edit_person_split_item', { 'itemTypeId': 0, 'id': person.id }) }}">Link zum Aufteilen</a>
 				<button type="button"
 					class="dropdown-item"
 					data-action="submit-confirm#confirm">Eintrag aufteilen</button>

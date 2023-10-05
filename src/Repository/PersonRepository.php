@@ -58,255 +58,309 @@ class PersonRepository extends ServiceEntityRepository {
     */
 
     /**
-     * @return list of IDs compatible with $model
+     * findEditPersonIds($model, $limit = 0, $offset = 0) {
+     *
+     * @return list of IDs matching conditions given by $model.
+     *
      */
-    public function personIds($model, $limit = 0, $offset = 0, $isOnline = true) {
+    public function findEditPersonIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
-        $corpus = $model->corpus;
-        $diocese = null;
-        $monastery = null;
-        $diocese = $model->diocese;
-        $monastery = $model->monastery;
-        $office = $model->office;
-        $year = $model->year;
-        $name = $model->name;
-        $place = $model->place;
-        $someid = $model->someid;
-        $sort_order = $model->sortOrder;
-        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        // avoid to join the same table twice
+        $joined_list = array();
+        $qb = $this->createQueryBuilder('p')
+                   ->join('p.item', 'i');
 
-        $corpus = 'epc';
+        // pr is required for sorting
+        $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
+        $joined_list[] = 'pr';
 
+        $corpusParam = explode(',', $model->corpus);
 
+        $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = i.id AND c.corpusId in (:corpus)")
+           ->setParameter('corpus', $corpusParam);
+        $joined_list[] = 'c';
 
-        // 2023-08-15
-        // version that intergrates office data from Digitales Personregister
-        // changes sort order!?
-        // $qb = $this->createQueryBuilder('p_corpus')
-        //            ->join('p_corpus.item', 'i')
-        //            ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', 'i.id = ic.itemId AND ic.corpusId = :corpus')
-        //            ->leftjoin('\App\Entity\ItemDreg', 'dreg', 'WITH', 'dreg.itemId = i.id')
-        //            ->join('\App\Entity\Person', 'p', 'WITH', 'p.id = p_corpus.id OR p.id = dreg.itemIdDreg')
-        //            ->leftjoin('p.role', 'pr')
-        //            ->andWhere("i.mergeStatus in ('original', 'child')")
-        //            ->setParameter(':corpus', $corpus);
+        $this->addConditions($qb, $model, $joined_list);
+        $this->addFacets($qb, $model);
 
+        // do sorting in an extra step, see below
+        $qb->select('p.id as id,'.
+                    'p.givenname,'.
+                    '(CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname,'.
+                    'p.familyname,'.
+                    'i.commentDuplicate as comment_duplicate,'.
+                    'i.editStatus as edit_status,'.
+                    'min(pr.institutionName) as institution_name,'.
+                    'min(pr.dioceseName) as diocese_name,'.
+                    'min(pr.dateSortKey) as date_sort_key')
+           ->andWhere("i.mergeStatus in ('child', 'original')");
 
-        $qb = $this->addPersonConditions($qb, $model);
-
-        // only relevant for bishop queries (not for editing)
-        $qb = $this->addFacets($qb, $model);
-
-        // get sort criteria
-        $qb->leftjoin('p.role', 'pr_inst')
-           ->leftjoin('p.role', 'pr_date')
-           ->leftjoin('pr_inst.institution', 'inst_sort')
-           ->select('i.id as personId, i.idInSource, i.editStatus, p.givenname, p.familyname, '.
-                    '(CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, '.
-                    'min(inst_sort.nameShort) as inst_name, '.
-                    'min(pr.dioceseName) as dioceseName, '.
-                    'min(pr_date.dateSortKey) as dateSortKey, '.
-                    'i.commentDuplicate')
-           ->addGroupBy('personId');
-
-        $query = $qb->getQuery();
-
-        $result = $query->getResult();
-
-        if ($model->sortBy) {
-            $sort_by = $model_sortBy;
-        } elseif ($office or $diocese or $monastery or $place) {
-            $sort_by = "office";
-        } elseif ($name or $someid or $model->isEmpty()) {
-            $sort_by = "name";
+        if (in_array("- alle -", $model->editStatus)) {
+            $qb->andWhere("i.editStatus NOT IN ('Dublette')");
         } else {
-            $sort_by = "year";
+            $qb->andWhere("i.editStatus in (:edit_status)")
+               ->setParameter('edit_status', $model->editStatus);
         }
 
-        $sort_list = Person::SORT_LIST[$sort_by];
-        $result = UtilService::sortByFieldList($result, $sort_list, $sort_order);
+        if ($model->monastery || $model->sortBy == "institution" ) { // restrict sorting to matches
+            $qb->join('App\Entity\Institution', 'institution',
+                      'WITH', "institution.id = pr.institutionId and institution.corpusId in ('cap', 'mon')")
+               ->addSelect('min(institution.nameShort) as inst_name');
+        }
+
+        if ($model->sortBy == "idInSource") {
+            $qb->join('App\Entity\ItemCorpus', 'corpus',
+                      'WITH', "corpus.itemId = i.id")
+               ->addSelect('min(corpus.idInCorpus) as id_in_corpus');
+        }
+
+        if ($model->place) {
+            $qb->addSelect('min(inst_place.placeName) as place_name');
+        }
+
+        $qb->groupBy('p.id');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // sort
+        // doctrine min function returns a string; convert it to int
+        $result = array_map(function($el) {
+            $val = $el['date_sort_key'];
+            $el['date_sort_key'] = is_null($val) ? $val : intval($val);
+            return $el;
+        }, $result);
+
+        $result = $this->sortQuery($result, $model);
 
         if ($limit > 0) {
             $result = array_slice($result, $offset, $limit);
         }
 
-        return array_column($result, 'personId');
+        return array_column($result, "id");
+
     }
 
-    /**
-     * 2023-09-21 see ItemNameRoleRepository
-     */
-    private function addPersonConditions_legacy($qb, $model) {
-        // parameters
+    private function sortQuery($result, $model) {
+        $sort_by = $model->sortBy;
+        $sort_list = ['givenname', 'familyname'];
+        if ($model->sortBy == 'givenname') {
+            $sort_list = ['givenname', 'familyname'];
+        } elseif ($model->sortBy == 'familyname') {
+            $sort_list = ['hasFamilyname', 'familyname', 'givenname'];
+        } elseif ($model->sortBy == 'institution') {
+            $sort_list = ['institution_name'];
+        } elseif ($model->sortBy == 'diocese') {
+            $sort_list = ['diocese_name'];
+        } elseif ($model->sortBy == 'year') {
+            $sort_list = [];
+        } elseif ($model->sortBy == 'commentDuplicate') {
+            $sort_list = ['comment_duplicate'];
+        } elseif ($model->sortBy == 'idInSource') {
+            $sort_list = ['id_in_corpus'];
+        } elseif ($model->sortBy == 'editStatus') {
+            $sort_list = ['edit_status'];
+        }
 
-        $diocese = null;
-        $monastery = null;
+        $sort_list[] = 'date_sort_key';
+        $sort_list[] = 'id';
+
+        return UtilService::sortByFieldList($result, $sort_list, $model->sortOrder);
+
+    }
+
+    public function addConditions($qb, $model, $joined_list = array()) {
+
+        $corpus = $model->corpus;
+        $comment_edit = $model->comment;
+        $comment_duplicate = $model->commentDuplicate;
+        $domstift = $model->domstift;
+        $monastery = $model->monastery; // used in edit form
         $diocese = $model->diocese;
-        $monastery = $model->monastery;
         $office = $model->office;
-        $place = $model->place;
-        $misc = $model->misc;
-
-        if ($office) {
-            $this->addPersonConditionOffice($qb, $office);
-        }
-
-        if ($monastery) {
-            $qb->leftjoin('pr.institution', 'inst')
-               ->andWhere("(pr.institutionName LIKE :paramInst ".
-                          "OR inst.name LIKE :paramInst)")
-               ->setParameter('paramInst', '%'.$monastery.'%');
-        }
-
-        if ($diocese) {
-            if ($monastery) {
-                $qb->leftjoin('p.role', 'pr_dioc')
-                   ->leftjoin('pr_dioc.diocese', 'dioc')
-                   ->andWhere("(pr_dioc.dioceseName LIKE :paramDioc ".
-                              "OR dioc.name LIKE :paramDioc)");
-            } else {
-                // do not combine monastery with diocese
-                $qb->leftjoin('pr.diocese', 'dioc')
-                   ->andWhere("(pr.dioceseName LIKE :paramDioc ".
-                              "OR dioc.name LIKE :paramDioc)");
-            }
-            $qb->setParameter('paramDioc', '%'.$diocese.'%');
-        }
-
-        // if ($monastery) {
-        //     // AND-combine $office and $monastery
-        //     if ($office) {
-        //         $qb->leftjoin('pr_ofc.institution', 'inst')
-        //            ->andWhere("(pr_ofc.institutionName LIKE :paramInst ".
-        //                       "OR inst.name LIKE :paramInst)");
-        //     } else {
-        //         $qb->leftjoin('pr.institution', 'inst')
-        //            ->andWhere("(pr.institutionName LIKE :paramInst ".
-        //                       "OR inst.name LIKE :paramInst)");
-        //     }
-        //     $qb->setParameter('paramInst', '%'.$monastery.'%');
-        // }
-
-        // if ($diocese) {
-        //     // AND-combine $office and $diocese, but not
-        //     if ($office and (is_null($monastery) or trim($monastery) == "")) {
-        //         $qb->leftjoin('pr_ofc.diocese', 'dioc')
-        //            ->andWhere("(pr_ofc.dioceseName LIKE :paramDioc ".
-        //                       "OR dioc.name LIKE :paramDioc)");
-        //     } else {
-        //         // do not combine $monastery and $diocese
-        //         $qb->leftjoin('p.role', 'pr_dioc')
-        //            ->leftjoin('pr_dioc.diocese', 'dioc')
-        //            ->andWhere("(pr_dioc.dioceseName LIKE :paramDioc ".
-        //                       "OR dioc.name LIKE :paramDioc)");
-        //     }
-        //     $qb->setParameter('paramDioc', '%'.$diocese.'%');
-        // }
-
-        if ($place) {
-            // Join places independently from role (other query condition)
-            $qb->join('p.role', 'pr_place')
-               ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'pr_place.institutionId = ip.institutionId '.
-                          'AND ( '.
-                          'pr_place.numDateBegin IS NULL AND pr_place.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < pr_place.numDateBegin AND pr_place.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < pr_place.numDateEnd AND pr_place.numDateEnd < ip.numDateEnd) '.
-                          'OR (pr_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < pr_place.numDateEnd) '.
-                          'OR (pr_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < pr_place.numDateEnd))')
-                ->andWhere('ip.placeName LIKE :q_place')
-                ->setParameter('q_place', '%'.$place.'%');
-        }
-
-        $year = $model->year;
-        if ($year) {
-            $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
-                          " AND :q_year < p.dateMax + :mgnyear")
-               ->setParameter(':mgnyear', self::MARGINYEAR)
-               ->setParameter('q_year', $year);
-        }
-
         $name = $model->name;
-        if ($name) {
-            // join name_lookup via person or via canon_lookup
-            $qb->leftjoin('\App\Entity\CanonLookup', 'clu', 'WITH', 'clu.personIdName = p.id')
-               ->join('\App\Entity\NameLookup',
-                      'nlu',
-                      'WITH',
-                      'clu.personIdRole = nlu.personId OR p.id = nlu.personId');
-            // require that every word of the search query occurs in the name, regardless of the order
-            $q_list = UtilService::nameQueryComponents($name);
-            foreach($q_list as $key => $q_name) {
-                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
-                   ->setParameter('q_name_'.$key, '%'.$q_name.'%');
-            }
-
-        }
-
-        $someid = $model->someid;
-        if ($someid) {
-            // look for $someid in merged ancestors
-            $with_id_in_source = $model->isEdit;
-            $list_size_max = 200;
-            $descendant_id_list = $this->findIdByAncestor(
-                $someid,
-                $with_id_in_source,
-                $list_size_max,
-            );
-
-            // look for $someid in external links
-            $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
-            $uext_id_list = $uextRepository->findIdBySomeNormUrl(
-                $someid,
-                $list_size_max
-            );
-
-            $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
-
-            $qb->andWhere("i.id in (:q_id_list)")
-               ->setParameter('q_id_list', $q_id_list);
-        }
-
+        $place = $model->place;
         $reference = $model->reference;
+        $year = $model->year;
+        $someid = $model->someid;
+
+        // include in queries for corpus 'can' also canons from the Digitales Personenregister
+        // bishops from Digitales Personenregister have no independent entries in item_name_role,
+        // however their offices are visible in detail view (query via item_name_role)
+
+        // if (in_array('epc', $corpus)) {
+        //     $qb->join(
+        //         'App\Entity\ItemCorpus', 'c',
+        //         'WITH', "c.itemId = inr.itemIdName AND c.corpusId = 'epc'");
+        // } elseif ($corpus == 'can') {
+        //     $qb->join(
+        //         'App\Entity\ItemCorpus', 'c',
+        //         'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in ('can', 'dreg-can')"
+        //     );
+        // }
+
+        if ($model->corpus == 'can') {
+            $corpusParam = ['can', 'dreg-can'];
+        }else {
+            $corpusParam = explode(',', $model->corpus);
+        }
+
+        if (!in_array('c', $joined_list)) {
+            $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in (:corpus)")
+               ->setParameter('corpus', $corpusParam);
+            $joined_list[] = 'c';
+        }
+
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
+        if (!in_array('pr', $joined_list) and ($office or $domstift or $diocese or $place)) {
+            if ($corpus == 'epc') {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+            } elseif ($corpus == 'can') {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+            }
+            $joined_list[] = 'pr';
+        }
+
+        if ($domstift) {
+            $qb->join('App\Entity\Institution', 'domstift', 'WITH',
+                      "domstift.id = pr.institutionId and domstift.corpusId = 'cap'");
+        }
+
         if ($reference) {
             $qb->leftjoin('i.reference', 'ref')
-               ->leftjoin('\App\Entity\ReferenceVolume', 'vol', 'WITH', 'vol.referenceId = ref.referenceId')
+               ->leftjoin('\App\Entity\ReferenceVolume', 'vol',
+                          'WITH', 'vol.referenceId = ref.referenceId AND vol.itemTypeId = i.itemTypeId')
                ->andWhere('vol.titleShort LIKE :q_ref')
                ->setParameter('q_ref', '%'.$reference.'%');
         }
 
-        $isDeleted = $model->isDeleted;
-        if ($isDeleted) {
-            $qb->andWhere("i.isDeleted = 1");
-        } else {
-            $qb->andWhere("i.isDeleted = 0");
+        if ($comment_duplicate) {
+            $qb->andWhere('i.commentDuplicate LIKE :comment_duplicate')
+               ->setParameter('comment_duplicate', '%'.$comment_duplicate.'%');
         }
 
-        // '- alle -' returns null, which is filtered out by array_filter
-        $edit_status = array_filter(array_values($model->editStatus));
-        if (!is_null($edit_status) and count($edit_status) > 0) {
-            $qb->andWhere("i.editStatus in (:q_status)")
-               ->setParameter('q_status', $edit_status);
-        } else {
-            $qb->andWhere("i.editStatus <> 'Dublette'");
+        if ($comment_edit) {
+            $qb->andWhere('p.comment LIKE :comment_edit')
+               ->setParameter('comment_edit', '%'.$comment_edit.'%');
         }
 
-        $commentDuplicate = $model->commentDuplicate;
-        if ($commentDuplicate) {
-            $qb->andWhere("i.commentDuplicate = :q_commentDuplicate")
-               ->setParameter('q_commentDuplicate', $commentDuplicate);
+        if ($office) {
+            $qb->leftjoin('pr.role', 'role')
+               ->andWhere('pr.roleName LIKE :q_office OR role.name LIKE :q_office')
+               ->setParameter('q_office', '%'.$office.'%');
         }
 
-        $comment = $model->comment;
-        if ($comment) {
-            $qb->andWhere("p.comment LIKE :q_comment")
-               ->setParameter('q_comment', '%'.$comment.'%');
+        if ($place) {
+            $qb->join('App\Entity\PersonRole', 'pr_place', 'WITH', 'pr_place.personId = pr.personId')
+               ->join('App\Entity\InstitutionPlace', 'inst_place', 'WITH',
+                      'pr_place.institutionId = inst_place.institutionId '.
+                      'AND ( '.
+                      'pr_place.numDateBegin IS NULL AND pr_place.numDateEnd IS NULL '.
+                      'OR (inst_place.numDateBegin < pr_place.numDateBegin AND pr_place.numDateBegin < inst_place.numDateEnd) '.
+                      'OR (inst_place.numDateBegin < pr_place.numDateEnd AND pr_place.numDateEnd < inst_place.numDateEnd) '.
+                      'OR (pr_place.numDateBegin < inst_place.numDateBegin AND inst_place.numDateBegin < pr_place.numDateEnd) '.
+                      'OR (pr_place.numDateBegin < inst_place.numDateEnd AND inst_place.numDateEnd < pr_place.numDateEnd))');
+        }
+
+        // add conditions
+
+        // $domstift is AND-combined with $office because both are joined via 'pr'
+        if ($domstift) {
+            $qb->andWhere('domstift.name LIKE :q_domstift')
+               ->setParameter('q_domstift', '%'.$domstift.'%');
+        }
+
+        if ($monastery) {
+            $qb->andWhere('institution.name LIKE :q_monastery')
+               ->setParameter('q_monastery', '%'.$monastery.'%');
+        }
+
+        if ($diocese) {
+            // if a diocese is given via diocese_id, there is also a value for diocese_name
+            // do not AND-combine diocese and domstift
+            $diocese = str_ireplace("erzbistum", "", $diocese);
+            $diocese = str_ireplace("bistum", "", $diocese);
+            $diocese = trim($diocese);
+            if ($corpus == 'epc') {
+                $qb ->andWhere("pr.dioceseName LIKE :q_diocese");
+            } else {
+                $qb->join('App\Entity\PersonRole', 'pr_dioc', 'WITH', 'pr_dioc.personId = pr.personId')
+                    ->andWhere("pr_dioc.dioceseName LIKE :q_diocese");
+
+            }
+
+            $qb->setParameter('q_diocese', '%'.$diocese.'%');
+        }
+
+        if ($place) {
+            $qb->andWhere('inst_place.placeName LIKE :q_place')
+               ->setParameter('q_place', '%'.$place.'%');
+        }
+
+        if ($name) {
+            // search also for name in 'Digitales Personenregister' (?)
+            if ($corpus == 'epc' or $corpus == 'can') {
+                $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = inr.itemIdRole');
+            } else {
+                $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = p.id');
+            }
+            // require that every word of the search query occurs in the name, regardless of the order
+            $q_list = UtilService::nameQueryComponents($name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('name_lookup.nameVariant LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
+        }
+
+        if ($someid || $year) {
+            if ($someid) {
+                // look for $someid in merged ancestors
+                $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+                $with_id_in_source = $model->isEdit;
+                $list_size_max = 200;
+                $descendant_id_list = $itemRepository->findIdByAncestor(
+                    $someid,
+                    $with_id_in_source,
+                    $list_size_max,
+                );
+
+                // look for $someid in external links
+                $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                    $someid,
+                    $list_size_max
+                );
+
+                $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+
+                if ($model->corpus == 'epc' or $model->corpus == 'can') {
+                    $qb->andWhere("inr.itemIdRole in (:q_id_list)")
+                       ->setParameter('q_id_list', $q_id_list);
+                } else {
+                    $qb->andWhere("p.id in (:q_id_list)")
+                       ->setParameter('q_id_list', $q_id_list);
+                }
+            }
+            if ($year) {
+                // we have no join to person at the level of ItemNameRole.itemIdRole so far
+                if ($model->corpus == 'epc' or $model->corpus == 'can') {
+                    $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = inr.itemIdRole');
+                    $qb->andWhere("p_year.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p_year.dateMax + :mgnyear")
+                       ->setParameter('mgnyear', Person::MARGINYEAR)
+                       ->setParameter('q_year', $year);
+                } else {
+                    $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p.dateMax + :mgnyear")
+                       ->setParameter('mgnyear', Person::MARGINYEAR)
+                       ->setParameter('q_year', $year);
+                }
+            }
         }
 
         $misc = $model->misc;
         if ($misc) {
-            // 2023-06-14 Namen mit einbeziehen
             $qb->leftjoin('p.role', 'pr_misc')
                ->leftjoin('pr_misc.institution', 'inst_misc')
                ->leftjoin('i.itemProperty', 'i_prop')
@@ -342,13 +396,6 @@ class PersonRepository extends ServiceEntityRepository {
                ->setParameter('q_max', $dateChanged[1]);
         }
 
-        return $qb;
-    }
-
-    private function addPersonConditionOffice($qb, $office) {
-        $qb->leftjoin('pr.role', 'r_office')
-           ->andWhere("pr.roleName LIKE :q_office OR r_office.name LIKE :q_office")
-           ->setParameter('q_office', '%'.$office.'%');
         return $qb;
     }
 
@@ -790,10 +837,5 @@ class PersonRepository extends ServiceEntityRepository {
         return $result;
     }
 
-    public function findPersonWithDreg() {
-
-        return $result;
-
-    }
 
 }

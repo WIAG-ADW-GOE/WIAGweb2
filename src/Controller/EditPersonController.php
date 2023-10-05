@@ -13,7 +13,7 @@ use App\Entity\PersonRoleProperty;
 use App\Entity\RolePropertyType;
 use App\Entity\Authority;
 use App\Entity\NameLookup;
-use App\Entity\CanonLookup;
+use App\Entity\ItemNameRole;
 use App\Entity\UserWiag;
 use App\Form\EditPersonFormType;
 use App\Form\Model\PersonFormModel;
@@ -55,24 +55,21 @@ class EditPersonController extends AbstractController {
     /**
      * display query form for persons;
      *
-     * @Route("/edit/person/query/{itemTypeId}", name="edit_person_query")
+     * @Route("/edit/person/query", name="edit_person_query")
      */
-    public function query(Request $request, int $itemTypeId) {
+    public function query(Request $request) {
 
         $model = new PersonFormModel;
         // set defaults
-        $edit_status_default_list = [
-            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
-            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
-        ];
-        $model->editStatus = [$edit_status_default_list[$itemTypeId]];
+        $model->editStatus = ['- alle -' => '- alle -'];
         $model->isOnline = true;
         $model->listSize = 20;
-        $model->itemTypeId = $itemTypeId;
+        $model->corpus = 'epc,can';
         $model->isEdit = true;
 
-        $status_choices = $this->statusChoices($itemTypeId);
-        $sort_by_choices = $this->sortByChoices($itemTypeId);
+        $status_choices = $this->statusChoices();
+
+        $sort_by_choices = $this->sortByChoices();
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
             'statusChoices' => $status_choices,
@@ -88,10 +85,10 @@ class EditPersonController extends AbstractController {
         if ($form->isSubmitted() && $form->isValid() && $model->isValid() || $model->isEmpty()) {
 
             $personRepository = $this->entityManager->getRepository(Person::class);
-            $itemRepository = $this->entityManager->getRepository(Item::class);
 
             $limit = 0; $offset = 0; $online_only = false;
-            $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
+            $id_all = $personRepository->findEditPersonIds($model, $limit, $offset);
+
             $count = count($id_all);
 
             //
@@ -125,7 +122,6 @@ class EditPersonController extends AbstractController {
             }
 
             $template_params = [
-                'itemTypeId' => $itemTypeId,
                 'personList' => $person_list,
                 'form' => $form,
                 'error_list' => $model->getInputError(),
@@ -136,13 +132,12 @@ class EditPersonController extends AbstractController {
         } else {
             $template_params = [
                 'form' => $form,
-                'itemTypeId' => $itemTypeId,
                 'error_list' => $model->getInputError(),
             ];
         }
 
         $template = 'edit_person/query.html.twig';
-        return $this->renderEditElements($template, $itemTypeId, $template_params);
+        return $this->renderEditElements($template, $template_params);
 
     }
 
@@ -151,29 +146,17 @@ class EditPersonController extends AbstractController {
      *
      * @return choice list for sorting
      */
-    private function sortByChoices($itemTypeId) {
-        $sort_by_choices = [
+    private function sortByChoices() {
+        return [
             'Vorname, Familienname' => 'givenname',
             'Familienname, Vorname' => 'familyname',
             'Domstift/Kloster' => 'institution',
+            'Bistum' => 'diocese',
             'Jahr' => 'year',
             'identisch mit' => 'commentDuplicate',
             'ID' => 'idInSource',
             'Status' => 'editStatus'
         ];
-
-        if ($itemTypeId == Item::ITEM_TYPE_ID['Bischof']['id']) {
-            $sort_by_choices = [
-                'Vorname, Familienname' => 'givenname',
-                'Familienname, Vorname' => 'familyname',
-                'Name' => 'name',
-                'Bistum' => 'diocese',
-                'Jahr' => 'year',
-                'identisch mit' => 'commentDuplicate',
-            ];
-        }
-
-        return $sort_by_choices;
     }
 
     /**
@@ -181,13 +164,14 @@ class EditPersonController extends AbstractController {
      *
      * @return choice list for status values
      */
-    private function statusChoices(int $itemTypeId) {
+    private function statusChoices() {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
-        $suggestions = $this->autocomplete->suggestEditStatus($itemTypeId, null, 60);
+        $q_param = null;
+        $suggestions = $this->autocomplete->suggestEditStatus($q_param, 60);
         $status_list = array_column($suggestions, 'suggestion');
 
-        $status_choices = ['- alle -' => null];
+        $status_choices = ['- alle -' => '- alle -'];
         $status_choices = array_merge($status_choices, array_combine($status_list, $status_list));
         // $status_choices = array_combine($status_list, $status_list);
 
@@ -451,7 +435,7 @@ class EditPersonController extends AbstractController {
             $template = "edit_person/item_debug.html.twig";
         }
 
-        return $this->renderEditElements($template, $item_type_id, [
+        return $this->renderEditElements($template, [
             'person' => $person,
             'personIndex' => $person_index,
         ]);
@@ -506,7 +490,7 @@ class EditPersonController extends AbstractController {
     }
 
 
-    private function renderEditElements($template, $item_type_id, $param_list) {
+    private function renderEditElements($template, $param_list) {
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -516,7 +500,6 @@ class EditPersonController extends AbstractController {
         $param_list_combined = array_merge($param_list, [
             'menuItem' => 'edit-menu',
             'editFormId' => self::EDIT_FORM_ID,
-            'itemTypeId' => $item_type_id,
             'userWiagRepository' => $userWiagRepository,
             'essentialAuthorityList' => $essential_auth_list,
             'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
@@ -973,7 +956,6 @@ class EditPersonController extends AbstractController {
     public function editSingle(Request $request,
                                $someid) {
 
-        $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $model = new PersonFormModel;
@@ -982,7 +964,7 @@ class EditPersonController extends AbstractController {
         $online_only = false;
         $limit = null;
         $offset = null;
-        $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
+        $id_all = $personRepository->findEditPersonIds($model, $limit, $offset, $online_only);
 
         $person_list = $personRepository->findList($id_all);
         if (count($person_list) > 0) {
