@@ -111,7 +111,9 @@ class EditPersonController extends AbstractController {
 
             $id_list = array_slice($id_all, $offset, $model->listSize);
 
-            $person_list = $personRepository->findList($id_list);
+            $deleted_flag = false;
+            $ancestor_flag = true;
+            $person_list = $personRepository->findList($id_list, $deleted_flag, $ancestor_flag);
 
             // add empty role, reference and url external if not present
             $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -367,6 +369,7 @@ class EditPersonController extends AbstractController {
             }
             // - target (ante)
             $uext_value = $target->getItem()->getGsn();
+            // $person_id == ID of target is already in $affected_id_list
             if (!is_null($uext_value)) {
                 $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
                 $affected_id_list = array_merge($affected_id_list, $item_id_list);
@@ -395,11 +398,16 @@ class EditPersonController extends AbstractController {
                     $ancestor_list = array_merge($ancestor_list, $q_ancestor_list);
                     $this->editService->updateItemAsParent($item_loop, $target_id);
                 }
-                // TODO 2023-10-10
+
                 foreach ($parent_list as $parent) {
-                    $affected_id_list_loop = $this->getIdLinkedPersons($parent);
-                    $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
+                    $affected_id_list[] = $parent->getId();
+                    $uext_value = $parent->getItem()->getGsn();
+                    if (!is_null($uext_value)) {
+                        $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
+                        $affected_id_list = array_merge($affected_id_list, $item_id_list);
+                    }
                 }
+                $affected_id_list = array_unique($affected_id_list);
 
                 $target->getItem()->setAncestor($ancestor_list);
             }
@@ -439,52 +447,53 @@ class EditPersonController extends AbstractController {
     }
 
     /**
+     * 2023-10-10 obsolete
      * @return list of included persons and own id
      */
-    private function getIdLinkedPersons($person) {
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+    // private function getIdLinkedPersons($person) {
+    //     $itemRepository = $this->entityManager->getRepository(Item::class);
+    //     $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
-        $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-        $type_id_episc_gs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
+    //     $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+    //     $type_id_episc_gs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
 
-        // bishop
-        $id_list = array($person->getId());
-        $uext = $person->getItem()->getUrlExternalObj('WIAG-ID');
-        if (!is_null($uext)) {
-            $item_ep_list = $itemRepository->findByIdPublic($uext->getValue());
-            if (!is_null($item_ep_list) and count($item_ep_list) > 0) {
-                $item_ep_id = $item_ep_list[0]->getId();
-                $id_list[] = $item_ep_id;
-                $item_ep = $itemRepository->find($item_ep_id);
+    //     // bishop
+    //     $id_list = array($person->getId());
+    //     $uext = $person->getItem()->getUrlExternalObj('WIAG-ID');
+    //     if (!is_null($uext)) {
+    //         $item_ep_list = $itemRepository->findByIdPublic($uext->getValue());
+    //         if (!is_null($item_ep_list) and count($item_ep_list) > 0) {
+    //             $item_ep_id = $item_ep_list[0]->getId();
+    //             $id_list[] = $item_ep_id;
+    //             $item_ep = $itemRepository->find($item_ep_id);
 
-                // canon GS
-                $uext = $item_ep->getUrlExternalObj('GS');
-                if (!is_null($uext)) {
-                    $id_list_cn_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs);
-                    $id_list_ep_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_episc_gs);
-                    $id_list = array_merge($id_list, $id_list_cn_gs, $id_list_ep_gs);
-                }
+    //             // canon GS
+    //             $uext = $item_ep->getUrlExternalObj('GS');
+    //             if (!is_null($uext)) {
+    //                 $id_list_cn_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs);
+    //                 $id_list_ep_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_episc_gs);
+    //                 $id_list = array_merge($id_list, $id_list_cn_gs, $id_list_ep_gs);
+    //             }
 
-            }
-        }
+    //         }
+    //     }
 
-        // canon GS
-        $uext = $person->getItem()->getUrlExternalObj('GS');
-        if (!is_null($uext)) {
-            $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
-        }
+    //     // canon GS
+    //     $uext = $person->getItem()->getUrlExternalObj('GS');
+    //     if (!is_null($uext)) {
+    //         $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
+    //     }
 
-        // is bishop referred to by a canon?
-        if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
-            $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($person->getItem()->getIdPublic());
-            foreach($canon_id_list as $canon_id) {
-                $id_list[] = $canon_id;
-            }
-        }
+    //     // is bishop referred to by a canon?
+    //     if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
+    //         $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($person->getItem()->getIdPublic());
+    //         foreach($canon_id_list as $canon_id) {
+    //             $id_list[] = $canon_id;
+    //         }
+    //     }
 
-        return($id_list);
-    }
+    //     return($id_list);
+    // }
 
 
     private function renderEditElements($template, $param_list) {
@@ -889,7 +898,6 @@ class EditPersonController extends AbstractController {
 
         $current_user = $this->getUser()->getId();
 
-
         // use EDIT_FORM_ID as the name attribute of the form in the template
         $form_data = $request->request->get(self::EDIT_FORM_ID);
         $person_index = array_keys($form_data)[0];
@@ -900,13 +908,13 @@ class EditPersonController extends AbstractController {
         $id_in_corpus_second = $request->query->get('selected');
 
         // find merge candidate
-        $iic_parts = UtilService::splitIdInCorpus($id_in_corpus_second);
-        $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($iic_parts['corpus'], $iic_parts['id']);
+        $cid = UtilService::splitIdInCorpus($id_in_corpus_second);
+        $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($cid['corpus'], $cid['id']);
         $second = is_null($ic_item_id) ? null : $itemRepository->find($ic_item_id['itemId']);
 
         $id_list = array($form_data['id']);
         if (is_null($second)) {
-            $msg = "Zu {$id_in_source_second} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
+            $msg = "Zu {$id_in_corpus_second} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
             $q_person = $personRepository->findList($id_list);
             $person = $q_person[0];
             $person->getItem()->getInputError()->add(new InputError("status", $msg));
@@ -921,22 +929,29 @@ class EditPersonController extends AbstractController {
             // get parent data
             $parent_list = $personRepository->findList($id_list);
 
-            $corpus_id_list = array();
-            foreach ($parent_list as $parent) {
-                $corpus_id_list = array_merge($corpus_id_list, $parent->getItem()->getCorpusIdList());
-            }
-            $corpus_id_list = array_unique($corpus_id_list);
-
-            // create new person with id_in_source and id_public
+            // create new person set corpus data
             $person = new Person($current_user);
-            foreach ($corpus_id_list as $corpus_id) {
-                $this->editService->makeItemCorpus($person->getItem(), $corpus_id);
+            $item = $person->getItem();
+            $corpus_list_new = $person->getItem()->getItemCorpus();
+            $corpus_found_list = array(); // add each corpus_id only once
+            foreach ($parent_list as $parent) {
+                $corpus_list = $parent->getItem()->getItemCorpus();
+                foreach ($corpus_list as $item_corpus) {
+                    $corpus_id = $item_corpus->getCorpusId();
+                    if (!in_array($corpus_id, $corpus_found_list)) {
+                        $corpus_found_list[] = $corpus_id;
+                        $item_corpus_new = clone $item_corpus;
+                        $item_corpus_new->setItem($item);
+                        $item_corpus_new->setItemId($item->getId());
+                        $corpus_list_new->add($item_corpus_new);
+                    }
+                }
             }
 
             $person->merge($parent_list);
-            $person->getItem()->setMergeStatus('merging');
+            $item->setMergeStatus('merging');
 
-            $person->getItem()->setFormIsEdited(true);
+            $item->setFormIsEdited(true);
         }
 
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -1006,13 +1021,13 @@ class EditPersonController extends AbstractController {
     /**
      * split merged item, show parents in edit forms
      *
-     * @Route("/edit/person/split-item/{itemTypeId}/{id}", name="edit_person_split_item")
+     * @Route("/edit/person/split-item/{id}", name="edit_person_split_item")
      *
      */
-    public function splitItem(int $itemTypeId, int $id) {
+    public function splitItem(int $id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
 
         $item = $itemRepository->find($id);
 
@@ -1021,23 +1036,22 @@ class EditPersonController extends AbstractController {
         if (!is_null($item)) {
             $parent_list = $itemRepository->findParents($item);
             // dd ($parent_list);
-            $online_involved = $item->getIsOnline();
 
             $item->setIsDeleted(1);
             $item->setMergeStatus('orphan');
             $item->setIsOnline(0);
             $orphan_person = $personRepository->find($id);
 
-            $affected_person_id_list = array();
-            if ($online_involved) {
-                $affected_person_id_list = $this->getIdLinkedPersons($orphan_person);
+            $affected_id_list = array($id);
+            $uext_value = $orphan_person->getItem()->getGsn();
+            if (!is_null($uext_value)) {
+                $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
+                $affected_id_list = array_merge($affected_id_list, $item_id_list);
             }
-
 
             $id_list = array();
             foreach($parent_list as $parent_item) {
-                $parent_item->updateIsOnline();
-                $online_involved = $online_involved or $parent_item->getIsOnline();
+                $this->editService->updateIsOnline($parent_item);
 
                 // merge_status
                 $parent_parent_list = $itemRepository->findParents($parent_item);
@@ -1047,27 +1061,25 @@ class EditPersonController extends AbstractController {
                 $parent_item->setMergedIntoId(null);
 
                 $id_list[] = $parent_item->getId();
-
                 $parent_item->setFormIsExpanded(1);
             }
 
-            $with_deleted = true;
-            $person_list = $personRepository->findList($id_list, $with_deleted);
-
+            $with_deleted = false;
+            $with_ancestor = true;
+            $parent_list = $personRepository->findList($id_list, $with_deleted, $with_ancestor);
 
             $this->entityManager->flush();
-
-            if ($online_involved) {
-                foreach ($person_list as $parent_person) {
-                    $affected_id_list_loop = $this->getIdLinkedPersons($parent_person);
-                    $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
+            // set up affected_id_list to update item_name_role
+            foreach ($parent_list as $parent) {
+                $affected_id_list[] = $parent->getId();
+                $uext_value = $parent->getItem()->getGsn();
+                if (!is_null($uext_value)) {
+                    $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
+                    $affected_id_list = array_merge($affected_id_list, $item_id_list);
                 }
-                $affected_person_id_list = array_unique($affected_person_id_list);
-                // 2023-10-06 TODO item_name_role
-                //$canonLookupRepository->clearByIdRole($affected_person_id_list);
-                //$canonLookupRepository->insertByListMayBe($affected_person_id_list);
             }
-
+            $affected_id_list = array_unique($affected_id_list);
+            $itemNameRoleRepository->updateByIdList($affected_id_list);
 
         } else {
             throw $this->createNotFoundException('ID is nicht gültig: '.$id);
@@ -1076,19 +1088,19 @@ class EditPersonController extends AbstractController {
         // add empty elements for blank form sections (after flush)
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-        foreach ($person_list as $person) {
-            $person->extractSeeAlso();
-            $person->addEmptyDefaultElements($auth_list);
+        foreach ($parent_list as $parent) {
+            $parent->extractSeeAlso();
+            $parent->addEmptyDefaultElements($auth_list);
 
-            $person->getItem()->setFormType('insert');
+            $parent->getItem()->setFormType('insert');
         }
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, $itemTypeId, [
-            'personList' => $person_list,
+        return $this->renderEditElements($template, [
+            'personList' => $parent_list,
             'form' => null,
-            'count' => count($person_list),
+            'count' => count($parent_list),
         ]);
 
     }
@@ -1096,39 +1108,39 @@ class EditPersonController extends AbstractController {
     /**
      * 2023-07-14 obsolete
      */
-    private function restoreCanonGs($target, $source) {
-        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal:: class);
-        $personRepository = $this->entityManager->getRepository(Person::class);
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
-        $canon_lookup = null;
+    // private function restoreCanonGs($target, $source) {
+    //     $urlExternalRepository = $this->entityManager->getRepository(UrlExternal:: class);
+    //     $personRepository = $this->entityManager->getRepository(Person::class);
+    //     $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+    //     $canon_lookup = null;
 
-        $auth_id = Item::AUTHORITY_ID['GS'];
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-        $uext_gs_target = $target->getItem()->getUrlExternalByAuthorityId($auth_id);
-        $uext_gs_source = $source->getItem()->getUrlExternalByAuthorityId($auth_id);
+    //     $auth_id = Item::AUTHORITY_ID['GS'];
+    //     $item_type_id = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+    //     $uext_gs_target = $target->getItem()->getUrlExternalByAuthorityId($auth_id);
+    //     $uext_gs_source = $source->getItem()->getUrlExternalByAuthorityId($auth_id);
 
-        // new state (source): reference has gone
-        if (!is_null($uext_gs_target) and is_null($uext_gs_source)) {
-            // is there a Domherr GS ?
-            $q_uext = $urlExternalRepository->findByValueAndItemType($uext_gs_target, $item_type_id);
-            if (!is_null($q_uext) and count($q_uext) > 0) {
-                $uext = $q_uext[0];
-                $item_id = $uext->getItemId();
-                // is there a reference by a bishop already
-                $current = $canonLookupRepository->findOneByPersonIdRole($item_id);
-                if (is_null($current) or $current->getPersonIdName() == $source->getId()) {
-                    $person = $personRepository->find($item_id);
-                    $canon_lookup = new CanonLookup();
-                    $canon_lookup->setPerson($person);
-                    $canon_lookup->setPersonIdName($item_id);
-                    $canon_lookup->setPrioRole(1);
-                    $this->entityManager->persist($canon_lookup);
-                }
-            }
-        }
+    //     // new state (source): reference has gone
+    //     if (!is_null($uext_gs_target) and is_null($uext_gs_source)) {
+    //         // is there a Domherr GS ?
+    //         $q_uext = $urlExternalRepository->findByValueAndItemType($uext_gs_target, $item_type_id);
+    //         if (!is_null($q_uext) and count($q_uext) > 0) {
+    //             $uext = $q_uext[0];
+    //             $item_id = $uext->getItemId();
+    //             // is there a reference by a bishop already
+    //             $current = $canonLookupRepository->findOneByPersonIdRole($item_id);
+    //             if (is_null($current) or $current->getPersonIdName() == $source->getId()) {
+    //                 $person = $personRepository->find($item_id);
+    //                 $canon_lookup = new CanonLookup();
+    //                 $canon_lookup->setPerson($person);
+    //                 $canon_lookup->setPersonIdName($item_id);
+    //                 $canon_lookup->setPrioRole(1);
+    //                 $this->entityManager->persist($canon_lookup);
+    //             }
+    //         }
+    //     }
 
-        return $canon_lookup;
-    }
+    //     return $canon_lookup;
+    // }
 
     /**
      * display query form for doublets

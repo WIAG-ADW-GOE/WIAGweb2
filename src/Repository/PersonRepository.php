@@ -487,59 +487,6 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-08-15 obsolete?
-     * collect office data from different sources
-     */
-    // public function getBishopOfficeData($person_id) {
-    //     $entityManager = $this->getEntityManager();
-    //     $itemRepository = $entityManager->getRepository(Item::class);
-
-    //     $item = array($itemRepository->find($person_id));
-    //     // get item from Germania Sacra
-    //     $authorityGs = Authority::ID['GS'];
-    //     $gsn = $item[0]->getUrlExternalByAuthorityId($authorityGs);
-    //     if (!is_null($gsn)) {
-    //         // Each person from Germania Sacra should have an entry in table id_external with its GSN.
-    //         // If data are up to date at most one of these types is successful.
-    //         $itemTypeGs = [
-    //             Item::ITEM_TYPE_ID['Domherr GS']['id'],
-    //             Item::ITEM_TYPE_ID['Bischof GS']['id']
-    //         ];
-    //         $itemGs = $itemRepository->findByUrlExternal($itemTypeGs, $gsn, $authorityGs);
-    //         $item = array_merge($item, $itemGs);
-    //     }
-
-    //     // get item from Domherrendatenbank
-    //     $authorityWIAG = Authority::ID['WIAG-ID'];
-    //     $wiagid = $item[0]->getIdPublic();
-    //     if (!is_null($wiagid)) {
-    //         $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
-    //         $canon = $itemRepository->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
-    //         $item = array_merge($item, $canon);
-    //     }
-
-
-    //     // set places and references and authorities in one query
-
-    //     $id_list = array_map(function ($i) {
-    //         return $i->getId();
-    //     }, $item);
-
-    //     $person_role = $this->findList($id_list);
-
-    //     $role_list = $this->getRoleList($person_role);
-    //     $entityManager->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
-
-    //     $item_role = array_map(function($p) {return $p->getItem();}, $person_role);
-    //     $entityManager->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role);
-    //     $entityManager->getRepository(Authority::class)->setAuthority($item_role);
-
-    //     return $person_role;
-
-    // }
-
-
-    /**
      *
      */
     public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
@@ -570,11 +517,6 @@ class PersonRepository extends ServiceEntityRepository {
 
         $em = $this->getEntityManager();
         $itemRepository = $em->getRepository(Item::class);
-
-        // 2023-08-30 obsolete
-        // foreach($person_list as $person) {
-        //     $itemRepository->setSibling($person);
-        // }
 
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);

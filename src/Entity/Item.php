@@ -360,7 +360,7 @@ class Item {
         return $list;
     }
 
-    public function getAllIdInCorpusWithPrefix() {
+    public function concatIdInCorpusWithPrefix() {
         $list = null;
         if (is_null($this->itemCorpus)) {
             return $list;

@@ -293,9 +293,9 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of items that were merged into $item
+     * @return list of items that were merged into $item in one or several steps
      */
-    public function findAncestor_hide(Item $item) {
+    public function findAncestor(Item $item) {
         $ancestor_list = array();
         $id_list = array($item->getId());
         $result_count = 1;

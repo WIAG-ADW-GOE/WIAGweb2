@@ -101,13 +101,19 @@ class ItemCorpusRepository extends ServiceEntityRepository
     /**
      *
      */
-    public function findItemIdByCorpusAndId($corpus_id, $id_in_corpus) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select('i.itemId')
-                   ->andWhere('i.corpusId = :corpus_id')
-                   ->andWhere('i.idInCorpus = :id')
+    public function findItemIdByCorpusAndId($corpus_id, $id_in_corpus, $with_merged = false) {
+        $qb = $this->createQueryBuilder('ic')
+                   ->select('ic.itemId')
+                   ->join('ic.item', 'i')
+                   ->andWhere('ic.corpusId = :corpus_id')
+                   ->andWhere('ic.idInCorpus = :id')
+                   ->andWhere('i.isDeleted = 0')
                    ->setParameter('corpus_id', $corpus_id)
                    ->setParameter('id', $id_in_corpus);
+
+        if (!$with_merged) {
+            $qb->andWhere("i.mergeStatus in ('child', 'original')");
+        }
 
         $query = $qb->getQuery();
         return $query->getOneOrNullResult();

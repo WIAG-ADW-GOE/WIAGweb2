@@ -94,19 +94,19 @@ class UrlExternalRepository extends ServiceEntityRepository
         return array_column($query->getResult(), 'itemId');
     }
 
-    public function findItemId($someid, $auth_id = null, $online = null) {
+    public function findItemId($someid, $auth_id = null, $online_flag = false) {
 
         $qb = $this->createQueryBuilder('u')
                    ->select('DISTINCT u.itemId')
-                   ->andWhere('u.value like :someid')
-                   ->setParameter(':someid', '%'.$someid.'%');
+                   ->andWhere('u.value = :someid')
+                   ->setParameter(':someid', $someid);
 
         if (!is_null($auth_id)) {
             $qb->andWhere('u.authorityId = :auth_id')
                ->setParameter(':auth_id', $auth_id);
         }
 
-        if (!is_null($online)) {
+        if ($online_flag) {
             $qb->join('u.item', 'i')
                ->andWhere('i.isOnline = 1');
         }

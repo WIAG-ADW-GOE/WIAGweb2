@@ -157,7 +157,7 @@ class EditPersonService {
         $this->updateIsOnline($item);
     }
 
-    private function updateIsOnline($item) {
+    public function updateIsOnline($item) {
         $corpusRepository = $this->entityManager->getRepository(Corpus::class);
 
         $item->setIsOnline(0);
@@ -981,7 +981,7 @@ class EditPersonService {
     }
 
 
-    public function makeItemCorpus($item, $corpus_id) {
+    private function makeItemCorpus($item, $corpus_id) {
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
         $item_corpus = new ItemCorpus();

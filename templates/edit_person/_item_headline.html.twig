@@ -48,9 +48,10 @@
 	    {% if person.describeReference %}
 		<span class="ms-2 text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
 	    {% endif %}
-	    <span class="ms-2">ID: {{ person.item.allIdInCorpusWithPrefix }}</span>
+	    {% set id_in_corpus_line = person.item.concatIdInCorpusWithPrefix %}
+	    <span class="ms-2">ID: {{ id_in_corpus_line }}</span>
 	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
-	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.allIdInCorpusWithPrefix) }}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], id_in_corpus_line) }}
 	    <span class="vr ms-auto"></span>
 	    <span class="bg-light ms-1 px-2">identisch mit: {{ person.item.commentduplicate }}</span>
 	    <span class="bg-light ms-1 px-2" style="min-width: 8rem;">{{ person.item.editStatus }}</span>
