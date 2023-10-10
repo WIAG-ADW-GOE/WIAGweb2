@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
+use App\Entity\ItemCorpus;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
 use App\Entity\Person;
@@ -18,7 +20,6 @@ use App\Entity\UrlExternal;
 use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
-use App\Entity\CanonLookup;
 use App\Entity\InputError;
 use App\Entity\UserWiag;
 
@@ -61,7 +62,6 @@ class EditPersonService {
 
         foreach($form_data as $data) {
             $id = $data['id'];
-            $item_type_id = $data['item']['itemTypeId'];
             // skip blank forms
             $person = null;
             if ($id == 0 && !isset($data['item']['formIsEdited'])) {
@@ -73,7 +73,7 @@ class EditPersonService {
                 $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
                 $person->getItem()->setFormIsExpanded($expanded_param);
             } else {
-                $person = new Person($item_type_id, $user_id);
+                $person = new Person($user_id);
                 $this->mapAndValidatePerson($person, $data);
 
                 // set form collapse state
@@ -88,7 +88,7 @@ class EditPersonService {
     }
 
     /**
-     * update $target with data in $person
+     * update $target with data in $person, call entitymanager->persist()
      */
     public function update($target, $person, $current_user_id) {
 
@@ -97,8 +97,15 @@ class EditPersonService {
         // item property
         $target_item = $target->getItem();
         $source_item = $person->getItem();
+
+        // corpus
+        $target_corpus = $target_item->getItemCorpus();
+        $source_corpus = $source_item->getItemCorpus();
+        $this->setItemAttributeList($target_item, $target_corpus, $source_corpus);
+
+        // item property
         $target_prop = $target_item->getItemProperty();
-        $source_prop = $person->getItem()->getItemProperty();
+        $source_prop = $source_item->getItemProperty();
         $this->setItemAttributeList($target_item, $target_prop, $source_prop);
         // reference
         $target_ref = $target_item->getReference();
@@ -108,14 +115,15 @@ class EditPersonService {
         $target_uext = $target_item->getUrlExternal();
         $source_uext = $source_item->getUrlExternal();
         // - look for changes
+        // -- 2023-10-06 obsolete in wiag3?
         $target_uext_wiag = $target_item->getUrlExternalByAuthority('WIAG-ID');
         $source_uext_wiag = $source_item->getUrlExternalByAuthority('WIAG-ID');
         if ($target_uext_wiag != $source_uext_wiag) {
             $target_item->setWiagChanged(true);
         }
 
-        $target_uext_gs = $target_item->getUrlExternalByAuthority('GS');
-        $source_uext_gs = $source_item->getUrlExternalByAuthority('GS');
+        $target_uext_gs = $target_item->getUrlExternalByAuthority('GSN');
+        $source_uext_gs = $source_item->getUrlExternalByAuthority('GSN');
         if ($target_uext_gs != $source_uext_gs) {
             $target_item->setGsChanged(true);
         }
@@ -145,8 +153,26 @@ class EditPersonService {
         $this->setRole($target, $person);
 
         // online?
-        $target->getItem()->updateIsOnline();
+        $item = $target->getItem();
+        $this->updateIsOnline($item);
+    }
 
+    private function updateIsOnline($item) {
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+
+        $item->setIsOnline(0);
+        $corpus_id_list = $item->getCorpusIdList();
+        // 'can' takes precedence
+        foreach (['can', 'epc'] as $corpus_id) {
+            $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+            $online_status = $corpus->getOnlineStatus();
+            if (in_array($corpus_id, $corpus_id_list) and $item->getEditStatus() == $online_status) {
+                $item->setIsOnline(1);
+                break;
+            }
+        }
+
+        return $item;
     }
 
     /**
@@ -155,7 +181,7 @@ class EditPersonService {
     private function setItemAttributeList($target, $target_list, $source_list) {
 
         // - remove entries
-        // $target_ref = $target->getItem()->getReference();
+        // e.g. $target_ref = $target->getItem()->getReference();
         foreach ($target_list as $t) {
             $target_list->removeElement($t);
             $t->setItem(null);
@@ -333,13 +359,26 @@ class EditPersonService {
     /**
      * compose ID public
      */
-    static function makeIdPublic($item_type_id, $numeric_part)  {
+    private function makeIdPublic($corpus_id, $numeric_part)  {
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+        $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
 
-        $width = Item::ITEM_TYPE[$item_type_id]['numeric_field_width'];
+        // find number fields
+        $match_list = null;
+        $mask = $corpus->getIdPublicMask();
+        preg_match_all("/#+/", $mask, $match_list);
+
+        $field = $match_list[0][0];
+        $width = strlen($field);
         $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
+        $id_public = str_replace($field, $numeric_field, $mask);
 
-        $mask = Item::ITEM_TYPE[$item_type_id]['id_public_mask'];
-        $id_public = str_replace("#", $numeric_field, $mask);
+        // second numeric_field: default is '001'
+        $field = $match_list[0][1];
+        $width = strlen($field);
+        $numeric_field = str_pad("1", $width, "0", STR_PAD_LEFT);
+        $id_public = str_replace($field, $numeric_field, $id_public);
+
         return $id_public;
     }
 
@@ -354,24 +393,6 @@ class EditPersonService {
         $url_external->setItem($item);
         $url_external->setAuthority($authority); // sets authorityId
         return $url_external;
-    }
-
-    /**
-     * create person object, sed idPublic and persist
-     */
-    public function initMetaData($person, $item_type_id) {
-
-        $item = $person->getItem();
-
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
-        $id_in_source = strval($id_in_source);
-        $item->setIdInSource($id_in_source);
-
-        $id_public = self::makeIdPublic($item_type_id, $id_in_source);
-        $item->setIdPublic($id_public);
-
-        return $person;
     }
 
     public function readParentList($person) {
@@ -390,7 +411,6 @@ class EditPersonService {
     /**
      * updateItemAsParent(Person $parent, $childId)
      *
-     * update internal merge meta data and table canon_lookup
      */
     public function updateItemAsParent(Item $item, $childId) {
         $item->setMergedIntoId($childId);
@@ -454,7 +474,7 @@ class EditPersonService {
         UtilService::setByKeys($item, $data['item'], $key_list);
 
         // online?
-        $item->updateIsOnline();
+        $this->updateIsOnline($item);
 
         $collect_merge_parent = array();
         if (array_key_exists('mergeParent', $data['item'])) {
@@ -481,7 +501,7 @@ class EditPersonService {
                      'notePerson'];
         UtilService::setByKeys($person, $data, $key_list);
 
-        // add error if $needle occurs in one of the fields
+        // add an error if $needle occurs in one of the fields
         $needle = Item::JOIN_DELIM;
         $this->complainSubstring($person, $key_list, Item::JOIN_DELIM);
 
@@ -513,6 +533,26 @@ class EditPersonService {
             foreach($data['role'] as $data_loop) {
                 $this->mapRole($person, $data_loop);
             }
+        }
+
+        // corpus
+        $corpus_found = false;
+        if (array_key_exists('corpus', $data)) {
+            foreach($data['corpus'] as $key => $data_loop) {
+                $corpus_flag = $this->mapItemCorpusMayBe($item, $key, $data_loop);
+                $corpus_found = ($corpus_found or $corpus_flag);
+            }
+        }
+
+        if (!$corpus_found) {
+            // keep existing data
+            if (array_key_exists('corpus', $data)) { // edit person
+                foreach($data['corpus'] as $key => $data_loop) {
+                    $corpus_flag = $this->mapItemCorpus($item, $key, $data_loop);
+                }
+            }
+            $msg = "Mindestens ein Corpus sollte ausgewählt sein.";
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
         // reference
@@ -853,7 +893,6 @@ class EditPersonService {
         $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
         $id = $data['id'];
-        $item_type_id = $item->getItemTypeId();
 
         $key_list = ['volume', 'page', 'idInReference'];
         $no_data = $this->utilService->no_data($data, $key_list);
@@ -875,7 +914,6 @@ class EditPersonService {
             $volume_query_result = $volumeRepository->findByTitleShort($volume_name);
             if ($volume_query_result) {
                 $volume = $volume_query_result[0];
-                $reference->setItemTypeId($item_type_id);
                 $reference->setReferenceId($volume->getReferenceId());
             } else {
                 $error_msg = "Keinen Band für '".$volume_name."' gefunden.";
@@ -891,6 +929,79 @@ class EditPersonService {
 
         return $reference;
     }
+
+    /**
+     * set corpus if flag is set, copy data if possible
+     */
+    private function mapItemCorpusMayBe($item, $corpus_id, $data) {
+
+        $flag_set = array_key_exists('flag', $data);
+        $has_data = array_key_exists('idInCorpus', $data);
+
+        if ($flag_set) {
+            $item_corpus = new ItemCorpus();
+            $item_corpus->setItem($item);
+            $item->getItemCorpus()->add($item_corpus);
+            $item_corpus->setCorpusId($corpus_id);
+
+            if ($has_data) {
+                $item_corpus->setIdInCorpus($data['idInCorpus']);
+                $item_corpus->setIdPublic($data['idPublic']);
+            } else {
+                $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+
+                // ID in corpus
+                $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+                $id_in_corpus = strval($id_in_corpus);
+                $item_corpus->setIdInCorpus($id_in_corpus);
+
+                // ID public
+                $id_public = $this->makeIdPublic($corpus_id, $id_in_corpus);
+                $item_corpus->setIdPublic($id_public);
+            }
+        }
+
+        return $flag_set;
+    }
+
+    /**
+     * set corpus if flag is set, copy data if possible
+     */
+    private function mapItemCorpus($item, $corpus_id, $data) {
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setCorpusId($corpus_id);
+
+        $item_corpus->setIdInCorpus($data['idInCorpus']);
+        $item_corpus->setIdPublic($data['idPublic']);
+
+        return $item_corpus;
+    }
+
+
+    public function makeItemCorpus($item, $corpus_id) {
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setCorpusId($corpus_id);
+
+
+        // ID in corpus
+        $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+        $id_in_corpus = strval($id_in_corpus);
+        $item_corpus->setIdInCorpus($id_in_corpus);
+
+        // ID public
+        $id_public = $this->makeIdPublic($corpus_id, $id_in_corpus);
+        $item_corpus->setIdPublic($id_public);
+
+        return $item_corpus;
+    }
+
 
     private function mapItemProperty($item, $data) {
 

@@ -19,7 +19,7 @@ class Authority {
         'Wikipedia' => 3,
         'VIAF' => 4,
         'WIAG-ID' => 5,
-        'GS' => 200,
+        'GSN' => 200,
         'World Historical Gazetteer' => 54,
     ];
 

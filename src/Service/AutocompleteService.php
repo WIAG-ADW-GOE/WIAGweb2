@@ -35,7 +35,7 @@ class AutocompleteService extends ServiceEntityRepository {
      *
      * $item_type_id is not used here (needed for uniform signature)
      */
-    public function suggestRole($queryParam, $hintSize, $corpus) {
+    public function suggestRole($queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Role::class);
         $qb = $repository->createQueryBuilder('r')
                          ->select("DISTINCT r.name AS suggestion")

@@ -92,5 +92,13 @@ class NameLookup
         return $this->nameVariant;
     }
 
+    public function setNameVariant(?string $name): self
+    {
+        $this->nameVariant = $name;
+
+        return $this;
+    }
+
+
 
 }

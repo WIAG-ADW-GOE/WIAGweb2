@@ -12,6 +12,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Diocese
 {
 
+    // 2023-10-05 query item_corpus instead?!
+    const CORPUS_ID = 'dioc';
     const SKOS_SCHEME_ID = 1;
     const EDIT_FIELD_LIST = [
         'name',
@@ -371,6 +373,10 @@ class Diocese
 
     public function getReferenceCount() {
         return $this->referenceCount;
+    }
+
+    public function getCorpusId() {
+        return self::CORPUS_ID;
     }
 
     /**

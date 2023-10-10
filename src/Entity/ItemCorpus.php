@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ItemCorpus
 {
+    const CORPUS_ID_DEFAULT = 'can';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -46,6 +48,12 @@ class ItemCorpus
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setItem($item): self {
+        $this->item = $item;
+
+        return $this;
     }
 
     public function getItemId(): ?int
@@ -94,5 +102,12 @@ class ItemCorpus
         $this->idInCorpus = $idInCorpus;
 
         return $this;
+    }
+
+    /**
+     * provide this function to be compatible with item properties or references
+     */
+    public function getDeleteFlag(): ?string {
+        return null;
     }
 }

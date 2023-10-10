@@ -73,16 +73,6 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         }
         $item_ref_list = array_merge(...$item_ref_list_meta);
 
-        $item_type_list = array();
-        foreach ($item_ref_list as $ref) {
-            $item_type_list[] = $ref->getItemTypeId();
-        }
-        $item_type_list = array_unique($item_type_list);
-
-        if (count($item_type_list) == 0) {
-            return null;
-        }
-
         $qb = $this->createQueryBuilder('r')
                    ->select('r');
 

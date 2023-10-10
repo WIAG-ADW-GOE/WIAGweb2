@@ -192,6 +192,9 @@ class ItemRepository extends ServiceEntityRepository
         return $item;
     }
 
+    /**
+     * 2023-10-05 obsolete
+     */
     public function findMaxIdInSource($itemTypeId) {
         $qb = $this->createQueryBuilder('i')
                    ->select("i.idInSource")
@@ -212,21 +215,22 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-10-10 obsolete
      * findMergeCandidate($id_in_source, $item_type_id)
      * status 'merged' is excluded
      */
-    public function findMergeCandidate($id_in_source, $item_type_id) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("i")
-                   ->andWhere('i.itemTypeId = :item_type_id')
-                   ->andWhere('i.idInSource = :id_in_source')
-                   ->andWhere("i.mergeStatus <> 'parent'")
-                   ->setParameter('item_type_id', $item_type_id)
-                   ->setParameter('id_in_source', $id_in_source);
+    // public function findMergeCandidate($id_in_source, $item_type_id) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select("i")
+    //                ->andWhere('i.itemTypeId = :item_type_id')
+    //                ->andWhere('i.idInSource = :id_in_source')
+    //                ->andWhere("i.mergeStatus <> 'parent'")
+    //                ->setParameter('item_type_id', $item_type_id)
+    //                ->setParameter('id_in_source', $id_in_source);
 
-        $query = $qb->getQuery();
-        return $query->getOneOrNullResult();
-    }
+    //     $query = $qb->getQuery();
+    //     return $query->getOneOrNullResult();
+    // }
 
     /**
      * @return entry matching $id_public or having $id_public as a parent (merging); is_online = true

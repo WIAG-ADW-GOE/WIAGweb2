@@ -10,7 +10,6 @@ class InputError {
 
     // values for section
     // 2022-08-30 Person: 'status', 'name', 'person', 'role', 'reference', 'external id'
-    // 2023-01-16 BishpFormModel: 'two'
     private $section;
     private $msg;
     private $level;

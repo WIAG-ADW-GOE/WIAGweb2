@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ItemNameRole;
 use App\Entity\Item;
 use App\Entity\Person;
+use App\Entity\Authority;
 use App\Entity\Institution;
 use App\Entity\UrlExternal;
 use App\Service\UtilService;
@@ -430,6 +431,86 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
         return $result;
+    }
+
+    /**
+     * update entries related to $id_list, they may be restored by insertByListMayBe
+     */
+    public function updateByIdList($id_list) {
+        $entityManager = $this->getEntityManager();
+        $personRepository = $entityManager->getRepository(Person::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+
+
+        // delete
+        $qb = $this->createQueryBuilder('inr')
+                   ->andWhere ('inr.itemIdRole in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+        $inr_list = $qb->getQuery()->getResult();
+        $n_del = count($inr_list);
+        foreach ($inr_list as $inr_del) {
+            $entityManager->remove($inr_del);
+        }
+        $entityManager->flush();
+
+        $n = 0;
+        $person_list = $personRepository->findList($id_list);
+
+        $id_primary_list = array();
+        $id_secondary_list = array();
+        $id_gs_list = array();
+        foreach ($person_list as $p_loop) {
+            $item = $p_loop->getItem();
+            $corpus_id_list = $item->getCorpusIdList();
+            $is_online = $item->getIsOnline();
+            // primary entry for 'can', 'epc'; filter for corpus = 'can' or 'epc'
+            if ($is_online == 1 and (in_array('can', $corpus_id_list) or in_array('epc', $corpus_id_list))) {
+                $id = $p_loop->getId();
+                $inr = new ItemNameRole($id, $id);
+                $inr->setItem($item);
+                $entityManager->persist($inr);
+                $id_primary_list[] = $id;
+                $n += 1;
+                // secondary entry
+                $dreg_value = $item->getGsn();
+                $online_flag = true;
+                $item_id_dreg_list = $urlExternalRepository->findItemId($dreg_value, Authority::ID['GSN'], $online_flag);
+                foreach ($item_id_dreg_list as $item_id) {
+                    if ($item_id != $id) {
+                        $inr = new ItemNameRole($id, $item_id);
+                        $inr->setItem($item);
+                        $entityManager->persist($inr);
+                        $n += 1;
+                        $id_secondary_list[] = $item_id;
+                    }
+                }
+            }
+
+        }
+
+        // independent GS entries
+        foreach ($person_list as $p_loop) {
+            $id = $p_loop->getId();
+            $item = $p_loop->getItem();
+            $corpus_id_list = $item->getCorpusIdList();
+            if ($item->getIsOnline() == 1
+                and !in_array($id, $id_secondary_list)
+                and (in_array('dreg-can', $corpus_id_list) or in_array('dreg-epc', $corpus_id_list))
+            ) {
+                $id_dreg = $p_loop->getId();
+                $inr = new ItemNameRole($id_dreg, $id_dreg);
+                $inr->setItem($item);
+                $entityManager->persist($inr);
+                $n += 1;
+
+            }
+
+        }
+
+        $entityManager->flush();
+
+        return $n;
+
     }
 
 

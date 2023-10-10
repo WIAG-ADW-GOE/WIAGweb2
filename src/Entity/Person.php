@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\PersonRole;
 use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
@@ -24,21 +25,6 @@ class Person {
         'comment' => 'Kommentar (red.)',
         'noteName' => 'Namenszusätze',
         'notePerson' => 'Bemerkung zur Person (online)'
-    ];
-
-    // 2023-08-29 obsolete?
-    const SORT_LIST_LEGACY = [
-        'familienname' => ['familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
-        'givenname' => ['givenname',  'familyname', 'inst_name', 'dateSortKey', 'personId'],
-        'institution' => ['inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'],
-        'diocese' => ['dioceseName', 'dateSortKey', 'familyname', 'givenname', 'personId'],
-        'year' => ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId'],
-        'commentDuplicate' => ['commentDuplicate', 'inst_name', 'familyname', 'givenname', 'personId'],
-        'idInSource' => ['idInSource', 'familyname', 'givenname', 'personId'],
-        'editStatus' => ['editStatus', 'idInSource', 'personId'],
-        'office' => ['dioceseName', 'inst_name', 'dateSortKey', 'familyname', 'givenname', 'personId'],
-        'name' => ['hasFamilyname', 'familyname',  'givenname', 'inst_name', 'dateSortKey', 'personId'],
-        'year' => ['dateSortKey', 'inst_name', 'familyname', 'givenname', 'personId']
     ];
 
     const MARGINYEAR = 1;
@@ -191,7 +177,7 @@ class Person {
     private $seeAlso;
 
 
-    public function __construct($item_type_id, $user_wiag_id) {
+    public function __construct($user_wiag_id) {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->nameLookup = new ArrayCollection();
@@ -199,8 +185,9 @@ class Person {
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
 
-        $this->item = new Item($item_type_id, $user_wiag_id);
-        $this->itemTypeId = $item_type_id;
+        $this->item = new Item($user_wiag_id);
+        // TODO 2023-01-05 clean-up
+        $this->itemTypeId = 0;
     }
 
     /**
@@ -815,6 +802,9 @@ class Person {
         return $this;
     }
 
+    /**
+     * an input form for a new person should contain empty fields for references etc.
+     */
     public function addEmptyDefaultElements($auth_list) {
         $role_list = $this->getRole();
         if (count($role_list) < 1) {

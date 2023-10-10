@@ -2,7 +2,33 @@
 <div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm mb-1 mt-1">
-	    <span class="input-group-text">Status</span>
+	    {# get corpus IDs (hidden) #}
+	    {% for item_corpus in person.item.ItemCorpus %}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
+	    {% endfor %}
+	    <span class="input-group-text">Corpus</span>
+	    <div class="input-group-text" style="background-color: MintCream;">
+		<input class="form-check-input mt-0 me-1"
+		       type="checkbox"
+		       value="1"
+		       aria-label="checkbox for corpus 'epc'"
+		       id="{{ base_id }}_corpus_epc"
+		       name="{{ base_input_name }}[corpus][epc][flag]"
+		       {% if 'epc' in person.item.corpusIdList %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_corpus_epc">Bischof</label>
+	    </div>
+	    <div class="input-group-text" style="background-color: MintCream;">
+		<input class="form-check-input mt-0 me-1"
+		       type="checkbox"
+		       value="1"
+		       aria-label="checkbox for corpus 'can'"
+		       id="{{ base_id }}_corpus_can"
+		       name="{{ base_input_name }}[corpus][can][flag]"
+		       {% if 'can' in person.item.corpusIdList %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_corpus_can">Domherr</label>
+	    </div>
+	    <span class="input-group-text ms-2">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
 		 url: path('person_suggest', { field: 'editStatus' }),
 		 }) }} >
@@ -22,9 +48,10 @@
 	    <input type="text" id="{{ base_id }}_item_commentduplicate"
 		   name="{{ base_input_name}}[item][commentDuplicate]"
 		   class="form-control form-control-sm wiag-input"
-		   style="max-width: 9em"
+		   style="max-width: 12em"
 		   value="{{ person.item.commentDuplicate }}"
 		   aria-label="Kommentar Dublette">
+
 	    {# get parent IDs (hidden) #}
 	    {% for parent_item in person.item.mergeParent %}
 		{{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeParent', loop.index0], parent_item.id) }}
@@ -59,14 +86,15 @@
 				    form="{{ base_id }}"
 				    formaction="{{ path("edit_person_merge_local") }}"
 				    data-action="modal-form#openMergeQuery">Zusammenführen ...</button></li>
-			{% if person.item.commentDuplicate %}
+			{% set id_in_source_duplicate=person.item.commentDuplicateFirst %}
+			{% if id_in_source_duplicate %}
 			    <li><button class="dropdown-item"
 					type="submit"
 					form="{{ base_id }}"
 					formaction="{{ path("edit_person_merge_local", {
-						    'selected': person.item.commentDuplicate
+						    'selected': id_in_source_duplicate
 						    }) }}"
-				data-action="submit-form#submitSingle">Zusammenführen mit {{ person.item.commentDuplicate }}.</button></li>
+				data-action="submit-form#submitSingle">Zusammenführen mit {{ id_in_source_duplicate }}.</button></li>
 			{% endif %}
 			{% if person.item.mergeStatus == 'child' %}
 			    <li data-controller="submit-confirm"

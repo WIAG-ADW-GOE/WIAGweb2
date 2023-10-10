@@ -1,9 +1,9 @@
-{# params: inst_type_id, controller select-institution #}
+{# params: inst_corpus_id, controller select-institution #}
 {# the autocompletion list depends on itemTypeId of the institution #}
 {% set inst_ac_url = {
-    1: path('person_suggest_base', { field: 'diocese' }),
-    2: path('person_suggest_base', { field: 'institution' }),
-    3: path('person_suggest_base', { field: 'institution' }),
+    'dioc': path('person_suggest_base', { field: 'diocese' }),
+    'mon': path('person_suggest_base', { field: 'institution' }),
+    'cap': path('person_suggest_base', { field: 'institution' }),
 } %}
 <select class="form-select form-select-sm"
 	style="min-width: 10rem"
@@ -11,17 +11,17 @@
 	name="{{ base_input_name_role }}[instTypeId]"
 	data-action="select-institution#select">
     <option value="1"
-	    data-url="{{ inst_ac_url.1 }}"
-	    {% if inst_type_id == 1 %}selected="selected"{% endif %}>Bistum</option>
+	    data-url="{{ inst_ac_url.dioc }}"
+	    {% if inst_corpus_id == 'dioc' %}selected="selected"{% endif %}>Bistum</option>
     <option value="2"
-	    data-url="{{ inst_ac_url.2 }}"
-	    {% if inst_type_id != 1 %}selected="selected"{% endif %}>Kloster/Domstift</option>
+	    data-url="{{ inst_ac_url.mon }}"
+	    {% if inst_corpus_id != 'dioc' %}selected="selected"{% endif %}>Kloster/Domstift</option>
 </select>
 {# diocese/monastery #}
 {% set inst_name = {
-    1: role.dioceseDisplayName,
-    2: role.institutionDisplayName,
-    3: role.institutionDisplayName,
+    'dioc': role.dioceseDisplayName,
+    'mon': role.institutionDisplayName,
+    'cap': role.institutionDisplayName,
 } %}
 <input type="text"
        class="d-none"
@@ -35,13 +35,13 @@
        value="{{ role.institutionDisplayName }}">
 <div class="w-40"
      data-controller="autocomplete"
-     data-autocomplete-url-value="{{ attribute(inst_ac_url, inst_type_id) }}"
+     data-autocomplete-url-value="{{ attribute(inst_ac_url, inst_corpus_id) }}"
      data-select-institution-target="carrier">
     <input type="text"
 	   id="{{ base_id_role }}_institution"
 	   name="{{ base_input_name_role }}[institution]"
 	   class="form-control form-control-sm rounded-0 wiag-input"
-	   value="{{ attribute(inst_name, inst_type_id) }}"
+	   value="{{ attribute(inst_name, inst_corpus_id) }}"
 	   spellcheck="false"
 	   aria-label="Institution"
 	   data-autocomplete-target="input"

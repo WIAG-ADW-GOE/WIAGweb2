@@ -16,6 +16,9 @@ use Doctrine\Common\Collections\Collection;
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
 class Item {
+    const DEFAULT_STATUS_NEW = 'angelegt';
+
+    // obsolete in WIAGweb3
     // redundant to table item_type (simpler, faster than a query)
     const ITEM_TYPE_ID = [
         'Bistum'     => ['id' => 1],
@@ -33,6 +36,7 @@ class Item {
         'Priester Utrecht' => ['id' => 10],
     ];
 
+    // obsolete in WIAGweb3
     const ITEM_TYPE_WIAG_PERSON_LIST = [
         self::ITEM_TYPE_ID['Bischof']['id'],
         self::ITEM_TYPE_ID['Domherr']['id'],
@@ -294,7 +298,7 @@ class Item {
      */
     private $ancestor = null;
 
-    public function __construct($item_type_id, $user_wiag_id) {
+    public function __construct($user_wiag_id) {
         $now = new \DateTimeImmutable('now');
         $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
@@ -308,13 +312,14 @@ class Item {
         $this->isNew = true;
         $this->ancestor = array();
 
-        $this->itemTypeId = $item_type_id;
+        // TODO 2023-10-05 clean up
+        $this->itemTypeId = 0;
         $this->createdBy = $user_wiag_id;
         $this->dateCreated = $now;
         $this->changedBy = $user_wiag_id;
         $this->dateChanged = $now;
 
-        $this->editStatus = self::ITEM_TYPE[$item_type_id]['edit_status_default'];
+        $this->editStatus = self::DEFAULT_STATUS_NEW;
 
         $this->inputError = new ArrayCollection();
 
@@ -339,6 +344,9 @@ class Item {
         return $this->itemNameRole;
     }
 
+    /**
+     * @return array of corpus IDs
+     */
     public function getCorpusIdList() {
         $list = array();
         if (is_null($this->itemCorpus)) {
@@ -362,7 +370,7 @@ class Item {
             $list[] = $ic->getCorpusId().'-'.$ic->getIdInCorpus();
         }
 
-        return implode($list, ", ");
+        return is_null($list) ? $list : implode($list, ", ");
     }
 
 
@@ -425,11 +433,11 @@ class Item {
     }
 
     /**
-     * short cut
+     * get value of a reference to Digitales Personenregister (short cut)
      */
     public function getGsn() {
-        $gsn_id = Authority::ID['GS'];
-        return $this->getUrlExternalByAuthority($gsn_id);
+        $dreg_id = Authority::ID['GSN'];
+        return $this->getUrlExternalByAuthority($dreg_id);
     }
 
     /**
@@ -746,7 +754,10 @@ class Item {
         return $this;
     }
 
-    public function updateIsOnline() {
+    /**
+     * 2023-10-05 obsolete?
+     */
+    public function updateIsOnline_legacy() {
         $online_status = self::ITEM_TYPE[$this->itemTypeId]['online_status'];
         $this->isOnline = $this->editStatus == $online_status ? 1 : 0;
     }
@@ -1008,6 +1019,20 @@ class Item {
     public function getCommentDuplicate(): ?string
     {
         return $this->commentDuplicate;
+    }
+
+    public function getCommentDuplicateFirst(): ?string {
+        $cd = $this->commentDuplicate;
+        if (is_null($cd) or trim($cd) == "") {
+            return null;
+        }
+        $cand_list = explode(",", $this->commentDuplicate);
+        $cand = trim($cand_list[0]);
+
+        $matches = array();
+        $parts = UtilService::splitIdInCorpus($cand);
+
+        return is_null($parts) ? null : $cand;
     }
 
     public function setCommentDuplicate(?string $commentDuplicate): self

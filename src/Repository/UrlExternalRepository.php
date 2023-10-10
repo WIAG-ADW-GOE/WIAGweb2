@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\UrlExternal;
 use App\Entity\Item;
+use App\Entity\Authority;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -93,23 +94,27 @@ class UrlExternalRepository extends ServiceEntityRepository
         return array_column($query->getResult(), 'itemId');
     }
 
-    public function findItemId($someid, $item_type_id = null) {
+    public function findItemId($someid, $auth_id = null, $online = null) {
 
         $qb = $this->createQueryBuilder('u')
                    ->select('DISTINCT u.itemId')
                    ->andWhere('u.value like :someid')
                    ->setParameter(':someid', '%'.$someid.'%');
 
-        if (!is_null($item_type_id)) {
-            $qb->join('u.item', 'i')
-               ->andWhere('i.itemTypeId = :item_type_id')
-               ->setParameter('item_type_id', $item_type_id);
+        if (!is_null($auth_id)) {
+            $qb->andWhere('u.authorityId = :auth_id')
+               ->setParameter(':auth_id', $auth_id);
         }
+
+        if (!is_null($online)) {
+            $qb->join('u.item', 'i')
+               ->andWhere('i.isOnline = 1');
+        }
+
 
         $q_result = $qb->getQuery()->getResult();
         return array_column($q_result, 'itemId');
     }
-
 
 
     /**
@@ -146,16 +151,19 @@ class UrlExternalRepository extends ServiceEntityRepository
         return $url_by_type;
     }
 
-    public function findByValueAndItemType($value, $item_type_id) {
-        $qb = $this->createQueryBuilder('u')
-                   ->innerJoin('u.item', 'i')
-                   ->andWhere('i.itemTypeId = :item_type_id')
-                   ->andWhere('u.value = :value')
-                   ->setParameter('item_type_id', $item_type_id)
-                   ->setParameter('value', $value);
-        $query = $qb->getQuery();
-        return $query->getResult();
-    }
+    /**
+     * 2023-10-10 obsolete
+     */
+    // public function findByValueAndItemType($value, $item_type_id) {
+    //     $qb = $this->createQueryBuilder('u')
+    //                ->innerJoin('u.item', 'i')
+    //                ->andWhere('i.itemTypeId = :item_type_id')
+    //                ->andWhere('u.value = :value')
+    //                ->setParameter('item_type_id', $item_type_id)
+    //                ->setParameter('value', $value);
+    //     $query = $qb->getQuery();
+    //     return $query->getResult();
+    // }
 
     /**
      * BEACON export
@@ -204,6 +212,7 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     /**
      * set idPublicVisible for external URLs in $person_list via GSN
+     * 2023-10-10 update (used for update from Digitales Personenregister)
      */
     public function setIdPublicVisible($person_list) {
         $gsn_list = array();
@@ -258,6 +267,26 @@ class UrlExternalRepository extends ServiceEntityRepository
         return count($person_list);
 
     }
+
+    /**
+     * 2023-10-10 obsolete
+     * @return list of pair of IDs for references to Digitales Personenregister
+     */
+    // public function findDregIds($id_list) {
+    //     $auth_dreg_id = Authority::ID['Dreg'];
+    //     $qb = $this->createQueryBuilder('uext')
+    //                ->select('uext.itemId AS id, i_dreg.id AS id_dreg')
+    //                ->join('\App\Entity\UrlExternal', 'uext_dreg', 'WITH', 'uext_dreg.value = uext.value and uext_dreg.authorityId = :auth_dreg_id')
+    //                ->join('\App\Entity\Item', 'i_dreg', 'WITH', 'uext_dreg.itemId = i_dreg.id')
+    //                ->join('\App\Entity\ItemCorpus', 'ic_dreg', 'WITH', "ic_dreg.itemId = i_dreg.id AND ic_dreg.corpusId in ('dreg-can', 'dreg-epc')")
+    //                ->andWhere('uext.itemId in (:id_list)')
+    //                ->setParameter('auth_dreg_id', $auth_dreg_id)
+    //                ->setParameter('id_list', $id_list);
+
+    //     $query = $qb->getQuery();
+
+    //     return $query->getResult();
+    // }
 
 
 

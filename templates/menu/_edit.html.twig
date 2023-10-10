@@ -6,7 +6,7 @@
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
 	<li><a class="dropdown-item" href="{{ path('edit_person_query') }}">Personen</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'itemTypeId' : '4' }) }}" target="_blank" rel="noopener">Bischöfe anlegen (neuer Tab)</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_new') }}" target="_blank" rel="noopener">Personen anlegen (neuer Tab)</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
 	<li><hr class="dropdown-divider"></li>
 	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'itemTypeId' : '4'}) }}">Dubletten Bischöfe</a></li>

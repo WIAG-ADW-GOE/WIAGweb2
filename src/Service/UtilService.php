@@ -940,4 +940,21 @@ class UtilService {
         return $value_list;
     }
 
+    /**
+     * split strings like 'can-53043'
+     */
+    static public function splitIdInCorpus($id_in_corpus) {
+        $match_list = array();
+
+        $flag = preg_match("/([a-z]{3,4})-([0-9]{3,})/", $id_in_corpus, $match_list);
+        if ($flag == 1) {
+            $parts['corpus'] = $match_list[1];
+            $parts['id'] = $match_list[2];
+            return $parts;
+        } else {
+            return null;
+        }
+
+    }
+
 }

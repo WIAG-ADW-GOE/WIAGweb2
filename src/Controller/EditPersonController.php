@@ -5,6 +5,7 @@ use App\Entity\Item;
 use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
+use App\Entity\ItemCorpus;
 use App\Entity\UrlExternal;
 use App\Entity\Person;
 use App\Entity\InputError;
@@ -91,7 +92,6 @@ class EditPersonController extends AbstractController {
 
             $count = count($id_all);
 
-            //
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
@@ -326,7 +326,6 @@ class EditPersonController extends AbstractController {
         $person_index = array_keys($form_data)[0];
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
-        $item_type_id = $form_data['item']['itemTypeId'];
 
         /* map/validate form */
         // fill person_list
@@ -341,13 +340,13 @@ class EditPersonController extends AbstractController {
             $itemRepository = $em->getRepository(Item::class);
             $personRepository = $em->getRepository(Person::class);
             $nameLookupRepository = $em->getRepository(NameLookup::class);
-            $canonLookupRepository = $em->getRepository(CanonLookup::class);
+            $itemNameRoleRepository = $em->getRepository(ItemNameRole::class);
+            $urlExternalRepository = $em->getRepository(UrlExternal::class);
 
             // this function is only called if form data have changed
             if ($person_id == 0) { // new entry
                 // start out with a new object to avoid cascade errors
-                $person_new = new Person($item_type_id, $current_user_id);
-                $this->editService->initMetaData($person_new, $item_type_id);
+                $person_new = new Person($current_user_id);
                 $this->entityManager->persist($person_new);
                 $this->entityManager->flush();
                 $person_id = $person_new->getItem()->getId();
@@ -357,18 +356,23 @@ class EditPersonController extends AbstractController {
             $query_result = $personRepository->findList([$person_id]);
             $target = $query_result[0];
 
-            $online_involved = ($target->getItem()->getIsOnline() or $person->getItem()->getIsOnline());
-
-            // collect list of persons for update of canon_lookup
-            $affected_person_id_list = array();
-            if ($online_involved) {
-                $affected_person_id_list = array_merge(
-                    $this->getIdLinkedPersons($target),
-                    $this->getIdLinkedPersons($person)
-                );
+            // collect IDs of affected persons
+            $affected_id_list = [$person_id];
+            // - get value of URL external via object data
+            // - person
+            $uext_value = $person->getItem()->getGsn();
+            if (!is_null($uext_value)) {
+                $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
+                $affected_id_list = array_merge($affected_id_list, $item_id_list);
             }
+            // - target (ante)
+            $uext_value = $target->getItem()->getGsn();
+            if (!is_null($uext_value)) {
+                $item_id_list = $urlExternalRepository->findItemId($uext_value, Authority::ID['GSN']);
+                $affected_id_list = array_merge($affected_id_list, $item_id_list);
+            }
+            $affected_id_list = array_unique($affected_id_list);
 
-            // $nameLookupRepository->clearPerson($target);
 
             // transfer data from $person to $target
             $this->editService->update($target, $person, $current_user_id);
@@ -386,23 +390,20 @@ class EditPersonController extends AbstractController {
                 $ancestor_list = array();
                 foreach ($parent_list as $parent) {
                     $item_loop = $parent->getItem();
-                    $online_involved = ($online_involved or $item_loop->getIsOnline());
                     $ancestor_list[] = $item_loop;
                     $q_ancestor_list = $itemRepository->findAncestor($item_loop);
                     $ancestor_list = array_merge($ancestor_list, $q_ancestor_list);
                     $this->editService->updateItemAsParent($item_loop, $target_id);
                 }
-                if ($online_involved) {
-                    foreach ($parent_list as $parent) {
-                        $affected_id_list_loop = $this->getIdLinkedPersons($parent);
-                        $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
-                    }
+                // TODO 2023-10-10
+                foreach ($parent_list as $parent) {
+                    $affected_id_list_loop = $this->getIdLinkedPersons($parent);
+                    $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
                 }
 
                 $target->getItem()->setAncestor($ancestor_list);
             }
 
-            // update auxiliary tables see also below: global update for canons GS and bishops
             $nameLookupRepository->update($target);
 
             // form status
@@ -412,11 +413,7 @@ class EditPersonController extends AbstractController {
 
             $this->entityManager->flush();
 
-            if ($online_involved) {
-                $affected_person_id_list = array_unique($affected_person_id_list);
-                $canonLookupRepository->clearByIdRole($affected_person_id_list);
-                $canonLookupRepository->insertByListMayBe($affected_person_id_list);
-            }
+            $itemNameRoleRepository->updateByIdList($affected_id_list);
 
             $person=$target;
         }
@@ -586,18 +583,18 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * display edit form for new bishop
+     * display edit form for new person
      *
-     * @Route("/edit/person/new/{itemTypeId}", name="edit_person_new")
+     * @Route("/edit/person/new", name="edit_person_new")
      */
-    public function newList(int $itemTypeId) {
-        $person = $this->makePerson($itemTypeId);
+    public function newList() {
+        $person = $this->makePerson();
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, $itemTypeId, [
+        return $this->renderEditElements($template, [
             'personList' => array($person),
             'count' => 1,
         ]);
@@ -607,25 +604,25 @@ class EditPersonController extends AbstractController {
     /**
      * display edit form for new person
      *
-     * @Route("/edit/person/new-entry/{itemTypeId}", name="edit_person_new_entry")
+     * @Route("/edit/person/new-entry", name="edit_person_new_entry")
      */
-    public function _newEntry(Request $request, int $itemTypeId) {
-        $person = $this->makePerson($itemTypeId);
+    public function _newEntry(Request $request) {
+        $person = $this->makePerson();
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
         $template = 'edit_person/_item.html.twig';
         $personIndex = $request->query->get('current_idx');
 
-        return $this->renderEditElements($template, $itemTypeId, [
+        return $this->renderEditElements($template, [
             'person' => $person,
             'personIndex' => $personIndex,
         ]);
 
     }
 
-    private function makePerson($itemTypeId) {
+    private function makePerson() {
         $current_user_id = intVal($this->getUser()->getId());
-        $person = new Person($itemTypeId, $current_user_id);
+        $person = new Person($current_user_id);
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
@@ -888,6 +885,8 @@ class EditPersonController extends AbstractController {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+
         $current_user = $this->getUser()->getId();
 
 
@@ -896,13 +895,15 @@ class EditPersonController extends AbstractController {
         $person_index = array_keys($form_data)[0];
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
-        $item_type_id = $form_data['item']['itemTypeId'];
 
         // see person_edit/_merge_list.html.twig
-        $id_in_source_second = $request->query->get('selected');
+        $id_in_corpus_second = $request->query->get('selected');
 
+        // find merge candidate
+        $iic_parts = UtilService::splitIdInCorpus($id_in_corpus_second);
+        $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($iic_parts['corpus'], $iic_parts['id']);
+        $second = is_null($ic_item_id) ? null : $itemRepository->find($ic_item_id['itemId']);
 
-        $second = $itemRepository->findMergeCandidate($id_in_source_second, $item_type_id);
         $id_list = array($form_data['id']);
         if (is_null($second)) {
             $msg = "Zu {$id_in_source_second} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
@@ -920,14 +921,21 @@ class EditPersonController extends AbstractController {
             // get parent data
             $parent_list = $personRepository->findList($id_list);
 
-            // create new person
-            $person = new Person($item_type_id, $current_user);
+            $corpus_id_list = array();
+            foreach ($parent_list as $parent) {
+                $corpus_id_list = array_merge($corpus_id_list, $parent->getItem()->getCorpusIdList());
+            }
+            $corpus_id_list = array_unique($corpus_id_list);
+
+            // create new person with id_in_source and id_public
+            $person = new Person($current_user);
+            foreach ($corpus_id_list as $corpus_id) {
+                $this->editService->makeItemCorpus($person->getItem(), $corpus_id);
+            }
 
             $person->merge($parent_list);
             $person->getItem()->setMergeStatus('merging');
 
-            // set public id
-            $person->getItem()->setIdPublic($parent_list[0]->getItem()->getIdPublic());
             $person->getItem()->setFormIsEdited(true);
         }
 
@@ -941,7 +949,7 @@ class EditPersonController extends AbstractController {
 
         $template = "edit_person/_item.html.twig";
 
-        return $this->renderEditElements($template, $item_type_id, [
+        return $this->renderEditElements($template, [
             'person' => $person,
             'personIndex' => $person_index,
         ]);
@@ -983,7 +991,6 @@ class EditPersonController extends AbstractController {
         if (count($person_list) == 1) {
             $person_list[0]->getItem()->setFormIsExpanded(1);
         }
-
 
         $template = 'edit_person/new_person.html.twig';
 
@@ -1056,8 +1063,9 @@ class EditPersonController extends AbstractController {
                     $affected_person_id_list = array_merge($affected_person_id_list, $affected_id_list_loop);
                 }
                 $affected_person_id_list = array_unique($affected_person_id_list);
-                $canonLookupRepository->clearByIdRole($affected_person_id_list);
-                $canonLookupRepository->insertByListMayBe($affected_person_id_list);
+                // 2023-10-06 TODO item_name_role
+                //$canonLookupRepository->clearByIdRole($affected_person_id_list);
+                //$canonLookupRepository->insertByListMayBe($affected_person_id_list);
             }
 
 

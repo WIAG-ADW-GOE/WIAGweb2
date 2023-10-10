@@ -33,10 +33,21 @@ class ItemNameRole
      */
     private $itemIdRole;
 
+    public function __construct($item_id_name, $item_id_role) {
+        $this->itemIdName = $item_id_name;
+        $this->itemIdRole = $item_id_role;
+    }
+
+
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setItem($item): self {
+        $this->item = $item;
+        return $this;
     }
 
     public function getItemIdName(): ?int

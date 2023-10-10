@@ -82,10 +82,10 @@ class PersonRole
     private $dioceseName;
 
     /**
+     * 2023-10-05 obsolete?
      * @ORM\Column(type="integer", nullable=true)
      */
     private $institutionTypeId;
-
 
     /**
      * @ORM\Column(type="string", length=31, nullable=true)
@@ -370,15 +370,15 @@ class PersonRole
         return $this;
     }
 
-    public function getInstitutionTypeId(): ?int
+    public function getInstitutionCorpusId(): ?string
     {
         if ($this->institution) {
-            return $this->institution->getItemTypeId();
+            return $this->institution->getCorpusId();
         } elseif ($this->diocese) {
-            return $this->diocese->getItemTypeId();
+            return $this->diocese->getCorpusId();
         }
 
-        return $this->institutionTypeId;
+        return null;
     }
 
     public function setInstitutionTypeId(?int $institutionTypeId): self

@@ -738,24 +738,6 @@ class CanonLookupRepository extends ServiceEntityRepository
 
 
 
-    /**
-     * update entries for $person
-     * do not flush
-     */
-    public function insert_obsolete($person) {
-
-        $n_persist = 0;
-        if ($person->getItem()->getIsOnline()) {
-            $item_type_id = $person->getItem()->getItemTypeId();
-            if ($item_type_id == Item::ITEM_TYPE_ID['Bischof']['id']) {
-                $n_persist = $this->persistForBishop($person);
-            } elseif ($item_type_id == Item::ITEM_TYPE_ID['Domherr']['id']) {
-                $n_persist = $this->persistForCanon($person);
-            }
-        }
-        return $n_persist;
-    }
-
     private function addCanon($person) {
         $n_persist = 0;
         $em = $this->getEntityManager();

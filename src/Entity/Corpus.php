@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Corpus
 {
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
