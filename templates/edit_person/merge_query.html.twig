@@ -1,7 +1,7 @@
 <div class="container-fluid"
      data-controller="hide-on-input">
     {{ form_start(form, {
-	'action': path("edit_person_merge_query", { 'itemTypeId': itemTypeId }),
+	'action': path("edit_person_merge_query"),
 	'attr': { 'id': form.vars.id } }) }}
 	{# submit form via ENTER key #}
 	<div data-controller="trigger">

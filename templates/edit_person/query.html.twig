@@ -2,8 +2,7 @@
 
 {% block body %}
     <div data-controller="modal-form"
-	 {# TODO 2023-09-27: replace parameter itemTypeId #}
-	 data-modal-form-open-url-value="{{ path('edit_person_merge_query', { 'itemTypeId': 'can' }) }}">
+	 data-modal-form-open-url-value="{{ path('edit_person_merge_query') }}">
 	{{ include('edit_person/_query_body.html.twig') }}
 	{{ include("modal/_modal.html.twig", {
 	    'modal_title': "Personen zusammenführen",

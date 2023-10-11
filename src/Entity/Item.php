@@ -367,7 +367,7 @@ class Item {
         }
 
         foreach($this->itemCorpus as $ic) {
-            $list[] = $ic->getCorpusId().'-'.$ic->getIdInCorpus();
+            $list[] = $ic->getIdInCorpusWithPrefix();
         }
 
         return is_null($list) ? $list : implode($list, ", ");

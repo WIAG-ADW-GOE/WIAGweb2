@@ -69,7 +69,6 @@ class EditPersonController extends AbstractController {
         $model->isEdit = true;
 
         $status_choices = $this->statusChoices();
-
         $sort_by_choices = $this->sortByChoices();
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
@@ -144,7 +143,7 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * sortByChoices($itemTypeid)
+     * sortByChoices()
      *
      * @return choice list for sorting
      */
@@ -162,7 +161,7 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * statusChoices(int $itemTypeId)
+     * statusChoices()
      *
      * @return choice list for status values
      */
@@ -561,6 +560,7 @@ class EditPersonController extends AbstractController {
         $person_repository = $this->entityManager->getRepository(Person::class);
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
+        // TODO 2023-10-10
         $item_type_id = $form_data[0]['item']['itemTypeId'];
 
         $id_list = array_column($form_data, 'id');
@@ -642,7 +642,7 @@ class EditPersonController extends AbstractController {
 
 
     /**
-     *
+     * AJAX 2023-10-10 not in use
      * @Route("/edit/person/item-content/{itemTypeId}/{id}/{index}", name="edit_person_item_content")
      */
     public function _itemContent(Request $request,
@@ -673,10 +673,9 @@ class EditPersonController extends AbstractController {
     /**
      * @return template for new item property
      *
-     * @Route("/edit/person/new-property/{itemTypeId}/{personIndex}", name="edit_person_new_property")
+     * @Route("/edit/person/new-property/{personIndex}", name="edit_person_new_property")
      */
     public function newProperty(Request $request,
-                                int $itemTypeId,
                                 int $personIndex) {
 
         $prop = new ItemProperty();
@@ -690,7 +689,6 @@ class EditPersonController extends AbstractController {
             'prop' => $prop,
             'is_last' => true,
             'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
-            'itemTypeId' => $itemTypeId,
         ]);
 
     }
@@ -699,10 +697,9 @@ class EditPersonController extends AbstractController {
     /**
      * @return template for new role
      *
-     * @Route("/edit/person/new-role/{itemTypeId}/{personIndex}", name="edit_person_new_role")
+     * @Route("/edit/person/new-role/{personIndex}", name="edit_person_new_role")
      */
     public function newRole(Request $request,
-                            int $itemTypeId,
                             int $personIndex) {
 
         $role = new PersonRole();
@@ -710,7 +707,6 @@ class EditPersonController extends AbstractController {
 
         return $this->render('edit_person/_input_role.html.twig', [
             'editFormId' => self::EDIT_FORM_ID,
-            'itemTypeId' => $itemTypeId,
             'personIndex' => $personIndex,
             'current_idx' => $request->query->get('current_idx'),
             'role' => $role,
@@ -723,10 +719,9 @@ class EditPersonController extends AbstractController {
     /**
      * @return template for new role
      *
-     * @Route("/edit/person/new-role-property/{itemTypeId}/{personIndex}/{roleIndex}", name="edit_person_new_role_property")
+     * @Route("/edit/person/new-role-property/{personIndex}/{roleIndex}", name="edit_person_new_role_property")
      */
     public function newRoleProperty(Request $request,
-                                    int $itemTypeId,
                                     int $personIndex,
                                     int $roleIndex) {
 
@@ -735,14 +730,12 @@ class EditPersonController extends AbstractController {
 
         return $this->render('edit_person/_input_role_property.html.twig', [
             'editFormId' => self::EDIT_FORM_ID,
-            'itemTypeId' => $itemTypeId,
             'personIndex' => $personIndex,
             'roleIndex' => $roleIndex,
             'current_idx' => $request->query->get('current_idx'),
             'prop' => $prop,
             'is_last' => true,
             'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
-            'itemTypeId' => $itemTypeId,
         ]);
 
     }
@@ -757,10 +750,9 @@ class EditPersonController extends AbstractController {
     /**
      * @return template for new reference
      *
-     * @Route("/edit/person/new-reference/{itemTypeId}/{personIndex}", name="edit_person_new_reference")
+     * @Route("/edit/person/new-reference/{personIndex}", name="edit_person_new_reference")
      */
     public function newReference(Request $request,
-                                 int $itemTypeId,
                                  int $personIndex) {
 
         $reference = new ItemReference(0);
@@ -771,7 +763,6 @@ class EditPersonController extends AbstractController {
             'personIndex' => $personIndex,
             'current_idx' => $request->query->get('current_idx'),
             'ref' => $reference,
-            'itemTypeId' => $itemTypeId,
         ]);
 
     }
@@ -779,17 +770,15 @@ class EditPersonController extends AbstractController {
     /**
      * @return template for new external ID
      *
-     * @Route("/edit/person/new-url-external/{itemTypeId}/{personIndex}", name="edit_person_new_urlexternal")
+     * @Route("/edit/person/new-url-external/{personIndex}", name="edit_person_new_urlexternal")
      */
     public function newUrlExternal(Request $request,
-                                 int $itemTypeId,
                                  int $personIndex) {
 
         $urlExternal = new urlExternal();
 
         return $this->render('edit_person/_input_url_external.html.twig', [
             'editFormId' => self::EDIT_FORM_ID,
-            'itemTypeId' => $itemTypeId,
             'personIndex' => $personIndex,
             'current_idx' => $request->query->get('current_idx'),
             'urlext' => $urlExternal,
@@ -800,24 +789,22 @@ class EditPersonController extends AbstractController {
     /**
      * display query form for bishops; handle query
      *
-     * @Route("/edit/person/merge-query/{itemTypeId}", name="edit_person_merge_query")
+     * @Route("/edit/person/merge-query", name="edit_person_merge_query")
      */
     public function mergeQuery(Request $request,
-                               FormFactoryInterface $formFactory,
-                               int $itemTypeId) {
+                               FormFactoryInterface $formFactory) {
 
         $model = new PersonFormModel;
         // set defaults
-        $edit_status_default_list = [
-            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
-            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
-        ];
-        $model->editStatus = [$edit_status_default_list[$itemTypeId]];
+        $model->editStatus = ['- alle -' => '- alle -'];
+        $model->isOnline = true;
         $model->listSize = 10;
-        $model->itemTypeId = $itemTypeId;
+        $model->corpus = 'epc,can';
+        $model->isEdit = true;
 
-        $status_choices = $this->statusChoices($itemTypeId);
-        $sort_by_choices = $this->sortByChoices($itemTypeId);
+
+        $status_choices = $this->statusChoices();
+        $sort_by_choices = $this->sortByChoices();
 
         $form = $formFactory->createNamed(
             'person_merge_query',
@@ -833,7 +820,6 @@ class EditPersonController extends AbstractController {
         $model = $form->getData();
 
         $template_params = [
-            'itemTypeId' => $itemTypeId,
             'menuItem' => 'edit-menu',
             'form' => $form,
         ];
@@ -842,12 +828,10 @@ class EditPersonController extends AbstractController {
         if ($form->isSubmitted() && $form->isValid()) {
             $personRepository = $this->entityManager->getRepository(Person::class);
 
-            $itemRepository = $this->entityManager->getRepository(Item::class);
 
-            $limit = 0;
-            $offset = 0;
-            $online_only = false;
-            $id_all = $itemRepository->personIds($model, $limit, $offset, $online_only);
+            $limit = 0; $offset = 0; $online_only = false;
+            $id_all = $personRepository->findEditPersonIds($model, $limit, $offset);
+
             $count = count($id_all);
 
             $offset = $request->request->get('offset');
@@ -868,7 +852,6 @@ class EditPersonController extends AbstractController {
 
             $template_params = [
                 'menuItem' => 'edit-menu',
-                'itemTypeId' => $itemTypeId,
                 'form' => $form,
                 'count' => $count,
                 'personList' => $person_list,
@@ -905,12 +888,21 @@ class EditPersonController extends AbstractController {
         $form_data = array_values($form_data)[0];
 
         // see person_edit/_merge_list.html.twig
-        $id_in_corpus_second = $request->query->get('selected');
+        // - an item may have IDs for more than one corpus
+        $iic_second_list = explode(",", $request->query->get('selected'));
 
         // find merge candidate
-        $cid = UtilService::splitIdInCorpus($id_in_corpus_second);
-        $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($cid['corpus'], $cid['id']);
-        $second = is_null($ic_item_id) ? null : $itemRepository->find($ic_item_id['itemId']);
+        $second = null;
+        foreach ($iic_second_list as $iic) {
+            $cid = UtilService::splitIdInCorpus($iic);
+            if (!is_null($cid)) {
+                $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($cid['corpus'], $cid['id']);
+                if (!is_null($ic_item_id)) {
+                    $second = $itemRepository->find($ic_item_id['itemId']);
+                    break;
+                }
+            }
+        }
 
         $id_list = array($form_data['id']);
         if (is_null($second)) {

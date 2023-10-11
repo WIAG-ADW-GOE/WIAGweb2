@@ -80,6 +80,15 @@ class ItemCorpus
         return $this;
     }
 
+    public function getIdInCorpusWithPrefix(): ?string
+    {
+        if (is_null($this->idInCorpus)) {
+            return null;
+        }
+        return $this->corpusId.'-'.$this->idInCorpus;
+    }
+
+
     public function getIdPublic(): ?string
     {
         return $this->idPublic;

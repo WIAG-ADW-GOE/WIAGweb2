@@ -19,9 +19,12 @@
 		    {% set datedeath = person.combine('datedeath') %}
 		    <tr>
 			<td><div class="form-check">
-			    <input class="form-check-input" type="radio" name="selected" value="{{ person.item.idInSource }}">
+			    <input class="form-check-input" type="radio" name="selected" value="{{ person.item.concatIdInCorpusWithPrefix }}">
 			</div>
-			<td>{{ person.item.idInSource }}</td>
+			<td>{% for ic in person.item.itemCorpus %}
+			    {{ ic.idInCorpusWithPrefix }}<br/>
+			    {% endfor %}
+			</td>
 			<td>{{ displayname }}
 			    {% if not datebirth and not datedeath %}
 			    {% elseif datebirth and not datedeath %}
@@ -33,7 +36,6 @@
 			    {% endif %}
 			</td>
 			<td>{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-
 			    <small>{% if r.rolename %}{{ r.rolename }}{% endif %}
 				{% if r.diocese %}({{ r.diocese.name }})
 				{% elseif r.diocesename %}({{ r.diocesename }})
