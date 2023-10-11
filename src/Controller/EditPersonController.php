@@ -301,19 +301,6 @@ class EditPersonController extends AbstractController {
 
     // }
 
-    /**
-     * TEST: map data to objects and save them to the database
-     * @Route("/edit/person/restore-cn-gs-in-cl")
-     */
-    public function restoreCnGsInClTmp (request $request) {
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
-
-        $id_cand_list = $canonLookupRepository->addCanonGsGlob();
-
-        return $this->render("base.html.twig");
-    }
-
-
 
     /**
      * map data to objects and save them to the database
@@ -521,38 +508,42 @@ class EditPersonController extends AbstractController {
     public function deleteEntryLocal(Request $request) {
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemRepository = $this->entityManager->getRepository(Item::class);
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
-        $item_id = $form_data['id'];
+        $id = $form_data['id'];
 
-        $item = $itemRepository->find($item_id);
-        $item_was_online = $item->getIsOnline();
+        $item = $itemRepository->find($id);
 
         $item->setIsDeleted(1);
         $item->setIsOnline(0);
         $item->updateChangedMetaData($this->getUser());
 
-        // clear/update canon_lookup
-        if ($item_was_online) {
-            $q_person = $personRepository->findList([$item_id]);
-            if (!is_null($q_person) and count($q_person) > 0) {
-                $affected_id_list = $this->getIdLinkedPersons($q_person[0]);
-                $canonLookupRepository->clearByIdRole($affected_id_list);
-                $canonLookupRepository->insertByListMayBe($affected_id_list);
-            }
+        // clear item_name_role
+        // - collect IDs of affected persons
+        $affected_id_list = [$id];
+        // - get value of URL external via object data
+        // - person
+        $dreg_auth_id = Authority::ID['GSN'];
+        $uext_value = $urlExternalRepository->findValue($id, $dreg_auth_id);
+        if (!is_null($uext_value)) {
+            $item_id_list = $urlExternalRepository->findItemId($uext_value, $dreg_auth_id);
+            $affected_id_list = array_merge($affected_id_list, $item_id_list);
         }
 
+        $itemNameRoleRepository->updateByIdList($affected_id_list);
 
         $this->entityManager->flush();
 
-        return new Response("delete ID ".$item_id);
+        return new Response("delete ID ".$id);
     }
 
 
     /**
+     * 2023-10-11 not in use
      *
      * @Route("/edit/person/delete/{q_id}", name="edit_person_delete")
      */

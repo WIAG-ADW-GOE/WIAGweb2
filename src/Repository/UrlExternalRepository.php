@@ -94,6 +94,25 @@ class UrlExternalRepository extends ServiceEntityRepository
         return array_column($query->getResult(), 'itemId');
     }
 
+    /**
+     *
+     */
+    public function findValue($item_id, $auth_id) {
+        $qb = $this->createQueryBuilder('u')
+                   ->select('DISTINCT u.value')
+                   ->andWhere('u.itemId = :item_id')
+                   ->andWhere('u.authorityId = :auth_id')
+                   ->setParameter(':item_id', $item_id)
+                   ->setParameter(':auth_id', $auth_id);
+
+        $query = $qb->getQuery();
+        return $query->getOneOrNullResult();
+
+    }
+
+    /**
+     *
+     */
     public function findItemId($someid, $auth_id = null, $online_flag = false) {
 
         $qb = $this->createQueryBuilder('u')
@@ -180,7 +199,6 @@ class UrlExternalRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
         return $result;
-
     }
 
     /**
@@ -199,9 +217,9 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
 
     /**
-     * change GSN, do not flush
+     * change value, do not flush
      */
-    public function updateGsn($old, $new) {
+    public function updateValue($old, $new) {
         $uext_list = $this->findByValue($old);
         foreach ($uext_list as $uext) {
             $uext->setValue($new);

@@ -287,7 +287,7 @@ class GsoController extends AbstractController {
             $gsn_old = $person_target->getItem()->getGsn();
             $gsn_new = $person_gso->getItem()->getIdPublic();
             if ($gsn_old != $gsn_new) {
-                $urlExternalRepository->updateGsn($gsn_old, $gsn_new);
+                $urlExternalRepository->updateValue($gsn_old, $gsn_new);
             }
 
             $this->editPersonService->updateFromGso($person_target, $person_gso, $current_user_id);
