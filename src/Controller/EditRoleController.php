@@ -162,6 +162,7 @@ class EditRoleController extends AbstractController {
                 $role = $role_list[$id];
             } else {
                 $role = new Role($current_user_id);
+                EditService::setNewItemCorpus($role->getItem(), Role::CORPUS_ID, $entityManager);
             }
             $role->getItem()->setFormIsExpanded($form_is_expanded);
 
@@ -222,6 +223,10 @@ class EditRoleController extends AbstractController {
                         $item->setIdInSource($next_id);
                         EditService::removeUrlExternalMayBe($item, $entityManager);
                         $entityManager->persist($role);
+                        foreach ($item->getItemCorpus() as $ic) {
+                            $entityManager->persist($ic);
+                        }
+
                         // get new item from the database (ID updated)
                         $entityManager->flush();
                         $next_id += 1;
@@ -233,6 +238,7 @@ class EditRoleController extends AbstractController {
                     $item->setFormIsEdited(false);
                 }
             }
+
             $entityManager->flush();
         }
 
@@ -298,6 +304,9 @@ class EditRoleController extends AbstractController {
                 $entityManager->remove($role);
                 foreach($item->getUrlExternal() as $uext) {
                     $entityManager->remove($uext);
+                }
+                foreach($item->getItemCorpus() as $item_corpus) {
+                    $entityManager->remove($item_corpus);
                 }
                 $entityManager->remove($item);
             }

@@ -14,6 +14,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Role
 {
 
+    const CORPUS_ID = 'ofcm'; # officium
+
     const EDIT_FIELD_LIST = [
         'name',
         'plural',

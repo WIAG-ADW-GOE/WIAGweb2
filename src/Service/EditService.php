@@ -187,18 +187,21 @@ class EditService {
         // find number fields
         $match_list = null;
         $mask = $corpus->getIdPublicMask();
-        preg_match_all("/#+/", $mask, $match_list);
+        $id_public = null;
+        if (!is_null($mask)) {
+            preg_match_all("/#+/", $mask, $match_list);
 
-        $field = $match_list[0][0];
-        $width = strlen($field);
-        $numeric_str = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
-        $id_public = preg_replace("/#+/", $numeric_str, $mask, 1);
+            $field = $match_list[0][0];
+            $width = strlen($field);
+            $numeric_str = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
+            $id_public = preg_replace("/#+/", $numeric_str, $mask, 1);
 
-        // second numeric_field: default is '001'
-        $field = $match_list[0][1];
-        $width = strlen($field);
-        $numeric_field = str_pad("1", $width, "0", STR_PAD_LEFT);
-        $id_public = str_replace($field, $numeric_field, $id_public);
+            // second numeric_field: default is '001'
+            $field = $match_list[0][1];
+            $width = strlen($field);
+            $numeric_field = str_pad("1", $width, "0", STR_PAD_LEFT);
+            $id_public = str_replace($field, $numeric_field, $id_public);
+        }
 
         return $id_public;
     }

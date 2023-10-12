@@ -319,6 +319,9 @@ class EditDioceseController extends AbstractController {
                 foreach($item->getReference() as $ref) {
                     $entityManager->remove($ref);
                 }
+                foreach($item->getItemCorpus() as $item_corpus) {
+                    $entityManager->remove($item_corpus);
+                }
 
                 $entityManager->remove($diocese);
                 $entityManager->remove($item);
