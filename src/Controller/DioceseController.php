@@ -162,10 +162,11 @@ class DioceseController extends AbstractController {
                                  EntityManagerInterface $entityManager,
                                  String $field): Response {
         $query_param = $request->query->get('q');
+        $altes_reich_flag = $request->query->get('altes-reich');
         $fn_name = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
-        $suggestions = $dioceseRepository->$fn_name($query_param, self::SUGGEST_SIZE);
+        $suggestions = $dioceseRepository->$fn_name($query_param, self::SUGGEST_SIZE, $altes_reich_flag);
 
         return $this->render('_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),

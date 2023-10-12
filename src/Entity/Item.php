@@ -360,6 +360,19 @@ class Item {
         return $list;
     }
 
+    public function concatIdInCorpus() {
+        $list = null;
+        if (is_null($this->itemCorpus)) {
+            return $list;
+        }
+
+        foreach($this->itemCorpus as $ic) {
+            $list[] = $ic->getIdInCorpus();
+        }
+
+        return is_null($list) ? $list : implode($list, ", ");
+    }
+
     public function concatIdInCorpusWithPrefix() {
         $list = null;
         if (is_null($this->itemCorpus)) {

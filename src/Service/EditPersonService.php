@@ -22,7 +22,7 @@ use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
 use App\Entity\InputError;
 use App\Entity\UserWiag;
-
+use App\Service\EditService;
 use App\Service\UtilService;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -39,14 +39,12 @@ class EditPersonService {
 
     private $router;
     private $entityManager;
-    private $utilService;
 
     public function __construct(UrlGeneratorInterface $router,
-                                EntityManagerInterface $entityManager,
-                                UtilService $utilService) {
+                                EntityManagerInterface $entityManager) {
+
         $this->entityManager = $entityManager;
         $this->router = $router;
-        $this->utilService = $utilService;
     }
 
 
@@ -356,31 +354,6 @@ class EditPersonService {
         return $person;
     }
 
-    /**
-     * compose ID public
-     */
-    private function makeIdPublic($corpus_id, $numeric_part)  {
-        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
-        $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
-
-        // find number fields
-        $match_list = null;
-        $mask = $corpus->getIdPublicMask();
-        preg_match_all("/#+/", $mask, $match_list);
-
-        $field = $match_list[0][0];
-        $width = strlen($field);
-        $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
-        $id_public = str_replace($field, $numeric_field, $mask);
-
-        // second numeric_field: default is '001'
-        $field = $match_list[0][1];
-        $width = strlen($field);
-        $numeric_field = str_pad("1", $width, "0", STR_PAD_LEFT);
-        $id_public = str_replace($field, $numeric_field, $id_public);
-
-        return $id_public;
-    }
 
     /**
      * create UrlExternal object
@@ -693,7 +666,7 @@ class EditPersonService {
 
         // $key_list = ['role', 'institution', 'date_begin', 'date_end'];
         $key_list = ['role', 'institution'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
 
         $role = null;
 
@@ -740,7 +713,7 @@ class EditPersonService {
         // numerical values for dates
         $date_begin = $role->getDateBegin();
         if (!self::emptyDate($date_begin)) {
-            $year = $this->utilService->parseDate($date_begin, 'lower');
+            $year = UtilService::parseDate($date_begin, 'lower');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateBegin']);
                 $role->setNumDateBegin($year);
@@ -755,7 +728,7 @@ class EditPersonService {
         $date_end = $role->getDateEnd();
 
         if (!self::emptyDate($date_end)) {
-            $year = $this->utilService->parseDate($date_end, 'upper');
+            $year = UtilService::parseDate($date_end, 'upper');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateEnd']);
                 $role->setNumDateEnd($year);
@@ -770,9 +743,9 @@ class EditPersonService {
         // sort key
         $sort_key = UtilService::SORT_KEY_MAX;
         if (!$this->emptyDate($date_begin)) {
-            $sort_key = $this->utilService->sortKeyVal($date_begin);
+            $sort_key = UtilService::sortKeyVal($date_begin);
         } elseif (!$this->emptyDate($date_end)) {
-            $sort_key = $this->utilService->sortKeyVal($date_end);
+            $sort_key = UtilService::sortKeyVal($date_end);
         }
 
         // - we got a parse result or both, $date_begin and $date_end are empty
@@ -853,7 +826,7 @@ class EditPersonService {
 
         // the property entry is considered empty if no value is set
         $key_list = ['value'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $roleProperty = null;
 
         // new roleProperty
@@ -892,10 +865,8 @@ class EditPersonService {
         $referenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
-        $id = $data['id'];
-
         $key_list = ['volume', 'page', 'idInReference'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $reference = null;
 
         if ($no_data) {
@@ -956,7 +927,7 @@ class EditPersonService {
                 $item_corpus->setIdInCorpus($id_in_corpus);
 
                 // ID public
-                $id_public = $this->makeIdPublic($corpus_id, $id_in_corpus);
+                $id_public = EditService::makeIdPublic($corpus_id, $id_in_corpus, $this->entityManager);
                 $item_corpus->setIdPublic($id_public);
             }
         }
@@ -981,34 +952,12 @@ class EditPersonService {
     }
 
 
-    private function makeItemCorpus($item, $corpus_id) {
-        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
-
-        $item_corpus = new ItemCorpus();
-        $item_corpus->setItem($item);
-        $item->getItemCorpus()->add($item_corpus);
-        $item_corpus->setCorpusId($corpus_id);
-
-
-        // ID in corpus
-        $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
-        $id_in_corpus = strval($id_in_corpus);
-        $item_corpus->setIdInCorpus($id_in_corpus);
-
-        // ID public
-        $id_public = $this->makeIdPublic($corpus_id, $id_in_corpus);
-        $item_corpus->setIdPublic($id_public);
-
-        return $item_corpus;
-    }
-
-
     private function mapItemProperty($item, $data) {
 
         $id = $data['id'];
         // the property entry is considered empty if no value is set
         $key_list = ['value'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $itemProperty = null;
 
         // new itemProperty
@@ -1338,7 +1287,7 @@ class EditPersonService {
         // numerical values for dates
         $date_begin = $role->getDateBegin();
         if (!$this->emptyDate($date_begin)) {
-            $year = $this->utilService->parseDate($date_begin, 'lower');
+            $year = UtilService::parseDate($date_begin, 'lower');
             if (!is_null($year)) {
                 $role->setNumDateBegin($year);
             } else {
@@ -1352,7 +1301,7 @@ class EditPersonService {
         $date_end = $role->getDateEnd();
 
         if (!$this->emptyDate($date_end)) {
-            $year = $this->utilService->parseDate($date_end, 'upper');
+            $year = UtilService::parseDate($date_end, 'upper');
             if (!is_null($year)) {
                 $role->setNumDateEnd($year);
             } else {
@@ -1366,9 +1315,9 @@ class EditPersonService {
         // sort key
         $sort_key = UtilService::SORT_KEY_MAX;
         if (!$this->emptyDate($date_begin)) {
-            $sort_key = $this->utilService->sortKeyVal($date_begin);
+            $sort_key = UtilService::sortKeyVal($date_begin);
         } elseif (!$this->emptyDate($date_end)) {
-            $sort_key = $this->utilService->sortKeyVal($date_end);
+            $sort_key = UtilService::sortKeyVal($date_end);
         }
 
         // - we got a parse result or both, $date_begin and $date_end are empty

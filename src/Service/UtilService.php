@@ -291,7 +291,7 @@ class UtilService {
     /**
      * parse $s for an earliest or latest possible date. $dir is 'upper' or 'lower'
      */
-    public function parseDate($s, $dir): ?int {
+    static public function parseDate($s, $dir): ?int {
         $year = null;
         $matches = null;
 
@@ -502,7 +502,7 @@ class UtilService {
      * regular expressions to build sort keys from dates (century)
      * structure: regular expression, index of the relevant part, sort key
      */
-    private function rgxCtyList() {
+    static private function rgxCtyList() {
         $rgx_cty_list = [
             new ParseDate(self::RGXTCENTURY, 1, 850),
             new ParseDate(self::RGX1QCENTURY, 3, 530),
@@ -531,7 +531,7 @@ class UtilService {
      * regular expressions to build sort keys from dates
      * structure: regular expression, index of the relevant part, sort key
      */
-    private function rgxYearList() {
+    static private function rgxYearList() {
         $rgx_year_list = [
             new ParseDate(self::RGXSBEFORE, 2, 105),
             new ParseDate(self::RGXBEFORE, 2, 100),
@@ -549,7 +549,7 @@ class UtilService {
     /**
      * like rgxYearList but for pure numbers
      */
-    private function rgxYearNumList() {
+    static private function rgxYearNumList() {
         $rgx_year_num_list = [
             new ParseDate(self::RGXYEAR, 2, 150),
             new ParseDate(self::RGXYEARFC, 2, 150)
@@ -564,7 +564,7 @@ class UtilService {
     /**
      * parse year in $s and return a sort key
      */
-    public function sortKeyVal($s): ?int {
+    static public function sortKeyVal($s): ?int {
 
         // between
         $matches = null;
@@ -577,7 +577,7 @@ class UtilService {
             return $year * 1000 + $sort;
         }
 
-        foreach ($this->rgxCtyList() as $rgx_obj) {
+        foreach (self::rgxCtyList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
@@ -588,7 +588,7 @@ class UtilService {
             }
         }
 
-        foreach ($this->rgxYearList() as $rgx_obj) {
+        foreach (self::rgxYearList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
@@ -600,7 +600,7 @@ class UtilService {
 
         // 2023-07-07 allow decorations in date specifications if only a number is expected)
         $s = trim($s, self::DECORATIONYEAR);
-        foreach ($this->rgxYearNumList() as $rgx_obj) {
+        foreach (self::rgxYearNumList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
@@ -677,7 +677,7 @@ class UtilService {
         return $str_range;
     }
 
-    public function no_data($a, $key_list) {
+    static public function no_data($a, $key_list) {
         foreach($key_list as $key) {
             if (array_key_exists($key, $a) && trim($a[$key]) != "") {
                 return false;

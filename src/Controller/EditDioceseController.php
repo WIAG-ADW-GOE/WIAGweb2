@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\Diocese;
 use App\Entity\PersonRole;
+use App\Entity\ItemReference;
 use App\Entity\UrlExternal;
 use App\Entity\SkosLabel;
 use App\Entity\Authority;
@@ -27,6 +27,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 class EditDioceseController extends AbstractController {
+
+    const EDIT_FORM_ID = 'diocese_edit_form';
 
     /**
      * @Route("/edit/diocese/query", name="edit_diocese_query")
@@ -112,29 +114,22 @@ class EditDioceseController extends AbstractController {
             $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
             if ($id > 0) {
                 $diocese = $diocese_list[$id];
-
             } else {
                 $diocese = new Diocese($current_user_id);
             }
-            $diocese->getItem()->setFormIsExpanded($form_is_expanded);
+            $item = $diocese->getItem();
+            $item->setFormIsExpanded($form_is_expanded);
             if (isset($data['formIsEdited'])) {
-                $item = $diocese->getItem();
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;
                     $diocese_list[] = $diocese;
-                    $data['item']['idInSource'] = '0';
+                    EditService::setNewItemCorpus($item, Diocese::CORPUS_ID, $entityManager);
                 } else {
                     $diocese->getItem()->setIsNew(false);
                     $diocese_list[$id] = $diocese;
                 }
                 $item->setFormIsEdited(1);
-
-                // item
-                UtilService::setByKeys(
-                    $item,
-                    $data['item'],
-                    ['idInSource']);
 
                 // diocese
                 $is_altes_reich = array_key_exists('isAltesReich', $data) ? 1 : 0;
@@ -149,8 +144,8 @@ class EditDioceseController extends AbstractController {
                     Diocese::EDIT_FIELD_LIST);
 
                 $this->mapBishopricSeat($diocese, $data['bishopricSeat'], $entityManager);
-
                 EditService::mapUrlExternal($item, $data['urlext'], $entityManager);
+                EditService::mapReference($item, $data['ref'], $entityManager);
                 EditService::mapSkosLabel($diocese, $data['skosLabel']);
 
                 // validate input
@@ -174,7 +169,15 @@ class EditDioceseController extends AbstractController {
                         $item->setIdInSource($next_id);
                         EditService::removeUrlExternalMayBe($item, $entityManager);
                         EditService::removeSkosLabelMayBe($diocese, $entityManager);
+                        EditService::removeReferenceMayBe($item, $entityManager);
                         $entityManager->persist($diocese);
+                        foreach ($item->getItemCorpus() as $ic) {
+                            $entityManager->persist($ic);
+                        }
+                        foreach ($item->getReference() as $ref) {
+                            $entityManager->persist($ref);
+                        }
+
                         // get new item from the database (ID updated)
                         $entityManager->flush();
                         $next_id += 1;
@@ -189,7 +192,13 @@ class EditDioceseController extends AbstractController {
                     // delete flag?
                     EditService::removeUrlExternalMayBe($item, $entityManager);
                     EditService::removeSkosLabelMayBe($diocese, $entityManager);
+                    EditService::removeReferenceMayBe($item, $entityManager);
                     $item->updateChangedMetaData($current_user);
+
+                    foreach ($item->getReference() as $ref) {
+                        $entityManager->persist($ref);
+                    }
+
                     $item->setFormIsEdited(false);
 
                     $label_list = $diocese->getAltLabels();
@@ -260,6 +269,10 @@ class EditDioceseController extends AbstractController {
 
         $item = $diocese->getItem();
         if ($item->getFormIsExpanded()) {
+            $reference_list = $item->getReference();
+            if (count($reference_list) < 1) {
+                $reference_list->add(new ItemReference());
+            }
             $uext_list = $item->getUrlExternal();
             if (count($uext_list) < 1) {
                 $uext_list->add(new UrlExternal());
@@ -303,6 +316,10 @@ class EditDioceseController extends AbstractController {
                 foreach($item->getUrlExternal() as $uext) {
                     $entityManager->remove($uext);
                 }
+                foreach($item->getReference() as $ref) {
+                    $entityManager->remove($ref);
+                }
+
                 $entityManager->remove($diocese);
                 $entityManager->remove($item);
             }
@@ -327,6 +344,7 @@ class EditDioceseController extends AbstractController {
 
 
     /**
+     * AJAX
      * get data for item with ID $id and pass $index
      * @Route("/edit/diocese/item/{id}/{index}", name="edit_diocese_item")
      */
@@ -337,7 +355,8 @@ class EditDioceseController extends AbstractController {
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
-        $diocese = $dioceseRepository->find($id);
+        $q_result = $dioceseRepository->findList([$id]);
+        $diocese = array_values($q_result)[0];
         $diocese->getItem()->setFormIsExpanded(1);
 
         $item = $diocese->getItem();
@@ -368,6 +387,8 @@ class EditDioceseController extends AbstractController {
 
         $current_user_id = $this->getUser()->getId();
         $obj = new Diocese($current_user_id);
+        // set default
+        $obj->setDioceseStatus('Bistum');
         $obj->getItem()->setFormIsExpanded(true);
 
         $this->setDisplayData($obj, $entityManager);
@@ -381,6 +402,25 @@ class EditDioceseController extends AbstractController {
     }
 
     /**
+     * @return template for new reference
+     *
+     * @Route("/edit/diocese/new-reference/{itemIndex}", name="edit_diocese_new_reference")
+     */
+    public function newReference(Request $request,
+                                 int $itemIndex) {
+
+        $reference = new ItemReference(0);
+
+        return $this->render('edit_diocese/_input_reference.html.twig', [
+            'editFormId' => self::EDIT_FORM_ID,
+            'itemIndex' => $itemIndex,
+            'current_idx' => $request->query->get('current_idx'),
+            'ref' => $reference,
+        ]);
+
+    }
+
+    /**
      * @return template for new external ID
      *
      * @Route("/edit/diocese/new-url-external/{itemIndex}", name="edit_diocese_new_urlexternal")
@@ -388,16 +428,14 @@ class EditDioceseController extends AbstractController {
     public function newUrlExternal(Request $request,
                                    int $itemIndex) {
 
-        $edit_form_id = 'diocese_edit_form';
-
         $urlExternal = new UrlExternal();
 
         return $this->render('edit_diocese/_input_url_external.html.twig', [
-            'editFormId' => $edit_form_id,
+            'editFormId' => self::EDIT_FORM_ID,
             'itemIndex' => $itemIndex,
             'currentIndex' => $request->query->get('current_idx'),
             'urlext' => $urlExternal,
-            'isLast' => true,
+            'is_last' => true,
         ]);
 
     }
@@ -419,7 +457,7 @@ class EditDioceseController extends AbstractController {
             'itemIndex' => $itemIndex,
             'currentIndex' => $request->query->get('current_idx'),
             'skosLabel' => $skos_label,
-            'isLast' => true,
+            'is_last' => true,
         ]);
 
     }

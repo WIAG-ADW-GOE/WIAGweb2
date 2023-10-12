@@ -1,3 +1,4 @@
+{# parameters: diocese #}
 {% import "util.html.twig" as util %}
 <div class="row mt-1">
     <div class="col-12">
@@ -117,6 +118,9 @@
     </div>
 {% endfor %}
 <hr class="my-2 border border-secondary border-2">
+{# references #}
+{{ include('edit_diocese/_input_reference_list.html.twig') }}
+<hr class="my-2 border border-secondary border-2">
 <div class="row">
     <div class="col-12">
 	<div class="input-group input-group-sm">
@@ -131,7 +135,8 @@
 {% set user=diocese.item.changedByUser %}
 <div class="row">
     <div class="col-12">
-	<span>referenziert (online): {{ diocese.referenceCount }}</span>
+	<span class="ms-1">{{ diocese.item.idPublic }}</span>
+	<span class="ms-2">referenziert (online): {{ diocese.referenceCount }}</span>
 	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ diocese.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
 	{# store data into the form #}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], diocese.item.changedBy) }}

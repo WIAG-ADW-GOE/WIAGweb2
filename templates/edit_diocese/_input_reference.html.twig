@@ -1,0 +1,55 @@
+{% set base_id=editFormId~'_'~itemIndex %}
+{% set base_input_name=editFormId~'['~itemIndex~']' %}
+{% set base_id_ref=base_id~'_ref_'~current_idx %}
+{% set base_input_name_ref=base_input_name~'[ref]['~current_idx~']' %}
+{% if is_last is not defined %}
+    {% set is_last = true %}
+{% endif %}
+<div class="row">
+    <div class="col-1 text-end pe-0">
+	{{ include('edit_diocese/_insert_delete.html.twig', { obj: ref, base_id_delete: base_id_ref, base_name_delete: base_input_name_ref }) }}
+    </div>
+    <div class="col-11">
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text">Literatur</span>
+	    {# id (hidden) #}
+	    <input type="text"
+		   id="{{ base_id_ref }}_id"
+		   name="{{ base_input_name_ref }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ ref.id }}">
+	    <div class="w-50"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('diocese_suggest', { field: 'titleShort' }),
+		 }) }}>
+ 		<input type="text" id="{{ base_id_ref }}_volume"
+		       name="{{ base_input_name_ref}}[volume]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{% if ref.volumetitleshort %}{{ ref.volumetitleshort }}{% elseif ref.referencevolume %}{{ ref.referencevolume.titleshort }}{% endif %}"
+		       spellcheck="false"
+		       aria-label="Band"
+		       data-autocomplete-target="input">
+		{# <span>Titel beim Verweis {{ dump(ref.volumetitleshort) }}, Titel im Band {{ dump(ref.referencevolume) }}</span> #}
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 30rem;"></ul>
+	    </div>
+	    <span class="input-group-text">Seite</span>
+	    <input type="text" id="{{ base_id_ref }}_page"
+		   name="{{ base_input_name_ref}}[page]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ ref.page }}"
+		   style="min-width: 6rem; max-width: 12%"
+		   spellcheck="false"
+		   aria-label="Band">
+	    <span class="input-group-text">ID/Nr.</span>
+	    <input type="text" id="{{ base_id_ref }}_idInReference"
+		   name="{{ base_input_name_ref}}[idInReference]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ ref.idinreference }}"
+		   style="min-width: 6rem; max-width: 12%"
+		   spellcheck="false"
+		   aria-label="Id/Nummer">
+	</div>
+    </div>
+</div>

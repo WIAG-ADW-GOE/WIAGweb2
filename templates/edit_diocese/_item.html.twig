@@ -1,3 +1,4 @@
+{# parameters: diocese #}
 {% set expanded = diocese.item.formisexpanded or newEntry is defined %}
 {% set fill_url = diocese.id ? path('edit_diocese_item', { id: diocese.id, index: current_idx }) : "" %}
 {% set base_id=editFormId~'_'~current_idx %}

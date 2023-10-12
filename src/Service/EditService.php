@@ -2,14 +2,17 @@
 
 namespace App\Service;
 
+use App\Entity\Corpus;
 use App\Entity\Diocese;
 use App\Entity\UrlExternal;
 use App\Entity\SkosLabel;
 use App\Entity\Authority;
 use App\Entity\InputError;
+use App\Entity\ItemCorpus;
+use App\Entity\ItemReference;
+use App\Entity\ReferenceVolume;
 
 use Doctrine\ORM\EntityManagerInterface;
-
 
 
 /**
@@ -82,6 +85,24 @@ class EditService {
     /**
      * remove external URLs that are marked for deletion
      */
+    static public function removeReferenceMayBe($item, $entityManager) {
+        $ref_list = $item->getReference();
+
+        foreach ($ref_list as $ref) {
+            if ($ref->getDeleteFlag() == "delete") {
+                $ref_list->removeElement($ref); // seems to be stable
+                if (!$item->getIsNew()) {
+                    $entityManager->remove($ref);
+                }
+            }
+        }
+        return $item;
+    }
+
+
+    /**
+     * remove external URLs that are marked for deletion
+     */
     static public function removeUrlExternalMayBe($item, $entityManager) {
         $uext_list = $item->getUrlExternal();
 
@@ -95,6 +116,117 @@ class EditService {
         }
         return $item;
     }
+
+    /**
+     * fill items's references with $data
+     */
+    static public function mapReference($item, $data, $entityManager) {
+        $referenceRepository = $entityManager->getRepository(ItemReference::class);
+        $volumeRepository = $entityManager->getRepository(ReferenceVolume::class);
+        $ref_list = $item->getReference();
+
+        $n = 0;
+        foreach($data as $data_loop) {
+
+            $key_list = ['volume', 'page', 'idInReference'];
+            $no_data = UtilService::no_data($data_loop, $key_list);
+            $reference = null;
+
+
+            if ($no_data) {
+                continue;
+            } else {
+                $id = $data_loop['id'];
+                if (!($id > 0)) {
+                    $reference = new ItemReference();
+                    $ref_list->add($reference);
+                    $reference->setItem($item);
+                } else {
+                    // find reference
+                    foreach ($ref_list as $ref_loop) {
+                        if ($ref_loop->getId() ==$id) {
+                            $reference = $ref_loop;
+                            break;
+                        }
+                    }
+                }
+            }
+            // set data
+            $volume_name = trim($data_loop['volume']);
+            $reference->setVolumeTitleShort($volume_name); # save data for the form
+
+            if ($volume_name != "") {
+                $volume_query_result = $volumeRepository->findByTitleShort($volume_name);
+                if ($volume_query_result) {
+                    $volume = $volume_query_result[0];
+                    $reference->setReferenceId($volume->getReferenceId());
+                } else {
+                    $error_msg = "Keinen Band für '".$volume_name."' gefunden.";
+                    $item->getInputError()->add(new InputError('reference', $error_msg));
+                }
+                $n += 1;
+            } else {
+                $error_msg = "Das Feld 'Bandtitel' darf nicht leer sein.";
+                $item->getInputError()->add(new InputError('reference', $error_msg));
+            }
+
+            $key_list = ['deleteFlag', 'page','idInReference'];
+            UtilService::setByKeys($reference, $data_loop, $key_list);
+        }
+
+        return $n;
+    }
+
+    /**
+     * compose ID public
+     */
+    static public function makeIdPublic($corpus_id, $numeric_part, $entityManager)  {
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+
+        // find number fields
+        $match_list = null;
+        $mask = $corpus->getIdPublicMask();
+        preg_match_all("/#+/", $mask, $match_list);
+
+        $field = $match_list[0][0];
+        $width = strlen($field);
+        $numeric_str = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
+        $id_public = preg_replace("/#+/", $numeric_str, $mask, 1);
+
+        // second numeric_field: default is '001'
+        $field = $match_list[0][1];
+        $width = strlen($field);
+        $numeric_field = str_pad("1", $width, "0", STR_PAD_LEFT);
+        $id_public = str_replace($field, $numeric_field, $id_public);
+
+        return $id_public;
+    }
+
+    /**
+     *
+     */
+    static public function setNewItemCorpus($item, $corpus_id, $entityManager) {
+        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setCorpusId($corpus_id);
+
+
+        // ID in corpus
+        $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+        $id_in_corpus = strval($id_in_corpus);
+        $item_corpus->setIdInCorpus($id_in_corpus);
+
+        // ID public
+        $id_public = self::makeIdPublic($corpus_id, $id_in_corpus, $entityManager);
+        $item_corpus->setIdPublic($id_public);
+
+        return $item_corpus;
+    }
+
 
     /**
      * fill skos label with $data
@@ -121,7 +253,6 @@ class EditService {
             }
 
             $key_list = ['deleteFlag', 'lang', 'label', 'displayOrder', 'comment'];
-            // TODO
             UtilService::setByKeys($label, $data_loop, $key_list);
         }
 

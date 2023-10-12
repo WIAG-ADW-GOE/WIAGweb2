@@ -750,7 +750,6 @@ class EditPersonController extends AbstractController {
 
         return $this->render('edit_person/_input_reference.html.twig', [
             'editFormId' => self::EDIT_FORM_ID,
-            'itemTypeId' => $itemTypeId,
             'personIndex' => $personIndex,
             'current_idx' => $request->query->get('current_idx'),
             'ref' => $reference,
