@@ -66,7 +66,6 @@ class IdController extends AbstractController {
             $item_id = $item->getId();
             $corpus = $itemCorpusRepository->findCorpusPrio($item_id);
             $corpus_id = $corpus->getCorpusId();
-            dump($corpus_id);
 
             if ($corpus_id == 'dioc') {
                 return $this->diocese($item_id, $format);
