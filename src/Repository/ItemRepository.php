@@ -467,5 +467,24 @@ class ItemRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     *
+     */
+    public function findItemNameRole($id_list) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i')
+                   ->join('i.person', 'p')
+                   ->join('i.itemNameRole', 'inr')
+                   ->join('inr.personRole', 'p_role')
+                   ->andWhere('i.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+
+        // TODO order like $id_list
+        return $query->getResult();
+    }
+
+
 
 }

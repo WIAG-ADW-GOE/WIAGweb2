@@ -37,12 +37,36 @@ class PersonController extends AbstractController {
     const PAGE_SIZE = 20;
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
+    /** max size of data response */
+    const DATA_MAX_SIZE = 3000;
 
 
     private $autocomplete = null;
 
     public function __construct(AutocompleteService $service) {
         $this->autocomplete = $service;
+    }
+
+    /**
+     * display query form for bishops (legacy route)
+     *
+     * @Route("/bischof")
+     */
+    public function query_bishop(Request $request,
+                                 EntityManagerInterface $entityManager,
+                                 RouterInterface $router) {
+        return $this->query('epc', $request, $entityManager, $router);
+    }
+
+    /**
+     * display query form for canons (legacy route)
+     *
+     * @Route("/domherr")
+     */
+    public function query_canon(Request $request,
+                                 EntityManagerInterface $entityManager,
+                                 RouterInterface $router) {
+        return $this->query('can', $request, $entityManager, $router);
     }
 
     /**
@@ -158,6 +182,7 @@ class PersonController extends AbstractController {
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+        $itemRepository = $entityManager->getRepository(Item::class);
 
         $model = new PersonFormModel;
 
@@ -202,6 +227,14 @@ class PersonController extends AbstractController {
             }
         }
 
+        // alternative version
+        // $item_list = $itemRepository->findItemNameRole([$person_id]);
+        // $item = array_values($item_list)[0];
+        // $person_role = [];
+        // foreach ($item->getItemNameRole() as $inr) {
+        //     $person_role[] = $inr->getPersonRole();
+        // }
+
         // TODO 2023-08-15 clean up sibling
         // $personRepository->setSibling([$person]);
 
@@ -215,6 +248,31 @@ class PersonController extends AbstractController {
             'pageTitle' => $corpus->getPageTitle(),
         ]);
 
+    }
+
+
+    /**
+     * return bishop data (legacy route)
+     *
+     * @Route("/bischof/data")
+     */
+    public function queryBishopData(Request $request,
+                                    EntityManagerInterface $entityManager,
+                                    PersonService $personService) {
+
+        return $this->queryData('epc', $request, $entityManager, $personService);
+    }
+
+    /**
+     * return canon data (legacy route)
+     *
+     * @Route("/domherr/data")
+     */
+    public function queryCanonData(Request $request,
+                                    EntityManagerInterface $entityManager,
+                                    PersonService $personService) {
+
+        return $this->queryData('can', $request, $entityManager, $personService);
     }
 
     /**
@@ -238,11 +296,29 @@ class PersonController extends AbstractController {
         } else {
             $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
+            $allowed_list = ['name', 'diocese', 'domstift', 'place', 'office', 'year', 'someid', 'format'];
+            $unkown_list = array_diff(array_keys($request->query->all()), $allowed_list);
+            $error_node_list['error']['message'] = "Query contains unknown parameter keys.";
+            foreach ($unkown_list as $ukk) {
+                $error_node_list['error']['unknown key'] = $ukk;
+            }
+            if (count($unkown_list) > 0) {
+                return $personService->createResponse($format, $error_node_list);
+            }
         }
         $format = ucfirst(strtolower($format));
 
-        $model->isDeleted = 0;
+        $model->corpus = $corpusId;
+        $model->isDeleted = 0; # 2023-10-12 obsolete?
         $id_all = $itemNameRoleRepository->findPersonIds($model);
+
+        if (count($id_all) >= self::DATA_MAX_SIZE) {
+            $error_node_list['error'] = [
+                'message' => "Query result is larger than the upper limmit",
+                'limit' => self::DATA_MAX_SIZE,
+            ];
+            return $personService->createResponse($format, $error_node_list);
+        }
 
         $chunk_offset = 0;
         $chunk_size = 50;
@@ -251,15 +327,40 @@ class PersonController extends AbstractController {
         $node_list = array();
         while (count($id_list) > 0) {
 
-            $person_list = $personRepository->findList($id_list);
+            $list_version_flag = true; // more efficient
+            if ($list_version_flag) {
+                $inr = $itemNameRoleRepository->findList($id_list);
+                $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
+                // persons with all data
+                $person_list_all = $personRepository->findList(array_unique($p_id_list));
+
+                // map $persons_role_list
+                $person_list_all = UtilService::mapByField($person_list_all, 'id');
+                $inr_flat = UtilService::flatten($inr, 'itemIdName', ['itemIdName', 'itemIdRole']);
+            }
 
             // find all sources (persons with roles) for the elements of $canon_personName
-            foreach($person_list as $person) {
-                // get roles
-                $person_id = $person->getId();
-                $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($person_id);
-                $person_id_list = array_merge(array($person_id), $dreg_id_list);
-                $person_role_list = $personRepository->findList($person_id_list);
+            foreach($id_list as $person_id) {
+
+                if ($list_version_flag) {
+                    // get roles from lists
+                    $person = $person_list_all[$person_id];
+                    $person_role_list = array();
+                    foreach ($inr_flat[$person_id] as $id_role) {
+                        $person_role_list[] = $person_list_all[$id_role];
+                    };
+                } else {
+                    // get roles by single DB queries
+                    // get person data with offices
+                    $inr = $itemNameRoleRepository->findByItemIdName($person_id);
+                    $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
+                    $person_role_list = $personRepository->findList($p_id_list);
+                    foreach($person_role_list as $person_role) {
+                        if ($person_role->getId() == $person_id) {
+                            $person = $person_role;
+                        }
+                    }
+                }
 
                 $node = $personService->personData($format, $person, $person_role_list);
                 $node_list[] = $node;

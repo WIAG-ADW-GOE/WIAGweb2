@@ -553,7 +553,21 @@ class PersonRepository extends ServiceEntityRepository {
         return $role_list;
     }
 
+    public function findItemNameRole($id_list) {
+        $qb = $this->createQueryBuilder('p_name')
+                   ->select('p_name, p_role')
+                   ->join('p.item', 'i')
+                   ->join('i.itemNameRole', 'inr')
+                   ->join('\App\Entity\Person', 'p_role', 'WITH', 'p_role.personId = inr.itemIdRole');
+
+        $query = $qb->getQuery();
+
+        // TODO order like $id_list
+        return $query->getResult();
+    }
+
     /**
+     * 2023-10-12 obsolete
      * set sibling (only for bishops)
      */
     public function setSibling($person_list) {
@@ -579,6 +593,7 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-10-12 obsolete?
      * setPersonName($canon_list)
      *
      * set personName foreach element of `$canon_list`.

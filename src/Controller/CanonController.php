@@ -35,7 +35,6 @@ class CanonController extends AbstractController {
     /**
      * display query form for canons; handle query
      *
-     * @Route("/domherr", name="canon_query")
      */
     public function query(Request $request,
                           EntityManagerInterface $em,
@@ -112,7 +111,6 @@ class CanonController extends AbstractController {
     /**
      * display details for a canon
      *
-     * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
                                     EntityManagerInterface $entityManager,
@@ -180,7 +178,6 @@ class CanonController extends AbstractController {
     /**
      * return canon data
      *
-     * @Route("/domherr/data", name="canon_query_data")
      */
     public function queryData(Request $request,
                               EntityManagerInterface $entityManager,
@@ -247,7 +244,6 @@ class CanonController extends AbstractController {
 
     /**
      * show selected canons (e.g. by domstift) in one page
-     * @Route("/domherr/onepage", name="canon_onepage")
      */
     public function onepage(Request $request,
                             EntityManagerInterface $entityManager,
@@ -390,7 +386,6 @@ class CanonController extends AbstractController {
 
      /**
      * show references for selected canons
-     * @Route("/domherr/onepage/literatur/{itemType}", name="canon_onepage_references")
      */
     public function references(Request $request,
                                EntityManagerInterface $entityManager,
@@ -426,7 +421,6 @@ class CanonController extends AbstractController {
     /**
      * AJAX
      *
-     * @Route("/canon-suggest/{field}", name="canon_suggest")
      */
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,

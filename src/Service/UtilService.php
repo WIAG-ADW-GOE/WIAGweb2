@@ -756,6 +756,37 @@ class UtilService {
     }
 
     /**
+     * map objects in $list by $field
+     */
+    static public function mapByField($list, $field) {
+        $mapped = array();
+        $getfnc = 'get'.ucfirst($field);
+        foreach ($list as $item) {
+            $mapped[$item->$getfnc()] = $item;
+        }
+
+        return $mapped;
+    }
+
+    /**
+     * flatten objects in $list by $field_list
+     */
+    static public function flatten($list, $key, $field_list) {
+        $flattend = array();
+        $getkey = 'get'.ucfirst($key);
+        foreach ($list as $item) {
+            foreach ($field_list as $field) {
+                $getfnc = 'get'.ucfirst($field);
+                $flattend[$item->$getkey()][$item->$getfnc()] = $item->$getfnc();
+            }
+        }
+
+        return $flattend;
+    }
+
+
+
+    /**
      * find first object in $list where the content of $field equals $value .
      */
     static public function findFirst($list, $field, $value) {

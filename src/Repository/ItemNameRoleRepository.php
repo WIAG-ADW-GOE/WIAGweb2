@@ -73,6 +73,19 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
 
     /**
+     */
+    public function findList($item_id_name_list) {
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('inr')
+                   ->andWhere('inr.itemIdName in (:item_id_name_list)')
+                   ->setParameter('item_id_name_list', $item_id_name_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+
+    /**
      *
      */
     public function findPersonIds($model, $limit = 0, $offset = 0) {

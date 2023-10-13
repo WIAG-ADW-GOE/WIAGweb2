@@ -119,6 +119,12 @@ class Item {
     private $id = 0;
 
     /**
+     * @ORM\OneToOne(targetEntity="Person")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $person;
+
+    /**
      * @ORM\OneToMany(targetEntity="ItemCorpus", mappedBy="item")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
@@ -331,9 +337,12 @@ class Item {
         return $this;
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
+    }
+
+    public function getPerson() {
+        return $this->person;;
     }
 
     public function getItemCorpus() {

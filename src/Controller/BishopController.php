@@ -44,7 +44,6 @@ class BishopController extends AbstractController {
     /**
      * display query form for bishops; handle query
      *
-     * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
                           EntityManagerInterface $entityManager,
@@ -106,7 +105,6 @@ class BishopController extends AbstractController {
     /**
      * display details for a bishop
      *
-     * @Route("/bischof/listenelement", name="bishop_list_detail")
      */
     public function bishopListDetail(Request $request,
                                      EntityManagerInterface $entityManager) {
@@ -169,7 +167,6 @@ class BishopController extends AbstractController {
     /**
      * return bishop data
      *
-     * @Route("/bischof/data", name="bishop_query_data")
      */
     public function queryData(Request $request,
                               ItemRepository $itemRepository,
@@ -222,7 +219,6 @@ class BishopController extends AbstractController {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * @Route("/bischof-suggest/{field}", name="bishop_suggest")
      */
     public function autocomplete(Request $request,
                                  ItemRepository $repository,
@@ -237,7 +233,6 @@ class BishopController extends AbstractController {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * @Route("/bischof-suggest-all/{field}", name="bishop_suggest_all")
      */
     public function autocompleteAll(Request $request,
                                     ItemRepository $repository,
