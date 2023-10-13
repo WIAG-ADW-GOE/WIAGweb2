@@ -61,18 +61,19 @@ class IdController extends AbstractController {
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
         $itemResult = $itemRepository->findByIdPublicOrParent($id);
-        if (!is_null($itemResult) && count($itemResult) > 0) {
+        if (!is_null($itemResult) and count($itemResult) > 0) {
             $item = $itemResult[0];
             $item_id = $item->getId();
             $corpus = $itemCorpusRepository->findCorpusPrio($item_id);
             $corpus_id = $corpus->getCorpusId();
+            dump($corpus_id);
 
-            if ($corpus_id == 'epc' or $corpus_id == 'can') {
-                return $this->person($item_id, $corpus, $format);
-            } elseif ($corpus_id == 'dioc') {
+            if ($corpus_id == 'dioc') {
                 return $this->diocese($item_id, $format);
             } elseif ($corpus_id == 'utp') {
                 return $this->priestOfUtrecht($item_id, $format);
+            } else {
+                return $this->person($item_id, $corpus, $format);
             }
 
         } else {
@@ -89,19 +90,15 @@ class IdController extends AbstractController {
      */
     public function person($id, $corpus, $format) {
 
-        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
-        $personRepository = $this->entityManager->getRepository(Person::class);
-        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+        $itemRepository = $this->entityManager->getRepository(Item::class);
 
-        $person = $personRepository->find($id);
         // collect office data in an array of Items
-
-        $dreg_id_list = $itemNameRoleRepository->findPersonIdRole($id);
-        $person_id_list = array_merge(array($id), $dreg_id_list);
-        $person_role_list = $personRepository->findList($person_id_list);
+        $item_list = $itemRepository->findItemNameRole([$id]);
+        $item = array_values($item_list)[0];
+        $person = $item->getPerson();
+        $person_role_list = $item->getPersonRole();
 
         if ($format == 'html') {
-
             return $this->render('person/person.html.twig', [
                 'personName' => $person,
                 'personRole' => $person_role_list,

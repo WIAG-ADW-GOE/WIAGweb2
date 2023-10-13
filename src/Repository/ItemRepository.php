@@ -468,9 +468,10 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     *
+     * @return list of items with associated persons via item_name_role and all data
      */
     public function findItemNameRole($id_list) {
+        $entityManager = $this->getEntityManager();
         $qb = $this->createQueryBuilder('i')
                    ->select('i')
                    ->join('i.person', 'p')
@@ -481,10 +482,25 @@ class ItemRepository extends ServiceEntityRepository
 
         $query = $qb->getQuery();
 
-        // TODO order like $id_list
-        return $query->getResult();
+        $item_list = $query->getResult();
+
+        $item_role_list = [];
+        foreach ($item_list as $item) {
+            foreach ($item->getItemNameRole() as $inr) {
+                $item_role_list[] = $inr->getPersonRole()->getItem();
+            }
+        }
+
+        // set reference volumes
+        $entityManager->getRepository(ReferenceVolume::class)->setReferenceVolume($item_role_list);
+
+        // set authorities
+        $entityManager->getRepository(Authority::class)->setAuthority($item_role_list);
+
+        // restore order as in $id_list
+        $item_list = UtilService::reorder($item_list, $id_list, "id");
+
+        return $item_list;
     }
-
-
 
 }

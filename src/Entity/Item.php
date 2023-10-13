@@ -354,6 +354,24 @@ class Item {
     }
 
     /**
+     * short cut
+     */
+    public function getPersonRole() {
+        $inr_list = $this->itemNameRole;
+        if (is_null($inr_list)) {
+            return $null;
+        }
+
+        $person_role = [];
+        foreach ($inr_list as $inr) {
+            $person_role[] = $inr->getPersonRole();
+        }
+
+        return $person_role;
+    }
+
+
+    /**
      * @return array of corpus IDs
      */
     public function getCorpusIdList() {
