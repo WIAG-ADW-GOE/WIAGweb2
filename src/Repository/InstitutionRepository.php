@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Institution;
+use App\Entity\ItemProperty;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,4 +49,32 @@ class InstitutionRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * @return Domstifte
+     */
+    public function findDomstifte() {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.id AS id, i.nameShort AS name')
+                   ->andWhere("i.corpusId = 'cap'")
+                   ->addOrderBy('i.nameShort');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    public function findIfHasItemProperty_legacy(int $item_prop_id) {
+
+        $qb = $this->createQueryBuilder('inst')
+                   ->join('inst.item', 'i')
+                   ->join('i.itemProperty', 'iprop')
+                   ->andWhere('i.isOnline = 1')
+                   ->andWhere('iprop.propertyTypeId = :item_prop_id')
+                   ->setparameter('item_prop_id', $item_prop_id);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
+    }
+
 }

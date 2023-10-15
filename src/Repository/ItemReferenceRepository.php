@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ItemReference;
+use App\Entity\ReferenceVolume;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -49,43 +50,29 @@ class ItemReferenceRepository extends ServiceEntityRepository
     */
 
     /**
-     * set references for items in $person_list
      *
-     * (usually the elements of $person_list are all related to one canon)
-     * 2022-10-07 obsolete?
      */
-    // public function setReferenceVolume($person_list) {
-    //     // an entry in item_reference belongs to one item at most
-    //     $item_ref_list_meta = array();
-    //     foreach($person_list as $p) {
-    //         $item_ref_list_meta[] = $p->getItem()->getReference()->toArray();
-    //     }
-    //     $item_ref_list = array_merge(...$item_ref_list_meta);
+    public function findVolumeByItemIdList($item_id_list) {
+        $qb = $this->createQueryBuilder('ref')
+                   ->join('App\Entity\ReferenceVolume', 'vol', 'WITH', 'ref.referenceId = vol.referenceId')
+                   ->select('vol')
+                   ->andWhere('ref.itemId in (:item_id_list)')
+                   ->setParameter('item_id_list', $item_id_list);
 
-    //     $id_iref_map = array();
-    //     foreach($item_ref_list as $item_ref) {
-    //         $id_iref_map[$item_ref->getId()] = $item_ref;
-    //     }
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
-    //     $qb = $this->createQueryBuilder('r')
-    //                ->select('r.id, ref_volume')
-    //                ->join('\App\Entity\ReferenceVolume',
-    //                       'ref_volume',
-    //                       'WITH',
-    //                       'ref_volume.itemTypeId = r.itemTypeId and ref_volume.referenceId = r.referenceId')
-    //                ->andWhere('r.id in (:id_list)')
-    //                ->setParameter('id_list', array_keys($id_iref_map));
 
-    //     $query = $qb->getQuery();
-    //     $result = $query->getResult();
+    public function referenceCount($reference_id) {
+        $qb = $this->createQueryBuilder('ir')
+                   ->select('COUNT(DISTINCT(ir.id)) as count')
+                   ->andWhere('ir.referenceId = :reference_id')
+                   ->setParameter('reference_id', $reference_id);
+        $query = $qb->getQuery();
 
-    //     foreach ($result as $r_loop) {
-    //         $ref = $id_iref_map[$r_loop['id']];
-    //         $ref->setReferenceVolume($r_loop[0]);
-    //     }
+        return $query->getSingleResult()['count'];
+    }
 
-    //     return null;
-
-    // }
 
 }

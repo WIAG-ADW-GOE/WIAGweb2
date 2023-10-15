@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\Diocese;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
+
+use App\Service\UtilService;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -56,12 +59,13 @@ class DioceseRepository extends ServiceEntityRepository
     /**
      * countByName($name)
      *
-     * return number of matching dioceses, take alternative names into account
+     * return number of matching dioceses (altes Reich), take alternative names into account
      */
     public function countByName($name) {
         $qb = $this->createQueryBuilder('d')
                    ->select('COUNT(DISTINCT d.id) AS count')
-                   ->join('d.altLabels', 'altLabels');
+                   ->leftJoin('d.altLabels', 'altLabels')
+                   ->andWhere('d.isAltesReich = 1');
 
         if($name != "")
             $qb->andWhere('d.name LIKE :name OR altLabels.label LIKE :name')
@@ -78,7 +82,8 @@ class DioceseRepository extends ServiceEntityRepository
                    ->addSelect('bishopricSeat')
                    ->join('d.item', 'i')
                    ->leftJoin('d.bishopricSeat', 'bishopricSeat')
-                   ->join('d.altLabels', 'altLabels');
+                   ->leftJoin('d.altLabels', 'altLabels')
+                   ->andWhere('d.isAltesReich = 1');
 
         if(!is_null($name_or_id) && $name_or_id != "") {
             if (is_numeric($name_or_id)) {
@@ -165,11 +170,15 @@ class DioceseRepository extends ServiceEntityRepository
     /**
      * AJAX
      */
-    public function suggestName($name, $hintSize) {
+    public function suggestName($name, $hintSize, $altes_reich_flag) {
         $qb = $this->createQueryBuilder('d')
                    ->select("DISTINCT d.name AS suggestion")
                    ->andWhere('d.name like :name')
                    ->setParameter(':name', '%'.$name.'%');
+
+        if (!is_null($altes_reich_flag)) {
+            $qb->andWhere('d.isAltesReich = 1');
+        }
 
         $qb->setMaxResults($hintSize);
 
@@ -180,7 +189,82 @@ class DioceseRepository extends ServiceEntityRepository
         return $suggestions;
     }
 
+    /**
+     * autocomplete function for references
+     *
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestTitleShort($name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
+        $qb = $repository->createQueryBuilder('v')
+                         ->select("DISTINCT v.titleShort AS suggestion")
+                         ->andWhere('v.titleShort LIKE :name')
+                         ->addOrderBy('v.titleShort')
+                         ->setParameter('name', '%'.$name.'%');
 
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    public function findByModel($model) {
+        $referenceRepository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
+
+        $qb = $this->createQueryBuilder('d')
+                   ->select('d', 'i', 'ref')
+                   ->join('d.item', 'i')
+                   ->leftjoin('i.urlExternal', 'ext')
+                   ->leftjoin('i.reference', 'ref')
+                   ->addOrderBy('d.name');
+
+        if ($model['name'] != '') {
+            $qb->andWhere('d.name like :name')
+               ->setParameter('name', '%'.$model['name'].'%');
+        }
+
+        $query = $qb->getQuery();
+        $list = $query->getResult();
+
+        $item_list = array();
+        foreach ($list as $dioc) {
+            $item_list[] = $dioc->getItem();
+        }
+        // set reference volumes
+        $referenceRepository->setReferenceVolume($item_list);
+
+        return $list;
+    }
+
+    /**
+     * find dioceses by ID
+     */
+    public function findList($id_list) {
+        $referenceRepository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
+
+        $qb = $this->createQueryBuilder('d')
+                   ->select('d, i, ic, ref')
+                   ->join('d.item', 'i')
+                   ->join('i.itemCorpus', 'ic')
+                   ->leftJoin('i.reference', 'ref')
+                   ->andWhere('d.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $list = $query->getResult();
+
+        $item_list = array();
+        foreach ($list as $dioc) {
+            $item_list[] = $dioc->getItem();
+        }
+        // set reference volumes
+        $referenceRepository->setReferenceVolume($item_list);
+
+        $list = UtilService::reorder($list, $id_list, "id");
+        return $list;
+    }
 
 
 }

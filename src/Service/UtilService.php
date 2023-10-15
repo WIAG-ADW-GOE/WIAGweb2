@@ -101,31 +101,43 @@ class UtilService {
                 $a_val = $a[$field];
                 $b_val = $b[$field];
             }
-            // sort null last
+            // sort null last, but not for familyname
 
             if (is_null($a_val) && is_null($b_val)) {
                 $cmp_val = 0;
                 continue;
             }
 
-            if (is_null($a_val) && !is_null($b_val)) {
-                $cmp_val = 1;
-                break;
-            }
+            if ($field == 'familyname') {
+                if (is_null($a_val) && !is_null($b_val)) {
+                    $cmp_val = -1;
+                    break;
+                }
 
-            if (is_null($b_val) && !is_null($a_val)) {
-                $cmp_val = -1;
-                break;
-            }
-
-            if ($a_val < $b_val) {
-                $cmp_val = -1;
-                break;
-            } elseif ($a_val > $b_val) {
-                $cmp_val = 1;
-                break;
+                if (is_null($b_val) && !is_null($a_val)) {
+                    $cmp_val = 1;
+                    break;
+                }
             } else {
-                $cmp_val = 0;
+                if (is_null($a_val) && !is_null($b_val)) {
+                    $cmp_val = 1;
+                    break;
+                }
+
+                if (is_null($b_val) && !is_null($a_val)) {
+                    $cmp_val = -1;
+                    break;
+                }
+            }
+
+            if (is_string($a_val) and is_string($b_val)) {
+                $cmp_val = strnatcmp($a_val, $b_val);
+            } else {
+                $cmp_val = $a_val < $b_val ? -1 : ($a_val > $b_val ? 1 : 0);
+            }
+
+            if ($cmp_val != 0) {
+                break;
             }
         }
 
@@ -136,9 +148,10 @@ class UtilService {
     /**
      * use crit_list in $crit_list to sort $list (array of arrays)
      */
-    static function sortByFieldList($list, $crit_list) {
-        usort($list, function($a, $b) use ($crit_list) {
-            return self::compare($a, $b, $crit_list);
+    static function sortByFieldList($list, $crit_list, $dir = 'ASC') {
+        usort($list, function($a, $b) use ($crit_list, $dir) {
+            $dir_factor = $dir == 'ASC' ? 1 : -1;
+            return $dir_factor * self::compare($a, $b, $crit_list);
         });
 
         return $list;
@@ -200,7 +213,7 @@ class UtilService {
      *
      * An index in $sorted may occur several times as a value in $list
      */
-    public function reorder($list, $sorted, $field = "id") {
+    static public function reorder($list, $sorted, $field = "id") {
         // function to get the criterion
         $getfnc = 'get'.ucfirst($field);
         $idx_map = array_flip($sorted);
@@ -219,6 +232,9 @@ class UtilService {
     // regular expressions for dates
     // - test for first century only if other alternatives yield no result
     const RGPCENTURY = "([1-9][0-9]?)\\. (Jahrh|Jh)";
+
+    // these characters are removed, if a pure number is expected
+    const DECORATIONYEAR = "()[]?+† \t";
     const RGPYEAR = "([1-9][0-9][0-9]+)";
     const RGPYEARFC = "([1-9][0-9]+)";
 
@@ -275,7 +291,7 @@ class UtilService {
     /**
      * parse $s for an earliest or latest possible date. $dir is 'upper' or 'lower'
      */
-    public function parseDate($s, $dir): ?int {
+    static public function parseDate($s, $dir): ?int {
         $year = null;
         $matches = null;
 
@@ -302,7 +318,7 @@ class UtilService {
             self::RGX4QCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 25);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 25);
         if (!is_null($year)) { return $year; }
 
         // begin, middle, end
@@ -312,7 +328,7 @@ class UtilService {
             self::RGX3TCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 33);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 33);
         if (!is_null($year)) { return $year; }
 
         // third
@@ -322,7 +338,7 @@ class UtilService {
             self::RGX3TRDCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 33);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 33);
         if (!is_null($year)) { return $year; }
 
 
@@ -332,7 +348,7 @@ class UtilService {
             self::RGX2HCENTURY,
         ];
 
-        $year = $this->parseFractionCentury($rgx_list, $s, $dir, 50);
+        $year = self::parseFractionCentury($rgx_list, $s, $dir, 50);
         if (!is_null($year)) { return $year; }
 
         // between
@@ -371,40 +387,40 @@ class UtilService {
 
         // decade
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXEARLYDECADE, $s, 0, 4, $dir, $match_index);
+        $year = self::parseApprox(self::RGXEARLYDECADE, $s, 0, 4, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 1;
-        $year = $this->parseApprox(self::RGXDECADE, $s, 0, 10, $dir, $match_index);
+        $year = self::parseApprox(self::RGXDECADE, $s, 0, 10, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         // before, around after
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXSBEFORE, $s, 10, 0, $dir, $match_index);
+        $year = self::parseApprox(self::RGXSBEFORE, $s, 10, 0, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXBEFORE, $s, 50, 0, $dir, $match_index);
+        $year = self::parseApprox(self::RGXBEFORE, $s, 50, 0, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXFIRST, $s, 5, 5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXFIRST, $s, 5, 5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXSAFTER, $s, 0, 10, $dir, $match_index);
+        $year = self::parseApprox(self::RGXSAFTER, $s, 0, 10, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXAFTER, $s, 0, 50, $dir, $match_index);
+        $year = self::parseApprox(self::RGXAFTER, $s, 0, 50, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXAROUND, $s, 5, +5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXAROUND, $s, 5, +5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         $match_index = 2;
-        $year = $this->parseApprox(self::RGXCA, $s, 5, +5, $dir, $match_index);
+        $year = self::parseApprox(self::RGXCA, $s, 5, +5, $dir, $match_index);
         if (!is_null($year)) { return $year; }
 
         // century
@@ -420,6 +436,8 @@ class UtilService {
         }
 
         // plain year
+        // 2023-07-07 allow decorations in date specifications if only a number is expected)
+        $s = trim($s, self::DECORATIONYEAR);
         $rgm = preg_match(self::RGXYEAR, $s, $matches);
         if ($rgm === 1) {
             $year = intval($matches[2]);
@@ -439,7 +457,7 @@ class UtilService {
     /**
      * parse dates related to a fraction of a century
      */
-    private function parseFractionCentury($rgx_list, $s, $dir, $span) {
+    static function parseFractionCentury($rgx_list, $s, $dir, $span) {
         $year = null;
 
         foreach($rgx_list as $q => $rgx) {
@@ -462,7 +480,7 @@ class UtilService {
     /**
      * parse an approximate date information
      */
-    private function parseApprox($rgx, $s, $left, $right, $dir, $match_index) {
+    static function parseApprox($rgx, $s, $left, $right, $dir, $match_index) {
         $year = null;
         $matches = null;
         $rgm = preg_match($rgx, $s, $matches);
@@ -484,7 +502,7 @@ class UtilService {
      * regular expressions to build sort keys from dates (century)
      * structure: regular expression, index of the relevant part, sort key
      */
-    private function rgxCtyList() {
+    static private function rgxCtyList() {
         $rgx_cty_list = [
             new ParseDate(self::RGXTCENTURY, 1, 850),
             new ParseDate(self::RGX1QCENTURY, 3, 530),
@@ -513,7 +531,7 @@ class UtilService {
      * regular expressions to build sort keys from dates
      * structure: regular expression, index of the relevant part, sort key
      */
-    private function rgxYearList() {
+    static private function rgxYearList() {
         $rgx_year_list = [
             new ParseDate(self::RGXSBEFORE, 2, 105),
             new ParseDate(self::RGXBEFORE, 2, 100),
@@ -524,18 +542,29 @@ class UtilService {
             new ParseDate(self::RGXEARLYDECADE, 2, 305),
             new ParseDate(self::RGXAFTER, 2, 309),
             new ParseDate(self::RGXDECADE, 1, 310),
-            new ParseDate(self::RGXYEAR, 2, 150),
-            new ParseDate(self::RGXYEARFC, 2, 150)
         ];
         return $rgx_year_list;
     }
+
+    /**
+     * like rgxYearList but for pure numbers
+     */
+    static private function rgxYearNumList() {
+        $rgx_year_num_list = [
+            new ParseDate(self::RGXYEAR, 2, 150),
+            new ParseDate(self::RGXYEARFC, 2, 150)
+        ];
+        return $rgx_year_num_list;
+    }
+
+
 
     const SORT_KEY_MAX = 9000900;
 
     /**
      * parse year in $s and return a sort key
      */
-    public function sortKeyVal($s): ?int {
+    static public function sortKeyVal($s): ?int {
 
         // between
         $matches = null;
@@ -548,7 +577,7 @@ class UtilService {
             return $year * 1000 + $sort;
         }
 
-        foreach ($this->rgxCtyList() as $rgx_obj) {
+        foreach (self::rgxCtyList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
@@ -559,7 +588,19 @@ class UtilService {
             }
         }
 
-        foreach ($this->rgxYearList() as $rgx_obj) {
+        foreach (self::rgxYearList() as $rgx_obj) {
+            $matches = null;
+            $rgm = preg_match($rgx_obj->rgx, $s, $matches);
+            if ($rgm === 1) {
+                $sort = $rgx_obj->sortKey;
+                $year = $matches[$rgx_obj->match_index];
+                return $year * 1000 + $sort;
+            }
+        }
+
+        // 2023-07-07 allow decorations in date specifications if only a number is expected)
+        $s = trim($s, self::DECORATIONYEAR);
+        foreach (self::rgxYearNumList() as $rgx_obj) {
             $matches = null;
             $rgm = preg_match($rgx_obj->rgx, $s, $matches);
             if ($rgm === 1) {
@@ -636,7 +677,7 @@ class UtilService {
         return $str_range;
     }
 
-    public function no_data($a, $key_list) {
+    static public function no_data($a, $key_list) {
         foreach($key_list as $key) {
             if (array_key_exists($key, $a) && trim($a[$key]) != "") {
                 return false;
@@ -677,6 +718,16 @@ class UtilService {
         }
     }
 
+    static public function missingKeyList($data, $key_list) {
+        $missing_key_list = array();
+        foreach($key_list as $key) {
+            if (!array_key_exists($key, $data)) {
+                $missing_key_list[] = $key;
+            }
+        }
+        return $missing_key_list;
+    }
+
     /**
      * find max value for $attribute in a list of objects
      */
@@ -703,6 +754,37 @@ class UtilService {
 
         return $offset;
     }
+
+    /**
+     * map objects in $list by $field
+     */
+    static public function mapByField($list, $field) {
+        $mapped = array();
+        $getfnc = 'get'.ucfirst($field);
+        foreach ($list as $item) {
+            $mapped[$item->$getfnc()] = $item;
+        }
+
+        return $mapped;
+    }
+
+    /**
+     * flatten objects in $list by $field_list
+     */
+    static public function flatten($list, $key, $field_list) {
+        $flattend = array();
+        $getkey = 'get'.ucfirst($key);
+        foreach ($list as $item) {
+            foreach ($field_list as $field) {
+                $getfnc = 'get'.ucfirst($field);
+                $flattend[$item->$getkey()][$item->$getfnc()] = $item->$getfnc();
+            }
+        }
+
+        return $flattend;
+    }
+
+
 
     /**
      * find first object in $list where the content of $field equals $value .
@@ -762,6 +844,148 @@ class UtilService {
         }
 
         return $arr;
+    }
+
+    /**
+     * permute the elements of $items and store the result in $result
+     */
+    static public function pc_permute($items, &$result, $perms = array( )) {
+        if (empty($items)) {
+            $result[] = $perms;
+        }  else {
+            for ($i = count($items) - 1; $i >= 0; --$i) {
+                $newitems = $items;
+                $newperms = $perms;
+                list($foo) = array_splice($newitems, $i, 1);
+                array_unshift($newperms, $foo);
+                self::pc_permute($newitems, $result, $newperms);
+            }
+        }
+    }
+
+    /**
+     * return cartesian product of the input arrays
+     * see https://stackoverflow.com/questions/2516599/cartesian-product-of-n-arrays
+     */
+    static public function array_cartesian() {
+        $_ = func_get_args();
+        if(count($_) == 0)
+            return array(array());
+        $a = array_shift($_);
+        $c = call_user_func_array(__METHOD__, $_);
+        // (__FUNCTION__, $_);
+        $r = array();
+        foreach($a as $v) {
+            foreach($c as $p) {
+                $r[] = array_merge(array($v), $p);
+            }
+        }
+        return $r;
+    }
+
+    /**
+     * split up $param
+     * before 2023-08-01: but not words beginning with lowercase characters
+     */
+    static public function nameQueryComponents(string $param) {
+        $param_list = array_filter(explode(" ", trim($param)));
+
+        // before 2023-08-01
+        // $list = array();
+        // $rest = array();
+        // foreach ($param_list as $p) {
+        //         $rest[] = $pt;
+        //         if (\IntlChar::isupper($p[0])) {
+        //             $list[] = implode(" ", $rest);
+        //             $rest = array();
+        //         }
+        //     }
+        // if (count($rest) > 0) {
+        //     $list[] = implode(" ", $rest);
+        // }
+
+        return $param_list;
+    }
+
+    /**
+     * array diff by field
+     * @return elements in $a missing in $b
+     */
+    static public function arrayDiffByField($a, $b, string $field) {
+        $delta = array();
+        if (count($a) == 0) {
+            return $delta;
+        }
+        if (count($b) == 0) {
+            return $a;
+        }
+
+        $a_sorted = self::sortByFieldList($a, [$field]);
+        $b_sorted = self::sortByFieldList($b, [$field]);
+        $key = 0;
+        $current_a = current($a_sorted);
+        $current_b = current($b_sorted);
+        while(true) {
+            if ($current_a[$field] == $current_b[$field]) {
+                $current_a = next($a_sorted);
+                $current_b = next($b_sorted);
+                if ($current_a === false and is_null(key($a_sorted))) {
+                    break;
+                }
+                if ($current_b === false and is_null(key($b_sorted))) {
+                    while ($current_a and !is_null(key($a_sorted))) {
+                        $delta[] = $current_a;
+                        $current_a = next($a_sorted);
+                    }
+                    break;
+                }
+            } elseif ($current_a[$field] < $current_b[$field]) {
+                $delta[] = $current_a;
+                $current_a = next($a_sorted);
+                if ($current_a === false and key($a_sorted) == null) {
+                    break;
+                }
+            } else {
+                $current_b = next($b_sorted);
+                if ($current_b === false and is_null(key($b_sorted))) {
+                    while ($current_a and !is_null(key($a_sorted))) {
+                        $delta[] = $current_a;
+                        $current_a = next($a_sorted);
+                    } break;
+                }
+            }
+        }
+        return $delta;
+
+    }
+
+    /**
+     * like array_column, but for Collections
+     */
+    static public function collectionColumn($collection, $column) {
+        $getfnc = 'get'.ucfirst($column);
+        $value_list = array();
+        foreach($collection as $c) {
+            $value_list[] = $c->$getfnc();
+        }
+        return $value_list;
+    }
+
+    /**
+     * split strings like 'can-53043'
+     */
+    static public function splitIdInCorpus($id_in_corpus) {
+        $match_list = array();
+
+        $flag = preg_match("/([a-z]{3,4})-([0-9]{3,})/", trim($id_in_corpus), $match_list);
+        if ($flag == 1) {
+            $parts['corpus'] = $match_list[1];
+            $parts['id'] = $match_list[2];
+            return $parts;
+        } else {
+            return null;
+        }
+
     }
 
 }

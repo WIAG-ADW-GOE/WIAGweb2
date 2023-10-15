@@ -22,6 +22,28 @@ class AuthorityController extends AbstractController {
     /**
      * respond to asynchronous JavaScript request
      *
+     * @Route("/authority-suggest-core/{field}", name="authority_suggest_core")
+     */
+    public function autocompleteCore(Request $request,
+                                 EntityManagerInterface $entityManager,
+                                 String $field) {
+        $repository = $entityManager->getRepository(Authority::class);
+        $name = $request->query->get('q');
+        $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
+
+        $core_list = Authority::CORE_ID_LIST;
+
+        // get suggestions without core authorities
+        $suggestions = $repository->$fnName($name, self::HINT_SIZE, $core_list);
+
+        return $this->render('person/_autocomplete.html.twig', [
+            'suggestions' => array_column($suggestions, 'suggestion'),
+        ]);
+    }
+
+    /**
+     * respond to asynchronous JavaScript request
+     *
      * @Route("/authority-suggest/{field}", name="authority_suggest")
      */
     public function autocomplete(Request $request,
@@ -31,17 +53,16 @@ class AuthorityController extends AbstractController {
         $name = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        $core_ids = array_map(function($v) {
-            return Authority::ID[$v];
-        }, Authority::CORE);
+        $core_list = null;
 
         // get suggestions without core authorities
-        $suggestions = $repository->$fnName($name, self::HINT_SIZE, $core_ids);
+        $suggestions = $repository->$fnName($name, self::HINT_SIZE, $core_list);
 
         return $this->render('person/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
     }
+
 
 
 }

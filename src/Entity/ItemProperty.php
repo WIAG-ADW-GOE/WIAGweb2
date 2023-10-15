@@ -8,8 +8,13 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ItemPropertyRepository::class)
  */
-class ItemProperty
-{
+class ItemProperty {
+
+    const ITEM_PROPERTY_TYPE_ID = [
+        'ordination_priest' => 11,
+        'domstift_short' => 10,
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -40,12 +45,7 @@ class ItemProperty
     private $comment;
 
     /**
-     * @ORM\Column(type="string", length=63)
-     */
-    private $name;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=511, nullable=true)
      */
     private $value;
 
@@ -63,6 +63,11 @@ class ItemProperty
      * hold form input data
      */
     private $deleteFlag;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $placeValue;
 
     public function getId(): ?int
     {
@@ -104,18 +109,6 @@ class ItemProperty
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
-
-        return $this;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
 
         return $this;
     }
@@ -164,6 +157,18 @@ class ItemProperty
     public function setDeleteFlag(?string $deleteFlag): self
     {
         $this->deleteFlag = $deleteFlag;
+
+        return $this;
+    }
+
+    public function getPlaceValue(): ?string
+    {
+        return $this->placeValue;
+    }
+
+    public function setPlaceValue(?string $placeValue): self
+    {
+        $this->placeValue = $placeValue;
 
         return $this;
     }

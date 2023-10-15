@@ -47,4 +47,22 @@ class PlaceRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * AJAX
+     */
+    public function suggestName($name, $hintSize) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select("concat(p.name, ' (', p.geonamesId, ')') AS suggestion")
+                   ->andWhere('p.name like :name OR p.geonamesId like :name')
+                   ->setParameter(':name', '%'.$name.'%');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 }

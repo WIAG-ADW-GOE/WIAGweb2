@@ -9,12 +9,9 @@ use App\Entity\UrlExternal;
 use App\Entity\PersonRole;
 use App\Entity\Role;
 use App\Entity\ItemReference;
-use App\Repository\PersonRepository;
-use App\Repository\ItemRepository;
-use App\Repository\CanonLookupRepository;
 use App\Service\UtilService;
 use App\Form\CanonFormType;
-use App\Form\Model\CanonFormModel;
+use App\Form\Model\PersonFormModel;
 
 use App\Service\PersonService;
 
@@ -38,15 +35,16 @@ class CanonController extends AbstractController {
     /**
      * display query form for canons; handle query
      *
-     * @Route("/domherr", name="canon_query")
      */
     public function query(Request $request,
                           EntityManagerInterface $em,
-                          CanonLookupRepository $repository,
                           UtilService $utilService) {
 
-        // we need to pass an instance of CanonFormModel, because facets depend on it's data
-        $model = new CanonFormModel;
+        $canonLookupRepository = $em->getRepository(CanonLookup::class);
+
+        // we need to pass an instance of PersonFormModel, because facets depend on it's data
+        $model = new PersonFormModel;
+        $model->itemTypeId = Item::ITEM_TYPE_ID['Domherr']['id'];
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -73,7 +71,7 @@ class CanonController extends AbstractController {
                 $form->get('domstift')->setData($get_param_domstift);
             }
 
-            $id_all = $repository->canonIds($model);
+            $id_all = $canonLookupRepository->canonIds($model);
 
             $count = count($id_all);
 
@@ -85,8 +83,18 @@ class CanonController extends AbstractController {
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
 
-            $canonLookupRepository = $em->getRepository(CanonLookup::class);
-            $canon_list = $canonLookupRepository->findList($id_list, 1);
+            $prio_role = 1;
+            $canon_list = $canonLookupRepository->findList($id_list, $prio_role);
+            // set siblings for bishops
+            $bishop_list = array();
+            foreach($canon_list as $canon) {
+                $personName = $canon->getPersonName();
+                if ($personName->getItem()->getSource() == 'Bischof') {
+                    $bishop_list[] = $personName;
+                }
+            }
+            $personRepository = $em->getRepository(Person::class);
+            $personRepository->setSibling($bishop_list);
 
             return $this->renderForm('canon/query_result.html.twig', [
                 'menuItem' => 'collections',
@@ -103,12 +111,11 @@ class CanonController extends AbstractController {
     /**
      * display details for a canon
      *
-     * @Route("/domherr/listenelement", name="canon_list_detail")
      */
     public function canonListDetail(Request $request,
                                     EntityManagerInterface $entityManager,
                                     UtilService $utilService) {
-        $model = new CanonFormModel;
+        $model = new PersonFormModel;
 
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
@@ -137,15 +144,25 @@ class CanonController extends AbstractController {
         $person_id = $ids[$idx];
 
         $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+        $personRepository = $entityManager->getRepository(Person::class);
         $canon_list = $canonLookupRepository->findList([$person_id], null);
 
         // extract Person object to be compatible with bishops
         $personName = $canon_list[0]->getPersonName();
+        $personRepository->setSibling([$personName]);
+
         $canon_list = UtilService::sortByFieldList($canon_list, ['prioRole']);
         $personRole = array_map(function($el) {
             return $el->getPerson();
         }, $canon_list);
 
+        $personUrl = null;
+        foreach($personRole as $person) {
+            if (count($person->getItem()->getUrlExternal()) > 0) {
+                $personUrl = $person;
+                break;
+            }
+        }
 
         return $this->render('canon/person.html.twig', [
             'form' => $form->createView(),
@@ -161,18 +178,17 @@ class CanonController extends AbstractController {
     /**
      * return canon data
      *
-     * @Route("/domherr/data", name="canon_query_data")
      */
     public function queryData(Request $request,
                               EntityManagerInterface $entityManager,
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = CanonFormModel::newByArray($request->request->get('canon_form'));
+            $model = PersonFormModel::newByArray($request->request->get('canon_form'));
             $format = $request->request->get('format') ?? 'json';
 
         } else {
-            $model = CanonFormModel::newByArray($request->query->all());
+            $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
 
@@ -228,13 +244,12 @@ class CanonController extends AbstractController {
 
     /**
      * show selected canons (e.g. by domstift) in one page
-     * @Route("/domherr/onepage", name="canon_onepage")
      */
     public function onepage(Request $request,
                             EntityManagerInterface $entityManager,
                             UtilService $utilService) {
 
-        $model = new CanonFormModel();
+        $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
@@ -244,11 +259,11 @@ class CanonController extends AbstractController {
         $id_all = $canonLookupRepository->canonIds($model);
 
         // set global limit here (avoid server crash!)
-        $global_limit = 5000;
-        $id_all = array_slice($id_all, 0, $global_limit);
+        $global_limit = 4000;
+        $id_all = array_slice($id_all, 0, $global_limit - 1);
 
         // set sorting parameters
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
 
         $chunk_offset = 0;
         // sort the list by office criteria (see below), therefore splitting up in chunks is not useful
@@ -306,12 +321,6 @@ class CanonController extends AbstractController {
 
                 $node['personRole'] = $personRole;
                 $canon_node_list[] = $node;
-
-                // debug
-                // if ($node['personName']->getPerson()->getFamilyname() == "Ketelhod") {
-                //      dump($node);
-                // }
-
             }
 
             $chunk_offset += $limit;
@@ -356,7 +365,7 @@ class CanonController extends AbstractController {
             });
         }
 
-        $title = $model->domstift;
+        $title = $model->institution;
         if ($title) {
             $part_list = explode(" ", $title);
             if (count($part_list) == 1) {
@@ -375,81 +384,32 @@ class CanonController extends AbstractController {
 
     }
 
-    /**
-     * obsolete? 2022-08-01
-     * show selected canons (e.g. by domstift) in one page
-     * @Route("/domherr/onepage_legacy", name="canon_onepage_legacy")
-     */
-    public function onepage_legacy (Request $request,
-                                    EntityManagerInterface $entityManager) {
-
-        $model = new CanonFormModel();
-        $form = $this->createForm(CanonFormType::class, $model);
-        $form->handleRequest($request);
-
-        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
-
-        $query_result = $canonLookupRepository->findWithOfficesByModel($model);
-        // dd($query_result);
-
-        $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
-        $canon_list = array();
-        $canon = array();
-        $item_list = array();
-        foreach($query_result as $obj) {
-            if (is_a($obj, Person::class)) {
-                if (count($canon) > 0) {
-                    $canon['item'] = $item_list;
-                    $canon_list[] = $canon;
-                    $item_list = array();
-                    $canon = array();
-                    }
-                    $canon['person'] = $obj;
-            } elseif (is_a($obj, Item::class)) {
-                $referenceVolumeRepository->addReferenceVolumes($obj);
-                $item_list[] = $obj;
-            } else {}
-        }
-
-        $title = $model->domstift;
-        if ($title) {
-            $part_list = explode(" ", $title);
-            if (count($part_list) == 1) {
-                $title = 'Domstift '.$title;
-            }
-            $title = ucwords($title);
-        } else {
-            $title = "Domherren";
-        }
-
-        return $this->render('canon/onepage_result.html.twig', [
-            'title' => $title,
-            'canon_list' => $canon_list,
-        ]);
-
-    }
-
      /**
      * show references for selected canons
-     * @Route("/domherr/onepage/literatur/{itemType}", name="canon_onepage_references")
      */
     public function references(Request $request,
                                EntityManagerInterface $entityManager,
                                $itemType) {
 
-        // itemType:
-        // 6 references GS
-        // 5 other references
+        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
 
-        $model = new CanonFormModel();
+        $item_type_list = explode('-', $itemType);
+
+        $model = new PersonFormModel();
         $form = $this->createForm(CanonFormType::class, $model);
         $form->handleRequest($request);
 
-        $canonLookupRepository = $entityManager->getRepository(CanonLookup::class);
+        $canon_id_list = $canonLookupRepository->canonIds($model);
+        $reference_list = $canonLookupRepository->referenceListByItemType($canon_id_list, $item_type_list);
 
-        $reference_list = $canonLookupRepository->findReferencesByModel($model, $itemType);
-        // dd($reference_list);
-        $title = $itemType == 6 ? 'Literatur Germania Sacra' : 'Literatur andere';
+        $title = 'Literatur andere';
+        $criteria_list = ['titleShort', 'displayOrder', 'referenceId'];
+        if ($item_type_list[0] == strval(Item::ITEM_TYPE_ID['Domherr GS']['id'])) {
+                $title = 'Literatur Germania Sacra';
+                $criteria_list = ['displayOrder', 'titleShort', 'referenceId'];
+        }
+
+        $reference_list = UtilService::sortByFieldList($reference_list, $criteria_list);
 
         return $this->render('canon/onepage_references.html.twig', [
             'title' => $title,
@@ -461,7 +421,6 @@ class CanonController extends AbstractController {
     /**
      * AJAX
      *
-     * @Route("/canon-suggest/{field}", name="canon_suggest")
      */
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,

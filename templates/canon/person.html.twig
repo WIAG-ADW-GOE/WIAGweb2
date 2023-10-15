@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
-{% set menuItem='collections' %}
+{% set menuItem = 'collections' %}
 
 {% block javascripts %}
     {{ parent() }}
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 5 %}
     {% if not personName %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <p class="em">Domherr nicht gefunden.</p>
@@ -76,11 +77,13 @@
 		{% endif %}
 		{# offices and references#}
 		{% for person in personRole %}
+		    {# debug #}
+		    {# <span>{{ person.familyname }}, {{ person.givenname }}, {{ person.itemtypeid }}</span> #}
 		    {% set office_title = '' %}
 		    {% if person.item.getsource == 'Domherr' %}
 			{% set office_title = 'Amtsangaben aus Referenzwerken' %}
 		    {% elseif person.item.getsource == 'Bischof GS' or person.item.getsource == 'Domherr GS' %}
-			{% set gsnid = person.item.getidexternalobj('GS') %}
+			{% set gsnid = person.item.geturlexternalobj('GS') %}
 			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 		    {% elseif person.item.getsource == 'Bischof' %}
 			{% set office_title = 'Amtsangaben aus der Datenbank Domherren des Alten Reiches' %}
@@ -92,7 +95,11 @@
 			with_context: false
 		    }) }}
 		{% endfor %}
+
 		{# external IDs #}
+		{{ include('person/_person_url_external.html.twig') }}
+
+		{% if false %}
 		{# select person with highest role priority (Domherr > Domherr GS > Bishop) #}
 		{% if personName.item.displayIdExternal %}
 		    <div class="row mx-2 mt-3 mb-2">
@@ -118,6 +125,8 @@
 			</div>
 		    </div>
 		{% endfor %}
+		{% endif %}
+		{# citation #}
 		<div class="row mx-2">
 		    <div class="col-12">
 			Empfohlene Zitierweise:

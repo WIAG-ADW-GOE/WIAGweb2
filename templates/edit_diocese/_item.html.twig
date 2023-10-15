@@ -1,0 +1,40 @@
+{# parameters: diocese #}
+{% set expanded = diocese.item.formisexpanded or newEntry is defined %}
+{% set fill_url = diocese.id ? path('edit_diocese_item', { id: diocese.id, index: current_idx }) : "" %}
+{% set base_id=editFormId~'_'~current_idx %}
+{% set base_input_name=editFormId~'['~current_idx~']' %}
+{# header #}
+<div class="container-fluid p-2 my-2 border border-2 border-success rounded"
+     id="{{ base_id }}">
+    <div data-controller="toggle-arrow on-input insert auth-search sync"
+	 data-toggle-arrow-state-value="true"
+	 data-toggle-arrow-img-open-value="down"
+	 data-toggle-arrow-img-closed-value="right"
+	 data-sync-fill-url-value="{{ fill_url }}"
+	 data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
+	 data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
+	{# headline with collapse button#}
+	{{ include('edit_diocese/_item_headline.html.twig') }}
+	{# body #}
+	<div class="collapse multi-collapse {% if expanded == 1 %}show{% endif %} pe-0"
+	     data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
+	     id="body{{ current_idx }}">
+	    {# insert display status (hidden) #}
+	    <input type="checkbox"
+		   id="{{ base_id }}_formIsExpanded"
+		   name="{{ base_input_name }}[formIsExpanded]"
+		   class="form-check-input d-none"
+		   {% if expanded %}checked="checked"{% endif %}
+		   data-sync-target="check">
+	    {# name #}
+	    <div id="{{ base_id }}_container"
+		 data-sync-target="fill">
+		{% if expanded %}
+		    {{ include('edit_diocese/_input_content.html.twig', {
+			'itemIndex': current_idx
+		    }) }}
+		{% endif %}
+	    </div>
+	</div>
+    </div>
+</div>

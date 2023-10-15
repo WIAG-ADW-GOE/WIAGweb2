@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
@@ -185,6 +184,8 @@ class PersonService {
 
         $pj['givenName'] = $person->getGivenname();
 
+        $pj = array_merge($pj, $person->getItem()->arrayItemProperty());
+
         $fv = $person->getPrefixName();
         if ($fv) $pj['prefix'] = $fv;
 
@@ -223,10 +224,10 @@ class PersonService {
         // external identifiers
         $nd = array();
 
-        $id_external = $person->getItem()->getIdExternal();
-        foreach ($id_external as $id_loop) {
-            $auth = $id_loop->getAuthority();
-            $nd[$auth->getUrlNameFormatter()] = $id_loop->getUrl();
+        $url_external = $person->getItem()->getUrlExternal();
+        foreach ($url_external as $uext_loop) {
+            $auth = $uext_loop->getAuthority();
+            $nd[$auth->getUrlNameFormatter()] = $uext_loop->getUrl();
         }
 
         if ($nd) {
@@ -254,19 +255,6 @@ class PersonService {
             }
         }
 
-        // extra properties for priests in Utrecht
-        // ordination
-        $nd = array();
-        $itemProp = $person->getItem()->combineItemProperty();
-        if (array_key_exists('ordination_priest', $itemProp)) {
-            $nd['office'] = $itemProp['ordination_priest'];
-        }
-        if (array_key_exists('ordination_priest_date', $itemProp)) {
-            $nd['date'] = $itemProp['ordination_priest_date']->format('d.m.Y');
-        }
-        if ($nd) {
-            $pj['ordination'] = $nd;
-        }
 
         // birthplace
         $nd = array();
@@ -374,12 +362,14 @@ class PersonService {
 
         // additional information
         $bhi = array();
-        $fv = $person->commentLine(false);
+        $flag_names = false;
+        $flag_properties = true;
+        $fv = $person->commentLine($flag_names, $flag_properties);
         if($fv) {
             $bhi[] = $fv;
         }
 
-        $fv = $person->getItem()->combineItemProperty();
+        $fv = $person->getItem()->arrayItemProperty();
         if ($fv) {
             $ipt = $this->itemPropertyText($fv, 'ordination_priest');
             if ($ipt) {
@@ -399,26 +389,58 @@ class PersonService {
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
-        if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
+        // 2023-03-24
+        // neue Version siehe unten
+        // $fv = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GND']);
+        // if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
 
 
+        // $exids = array();
+
+        // foreach ($person->getItem()->getUrlExternal() as $id) {
+        //     $exids[] = [
+        //         '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
+        //     ];
+        // }
+
+        // if(count($exids) > 0) {
+        //     $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
+        // }
+
+        // $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
+        // if($fv) {
+        //     $pld[$foaffx.'page'] = $fv;
+        // }
+
+        // external IDs/URLs
         $exids = array();
-
-        foreach ($person->getItem()->getIdExternal() as $id) {
-            $exids[] = [
-                '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
-            ];
+        $wikipedia = null;
+        $gnd = null;
+        foreach ($person->getItem()->getUrlExternal() as $id) {
+            $url_complete = $id->getAuthority()->getUrlFormatter().$id->getValue();
+            $auth_name_formatter = $id->getAuthority()->getUrlNameFormatter();
+            if ($auth_name_formatter == 'Wikipedia-Artikel') {
+                $wikipedia = $url_complete;
+            } elseif ($auth_name_formatter == 'Gemeinsame Normdatei (GND) ID') {
+                $gnd = $id->getValue();
+            }
+            else {
+                $exids[] = [
+                    '@rdf:resource' => $url_complete
+                ];
+            }
         }
 
+        if($gnd) {
+            $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($gnd);
+        }
+        if($wikipedia) {
+            $pld[$foaffx.'page'] = $wikipedia;
+        }
         if(count($exids) > 0) {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
-        if($fv) {
-            $pld[$foaffx.'page'] = $fv;
-        }
 
         // birthplace
         $nd = array();
@@ -677,12 +699,12 @@ class PersonService {
 
         // additional information
         $bhi = array();
-        $fv = $person->commentLine(false);
+        $fv = $person->commentLine(false, false);
         if($fv) {
             $bhi[] = $fv;
         }
 
-        $fv = $person->getItem()->combineItemProperty();
+        $fv = $person->getItem()->arrayItemProperty();
         if ($fv) {
             $ipt = $this->itemPropertyText($fv, 'ordination_priest');
             if ($ipt) {
@@ -715,24 +737,33 @@ class PersonService {
             $pld[$scafx.'birthPlace'] = $fv;
         }
 
-        $fv = $person->getItem()->getIdExternalByAuthorityId(Authority::ID['GND']);
-        if($fv) $pld[$gfx.'gndIdentifier'] = $fv;
-
-
+        // external IDs/URLs
         $exids = array();
-
-        foreach ($person->getItem()->getIdExternal() as $id) {
-            $exids[] = $id->getAuthority()->getUrlFormatter().$id->getValue();
+        $wikipedia = null;
+        $gnd = null;
+        foreach ($person->getItem()->getUrlExternal() as $id) {
+            $url_complete = $id->getAuthority()->getUrlFormatter().$id->getValue();
+            $auth_name_formatter = $id->getAuthority()->getUrlNameFormatter();
+            if ($auth_name_formatter == 'Wikipedia-Artikel') {
+                $wikipedia = $url_complete;
+            } elseif ($auth_name_formatter == 'Gemeinsame Normdatei (GND) ID') {
+                $gnd = $id->getValue();
+            }
+            else {
+                $exids[] = $url_complete;
+            }
         }
 
+        if($gnd) {
+            $pld[$gfx.'gndIdentifier'] = $gnd;
+        }
+        if($wikipedia) {
+            $pld[$foaffx.'page'] = $wikipedia;
+        }
         if(count($exids) > 0) {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-        $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
-        if($fv) {
-            $pld[$foaffx.'page'] = $fv;
-        }
 
         // roles (offices)
 
@@ -913,14 +944,14 @@ class PersonService {
     public function itemPropertyText($properties, string $key): ?string {
 
         if (array_key_exists('ordination_priest', $properties)) {
-            $text = 'Weihe zum '.$properties[$key];
-            $fv = $properties[$key.'_date'];
+            $text = 'Weihe zum '.$properties[$key][0]['value'];
+            $fv = $properties[$key][0]['date'];
             if (!is_null($fv)) {
                 // $date_value = date('d.m.Y', $fv);
-                $text = $text.' am '.$fv->format('d.m.Y');
+                $text = $text.' am '.$fv;
             }
             if (array_key_exists($key.'_place', $properties)) {
-                $text = $text.' in '.$properties[$key.'_place'];
+                $text = $text.' in '.$properties[$key.'_place'][0]['value'];
             }
             return $text;
         }

@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ämter{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+	<div class="row ms-2 col-12">
+	    <h1>Ämterliste</h1>
+	</div>
+	{{ form_start(form, {
+	    'attr': {
+		'data-controller': 'submit-form',
+	    }
+	}) }}
+	    <div class="row ms-2">
+		<div class="col-12">
+		    <div class="d-flex flex-wrap">
+			<div class="w-20 me-2">
+			    {{ form_label(form.roleGroup) }}
+			    {{ form_errors(form.roleGroup) }}
+			    {{ form_widget(form.roleGroup, {
+				'attr': {
+				    'class': 'wiag-input',
+				    'data-action': 'change->submit-form#onChange',
+				}
+			    }) }}
+			</div>
+			<div class="w-30 me-2"
+			     {{ stimulus_controller('autocomplete', {
+				 url: path('role_suggest', { 'field': 'name' })
+			     }) }}>
+			    {{ form_label(form.name) }}
+			    {{ form_errors(form.name) }}
+			    {{ form_widget(form.name, {
+				'attr': {
+				    'data-autocomplete-target': "input",
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			    <ul class="list-group autocomplete-target"
+				data-autocomplete-target="results"
+				style="max-width: 22rem;"></ul>
+			</div>
+			<div class="w-15 me-2">
+			    {{ form_label(form.sortBy) }}
+			    {{ form_errors(form.sortBy) }}
+			    {{ form_widget(form.sortBy, {
+				'attr': {
+				    'class': 'wiag-input',
+				    'data-action': 'change->submit-form#onChange',
+				}
+			    }) }}
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div class="row mt-2 ms-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		</div>
+	    </div>
+	{{ form_end(form) }}
+	{{ include('edit_role/_list.html.twig') }}
+    </div>
+{% endblock %}

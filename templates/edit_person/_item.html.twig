@@ -1,0 +1,76 @@
+{% set base_id=editFormId~'_'~personIndex %}
+{% set base_input_name=editFormId~'['~personIndex~']' %}
+{# header #}
+{% set online_image = person.item.isOnline ? 'images/symbols/square-fill-online.svg' : 'images/symbols/square-fill-not-online.svg' %}
+<form id ="{{ base_id }}"
+      name="{{ base_input_name }}"
+      data-id-in-source="{{ person.item.idInSource }}"
+      action="{{ path('edit_person_save_single') }}"
+      method="post"
+      data-submit-form-target="form">
+    <div class="container-fluid p-2 my-2 border border-2 border-success rounded">
+	<div data-controller="toggle-arrow on-input insert auth-search"
+	     data-toggle-arrow-state-value="true"
+	     data-toggle-arrow-img-open-value="down"
+	     data-toggle-arrow-img-closed-value="right"
+	     data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden input->on-input#mark">
+	    {# catch ENTER events #}
+	    <button type="submit"
+		    hidden="hidden"
+		    disabled
+		    class="btn btn-secondary btn-sm"
+		    aria-hidden="true">Catch Enter</button>
+	    {% set expanded = person.item.inputError|length > 0 or person.item.formIsExpanded %}
+	    {# headline with collapse button#}
+	    {{ include('edit_person/_item_headline.html.twig') }}
+	    {# body #}
+	    {% set load_via_ajax=false %}
+	    <div class="collapse multi-collapse {% if expanded %}show{% endif %} pe-0"
+		 data-controller="sync"
+		 {% if load_via_ajax %}
+		 data-sync-fill-status-value="{% if expanded %}filled{% else %}empty{% endif %}"
+		 data-sync-fill-url-value="{{ path('edit_person_item_content', { 'id': person.id, 'index': personIndex, 'itemTypeId': itemTypeId }) }}"
+		 data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck shown.bs.collapse->sync#fill"
+		 {% else %}
+		 data-action="shown.bs.collapse->sync#check hidden.bs.collapse->sync#uncheck"
+		 {% endif %}
+		 id={{ "body#{person.id}" }}>
+		{# insert display status (hidden) #}
+		<input type="checkbox"
+		       id="{{ base_id }}_item_formIsExpanded"
+		       name="{{ base_input_name }}[item][formIsExpanded]"
+		       class="form-check-input d-none"
+		       {% if person.item.formIsExpanded ?? false %}checked="checked"{% endif %}
+		       data-sync-target="check">
+		{% set load_via_ajax=false %}
+		{% if load_via_ajax %}
+		    {# load via ajax #}
+		    <div data-sync-target="fill"
+			 id="{{ base_id }}_content">
+			{% if expanded %}
+			    {{ include('edit_person/_item_content.html.twig') }}
+			{% else %}
+			    <div class="row">
+				<div class="col-12">
+				    <span><i class="mt-2 ms-2 fa-solid fa-rotate fa-spin"></i></span>
+				</div>
+			    </div>
+			{% endif %}
+		    </div>
+		{% else %}
+		    <div>
+			{{ include('edit_person/_item_content.html.twig') }}
+		    </div>
+		{% endif %}
+		{% set debug = false %}
+		{% if debug %}
+		    <button type="submit"
+				  name="debug"
+				  value="debug"
+				  data-submit-by-key-target="button"
+				  class="btn btn-primary btn-sm">Speichern (debug)</button>
+		{% endif %}
+	    </div>
+	</div>
+    </div>
+</form>

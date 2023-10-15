@@ -1,0 +1,43 @@
+{# parameter: authBaseUrlList (for links; controller) #}
+<div class="row"> {# empty div to copy the structure of the other sections #}
+    <div class="col-12">
+	{% set base_id_urlext=base_id~'_urlext' %}
+	{% set base_input_name_urlext=base_input_name~'[urlext]' %}
+	<div class="input-group input-group-sm mb-1">
+	    {% for id_ext in person.item.essentialurlexternal %}
+		{% set auth=id_ext.authority %}
+		{% set loop_index_offset=loop.index0 + 100 %}
+		{% set base_id_urlext_loop =base_id_urlext~'_'~loop_index_offset %}
+		{% set base_input_name_urlext_loop =base_input_name_urlext~'['~loop_index_offset~']' %}
+		<span class="input-group-text">{% if id_ext.url %}<a href="{{ id_ext.url }}" target="_blank" rel="noopener">{{ auth.nameshort }}</a>{% else %}{{ auth.nameshort }}{% endif %}
+		    <a href="{{ auth.url }}"
+		       target="blank"
+		       rel="noopener"><img src="{{ asset('images/symbols/search.svg') }}" class="ms-1" alt="Lupe"></a></span>
+		<input type="text"
+		       id="{{ base_id_urlext_loop }}_deleteFlag"
+		       name="{{ base_input_name_urlext_loop }}[deleteFlag]"
+		       class="form-control form-control-sm d-none"
+		       value="">
+		<input type="text" id="{{ base_id_urlext_loop }}_urlName"
+		       name="{{ base_input_name_urlext_loop}}[urlName]"
+		       class="form-control form-control-sm d-none"
+		       value="{{ auth.urlnameformatter }}"
+		       spellcheck="false"
+		       aria-label="{{ auth.nameshort }} ID">
+		{% set auth_width_class=auth.nameshort == 'Wikipedia' ? 'w-20' : 'w-10' %}
+		<input type="text" id="{{ base_id_urlext_loop }}_value"
+		       name="{{ base_input_name_urlext_loop }}[value]"
+		       class="form-control form-control-sm wiag-input {{ auth_width_class }}"
+		       value="{{ id_ext.value }}"
+		       spellcheck="false"
+		       aria-label="{{ auth.nameshort }} value">
+		<input type="text" id="{{ base_id_urlext_loop }}_note"
+		       name="{{ base_input_name_urlext_loop}}[note]"
+		       class="d-none"
+		       value="{{ id_ext.note }}"
+		       spellcheck="false"
+		       aria-label="Bemerkung">
+	    {% endfor %}
+	</div>
+    </div>
+</div>

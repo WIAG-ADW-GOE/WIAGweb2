@@ -1,0 +1,30 @@
+{% if person.describeRole %}
+    {% set head_line %}
+    <strong>{{ person.describe }}</strong>, {{ person.describeRole }}
+   {% endset %}
+{% else %}
+   {% set head_line %}
+   <strong>{{ person.describe }}</strong>
+   {% endset %}
+{% endif %}
+
+<li class="list-group-item">
+    <div><span class="text-truncate" style="max-width: 35rem;">{{ head_line }}</span>
+    {% if person.describeReference %}
+	<span class="text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
+    {% endif %}
+    </div>
+    <div>
+	{% set id_public, gsn=person.item.idpublicvisible, person.item.geturlexternalobj('GS') %}
+	{% if id_public and id_public != "" %}
+	    <a href="{{ path('id', { 'id': id_public }) }}" target="_blank" rel="noopener">{{ id_public }}</a>
+	{% endif %}
+	{% if gsn %}{% if id_public %}, {% endif %}
+	    <a href="{{ gsn.url }}" target="_blank" rel="noopener">{{ gsn.value }}</a>
+	{% endif %}
+    </div>
+    {% for input_error in person.item.inputerror %}
+	<div class="text-warning">{{ input_error.msg }}</div>
+    {% endfor %}
+
+</li>

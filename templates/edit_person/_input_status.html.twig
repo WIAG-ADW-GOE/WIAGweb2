@@ -1,0 +1,152 @@
+{% import "util.html.twig" as util %}
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm mb-1 mt-1">
+	    {# get corpus IDs (hidden) #}
+	    {% for item_corpus in person.item.ItemCorpus %}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
+	    {% endfor %}
+	    <span class="input-group-text">Corpus</span>
+	    <div class="input-group-text" style="background-color: MintCream;">
+		<input class="form-check-input mt-0 me-1"
+		       type="checkbox"
+		       value="1"
+		       aria-label="checkbox for corpus 'epc'"
+		       id="{{ base_id }}_corpus_epc"
+		       name="{{ base_input_name }}[corpus][epc][flag]"
+		       {% if 'epc' in person.item.corpusIdList %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_corpus_epc">Bischof</label>
+	    </div>
+	    <div class="input-group-text" style="background-color: MintCream;">
+		<input class="form-check-input mt-0 me-1"
+		       type="checkbox"
+		       value="1"
+		       aria-label="checkbox for corpus 'can'"
+		       id="{{ base_id }}_corpus_can"
+		       name="{{ base_input_name }}[corpus][can][flag]"
+		       {% if 'can' in person.item.corpusIdList %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_corpus_can">Domherr</label>
+	    </div>
+	    <span class="input-group-text ms-2">Status</span>
+	    <div {{ stimulus_controller('autocomplete', {
+		 url: path('person_suggest', { field: 'editStatus' }),
+		 }) }} >
+		<input type="text" id="{{ base_id }}_item_editStatus"
+		       name="{{ base_input_name}}[item][editStatus]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ person.item.editStatus }}"
+		       style="max-width: 12em"
+		       spellcheck="false"
+		       aria-label="Status"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 20rem;"></ul>
+	    </div>
+	    <span class="input-group-text ms-2">identisch mit</span>
+	    <input type="text" id="{{ base_id }}_item_commentduplicate"
+		   name="{{ base_input_name}}[item][commentDuplicate]"
+		   class="form-control form-control-sm wiag-input"
+		   style="max-width: 12em"
+		   value="{{ person.item.commentDuplicate }}"
+		   aria-label="Kommentar Dublette">
+
+	    {# get parent IDs (hidden) #}
+	    {% for parent_item in person.item.mergeParent %}
+		{{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeParent', loop.index0], parent_item.id) }}
+	    {% endfor %}
+	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'mergeStatus'], person.item.mergeStatus) }}
+	    {% if person.item.mergeStatus == 'child' %}
+		<span class="input-group-text ms-2">zusammengesetzter Eintrag</span>
+	    {% endif %}
+	    {# show parent IDs in the merging process #}
+	    {% if person.item.mergeParent|length > 0 %}
+		<span class="input-group-text ms-2">zusammengesetzt aus</span>
+		{% for parent_item in person.item.mergeParent %}
+		    <input type="text"
+			   class="form-control form-control-sm"
+			   style="max-width: 12rem"
+			   value="{{ parent_item.concatIdInCorpusWithPrefix }}"
+			   disabled="disabled"
+			   aria-label="Zusammengesetzt aus">
+		{% endfor %}
+	    {% endif %}
+	    {% if person.item.formType == 'edit' %}
+		{# dropdown "Aktion" #}
+		<div class="dropdown ms-auto">
+		    <button class="btn btn-sm btn-secondary dropdown-toggle"
+			    type="button"
+			    data-bs-toggle="dropdown"
+			    aria-expanded="false">Aktion</button>
+		    <ul class="dropdown-menu">
+			{# open modal; url see data-modal-form-query-url-value; template: modal/_modal.html.twig #}
+			<li><button class="dropdown-item"
+				    type="submit"
+				    form="{{ base_id }}"
+				    formaction="{{ path("edit_person_merge_local") }}"
+				    data-action="modal-form#openMergeQuery">Zusammenführen ...</button></li>
+			{% set id_in_source_duplicate=person.item.commentDuplicateFirst %}
+			{% if id_in_source_duplicate %}
+			    <li><button class="dropdown-item"
+					type="submit"
+					form="{{ base_id }}"
+					formaction="{{ path("edit_person_merge_local", {
+						    'selected': id_in_source_duplicate
+						    }) }}"
+				data-action="submit-form#submitSingle">Zusammenführen mit {{ id_in_source_duplicate }}.</button></li>
+			{% endif %}
+			{% if person.item.mergeStatus == 'child' %}
+			    <li data-controller="submit-confirm"
+				data-submit-confirm-title-value="Eintrag aufteilen?"
+				data-submit-confirm-button-id-value="split_{{ person.id }}"
+				data-submit-confirm-text-value="Die ursprünglichen Einträge werden wieder hergesellt."
+				data-submit-confirm-confirm-button-text-value="Aufteilen"
+				data-submit-confirm-cancel-button-text-value="Abbrechen">
+				{# use this hidden element to trigger the confirmed action #}
+				{# TODO remove itemTypeId #}
+				<a id="split_{{ person.id }}"
+				   class="d-none"
+				   href="{{ path('edit_person_split_item', { 'id': person.id }) }}">Link zum Aufteilen</a>
+				<button type="button"
+					class="dropdown-item"
+					data-action="submit-confirm#confirm">Eintrag aufteilen</button>
+			    </li>
+			{% endif %}
+			<li data-controller="submit-confirm"
+			    data-submit-confirm-title-value="Eintrag löschen?"
+			    data-submit-confirm-button-id-value="delete_{{ person.id }}"
+			    data-submit-confirm-text-value="Der Eintrag wird gelöscht und ist nicht mehr zugänglich."
+			    data-submit-confirm-confirm-button-text-value="Löschen"
+			    data-submit-confirm-cancel-button-text-value="Abbrechen">
+			    {# use this hidden element to trigger the confirmed action #}
+			    {# set delete flag and save the edit form list #}
+			    <button type="submit"
+				    id="delete_{{ person.id }}"
+				    data-action="submit-form#deleteLocal"
+				    form="{{ base_id }}"
+				    formaction="{{ path('edit_person_delete_local') }}"
+				    class="d-none"></button>
+			    <button type="button"
+				    class="dropdown-item"
+				    data-action="submit-confirm#confirm">Eintrag löschen</button>
+			</li>
+		    </ul>
+		</div>
+	    {% endif %}
+	</div>
+    </div>
+</div>
+{% if person.item.ancestor %}
+<div class="row">
+    <div class="col-12">
+	<span class="ms-1">zusammengesetzt aus: </span>{{ person.item.ancestor|map(a => a.concatIdInCorpusWithPrefix)|join('; ') }}
+    </div>
+</div>
+{% endif %}
+{# validation messages #}
+{% for error_obj in person.item.inputErrorSection('status') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

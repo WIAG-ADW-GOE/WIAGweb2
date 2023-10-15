@@ -8,7 +8,7 @@ use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Repository\ItemRepository;
 use App\Form\BishopFormType;
-use App\Form\Model\BishopFormModel;
+use App\Form\Model\PersonFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
@@ -44,16 +44,17 @@ class BishopController extends AbstractController {
     /**
      * display query form for bishops; handle query
      *
-     * @Route("/bischof", name="bishop_query")
      */
     public function query(Request $request,
                           EntityManagerInterface $entityManager,
                           RouterInterface $router) {
 
+
         $personRepository = $entityManager->getRepository(Person::class);
 
-        // we need to pass an instance of BishopFormModel, because facets depend on it's data
-        $model = new BishopFormModel;
+        // we need to pass an instance of PersonFormModel, because facets depend on it's data
+        $model = new PersonFormModel;
+        $model->itemTypeId = $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
         $flagInit = count($request->request->all()) == 0;
 
@@ -72,12 +73,11 @@ class BishopController extends AbstractController {
                     'form' => $form,
             ]);
         } else {
-
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 
             $itemRepository = $entityManager->getRepository(Item::class);
-            $id_all = $itemRepository->bishopIds($model);
+            $id_all = $itemRepository->personIds($model);
             $count = count($id_all);
 
             // set offset to page begin
@@ -85,7 +85,7 @@ class BishopController extends AbstractController {
 
             $itemRepository = $entityManager->getRepository(Item::class);
             $model->editStatus = [Item::ITEM_TYPE[$this->itemTypeId]['online_status']];
-            $id_all = $itemRepository->bishopIds($model);
+            $id_all = $itemRepository->personIds($model);
             $count = count($id_all);
 
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
@@ -105,7 +105,6 @@ class BishopController extends AbstractController {
     /**
      * display details for a bishop
      *
-     * @Route("/bischof/listenelement", name="bishop_list_detail")
      */
     public function bishopListDetail(Request $request,
                                      EntityManagerInterface $entityManager) {
@@ -114,7 +113,7 @@ class BishopController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
-        $model = new BishopFormModel;
+        $model = new PersonFormModel;
 
         $form = $this->createForm(BishopFormType::class, $model);
         $form->handleRequest($request);
@@ -122,17 +121,18 @@ class BishopController extends AbstractController {
         $offset = $request->request->get('offset');
 
         $model = $form->getData();
+        $model->itemTypeId = 4;
 
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $itemRepository->bishopIds($model,
+            $ids = $itemRepository->personIds($model,
                                               2,
                                               $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $itemRepository->bishopIds($model,
+            $ids = $itemRepository->personIds($model,
                                               3,
                                               $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -152,13 +152,7 @@ class BishopController extends AbstractController {
             }
         }
 
-        $itemRepository->setSibling($person);
-        // find external URLs for sibling (Domherr GS)
-        $sibling = $person->getSibling();
-        if (!is_null($sibling)) {
-            $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-            $sibling->setUrlByType($urlByType);
-        }
+        $personRepository->setSibling([$person]);
 
         return $this->render('bishop/person.html.twig', [
             'form' => $form->createView(),
@@ -173,7 +167,6 @@ class BishopController extends AbstractController {
     /**
      * return bishop data
      *
-     * @Route("/bischof/data", name="bishop_query_data")
      */
     public function queryData(Request $request,
                               ItemRepository $itemRepository,
@@ -181,15 +174,17 @@ class BishopController extends AbstractController {
                               PersonService $personService) {
 
         if ($request->isMethod('POST')) {
-            $model = BishopFormModel::newByArray($request->request->get('bishop_form'));
+            $model = PersonFormModel::newByArray($request->request->get('bishop_form'));
             $format = $request->request->get('format') ?? 'json';
         } else {
-            $model = BishopFormModel::newByArray($request->query->all());
+            $model = PersonFormModel::newByArray($request->query->all());
             $format = $request->query->get('format') ?? 'json';
         }
         $format = ucfirst(strtolower($format));
 
-        $id_all = $itemRepository->bishopIds($model);
+        $model->itemTypeId = 4;
+        $model->isDeleted = 0;
+        $id_all = $itemRepository->personIds($model);
 
         $chunk_offset = 0;
         $chunk_size = 50;
@@ -221,11 +216,9 @@ class BishopController extends AbstractController {
 
     }
 
-
     /**
      * usually used for asynchronous JavaScript request
      *
-     * @Route("/bischof-suggest/{field}", name="bishop_suggest")
      */
     public function autocomplete(Request $request,
                                  ItemRepository $repository,
@@ -240,7 +233,6 @@ class BishopController extends AbstractController {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * @Route("/bischof-suggest-all/{field}", name="bishop_suggest_all")
      */
     public function autocompleteAll(Request $request,
                                     ItemRepository $repository,

@@ -4,7 +4,7 @@ namespace App\Form;
 use App\Entity\Item;
 use App\Entity\FacetChoice;
 use App\Form\Model\PriestUtFormModel;
-use App\Repository\ItemRepository;
+use App\Repository\PersonRepository;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,7 +29,7 @@ class PriestUtFormType extends AbstractType
 {
     private $repository;
 
-    public function __construct(ItemRepository $repository) {
+    public function __construct(PersonRepository $repository) {
         $this->repository = $repository;
     }
 

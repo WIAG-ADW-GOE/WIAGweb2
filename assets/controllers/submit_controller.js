@@ -10,7 +10,7 @@ export default class extends Controller {
 	// console.log('this is submit');
     }
 
-    async submitForm(event) {
+    async submitForm_legacy(event) {
 	var active = false;
 	if (active) {
 	    var formElement = this.element.getElementsByTagName('form')[0];

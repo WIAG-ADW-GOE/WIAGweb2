@@ -16,12 +16,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
+use Doctrine\ORM\EntityManagerInterface;
 
 class DioceseController extends AbstractController {
     /** number of items per page */
     const PAGE_SIZE = 20;
     /** number of suggestions in autocomplete list */
-    const HINT_SIZE = 8;
+    const SUGGEST_SIZE = 8;
 
 
     /**
@@ -73,7 +74,7 @@ class DioceseController extends AbstractController {
     }
 
     /**
-     * display details for a bishop
+     * display details
      *
      * @Route("/bistum/listenelement", name="diocese_list_detail")
      */
@@ -153,21 +154,23 @@ class DioceseController extends AbstractController {
     }
 
     /**
-     * AJAX
+     * respond to asynchronous JavaScript request
      *
-     * @Route("/diocese_name", name="diocese_name")
+     * @Route("/diocese-suggest/{field}", name="diocese_suggest")
      */
-    public function dioceseName(Request $request) {
-        $name = $request->query->get('q');
-        $suggestions = $this->getDoctrine()
-                            ->getRepository(Diocese::class)
-                            ->suggestName($request->query->get('q'),
-                                          self::HINT_SIZE);
+    public function autocomplete(Request $request,
+                                 EntityManagerInterface $entityManager,
+                                 String $field): Response {
+        $query_param = $request->query->get('q');
+        $altes_reich_flag = $request->query->get('altes-reich');
+        $fn_name = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        return $this->render('bishop/_autocomplete.html.twig', [
+        $dioceseRepository = $entityManager->getRepository(Diocese::class);
+        $suggestions = $dioceseRepository->$fn_name($query_param, self::SUGGEST_SIZE, $altes_reich_flag);
+
+        return $this->render('_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
     }
-
 
 }

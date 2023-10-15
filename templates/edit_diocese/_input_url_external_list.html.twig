@@ -1,0 +1,15 @@
+<div data-controller="insert"
+     data-insert-url-value="{{ path('edit_diocese_new_urlexternal', {
+			    'itemIndex': itemIndex
+			    }) }}"
+     data-insert-hide-trigger-value="yes"
+     data-insert-point-value="last">
+    {% for url_ext in diocese.item.urlexternal %}
+	{{ include('edit_diocese/_input_url_external.html.twig', {
+	    'urlext': url_ext,
+	    'itemIndex': itemIndex,
+	    'currentIndex': loop.index0,
+	    'is_last': loop.last,
+	}) }}
+    {% endfor %}
+</div>

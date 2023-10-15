@@ -5,7 +5,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'name'}),
+		     url: path('person_suggest_online', { 'itemTypeId': itemTypeId, 'field': 'name' }),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}
@@ -13,7 +13,7 @@
 		    attr: {
 			'data-autocomplete-target': "input",
 			'size': 31,
-			'class': 'wiag-input'
+			'class': 'wiag-input',
 		    },
 		}) }}
 		<ul class="list-group autocomplete-target"
@@ -23,7 +23,7 @@
 	    {# diocese #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'diocese'}),
+		     url: path('person_suggest_base', { 'field': 'diocese' }),
 		 }) }}>
 		{{ form_label(form.diocese) }}
 		{{ form_errors(form.diocese) }}
@@ -36,12 +36,12 @@
 		}) }}
 		<ul class="list-group autocomplete-target"
 		    data-autocomplete-target="results"
-		    style="max-width: 9em;"></ul>
+		    style="max-width: 14em;"></ul>
 	    </div>
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('bishop_suggest', {field: 'office'}),
+		     url: path('person_suggest_online', { 'itemTypeId': itemTypeId, 'field': 'office' }),
 		 }) }}>
 		{{ form_label(form.office) }}
 		{{ form_errors(form.office) }}
@@ -54,16 +54,22 @@
 		}) }}
 		<ul class="list-group autocomplete-target"
 		    data-autocomplete-target="results"
-		    style="max-width: 12em;"></ul>
+		    style="max-width: 14em;"></ul>
 	    </div>
 	    {{  form_row(form.year, {
 		row_attr: {class: 'me-2 mt-1'},
-		attr: {class: 'wiag-input'}
+		attr: {
+		    'class': 'wiag-input',
+		}
 	    }) }}
 	    {{  form_row(form.someid, {
 		row_attr: {class: 'mt-1'},
-		attr: {class: 'wiag-input'}
+		attr: {
+		    'class': 'wiag-input',
+		    'size': 26,
+		}
 	    }) }}
+	    {{ form_row(form.itemTypeId) }}
 	</div>
     </div>
     {% if hide_facets is defined %}

@@ -1,0 +1,62 @@
+{% set base_id=editFormId~'_'~itemIndex %}
+{% set base_input_name=editFormId~'['~itemIndex~']' %}
+{% set base_id_urlext=base_id~'_urlext_'~currentIndex %}
+{% set base_input_name_urlext=base_input_name~'[urlext]['~currentIndex~']' %}
+<div class="row"
+     data-controller="input-state">
+    {# col with add button and delete button #}
+    <div class="col-1 text-end pe-0">
+	{{ include('edit_diocese/_insert_delete.html.twig', { obj: urlext, base_id_delete: base_id_urlext, base_name_delete: base_input_name_urlext }) }}
+    </div>
+    <div class="col-11">
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text">URL Typ</span>
+	    {# id (hidden) #}
+	    <input type="text"
+		   id="{{ base_id_urlext }}_id"
+		   name="{{ base_input_name_urlext }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ urlext.id }}">
+	    {% set url_auth_id = urlext.authority ? urlext.authority.id : "" %}
+	    <input type="text"
+		   id="{{ base_id_urlext }}_authorityId"
+		   name="{{ base_input_name_urlext }}[authorityId]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ url_auth_id }}">
+	    <div class="w-50"
+		 {{ stimulus_controller('autocomplete', {
+		     url: path('authority_suggest', { field: 'urlNameFormatter' }),
+		 }) }}>
+		{% set url_auth_name = urlext.authority ? urlext.authority.urlNameFormatter : "" %}
+ 		    <input type="text" id="{{ base_id_urlext }}_urlName"
+			   name="{{ base_input_name_urlext}}[urlName]"
+			   class="form-control form-control-sm wiag-input"
+			   value="{{ url_auth_name }}"
+			   spellcheck="false"
+			   aria-label="Institution/Katalog"
+			   data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+			   data-autocomplete-target="results"
+			   style="max-width: 30rem;"></ul>
+	    </div>
+	    {% if urlext.authority %}
+		<span class="input-group-text"><a href="{{ urlext.url }}" target="_blank" rel="noopener">ID/Nr.</a></span>
+	    {% else %}
+		<span class="input-group-text">ID/Nr.</span>
+	    {% endif %}
+	    <input type="text" id="{{ base_id_urlext }}_value"
+		   name="{{ base_input_name_urlext}}[value]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ urlext.value }}"
+		   style="min-width: 15rem; max-width: 22%"
+		   spellcheck="false"
+		   aria-label="Id/Nummer">
+	</div>
+	<input type="text" id="{{ base_id_urlext }}_note"
+	       name="{{ base_input_name_urlext}}[note]"
+	       class="d-none"
+	       value="{{ urlext.note }}"
+	       spellcheck="false"
+	       aria-label="Bemerkung">
+    </div>
+</div>

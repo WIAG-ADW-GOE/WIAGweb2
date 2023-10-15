@@ -24,13 +24,13 @@
 		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
 		       type="checkbox"
 		       value="1"
-		       id="{{ base_id }}_formisedited"
-		       name="{{ base_input_name }}[formIsEdited]"
+		       id="{{ base_id }}_isEdited"
+		       name="{{ base_input_name }}[isEdited]"
 		       data-on-input-target="checkbox"
 		       data-action="click->sync#fill"
-		       {% if reference.formisedited %}checked="checked"{% endif %}>
+		       {% if reference.isEdited %}checked="checked"{% endif %}>
 	    </span>
-	    {% set head_line= reference.fullcitation|length > 0 ? reference.fullcitation : "Neuer Eintrag" %}
+	    {% set head_line= reference.gsCitation|length > 0 ? reference.gsCitation : "Neuer Eintrag" %}
 	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
 	    {# insert internal id, reference_id and item_type_id into the form (hidden) #}
 	    <input type="text"
@@ -43,13 +43,23 @@
 		   name="{{ base_input_name }}[referenceId]"
 		   class="form-control form-control-sm d-none"
 		   value="{{ reference.referenceId }}">
-	    <input type="text"
-		   id="{{ base_id }}_item_type_id"
-		   name="{{ base_input_name }}[itemTypeId]"
-		   class="form-control form-control-sm d-none"
-		   value="{{ reference.itemTypeId }}">
+	    {% if false %}
+		<input type="text"
+		       id="{{ base_id }}_itemTypeId"
+		       name="{{ base_input_name }}[itemTypeId]"
+		       class="form-control form-control-sm d-none"
+		       value="{{ reference.itemTypeId }}">
+	    {% endif %}
 	    <span class="vr ms-auto"></span>
-	    <span class="bg-light ms-1 px-2" style="min-width: 4rem">ID: {{ reference.referenceId }}</span>
+	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
+	    <input type="text" id="{{ base_id }}_display_order"
+		   name="{{ base_input_name}}[displayOrder]"
+		   class="form-control wiag-input"
+		   style="max-width: 5rem"
+		   value="{{ reference.displayOrder }}"
+		   spellcheck="false"
+		   aria-label="Reihenfolge">
+	    <span class="bg-light ms-1 px-2" style="min-width: 5rem">ID: {{ reference.referenceId }}</span>
 	</div>
     </div>
 </div>

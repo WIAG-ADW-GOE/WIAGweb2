@@ -1,0 +1,56 @@
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm">
+	    <span class="text-nowrap">
+		{% if expanded %}
+		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+			    type="button"
+			    data-bs-toggle="collapse"
+			    value="open"
+			    data-bs-target="#body{{ current_idx }}"
+			    aria-expanded="true"
+			    aria-controls="body#{{ current_idx }}"
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-down-square.svg') }}" alt="Pfeilsymbol"></button>
+		{% else %}
+		    <button class="btn btn-sm ms-1 pt-0 px-1 align-top"
+			    type="button"
+			    value="closed"
+			    data-bs-toggle="collapse"
+			    data-bs-target="#body{{ current_idx }}"
+			    aria-expanded="false"
+			    aria-controls="body{{ current_idx }}"
+			    data-toggle-arrow-target="button"><img src="{{ asset('images/symbols/caret-right-square.svg') }}" alt="Pfeilsymbol"></button>
+		{% endif %}
+		<input class="form-check-input ms-0 pt-0 mt-0 align-middle"
+		       type="checkbox"
+		       value="1"
+		       id="{{ base_id }}_formisedited"
+		       name="{{ base_input_name }}[formIsEdited]"
+		       data-on-input-target="checkbox"
+		       data-action="click->sync#fill"
+		       {% if authority.formisedited %}checked="checked"{% endif %}>
+	    </span>
+	    {% set head_line=authority.urlnameformatter|length > 0 ? authority.urlnameformatter : "Neuer Eintrag" %}
+	    {% if authority.urlType %}
+		{% set head_line=head_line~" — "~authority.urlType %}
+	    {% endif %}
+	    <span class="ms-2 text-truncate" style="max-width: 50em;">{{ head_line }}</span>
+	    {# insert internal id into the form (hidden) #}
+	    <input type="text"
+		   id="{{ base_id }}_id"
+		   name="{{ base_input_name }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ authority.id }}">
+	    <span class="vr ms-auto"></span>
+	    <span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
+	    <input type="text" id="{{ base_id }}_display_order"
+		   name="{{ base_input_name}}[displayOrder]"
+		   class="form-control wiag-input"
+		   style="max-width: 5rem"
+		   value="{{ authority.displayOrder }}"
+		   spellcheck="false"
+		   aria-label="Reihenfolge">
+	    <span class="bg-light ms-1 px-2" style="min-width: 4rem">ID: {{ authority.id }}</span>
+	</div>
+    </div>
+</div>

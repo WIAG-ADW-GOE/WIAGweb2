@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div data-controller="modal-form"
+	 data-modal-form-open-url-value="{{ path('edit_person_merge_query', { 'itemTypeId': itemTypeId }) }}">
+	<div class="container-fluid">
+	    <div class="row ms-x">
+		<div class="col-12">
+		    {{ include('edit_person/_item.html.twig') }}
+		</div>
+	    </div>
+	    {% set modal_title={ '4': 'Bischöfe zusammenführen', '5': 'Domherren zusammenführen' } %}
+	    {{ include("modal/_modal.html.twig", {
+		'modal_title': modal_title[itemTypeId],
+		'modal_success': "Übernehmen",
+	    }) }}
+	</div>
+    </div>
+{% endblock %}

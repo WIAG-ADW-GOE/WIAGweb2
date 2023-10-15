@@ -87,11 +87,11 @@
 		    <dd class="col-sm-9">{{ diocese.ecclesiasticalprovince }}</dd>
 		{% endif %}
 
-		{% if diocese.item.idExternal %}
+		{% if diocese.item.urlExternal %}
 		    <dt class="col-sm-3">Externe Identifier</dt>
 		    <dd class="col-sm-9">
 			<ul class ="list-unstyled">
-			    {% for id in diocese.item.idExternal|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
+			    {% for id in diocese.item.urlExternal|sort((a, b) => a.authority.displayorder <=> b.authority.displayorder) %}
 				<li>
 				    <ul class="list-inlined list-unstyled">
 					<li class="list-inline-item">{{ id.authority.urlnameformatter }}</li>

@@ -3,6 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Role;
+
+use App\Service\UtilService;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -65,5 +68,96 @@ class RoleRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * @return roleGroupList
+     */
+    public function roleGroupList() {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.roleGroup')
+                   ->andWhere('r.roleGroup IS NOT NULL')
+                   ->addOrderBy('r.roleGroup', 'ASC');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('r', 'i')
+                   ->join('r.item', 'i')
+                   ->leftjoin('i.urlExternal', 'ext')
+                   ->addOrderBy('r.name');
+
+        if ($model['roleGroup'] != '') {
+            $qb->andWhere('r.roleGroup = :roleGroup')
+               ->setParameter('roleGroup', $model['roleGroup']);
+        }
+
+        if ($model['name'] != '') {
+            $qb->andWhere('r.name like :name')
+               ->setParameter('name', '%'.$model['name'].'%');
+        }
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * find roles by ID
+     */
+    public function findList($id_list) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('r')
+                   ->andWhere('r.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $role_list = $query->getResult();
+
+        $role_list = UtilService::reorder($role_list, $id_list, "id");
+        return $role_list;
+    }
+
+    /**
+     * @return list of role names for autocompletion
+     */
+    public function suggestName($q_param, $size) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.name AS suggestion')
+                   ->andWhere('r.name like :q_param')
+                   ->setParameter('q_param', '%'.$q_param.'%');
+
+        $qb->setMaxResults($size);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * @return list of role names for autocompletion
+     */
+    public function suggestGender($q_param) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.gender AS suggestion')
+                   ->andWhere('r.gender like :q_param')
+                   ->setParameter('q_param', '%'.$q_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * @return list of role names for autocompletion
+     */
+    public function suggestRoleGroup($q_param) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('DISTINCT r.roleGroup AS suggestion')
+                   ->andWhere('r.roleGroup like :q_param')
+                   ->setParameter('q_param', '%'.$q_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
 }

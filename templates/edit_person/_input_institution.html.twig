@@ -1,0 +1,53 @@
+{# params: inst_corpus_id, controller select-institution #}
+{# the autocompletion list depends on itemTypeId of the institution #}
+{% set inst_ac_url = {
+    'dioc': path('person_suggest_base', { field: 'diocese' }),
+    'mon': path('person_suggest_base', { field: 'institution' }),
+    'cap': path('person_suggest_base', { field: 'institution' }),
+} %}
+<select class="form-select form-select-sm"
+	style="min-width: 10rem"
+	id="{{ base_id_role }}_instTypeId"
+	name="{{ base_input_name_role }}[instTypeId]"
+	data-action="select-institution#select">
+    <option value="1"
+	    data-url="{{ inst_ac_url.dioc }}"
+	    {% if inst_corpus_id == 'dioc' %}selected="selected"{% endif %}>Bistum</option>
+    <option value="2"
+	    data-url="{{ inst_ac_url.mon }}"
+	    {% if inst_corpus_id != 'dioc' %}selected="selected"{% endif %}>Kloster/Domstift</option>
+</select>
+{# diocese/monastery #}
+{% set inst_name = {
+    'dioc': role.dioceseDisplayName,
+    'mon': role.institutionDisplayName,
+    'cap': role.institutionDisplayName,
+} %}
+<input type="text"
+       class="d-none"
+       id="{{ base_id_role }}_dioceseDisplayName"
+       name="{{ base_input_name_role }}[dioceseDisplayName]"
+       value="{{ role.dioceseDisplayName }}">
+<input type="text"
+       class="d-none"
+       id="{{ base_id_role }}_institutionDisplayName"
+       name="{{ base_input_name_role }}[institutionDisplayName]"
+       value="{{ role.institutionDisplayName }}">
+<div class="w-40"
+     data-controller="autocomplete"
+     data-autocomplete-url-value="{{ attribute(inst_ac_url, inst_corpus_id) }}"
+     data-select-institution-target="carrier">
+    <input type="text"
+	   id="{{ base_id_role }}_institution"
+	   name="{{ base_input_name_role }}[institution]"
+	   class="form-control form-control-sm rounded-0 wiag-input"
+	   value="{{ attribute(inst_name, inst_corpus_id) }}"
+	   spellcheck="false"
+	   aria-label="Institution"
+	   data-autocomplete-target="input"
+	   data-controller="move-cursor"
+	   data-action="blur->move-cursor#moveStart">
+    <ul class="list-group autocomplete-target"
+	data-autocomplete-target="results"
+	style="max-width: 30rem;"></ul>
+</div>

@@ -1,7 +1,5 @@
-{% if status == 200 or status == 240 %}
-    <div>
-	Abfrage der Klosterdatenbank erfolgreich.
-    </div>
+{% if status == 200 %}
+    <div>Abfrage der Klosterdatenbank erfolgreich.</div>
     {% set pb_width=totalCount * 100 // maxCount %}
     <div class="progress w-25">
 	<div class="progress-bar"
@@ -12,6 +10,8 @@
 	     aria-valuemin="0"
 	     aria-valuemax="{{ maxCount }}"></div>
     </div>
+{% elseif status == 240 %}
+    <div class="text-success">Update abgeschlossen.</div>
 {% else %}
     <div>Abfrage der Klosterdatenbank beendet mit Status {{ status }}.</div>
 {% endif %}

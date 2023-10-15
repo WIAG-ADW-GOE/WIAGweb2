@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\CanonLookup;
 use App\Entity\Item;
+use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -29,13 +30,10 @@ class CanonLookupRepository extends ServiceEntityRepository
     // item type for domstift
     const ITEMTYPEDOMSTIFT = 3;
 
-    private $utilService;
-
-    public function __construct(ManagerRegistry $registry, UtilService $utilService)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CanonLookup::class);
 
-        $this->utilService = $utilService;
     }
 
     // /**
@@ -76,7 +74,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
         $office = $model->office;
         $place = $model->place;
         $year = $model->year;
@@ -84,12 +82,12 @@ class CanonLookupRepository extends ServiceEntityRepository
         $someid = $model->someid;
 
         // c (group by and query conditions)
-        // p, r (sort) use person with prioRole 1
+        // p_prio, r (sort) use person with prioRole 1
         // p_name with c.prioRole = 1: we need each person only once
         $qb = $this->createQueryBuilder('c')
                    ->join('App\Entity\CanonLookup', 'c_prio', 'WITH', 'c_prio.personIdName = c.personIdName AND c_prio.prioRole = 1')
                    ->join('App\Entity\PersonRole', 'r', 'WITH', 'r.personId = c.personIdRole')
-                   ->join('App\Entity\Person', 'p_prio', 'WITH', 'p_prio.id = c_prio.personIdRole')
+                   ->join('App\Entity\Person', 'p_role', 'WITH', 'p_role.id = c_prio.personIdRole')
                    ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = c_prio.personIdName');
 
         // table canon_lookup only contains entries with status 'online'
@@ -107,7 +105,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         }
         elseif ($model->isEmpty() || $office || $name || $year || $someid) {
             // Join domstift (sorting) independently from role (query condition).
-            $qb->leftjoin('App\Entity\PersonRole', 'r_sort', 'WITH', 'r_sort.personId = p_prio.id')
+            $qb->leftjoin('App\Entity\PersonRole', 'r_sort', 'WITH', 'r_sort.personId = p_role.id')
                ->leftjoin('App\Entity\Institution', 'domstift_sort', 'WITH', 'domstift_sort.id = r_sort.institutionId')
                ->select('c.personIdName, p_name.givenname, (CASE WHEN p_name.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname, p_name.familyname, min(domstift_sort.nameShort) as sort_domstift, min(r_sort.dateSortKey) as dateSortKey');
         } elseif ($place) {
@@ -151,10 +149,40 @@ class CanonLookupRepository extends ServiceEntityRepository
 
     }
 
-    public function addCanonConditions($qb, $model, $add_joins = true) {
+    public function canonIdsAll($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
         $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
 
-        $domstift = $model->domstift;
+        $domstift = $model->institution;
+        $office = $model->office;
+        $place = $model->place;
+        $year = $model->year;
+        $name = $model->name;
+        $someid = $model->someid;
+
+        $repository = $this->getEntityManager()->getRepository(Person::class);
+        $qb = $repository->createQueryBuilder('p')
+                         ->select('p.id')
+                         ->andWhere('p.itemTypeId = :item_type_id')
+                         ->setParameter('item_type_id', $item_type_id);
+
+
+        $query = $qb->getQuery();
+
+        $result = $query->getResult();
+
+        return array_column($result, 'id');
+
+    }
+
+    public function addCanonConditions($qb, $model, $add_joins = true) {
+        $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
+        $domstift_type_id = Item::ITEM_TYPE_ID['Domstift']['id'];
+
+        $domstift = $model->institution;
+        $diocese = $model->diocese;
         $office = $model->office;
         $name = $model->name;
         $place = $model->place;
@@ -170,6 +198,15 @@ class CanonLookupRepository extends ServiceEntityRepository
             } elseif ($office) {
                 $qb->join('App\Entity\PersonRole', 'r', 'WITH', 'r.personId = c.personIdRole');
             }
+        }
+
+        // if a diocese is given via diocese_id, there is also a value for diocese_name
+        if ($diocese) {
+            $qb ->join('App\Entity\PersonRole', 'r_dioc', 'WITH', 'r_dioc.personId = c.personIdRole')
+                ->andWhere("(r_dioc.dioceseName LIKE :paramDiocese ".
+                          "OR CONCAT('erzbistum ', r_dioc.dioceseName) LIKE :paramDiocese ".
+                          "OR CONCAT('bistum ', r_dioc.dioceseName) LIKE :paramDiocese) ")
+               ->setParameter('paramDiocese', '%'.$diocese.'%');
         }
 
         if ($domstift) {
@@ -192,37 +229,58 @@ class CanonLookupRepository extends ServiceEntityRepository
             // Join places independently from role (other query condition)
             $qb->join('App\Entity\PersonRole', 'role_place', 'WITH', 'role_place.personId = c.personIdRole')
                ->join('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                          'role_place.institutionId = ip.institutionId '.
-                          'AND ( '.
-                          'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
-                          'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
-                          'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
-                          'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
+                      'role_place.institutionId = ip.institutionId '.
+                      'AND ( '.
+                      'role_place.numDateBegin IS NULL AND role_place.numDateEnd IS NULL '.
+                      'OR (ip.numDateBegin < role_place.numDateBegin AND role_place.numDateBegin < ip.numDateEnd) '.
+                      'OR (ip.numDateBegin < role_place.numDateEnd AND role_place.numDateEnd < ip.numDateEnd) '.
+                      'OR (role_place.numDateBegin < ip.numDateBegin AND ip.numDateBegin < role_place.numDateEnd) '.
+                      'OR (role_place.numDateBegin < ip.numDateEnd AND ip.numDateEnd < role_place.numDateEnd))')
                 ->andWhere('ip.placeName LIKE :q_place')
                 ->setParameter('q_place', '%'.$place.'%');
         }
 
         if ($name) {
-            // check all persons mapped to this canon
-            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole')
-               ->andWhere('name_lookup.gnPrefixFn LIKE :q_name OR name_lookup.gnFn LIKE :q_name')
-               ->setParameter('q_name', '%'.$name.'%');
+            $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = c.personIdRole');
+            // require that every word of the search query occurs in the name, regardless of the order
+            $q_list = UtilService::nameQueryComponents($name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('name_lookup.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
         }
 
         if ($someid || $year) {
             // year and id are linked now via p_all
-            $qb->join('App\Entity\Person', 'p', 'WITH', 'p.id = c.personIdRole');
+            $qb->join('App\Entity\Person', 'p_id_year', 'WITH', 'p_id_year.id = c.personIdRole');
             if ($someid) {
-                $qb->join('p.item', 'item')
-                   ->leftJoin('item.idExternal', 'ixt')
-                   ->andWhere("item.idPublic LIKE :q_id ".
-                               "OR ixt.value LIKE :q_id")
-                   ->setParameter('q_id', '%'.$someid.'%');
+
+                // look for $someid in merged ancestors
+                $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+                $with_id_in_source = $model->isEdit;
+                $list_size_max = 200;
+                $descendant_id_list = $itemRepository->findIdByAncestor(
+                    $someid,
+                    $with_id_in_source,
+                    $list_size_max,
+                );
+
+                // look for $someid in external links
+                $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                    $someid,
+                    $list_size_max
+                );
+
+                $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+
+                $qb->join('p_id_year.item', 'item')
+                   ->andWhere("item.id in (:q_id_list)")
+                   ->setParameter('q_id_list', $q_id_list);
             }
             if ($year) {
-                $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
-                              " AND :q_year < p.dateMax + :mgnyear")
+                $qb->andWhere("p_id_year.dateMin - :mgnyear < :q_year ".
+                              " AND :q_year < p_id_year.dateMax + :mgnyear")
                    ->setParameter('mgnyear', self::MARGINYEAR)
                    ->setParameter('q_year', $year);
             }
@@ -237,7 +295,7 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     private function addCanonFacets($qb, $model) {
 
-        $facetDomstift = $model->facetDomstift;
+        $facetDomstift = $model->facetInstitution;
         if ($facetDomstift) {
             $valFctDft = array_column($facetDomstift, 'name');
             $qb->join('App\Entity\PersonRole', 'prfctdft', 'WITH', 'prfctdft.personId = c.personIdRole')
@@ -290,11 +348,11 @@ class CanonLookupRepository extends ServiceEntityRepository
      */
     public function findList($id_list, $prio_role = null) {
         $qb = $this->createQueryBuilder('c')
-                   ->select('c, p, i, ref, idext, i_prop, role, role_type, institution')
+                   ->select('c, p, i, ref, urlext, i_prop, role, role_type, institution')
                    ->join('c.person', 'p')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftjoin('i.reference', 'ref')
-                   ->leftjoin('i.idExternal', 'idext')
+                   ->leftjoin('i.urlExternal', 'urlext')
                    ->leftjoin('i.itemProperty', 'i_prop')
                    ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
@@ -305,7 +363,6 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->setParameter('id_list', $id_list);
 
         if (!is_null($prio_role)) {
-            // dump($prio_role);
             $qb->andWhere('c.prioRole = :prio_role')
                ->setParameter('prio_role', $prio_role);
         }
@@ -335,7 +392,7 @@ class CanonLookupRepository extends ServiceEntityRepository
         $role_list = $this->getRoleList($canon_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-        $canon_list = $this->utilService->reorder($canon_list, $id_list, "personIdName");
+        $canon_list = UtilService::reorder($canon_list, $id_list, "personIdName");
 
         return $canon_list;
 
@@ -394,7 +451,10 @@ class CanonLookupRepository extends ServiceEntityRepository
         return null;
     }
 
-    public function findWithOffice($personIdName) {
+    /**
+     * 2023-07-18 obsolete?
+     */
+    public function findWithOffice_legacy($personIdName) {
         $qb = $this->createQueryBuilder('c')
                    ->select('c, p_head, p, role, role_type, institution')
                    ->join('App\Entity\Person', 'p_head', 'WITH', 'c.personIdName = p_head.id')
@@ -410,26 +470,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
 
         $result = $query->getResult();
-
-        // set canon->personName
-        // $canon_list = array();
-        // $canon_last = null;
-        // foreach($result as $res_loop) {
-        //     if (is_a($res_loop, Person::class)) {
-        //         if (!is_null($canon_last) && $canon_last->getPrioRole() == 1) {
-        //             $canon_last->setPersonName($res_loop);
-        //             // set sibling
-        //             if ($res_loop->getId() != $canon_last->getPerson()->getId()) {
-        //                 $canon_last->getPersonName()->setSibling($canon_last->getPerson());
-        //             }
-        //             $canon_list[] = $canon_last;
-        //             $canon_lost = null;
-        //         }
-        //     } else {
-        //         $canon_last = $res_loop;
-        //     }
-        // }
-
     }
 
     public function getRoleIds($id) {
@@ -442,7 +482,6 @@ class CanonLookupRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         return array_column($query->getResult(), 'personIdRole');
     }
-
 
     public function findPersonIdName($id) {
         $qb = $this->createQueryBuilder('c')
@@ -462,9 +501,10 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-07-18 obsolete?
      * find person with offices and sort by date
      */
-    public function findWithOfficesByModel($model) {
+    public function findWithOfficesByModel_legacy($model) {
         // c is subject to query conditions, c_sel collects data
         // to select person and item and to combine them in the controller is only possible because they are unique (?)
         $qb = $this->createQueryBuilder('c')
@@ -484,9 +524,32 @@ class CanonLookupRepository extends ServiceEntityRepository
     }
 
     /**
-     * find references
+     *
      */
-    public function findReferencesByModel($model, $item_type_id) {
+    public function referenceListByItemType($id_list, $item_type_list) {
+        $referenceRepository = $this->getEntityManager()->getRepository(ItemReference::class);
+        $qb = $this->createQueryBuilder('c')
+                   ->select('distinct(c.personIdRole) as id')
+                   ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole and i.itemTypeId in (:item_type_list)')
+                   ->andWhere('c.personIdName in (:id_list)')
+                   ->setParameter('id_list', $id_list)
+                   ->setParameter('item_type_list', $item_type_list);
+        $query = $qb->getQuery();
+        $id_list_2 = $query->getResult();
+
+        $reference_list = null;
+        if (!is_null($id_list_2)) {
+            $reference_list = $referenceRepository->findVolumeByItemIdList($id_list_2);
+        }
+
+        return $reference_list;
+    }
+
+    /**
+     * find references
+     * 2023-06-27 obsolete?! see referenceListByItemType()
+     */
+    public function findReferencesByModel_legacy($model, $item_type_id) {
         $qb = $this->createQueryBuilder('c')
                    ->select('distinct v')
                    ->innerjoin('\App\Entity\CanonLookup', 'c_sel', 'WITH', 'c_sel.personIdName = c.personIdName')
@@ -494,7 +557,7 @@ class CanonLookupRepository extends ServiceEntityRepository
                    ->innerjoin('\App\Entity\ReferenceVolume',
                                'v',
                                'WITH',
-                               'v.itemTypeId = item_ref.itemTypeId AND v.referenceId = item_ref.referenceId')
+                               'v.referenceId = item_ref.referenceId')
                    ->andWhere('item_ref.itemTypeId = :item_type_id')
                    ->setParameter('item_type_id', $item_type_id);
 
@@ -529,15 +592,6 @@ class CanonLookupRepository extends ServiceEntityRepository
     public function countCanonDomstift($model) {
         // $model should not contain domstift facet
 
-        // all in one query (time consuming)
-        // $qb = $this->createQueryBuilder('c')
-        //            ->select('inst_count.nameShort AS name, COUNT(DISTINCT(c.personIdName)) AS n')
-        //            ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
-        //            ->join('pr_count.institution', 'inst_count')
-        //            ->andWhere("inst_count.itemTypeId = :itemTypeDomstift")
-        //            ->setParameter('itemTypeDomstift', Item::ITEM_TYPE_ID["Domstift"]);
-
-
         $em = $this->getEntityManager();
         $qbi = $em->getRepository(Institution::class)
                   ->createQueryBuilder('i')
@@ -550,6 +604,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c')
                    ->select('pr_count.institutionId AS id, COUNT(DISTINCT(c.personIdName)) AS n')
+            // ->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->andWhere('pr_count.institutionId IN (:instId_list)')
                    ->setParameter('instId_list', array_column($domstift_list, 'id'));
@@ -593,6 +648,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c')
                    ->select('role_count.name AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+            //->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.role', 'role_count');
 
@@ -616,6 +672,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c')
                    ->select('ip_count.placeName AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+            // ->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
                    ->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = c.personIdRole')
                    ->join('pr_count.institution', 'inst_count')
                    ->join('App\Entity\InstitutionPlace', 'ip_count', 'WITH',
@@ -648,6 +705,7 @@ class CanonLookupRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c')
                    ->select('auth.urlNameFormatter AS name, COUNT(DISTINCT(c.personIdName)) AS n')
+            // ->join('App\Entity\CanonLookup', 'cfct', 'WITH', 'cfct.personIdName = c.personIdName')
                    ->join('App\Entity\UrlExternal', 'url', 'WITH', 'url.itemId = c.personIdName')
                    ->join('url.authority', 'auth');
 
@@ -661,90 +719,318 @@ class CanonLookupRepository extends ServiceEntityRepository
         return $result;
     }
 
-
     /**
-     * AJAX
+     * clear entries related to $id_list, they may be restored by insertByListMayBe
      */
-    public function suggestCanonName($name, $hintSize) {
-        // join name_lookup via personIdRole (all canons)
-        // show version with prefix if present!
+    public function clearByIdRole($id_list) {
+        $entityManager = $this->getEntityManager();
         $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT CASE WHEN n.gnPrefixFn IS NOT NULL ".
-                            "THEN n.gnPrefixFn ELSE n.gnFn END ".
-                            "AS suggestion")
-                   ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = c.personIdRole')
-                   ->andWhere('n.gnPrefixFn LIKE :name OR n.gnFn LIKE :name')
-                   ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * AJAX
-     */
-    public function suggestCanonDomstift($name, $hintSize) {
-        $itemTypeIdDomstift = 3;
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT inst.name AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->join('pr.institution', 'inst')
-                   ->andWhere("inst.itemTypeId = $itemTypeIdDomstift")
-                   ->andWhere('inst.name like :name')
-                   ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * AJAX
-     */
-    public function suggestCanonOffice($name, $hintSize) {
-        $itemTypeIdDomstift = 3;
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT pr.roleName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->andWhere('pr.roleName like :name')
-                   ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * AJAX
-     */
-    public function suggestCanonPlace($name, $hintSize) {
-        $qb = $this->createQueryBuilder('c')
-                   ->select("DISTINCT ip.placeName AS suggestion")
-                   ->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = c.personIdRole')
-                   ->join('App\Entity\InstitutionPlace', 'ip', 'WITH', 'ip.institutionId = pr.institutionId')
-                   ->andWhere('ip.placeName like :name')
-                   ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
+                   ->andWhere ('c.personIdRole in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+        $canon_lookup_list = $qb->getQuery()->getResult();
+        $n_del = count($canon_lookup_list);
+        foreach ($canon_lookup_list as $canon_lookup_del) {
+            $entityManager->remove($canon_lookup_del);
+        }
+        $entityManager->flush();
+        return ($n_del);
     }
 
 
 
+    private function addCanon($person) {
+        $n_persist = 0;
+        $em = $this->getEntityManager();
+        $c2 = null;
+        $c3 = null;
 
+        $c1 = new CanonLookup();
+        $c1->setPerson($person); // corresponds to person_id_role
+        $c1->setPrioRole(1);
+        $person_id_name = $person->getId(); // may be reset, if there is a bishop
+
+        // gs
+        $c2 = $this->newCanonGS($person);
+
+        // ep
+        $c3 = $this->newCanonEP($person);
+
+        // find gs via ep
+        if (!$c2 and $c3) {
+            $c2 = $this->newCanonGS($c3->getPerson());
+        }
+
+
+        // set priority for role ep, set person_id_name
+        if ($c3) {
+            $prio_role_ep = $c2 ? 3 : 2;
+            $c3->setPrioRole($prio_role_ep);
+            $person_id_name = $c3->getPerson()->getId();
+            $c3->setPersonIdName($person_id_name);
+            $em->persist($c3);
+            $n_persist += 1;
+        }
+
+        $c1->setPersonIdName($person_id_name);
+        $em->persist($c1);
+        $n_persist += 1;
+
+        if ($c2) {
+            $c2->setPersonIdName($person_id_name);
+            $em->persist($c2);
+            $n_persist += 1;
+        }
+        $em->flush();
+        return $n_persist;
+    }
+
+    private function persistForBishop($person) {
+        $em = $this->getEntityManager();
+        $c2 = null;
+
+        // gs (maybe)
+        $c2 = $this->newCanonGS($person);
+        if (!$c2) { // bishop needs no entry in canon_lookup
+            return 0;
+        }
+
+        $c2->setPersonIdName($person->getId());
+        $c2->setPrioRole(1);
+        $em->persist($c2);
+
+        $c1 = new CanonLookup();
+        $c1->setPerson($person); // corresponds to person_id_role
+        $c1->setPrioRole(2);
+        $c1->setPersonIdName($person->getId());
+        $em->persist($c1);
+        return 2;
+    }
+
+
+    /**
+     * @return object of type CanonLookup if $person refers to Personendatenbank
+     */
+    private function newCanonGS(Person $person) {
+        $gs_auth_id = Authority::ID['GS'];
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        $gs_gsn = $person->getItem()->getUrlExternalByAuthorityId($gs_auth_id);
+        $c_gs = null;
+        if ($gs_gsn) {
+            // find GS by it's entry in url_external
+            $itemTypeId = [
+                Item::ITEM_TYPE_ID['Domherr GS']['id'],
+                Item::ITEM_TYPE_ID['Bischof GS']['id']
+            ];
+
+            $param_is_online = false;
+            $gs_cand = $itemRepository->findByUrlExternal($itemTypeId, $gs_gsn, $gs_auth_id, $param_is_online);
+            if (count($gs_cand) > 0) {
+                $gs = $personRepository->find($gs_cand[0]->getId());
+                $c_gs = new CanonLookup();
+                $c_gs->setPerson($gs);
+                $c_gs->setPrioRole(2);
+            }
+        }
+        return $c_gs;
+    }
+
+    /**
+     * @return object of type CanonLookup if $person refers to Gatz (WIAG-ID)
+     */
+    private function newCanonEP(Person $person) {
+        $wiag_auth_id = Authority::ID['WIAG-ID'];
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+
+        $ep_wiag_id = $person->getItem()->getUrlExternalByAuthorityId($wiag_auth_id);
+        $c_ep = null;
+        if ($ep_wiag_id) {
+            // find EP
+            $ep_cand = $itemRepository->findBy(['idPublic' => $ep_wiag_id]);
+            if (count($ep_cand) > 0 and $ep_cand[0]->getIsOnline()) {
+                $ep_id = $ep_cand[0]->getId();
+                $ep = $personRepository->find($ep_id);
+                $c_ep = new CanonLookup();
+                $c_ep->setPerson($ep);
+                $person_id_name = $ep_id;
+            }
+        }
+        return $c_ep;
+    }
+
+    /**
+     * 2023-07-18 not in use; keep it for potential data corrections
+     * restore entries for canons from Digitales Personenregister
+     * this approach is brute force but avoids complicated procedures to identify relevant changes
+     */
+    public function addCanonGsGlob() {
+        $entityManager = $this->getEntityManager();
+        // find existing entries
+        $id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+        $qb = $this->createQueryBuilder('c')
+                   ->addSelect('c.personIdRole as id')
+                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole and i.itemTypeId = :id_canon_gs')
+                   ->setParameter('id_canon_gs', $id_canon_gs);
+        $query = $qb->getQuery();
+        $id_current_list = array_column($query->getResult(), 'id');
+
+        // find candidates
+        $itemRepository = $entityManager->getRepository(Item::class);
+        $qb = $itemRepository->createQueryBuilder('i')
+                             ->addSelect('i.id as id')
+                             ->andWhere('i.itemTypeId = :id_canon_gs')
+                             ->andWhere('i.isOnline = 1') // all of them should be online
+                             ->setParameter('id_canon_gs', $id_canon_gs);
+        $query = $qb->getQuery();
+        $id_candidate_list_all = array_column($query->getResult(), 'id');
+        $id_candidate_list = array_diff($id_candidate_list_all, $id_current_list);
+
+        $personRepository = $entityManager->getRepository(Person::class);
+        foreach ($id_candidate_list as $id_new) {
+            $person = $personRepository->find($id_new);
+            $canon_lookup = new CanonLookup();
+            $canon_lookup->setPerson($person);
+            $canon_lookup->setPersonIdName($id_new);
+            $canon_lookup->setPrioRole(1);
+            $entityManager->persist($canon_lookup);
+        }
+        $entityManager->flush();
+        return $id_candidate_list;
+    }
+
+    /**
+     * add entry for an independent canon GS
+     */
+    public function addCanonGsMayBe(Person $person) {
+        $n_persist = 0;
+
+        $entityManager = $this->getEntityManager();
+
+        // is there already/still an entry for this canon?
+        $qb = $this->createQueryBuilder('c')
+                   ->andWhere('c.personIdRole = :item_id')
+                   ->setParameter('item_id', $person->getId());
+
+        $result = $qb->getQuery()->getResult();
+        if ($result and count($result) > 0) {
+            return $n_persist;
+        }
+
+
+        $canon_lookup = new CanonLookup();
+        $canon_lookup->setPerson($person);
+        $canon_lookup->setPersonIdName($person->getId());
+        $canon_lookup->setPrioRole(1);
+        $entityManager->persist($canon_lookup);
+        $entityManager->flush();
+        $n_persist += 1;
+
+        return $n_persist;
+    }
+
+    /**
+     * 2023-07-18 not in use; keep it for potential data corrections
+     * restore entries for bishops
+     * this approach is brute force but avoids complicated procedures to identify relevant changes
+     */
+    public function addBishopGlob() {
+        $entityManager = $this->getEntityManager();
+        // find existing entries
+        $type_id_bishop = Item::ITEM_TYPE_ID['Bischof']['id'];
+        $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+        $qb = $this->createQueryBuilder('c')
+                   ->addSelect('c.personIdRole as id')
+                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = c.personIdRole and i.itemTypeId = :type_id_bishop')
+                   ->setParameter('type_id_bishop', $type_id_bishop);
+        $query = $qb->getQuery();
+        $id_current_list = array_column($query->getResult(), 'id');
+
+        // find candidates (only performant with an INDEX on value)
+        $urlExtRepository = $entityManager->getRepository(UrlExternal::class);
+        $qb = $urlExtRepository->createQueryBuilder('uext')
+                               ->addSelect('i.id as id')
+                               ->join('uext.item', 'i')
+                               ->join('App\Entity\UrlExternal', 'uext_gs', 'WITH', 'uext.value = uext_gs.value')
+                               ->join('uext_gs.item', 'i_gs')
+                               ->andWhere('uext.authorityId = :auth_gs')
+                               ->andWhere('i.itemTypeId = :type_id_bishop')
+                               ->andWhere('i_gs.itemTypeId = :type_id_canon_gs')
+                               ->andWhere('i.isOnline = 1')
+                               ->setParameter('auth_gs', Authority::ID['GS'])
+                               ->setParameter('type_id_canon_gs', $type_id_canon_gs)
+                               ->setParameter('type_id_bishop', $type_id_bishop);
+        $query = $qb->getQuery();
+        $id_candidate_list_all = array_column($query->getResult(), 'id');
+
+        $id_candidate_list = array_diff($id_candidate_list_all, $id_current_list);
+
+        $personRepository = $entityManager->getRepository(Person::class);
+        $bishop_list = $personRepository->findList($id_candidate_list);
+
+        foreach ($bishop_list as $bishop) {
+            $this->persistForBishop($bishop);
+        }
+        $entityManager->flush();
+        return $id_candidate_list;
+    }
+
+
+    /**
+     * restore entry for bishop
+     */
+    public function addBishopMayBe(Person $person) {
+
+        // is an entry for this bishop already/still there?
+        $qb = $this->createQueryBuilder('c')
+                   ->andWhere('c.personIdRole = :item_id')
+                   ->setParameter('item_id', $person->getId());
+
+        $result = $qb->getQuery()->getResult();
+        $n_persist = 0;
+        if ($result and count($result) > 0) {
+            return $n_persist;
+        }
+
+        $n_persist = $this->persistForBishop($person);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     *
+     */
+    public function insertByListMayBe($id_list) {
+        $personRepository = $this->getEntityManager()->getRepository(Person::class);
+        $person_list = $personRepository->findList($id_list);
+
+        // canons
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr']['id']) {
+                    $this->addCanon($person);
+                }
+            }
+        }
+
+        // bishops
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
+                    $this->addBishopMayBe($person);
+                }
+            }
+        }
+
+        // canons GS
+        foreach ($person_list as $person) {
+            if ($person->getItem()->getIsOnline()) {
+                if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Domherr GS']['id']) {
+                    $this->addCanonGsMayBe($person);
+                }
+            }
+        }
+
+    }
 
 }

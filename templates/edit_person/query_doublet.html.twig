@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div data-controller="modal-form"
+	 data-modal-form-open-url-value="{{ path('edit_person_merge_query', { 'itemTypeId': itemTypeId }) }}">
+	<div class="container-fluid"
+	     data-controller="hide-on-input">
+	<div class="row ms-2 col-12">
+	    {% set doublet_title = {
+		'4': "Bischöfe und Patriarchen, Dubletten-Suche",
+		'5': "Domherren, Dubletten-Suche" } %}
+	    <span class="topic-title">{{ doublet_title[itemTypeId] }}</span>
+	</div>
+	{{ form_start(form, {
+	    'attr': {
+		'id': form.vars.id,
+		'data-controller': 'submit-form',
+	    }
+	}) }}
+	    <div class="row ms-2">
+		<div class="col-12">
+		    <div class="d-flex flex-wrap">
+			<div class="w-20 me-2">
+			    {{ form_label(form.editStatus) }}
+			    {{ form_errors(form.editStatus) }}
+			    {{ form_widget(form.editStatus, {
+				'attr': {
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			</div>
+			<div class="w-15 me-2">
+			    {{ form_label(form.authority) }}
+			    {{ form_errors(form.authority) }}
+			    {{ form_widget(form.authority, {
+				'attr': {
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div class="row mt-2 ms-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		</div>
+	    </div>
+	    <div data-hide-on-input-target="result">
+		{% if personList is defined %}
+		    <div class="row mt-2 mx-2">
+ 			<div class="col-12">
+			    {% if count == 0 %}
+				Treffer: keine
+			    {% elseif count == 1 %}
+				Treffer: 1
+			    {% else %}
+				Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+				{% if count > pageSize %}
+				    {{ include('person/_page_browse.html.twig') }}
+				{% endif %}
+			    {% endif %}
+			</div>
+		    </div>
+		{% endif %}
+	    </div>
+	{{ form_end(form) }}
+	{# use the same div because of the scope of hide-on-input #}
+	{% if personList is defined and count > 0 %}
+	    {{ include('edit_person/_list.html.twig') }}
+	{% endif %}
+	<div class="row mt-2 mx-1">
+	    <div class="col-12">
+		{% if count > pageSize %}
+		    {{ include('person/_page_browse.html.twig') }}
+		{% endif %}
+	    </div>
+	</div>
+	</div>
+	{% set modal_title={ '4': 'Bischöfe zusammenführen', '5': 'Domherren zusammenführen' } %}
+	{{ include("modal/_modal.html.twig", {
+	    'modal_title': modal_title[itemTypeId],
+	    'modal_success': "Übernehmen",
+	}) }}
+    </div>
+{% endblock %}

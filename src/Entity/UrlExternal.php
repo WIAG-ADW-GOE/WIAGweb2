@@ -54,6 +54,11 @@ class UrlExternal
      */
     private $comment;
 
+    /**
+     * hold form data
+     */
+    private $deleteFlag;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +66,12 @@ class UrlExternal
 
     public function getAuthority() {
         return $this->authority;
+    }
+
+    public function setAuthority($authority): self {
+        $this->authority = $authority;
+        $this->authorityId = $authority->getId();
+        return $this;
     }
 
     public function getItemId(): ?int
@@ -72,6 +83,11 @@ class UrlExternal
     {
         $this->itemId = $itemId;
 
+        return $this;
+    }
+
+    public function setItem($item): self {
+        $this->item = $item;
         return $this;
     }
 
@@ -99,12 +115,14 @@ class UrlExternal
         return $this;
     }
 
-    public function getValue(): ?string
-    {
+    public function getValue(): ?string {
         return $this->value;
     }
 
-    public function setValue(string $value): self
+    /**
+     * check type before saving to the database, not here
+     */
+    public function setValue($value): self
     {
         $this->value = $value;
 
@@ -119,6 +137,43 @@ class UrlExternal
     public function setComment(?string $comment): self
     {
         $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string {
+        if (!$this->value) {
+            return null;
+        }
+        // check if the complete URL is stored in `value`.
+        if (str_starts_with($this->value, "http")) {
+            return $this->value;
+        } else {
+            return $this->authority->getUrlFormatter().$this->value;
+        }
+    }
+
+    public function getPrettyValue(): ?string
+    {
+        if (!$this->value) {
+            return null;
+        }
+        $val_elts = explode('/',$this->value);
+        $value = end($val_elts);
+        $prettyValue = urldecode($value);
+        $prettyValue = str_replace('_', ' ', $prettyValue);
+
+        return $prettyValue;
+    }
+
+    public function getDeleteFlag(): ?string
+    {
+        return $this->deleteFlag;
+    }
+
+    public function setDeleteFlag(?string $deleteFlag): self
+    {
+        $this->deleteFlag = $deleteFlag;
 
         return $this;
     }

@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\ReferenceVolume;
+use App\Service\UtilService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -71,35 +73,39 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         }
         $item_ref_list = array_merge(...$item_ref_list_meta);
 
-        $item_type_list = array();
-        foreach ($item_ref_list as $ref) {
-            $item_type_list[] = $ref->getItemTypeId();
-        }
-        $item_type_list = array_unique($item_type_list);
-
-        if (count($item_type_list) == 0) {
-            return null;
-        }
-
-        // get all volumes for relevant item_types
         $qb = $this->createQueryBuilder('r')
-                   ->select('r')
-                   ->andWhere('r.itemTypeId in (:item_type_list)')
-                   ->setParameter('item_type_list', $item_type_list);
+                   ->select('r');
 
         $query = $qb->getQuery();
         $result = $query->getResult();
 
-        // match volumes by item_type_id and ref_id
+        // match volumes by ref_id
         // - the result list is not large so the filter is no performance problem
         foreach ($item_ref_list as $ref) {
-            $item_type_id = $ref->getItemTypeId();
             $ref_id = $ref->getReferenceId();
-            $vol = array_filter($result, function($el) use ($item_type_id, $ref_id) {
-                return ($el->getReferenceId() == $ref_id) && ($el->getItemTypeId() == $item_type_id);
+            $vol = array_filter($result, function($el) use ($ref_id) {
+                return ($el->getReferenceId() == $ref_id);
             });
-            $vol_obj = !is_null($vol) ? array_values($vol)[0] : null;
+            $vol_obj = (!is_null($vol) and count($vol) > 0) ? array_values($vol)[0] : null;
             $ref->setReferenceVolume($vol_obj);
+        }
+
+        // sort references
+        foreach ($item_list as $item_loop) {
+            $ref_list = $item_loop->getReference()->toArray();
+            usort($ref_list, function($a, $b) {
+                // new criterion 2023-06-23
+                $gsc_a = $a->getReferenceVolume()->getDisplayOrder();
+                $gsc_b = $b->getReferenceVolume()->getDisplayOrder();
+                $cmp = $gsc_a == $gsc_b ? 0 : ($gsc_a < $gsc_b ? -1 : 1);
+                if ($cmp == 0) {
+                    $gsc_a = $a->getReferenceVolume()->getGsCitation();
+                    $gsc_b = $b->getReferenceVolume()->getGsCitation();
+                    $cmp = $gsc_a == $gsc_b ? 0 : ($gsc_a < $gsc_b ? -1 : 1);
+                }
+                return $cmp;
+            });
+            $item_loop->setReference(new ArrayCollection($ref_list));
         }
 
         return null;
@@ -124,7 +130,67 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
                    ->addOrderBy('v.displayOrder', 'ASC')
                    ->setParameter('id_list', $id_list);
         $query = $qb->getQuery();
+        $reference_list = $query->getResult();
+
+        $reference_list = UtilService::reorder($reference_list, $id_list, "id");
+
+        return $reference_list;
+
+    }
+
+    /**
+     * find references by $model holding criteria for elements in reference_volume
+     */
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v');
+
+        if ($model['itemType'] != '') {
+            $item_type_id = explode(', ', $model['itemType']);
+            $qb->join('\App\Entity\ItemReference', 'ir', 'WITH', 'ir.referenceId = v.referenceId')
+               ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = ir.itemId')
+               ->andWhere('i.itemTypeId in (:item_type_id)')
+               ->setParameter('item_type_id', $item_type_id);
+        }
+
+        if ($model['searchText'] != '') {
+            $qb->andWhere('v.titleShort LIKE :q_search '.
+                          'OR v.authorEditor LIKE :q_search '.
+                          'OR v.fullCitation LIKE :q_search '.
+                          'OR v.gsCitation LIKE :q_search '.
+                          'OR v.note LIKE :q_search')
+               ->setParameter('q_search', '%'.trim($model['searchText'].'%'));
+        }
+
+        $query = $qb->getQuery();
         return $query->getResult();
+    }
+
+    public function nextId() {
+            $qb = $this->createQueryBuilder('v')
+                       ->select('max(v.referenceId) AS nextId');
+            $query = $qb->getQuery();
+            $list = $query->getOneOrNullResult();
+
+            $nextId = null;
+            if (!is_null($list)) {
+                return($list['nextId'] + 1);
+            }
+    }
+
+    public function suggestEntry($query_param) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v.gsCitation as suggestion')
+                   ->andWhere('v.titleShort LIKE :q_search '.
+                              'OR v.authorEditor LIKE :q_search '.
+                              'OR v.fullCitation LIKE :q_search '.
+                              'OR v.gsCitation LIKE :q_search '.
+                              'OR v.note LIKE :q_search')
+                   ->setParameter('q_search', '%'.$query_param.'%');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
     }
 
 

@@ -48,32 +48,20 @@ class AuthorityRepository extends ServiceEntityRepository
     }
     */
 
-
-    public function findByNameAndIDRange($name, $id_max) {
-        return $this->createQueryBuilder('a')
-                    ->andWhere('a.urlNameFormatter = :name')
-                    ->andWhere('a.id < :id_max')
-                    ->setParameter('name', $name)
-                    ->setParameter('id_max', $id_max)
-                    ->getQuery()
-                    ->getResult();
-    }
-
-
     /**
-     * set authority for external IDs in $person_list
+     * set authority for external URLs in $person_list
      */
     public function setAuthority($item_list) {
         // an entry in id_external belongs to one item at most
-        $id_external_list_meta = array();
+        $url_external_list_meta = array();
         foreach ($item_list as $item_loop) {
-            $id_external_list_meta[] = $item_loop->getIdExternal()->toArray();
+            $url_external_list_meta[] = $item_loop->getUrlExternal()->toArray();
         }
-        $id_external_list = array_merge(...$id_external_list_meta);
+        $url_external_list = array_merge(...$url_external_list_meta);
 
         $auth_id_list = array();
-        foreach ($id_external_list as $id_loop) {
-            $auth_id_list[] = $id_loop->getAuthorityId();
+        foreach ($url_external_list as $url_loop) {
+            $auth_id_list[] = $url_loop->getAuthorityId();
         }
         $auth_id_list = array_unique($auth_id_list);
 
@@ -94,59 +82,17 @@ class AuthorityRepository extends ServiceEntityRepository
         // match authorities by id
         // the result list is not large so the filter is no performance problem
         $id_loop = null;
-        foreach ($id_external_list as $id_loop) {
-            $auth_id = $id_loop->getAuthorityId();
+        foreach ($url_external_list as $url_loop) {
+            $auth_id = $url_loop->getAuthorityId();
             $auth = array_filter($result, function($el) use ($auth_id) {
                 return ($el->getId() == $auth_id);
             });
-            $auth_obj = !is_null($auth) ? array_values($auth)[0] : null;
-            $id_loop->setAuthority($auth_obj);
+            $auth_obj = (!is_null($auth) && count($auth) > 0) ? array_values($auth)[0] : null;
+            $url_loop->setAuthority($auth_obj);
         }
 
         return null;
 
-    }
-
-    /**
-     *
-     */
-    public function baseUrlList_legacy($id_list) {
-        $qb = $this->createQueryBuilder('a')
-                   ->select('a.id, a.url')
-                   ->andWhere('a.id in (:auth_id_list)')
-                   ->setParameter('auth_id_list', $id_list);
-
-        $query = $qb->getQuery();
-        $query_result = $query->getResult();
-
-        $id_short = array_flip(Authority::ID);
-        $result = [];
-        foreach($query_result as $url_loop) {
-            $result[$id_short[$url_loop['id']]] = $url_loop['url'];
-        }
-
-        return $result;
-
-    }
-
-    /**
-     * 2023-03-02 obsolete?
-     */
-    public function baseUrlList($id_list) {
-        $qb = $this->createQueryBuilder('a')
-                   ->select('a.id, a.url')
-                   ->andWhere('a.id in (:auth_id_list)')
-                   ->setParameter('auth_id_list', $id_list);
-
-        $query = $qb->getQuery();
-        $query_result = $query->getResult();
-
-        $result = array();
-        foreach($query_result as $r) {
-            $result[$r['id']] = $r['url'];
-        }
-
-        return $result;
     }
 
     public function findList($id_list) {
@@ -158,19 +104,20 @@ class AuthorityRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestUrlName($name, $hint_size, $exclude_ids) {
+    public function suggestUrlType($name, $hint_size) {
         $repository = $this->getEntityManager()->getRepository(Authority::class);
         $qb = $repository->createQueryBuilder('a')
-                         ->select("DISTINCT a.urlNameFormatter AS suggestion")
-                         ->andWhere('a.urlNameFormatter LIKE :name')
-                         ->addOrderBy('a.urlNameFormatter')
-                         ->setParameter('name', '%'.$name.'%')
-                         ->andWhere('a.id not in (:exclude_ids)')
-                         ->andWhere('a.id < 1000')
-                         ->setParameter('exclude_ids', $exclude_ids);
+                         ->select("DISTINCT a.urlType AS suggestion")
+                         ->addOrderBy('a.urlType');
+
+        if (!is_null($name)) {
+            $qb->andWhere('a.urlType LIKE :name')
+               ->setParameter('name', '%'.$name.'%');
+        }
 
         $qb->setMaxResults($hint_size);
 
@@ -179,6 +126,40 @@ class AuthorityRepository extends ServiceEntityRepository
         $suggestions = $query->getResult();
 
         return $suggestions;
+    }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestUrlNameFormatter($q_param, $hint_size) {
+        $repository = $this->getEntityManager()->getRepository(Authority::class);
+        $qb = $repository->createQueryBuilder('a')
+                         ->select("DISTINCT a.urlNameFormatter AS suggestion")
+                         ->andWhere('a.urlNameFormatter LIKE :q_param')
+                         ->addOrderBy('a.urlNameFormatter')
+                         ->setParameter('q_param', '%'.$q_param.'%');
+
+        $qb->setMaxResults($hint_size);
+
+        $query = $qb->getQuery();
+
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
+    public function findByModel($model) {
+        $qb = $this->createQueryBuilder('a')
+                   ->select('a');
+
+        if ($model['type'] != '') {
+            $type = $model['type'];
+            $qb->andWhere('a.urlType = :type')
+               ->setParameter('type', $type);
+        }
+
+        $query = $qb->getQuery();
+        return $query->getResult();
     }
 
 

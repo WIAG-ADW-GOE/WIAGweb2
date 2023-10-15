@@ -11,7 +11,8 @@
     </div>
 </div>
 {# comments, dates #}
-{% set commentline = person.commentline %}
+{% set with_names, with_properties = true, true %}
+{% set commentline = person.commentline(with_names, with_properties) %}
 {% if commentline %}
     <div class="row mx-2">
 	<div class="col-12 comment">

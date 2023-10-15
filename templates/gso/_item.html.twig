@@ -1,0 +1,14 @@
+{% if person.describeRole %}
+    {% set head_line %}
+    <strong>{{ person.describe }}</strong>, {{ person.item.idpublic }}, {{ person.describeRole }}
+   {% endset %}
+{% else %}
+   {% set head_line %}
+   <strong>{{ person.describe }}</strong>, {{ person.item.idpublic }}
+   {% endset %}
+{% endif %}
+<p><span class="ms-2 text-truncate" style="max-width: 35rem;">{{ head_line }}</span>
+    {% if person.describeReference %}
+	<span class="ms-2 text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
+    {% endif %}
+</p>

@@ -4,12 +4,27 @@ namespace App\Entity;
 
 use App\Repository\DioceseRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity(repositoryClass=DioceseRepository::class)
  */
 class Diocese
 {
+
+    const CORPUS_ID = 'dioc';
+    const SKOS_SCHEME_ID = 1;
+    const EDIT_FIELD_LIST = [
+        'name',
+        'note',
+        'ecclesiasticalProvince',
+        'dioceseStatus',
+        'dateOfFounding',
+        'dateOfDissolution',
+        'noteBishopricSeat',
+        'comment'
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -18,13 +33,13 @@ class Diocese
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="Item")
+     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $item;
 
     /**
-     * @ORM\OneToMany(targetEntity="SkosLabel", mappedBy="diocese")
+     * @ORM\OneToMany(targetEntity="SkosLabel", mappedBy="diocese", cascade = {"persist"})
      * @ORM\JoinColumn(name="id", referencedColumnName="concept_id")
      * @ORM\OrderBy({"displayOrder" = "ASC"})
      */
@@ -72,6 +87,11 @@ class Diocese
     private $bishopricSeat;
 
     /**
+     * no DB-mapping
+     */
+    private $formBishopricSeat;
+
+    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $noteBishopricSeat;
@@ -105,6 +125,17 @@ class Diocese
      * @ORM\Column(type="integer", nullable=true)
      */
     private $itemTypeId;
+
+    /**
+     * no db mapping
+     */
+    private $referenceCount;
+
+    public function __construct($user_id) {
+        $item_type_id = Item::ITEM_TYPE_ID['Bistum']['id'];
+        $this->item = new Item($item_type_id, $user_id);
+        $this->altLabels = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -187,13 +218,46 @@ class Diocese
         return $this;
     }
 
+    public function getBishopricSeatId() {
+        return $this->bishopricSeatId;
+    }
+
+    public function setBishopricSeatId(?int $id): self
+    {
+        $this->bishopricSeatId = $id;
+
+        return $this;
+    }
+
+
     public function getBishopricSeat() {
         return $this->bishopricSeat;
     }
 
-    public function setBishopricSeat(?int $bishopricSeat): self
+    public function setBishopricSeat($bishopricSeat): self
     {
         $this->bishopricSeat = $bishopricSeat;
+
+        return $this;
+    }
+
+    public function getFormBishopricSeat() {
+        $seat_name = $this->formBishopricSeat;
+        if (is_null($seat_name) or trim($seat_name) == "" ) {
+            // 2023-06-14 table contains dummy data from manual input
+            if ($this->bishopricSeatId == 0) {
+                $seat_name = "";
+            } elseif (!is_null($this->bishopricSeat)) {
+                $bs = $this->bishopricSeat;
+                $seat_name = $bs->getName().' ('.$bs->getGeoNamesId().')';
+            }
+        }
+        return $seat_name;
+    }
+
+    public function setFormBishopricSeat(?string $formBishopricSeat): self
+    {
+        $this->formBishopricSeat = $formBishopricSeat;
 
         return $this;
     }
@@ -299,6 +363,36 @@ class Diocese
         $this->itemTypeId = $itemTypeId;
 
         return $this;
+    }
+
+    public function setReferenceCount($value): self {
+        $this->referenceCount = $value;
+        return $this;
+    }
+
+    public function getReferenceCount() {
+        return $this->referenceCount;
+    }
+
+    public function getCorpusId() {
+        return self::CORPUS_ID;
+    }
+
+    /**
+     * provide direct access
+     */
+    public function getIdInSource() {
+        return $this->getItem()->getIdInSource();
+    }
+
+    /**
+     * do not provide setInputError; use add or remove to manipulate this property
+     */
+    public function getInputError() {
+        if (is_null($this->inputError)) {
+            $this->inputError = new ArrayCollection();
+        }
+        return $this->inputError;
     }
 
 }

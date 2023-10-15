@@ -1,0 +1,97 @@
+<div class="row mt-1">
+    <div class="col-12">
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 5rem">Name</span>
+	    <input type="text" id="{{ base_id }}_url_name_formatter"
+		   name="{{ base_input_name}}[urlNameFormatter]"
+		   class="form-control wiag-input"
+		   style="min-width: 20rem"
+		   value="{{ authority.urlNameFormatter }}"
+		   spellcheck="false"
+		   aria-label="Anzeigename">
+	    <span class="input-group-text" style="min-width: 5rem">Typ</span>
+	    <div style="min-width: 30%" {{ stimulus_controller('autocomplete', {
+		 url: path('authority_suggest', { field: 'urlType' }),
+		 }) }}>
+		<input type="text" id="{{ base_id }}_url_type"
+		       name="{{ base_input_name}}[urlType]"
+		       class="form-control form-control-sm wiag-input"
+		       value="{{ authority.urlType }}"
+		       spellcheck="false"
+		       aria-label="Art der URL"
+		       data-autocomplete-target="input">
+		<ul class="list-group autocomplete-target"
+		    data-autocomplete-target="results"
+		    style="max-width: 36rem;"></ul>
+	    </div>
+	    <div class="ms-1"
+		 data-controller="submit-confirm"
+		 data-submit-confirm-title-value="Eintrag löschen?"
+		 data-submit-confirm-button-id-value="delete_{{ authority.id }}"
+		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
+		 data-submit-confirm-confirm-button-text-value="Löschen"
+		 data-submit-confirm-cancel-button-text-value="Abbrechen">
+		{# use this hidden element to trigger the confirmed action #}
+		{# set delete flag and save the edit form list #}
+		<button type="submit"
+			      id="delete_{{ authority.id }}"
+			      data-action="submit-form#submit"
+			      form="{{ editFormId }}"
+			      formaction="{{ path('edit_authority_delete', {'q_id': authority.id ?? 0 }) }}"
+			      class="d-none"></button>
+		<button type="BUTTON"
+			      class="btn btn-sm btn-danger"
+			      data-action="submit-confirm#confirm">Eintrag löschen</button>
+	    </div>
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">Basis-URL</span>
+	    <input type="text" id="{{ base_id }}_url_formatter"
+		   name="{{ base_input_name}}[urlFormatter]"
+		   class="form-control wiag-input"
+		   value="{{ authority.urlFormatter}}"
+		   spellcheck="false"
+		   aria-label="Basis-URL">
+	    <span class="input-group-text" style="min-width: 10rem">Beispiel (ID)</span>
+	    <input type="text" id="{{ base_id }}_url_value_example"
+		   name="{{ base_input_name}}[urlValueExample]"
+		   class="form-control wiag-input"
+		   style="max-width: 23%"
+		   value="{{ authority.urlvalueexample }}"
+		   spellcheck="false"
+		   aria-label="Beispiel-URL">
+	</div>
+ 	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">URL der Institution</span>
+	    <input type="text" id="{{ base_id }}_url"
+		   name="{{ base_input_name}}[url]"
+		   class="form-control wiag-input"
+		   value="{{ authority.url }}"
+		   spellcheck="false"
+		   aria-label="URL">
+	</div>
+    </div>
+</div>
+{% for error_obj in authority.inputError %}
+    <div class="row">
+	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}
+<hr class="my-2 border border-secondary border-2">
+<div class="row">
+    <div class="col-12">
+	<div class="input-group input-group-sm">
+	    <span class="input-group-text wiag-bg-internal" style="min-width: 10rem">Kommentar (red.)</span>
+	    <textarea id="{{ base_id }}_comment"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[comment]"
+		      class="form-control form-control-sm wiag-input">{{ authority.comment }}</textarea>
+	</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+	referenziert (online): {{ authority.referencecount }}
+    </div>
+</div>

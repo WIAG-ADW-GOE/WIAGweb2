@@ -3,7 +3,9 @@
 namespace App\Entity;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\PersonRole;
+use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Service\UtilService;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,12 +27,14 @@ class Person {
         'notePerson' => 'Bemerkung zur Person (online)'
     ];
 
+    const MARGINYEAR = 1;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $id = 0;
 
     /**
      * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
@@ -99,7 +103,6 @@ class Person {
      */
     private $academicTitle;
 
-
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
@@ -151,19 +154,9 @@ class Person {
     private $itemTypeId;
 
     /**
-     * external urls grouped by authority type
-     */
-    private $urlByType;
-
-    /**
      * data from alternative source (canon)
      */
     private ?Person $sibling = null;
-
-    /**
-     * collection of InputError
-     */
-    private $inputError;
 
     /**
      * no DB-mapping
@@ -184,22 +177,32 @@ class Person {
     private $seeAlso;
 
 
-    public function __construct() {
+    public function __construct($user_wiag_id) {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->nameLookup = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
-        $this->inputError = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
+
+        $this->item = new Item($user_wiag_id);
+        // TODO 2023-01-05 clean-up
+        $this->itemTypeId = 0;
     }
 
-    static public function newPerson(Item $item) {
+    /**
+     * 2023-05-24 obsolete
+     */
+    static public function newPerson_legacy(Item $item) {
         $person = new Person();
         $person->setItem($item);
         $person->setItemTypeId($item->getItemTypeId());
-        $person->setIsNew = true;
         return $person;
+    }
+
+    public function setId($id): self {
+        $this->id = $id;
+        return $this;
     }
 
     public function getId(): ?int
@@ -222,8 +225,12 @@ class Person {
     }
 
     public function setRole($role) {
-       $this->role = $role;
-       return $this;
+        if (is_array($role)) {
+            $this->role = new ArrayCollection($role);
+        } else {
+            $this->role = $role;
+        }
+        return $this;
     }
 
     public function getComment(): ?string
@@ -422,7 +429,25 @@ class Person {
     public function getDisplayname() {
         $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
         $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
-        return $this->givenname.$prefixpart.$familypart;
+        $agnomenpart = '';
+        if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
+            $note_name = str_replace(';', ',', $this->noteName);
+            $note_list = explode(',', $note_name);
+            $agnomenpart = ' '.$note_list[0];
+        }
+        return $this->givenname.$prefixpart.$familypart.$agnomenpart;
+    }
+
+    public function getDisplaynameWithSeparators() {
+        $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
+        $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
+        $agnomenpart = '';
+        if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
+            $note_name = str_replace(';', ',', $this->noteName);
+            $note_list = explode(',', $note_name);
+            $agnomenpart = ' ('.$note_list[0].')';
+        }
+        return $this->givenname.$prefixpart.$familypart.$agnomenpart;
     }
 
     public function getGivennameVariants() {
@@ -446,16 +471,6 @@ class Person {
     {
         $this->itemTypeId = $itemTypeId;
 
-        return $this;
-    }
-
-    public function getUrlByType(): ?array
-    {
-        return $this->urlByType;
-    }
-
-    public function setUrlByType(?array $urlByType): self {
-        $this->urlByType = $urlByType;
         return $this;
     }
 
@@ -489,16 +504,7 @@ class Person {
         return null;
     }
 
-    private function setIsNew($flag) {
-        $this->isNew = $flag;
-        return $this;
-    }
-
-    public function getIsNew() {
-        return $this->isNew;
-    }
-
-    static private function combineData($a, $b) {
+    static private function concatData($a, $b) {
         if (is_null($a)) {
             return $b;
         }
@@ -520,19 +526,34 @@ class Person {
         if (is_null($this->sibling)) {
             return $this->$getfnc();
         }
-        return $this->combineData($this->$getfnc(), $this->sibling->$getfnc());
+        return $this->concatData($this->$getfnc(), $this->sibling->$getfnc());
     }
 
     /**
-     * combine item properties
+     * combine complete item property list
      */
-    public function combineProperty($key) {
-        if (is_null($this->sibling)) {
-            return $this->item->itemPropertyValue($key);
+    public function combinePropertyList() {
+        $a_prop_list = $this->item->arrayItemPropertyWithName();
+        $b_prop_list = array();
+        if ($this->sibling) {
+            $b_prop_list = $this->sibling->getItem()->arrayItemPropertyWithName();
         }
-        $a = $this->item->itemPropertyValue($key);
-        $b = $this->sibling->getItem()->itemPropertyValue($key);
-        return $this->combineData($a, $b);
+
+        $key_list = array_merge(array_keys($a_prop_list), array_keys($b_prop_list));
+        $key_list = array_unique($key_list);
+
+        $prop_list = array();
+        foreach($key_list as $key) {
+            $a_value = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['value'] : null;
+            $b_value = array_key_exists($key, $b_prop_list) ? $b_prop_list[$key]['value'] : null;
+
+            $entry['value'] = $this->concatData($a_value, $b_value);
+            $name = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['name'] : $b_prop_list[$key]['name'];
+            $entry['name'] = $name;
+            $prop_list[$key] = $entry;
+        }
+
+        return $prop_list;
     }
 
     public function getSibling(): ?Person {
@@ -544,16 +565,6 @@ class Person {
         return $this;
     }
 
-    /**
-     * do not provide setInputError; use add or remove to manipulate this property
-     */
-    public function getInputError() {
-        if (is_null($this->inputError)) {
-            $this->inputError = new ArrayCollection;
-        }
-        return $this->inputError;
-    }
-
     public function getSeeAlso() {
         return $this->seeAlso;
     }
@@ -561,10 +572,8 @@ class Person {
     /**
      * concatenate name variants and comments
      */
-    public function commentLine($flag_names = true) {
+    public function commentLine($flag_names = true, $flag_properties) {
 
-        $academic_title = $this->combineProperty('academic_title');
-        $academic_title = "";
         $academic_title = $this->combine('academicTitle');
 
         $str_gn_variants = null;
@@ -602,9 +611,15 @@ class Person {
             $academic_title,
             $str_gn_variants,
             $str_fn_variants,
-            $this->combine('noteName'),
             $this->combine('notePerson'),
         ];
+
+        if ($flag_properties) {
+            $property_list = $this->combinePropertyList();
+            foreach ($property_list as $prop) {
+                $elt_cands[] = $prop['name'].': '.$prop['value'];
+            }
+        }
 
         $line_elts = array();
         foreach ($elt_cands as $elt) {
@@ -651,6 +666,27 @@ class Person {
 
     }
 
+    /**
+     * get information about references
+     */
+    public function describeReference($nRef = 3): ?string {
+
+        $vol_txt_list = array();
+        foreach(array_slice($this->getItem()->getReference()->toArray(), 0, $nRef) as $ref) {
+            if ($ref->getReferenceVolume()) {
+                $vol_txt_list[] = $ref->getReferenceVolume()->getTitleShort();
+            }
+        }
+
+        $description = null;
+        if(count($vol_txt_list) > 0) {
+            $description = implode(', ', $vol_txt_list);
+        }
+
+        return($description);
+
+    }
+
     public function birthInfo(): ?string {
         $birth_info = null;
         if($this->dateBirth && $this->dateDeath) {
@@ -663,20 +699,6 @@ class Person {
         return $birth_info;
     }
 
-    public function hasError($min_level): bool {
-        // the database is not aware of inputError and it's type
-        if (is_null($this->inputError)) {
-            return false;
-        }
-
-        foreach($this->inputError as $e_loop) {
-            $level = $e_loop->getLevel();
-            if (in_array($level, InputError::ERROR_LEVEL[$min_level])) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public function getFirstRoleSortKey() {
         $key = PersonRole::MAX_DATE_SORT_KEY;
@@ -714,7 +736,10 @@ class Person {
             'comment',
             'noteName',
             'notePerson',
+            'academicTitle',
         ];
+
+        $this->item->mergeData($candidate->getItem());
 
         foreach ($field_list as $field) {
             $this->mergeField($field, $candidate);
@@ -732,14 +757,14 @@ class Person {
 
         $item_collection_list = [
             'reference',
-            'itemProperty',
         ];
 
         foreach($item_collection_list as $item_collection_name) {
             $this->item->mergeCollection($item_collection_name, $candidate->getItem());
         }
 
-        $this->item->mergeIdExternal($candidate->getItem());
+        $this->item->mergeItemProperty($candidate->getItem());
+        $this->item->mergeUrlExternal($candidate->getItem());
 
         return $this;
     }
@@ -777,6 +802,9 @@ class Person {
         return $this;
     }
 
+    /**
+     * an input form for a new person should contain empty fields for references etc.
+     */
     public function addEmptyDefaultElements($auth_list) {
         $role_list = $this->getRole();
         if (count($role_list) < 1) {
@@ -787,17 +815,17 @@ class Person {
             $reference_list->add(new ItemReference());
         }
 
-        $id_ext_list = $this->getItem()->getIdExternal();
+        $url_ext_list = $this->getItem()->getUrlExternal();
 
         // placeholder for all essential authorities
-        $id_ext_e_list = $this->getItem()->getIdExternalCore();
+        $url_ext_e_list = $this->getItem()->getEssentialUrlExternal();
 
-        $core_ids = Authority::coreIDs();
+        $e_auth_ids = Authority::ESSENTIAL_ID_LIST;
 
-        foreach ($core_ids as $auth_id) {
+        foreach ($e_auth_ids as $auth_id) {
             $flag_found = false;
-            foreach ($id_ext_list as $id_ext_e) {
-                if ($id_ext_e->getAuthority()->getId() == $auth_id) {
+            foreach ($url_ext_list as $url_ext_e) {
+                if ($url_ext_e->getAuthority()->getId() == $auth_id) {
                     $flag_found = true;
                     break;
                 }
@@ -811,16 +839,16 @@ class Person {
                         break;
                     }
                 }
-                $id_ext_new = new IdExternal();
-                $id_ext_new->setAuthority($auth);
-                $id_ext_list->add($id_ext_new);
+                $url_ext_new = new UrlExternal();
+                $url_ext_new->setAuthority($auth);
+                $url_ext_list->add($url_ext_new);
             }
         }
 
-        // there should be at least one non-essential external id
-        $id_ext_ne_list = $this->getItem()->getIdExternalNonCore();
-        if (count($id_ext_ne_list) < 1) {
-            $id_ext_list->add(new IdExternal());
+        // there should be at least one non-essential external url
+        $url_ext_ne_list = $this->getItem()->getUrlExternalNonEssential();
+        if (count($url_ext_ne_list) < 1) {
+            $url_ext_list->add(new UrlExternal());
         }
     }
 

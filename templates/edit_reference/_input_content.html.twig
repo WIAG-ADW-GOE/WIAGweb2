@@ -1,118 +1,138 @@
 <div class="row mt-1">
     <div class="col-12">
-	<div
-	    {{ stimulus_controller('toggle-arrow', {
-		state: 0,
-		imgOpen: 'down',
-		imgClosed: 'right'
-	    }) }}
-	    data-action="shown.bs.collapse->toggle-arrow#shown hidden.bs.collapse->toggle-arrow#hidden">
-	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text" style="min-width: 5rem">Autor/Hrsg.</span>
-		<input type="text" id="{{ base_id }}_author_editor"
-		       name="{{ base_input_name}}[authorEditor]"
-		       class="form-control wiag-input"
-		       style="min-width: 20rem"
-		       value="{{ reference.authorEditor }}"
-		       spellcheck="false"
-		       aria-label="Autor oder Herausgeber">
-		<span class="input-group-text" style="min-width: 3rem">Jahr</span>
-		<input type="text" id="{{ base_id }}_year_publication"
-		       name="{{ base_input_name}}[yearPublication]"
-		       class="form-control wiag-input"
-		       style="max-width: 5rem"
-		       value="{{ reference.yearPublication }}"
-		       spellcheck="false"
-		       aria-label="Erscheinungsjahr">
- 		<span class="input-group-text" style="min-width: 4rem">ISBN</span>
-		<input type="text" id="{{ base_id }}_isbn"
-		       name="{{ base_input_name}}[isbn]"
-		       class="form-control wiag-input"
-		       style="max-width: 11rem"
-		       value="{{ reference.isbn }}"
-		       spellcheck="false"
-		       aria-label="ISBN">
-		<span class="input-group-text" style="min-width: 5rem">RI OPAC</span>
-		<input type="text" id="{{ base_id }}_ri_opac_id"
-		       name="{{ base_input_name}}[riOpacId]"
-		       class="form-control wiag-input"
-		       style="max-width: 6rem"
-		       value="{{ reference.riOpacId }}"
-		       spellcheck="false"
-		       aria-label="RI OPAC">
-		<span class="input-group-text ms-1" style="min-width: 6rem">Reihenfolge</span>
-		<input type="text" id="{{ base_id }}_display_order"
-		       name="{{ base_input_name}}[displayOrder]"
-		       class="form-control wiag-input"
-		       style="max-width: 5rem"
-		       value="{{ reference.DisplayOrder }}"
-		       spellcheck="false"
-		       aria-label="Reihenfolge">
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 5rem">Autor/Hrsg.</span>
+	    <input type="text" id="{{ base_id }}_author_editor"
+		   name="{{ base_input_name}}[authorEditor]"
+		   class="form-control wiag-input"
+		   style="min-width: 20rem"
+		   value="{{ reference.authorEditor }}"
+		   spellcheck="false"
+		   aria-label="Autor oder Herausgeber">
+	    <span class="input-group-text" style="min-width: 3rem">Jahr</span>
+	    <input type="text" id="{{ base_id }}_year_publication"
+		   name="{{ base_input_name}}[yearPublication]"
+		   class="form-control wiag-input"
+		   style="max-width: 5rem"
+		   value="{{ reference.yearPublication }}"
+		   spellcheck="false"
+		   aria-label="Erscheinungsjahr">
+	    <div class="ms-1"
+		 data-controller="submit-confirm"
+		 data-submit-confirm-title-value="Eintrag löschen?"
+		 data-submit-confirm-button-id-value="delete_{{ reference.id }}"
+		 data-submit-confirm-text-value="Der Eintrag wird gelöscht. Der Vorgang kann nicht rückgängig gemacht werden."
+		 data-submit-confirm-confirm-button-text-value="Löschen"
+		 data-submit-confirm-cancel-button-text-value="Abbrechen">
+		{# use this hidden element to trigger the confirmed action #}
+		{# set delete flag and save the edit form list #}
+		<button type="submit"
+			id="delete_{{ reference.id }}"
+			data-action="submit-form#submit"
+			form="{{ editFormId }}"
+			formaction="{{ path('edit_reference_delete', {'q_id': reference.id ?? 0 }) }}"
+			class="d-none"></button>
+		<button type="BUTTON"
+			class="btn btn-sm btn-danger"
+			data-action="submit-confirm#confirm">Eintrag löschen</button>
 	    </div>
-	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text" style="min-width: 10rem">Titel</span>
-		<textarea id="{{ base_id }}_full_citation"
-			  style="height: 3rem"
-			  name="{{ base_input_name }}[fullCitation]"
-			  aria-label="full citation"
-			  class="form-control form-control-sm wiag-input">{{ reference.fullcitation }}</textarea>
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">GS Nr.</span>
+	    <input type="text" id="{{ base_id }}_gs_volume_nr"
+		   name="{{ base_input_name}}[gsVolumeNr]"
+		   class="form-control wiag-input"
+		   value="{{ reference.gsVolumeNr }}"
+		   style="max-width: 12rem"
+		   spellcheck="false"
+		   aria-label="GS Nummer">
+	    <span class="input-group-text" style="min-width: 4rem">ISBN</span>
+	    <input type="text" id="{{ base_id }}_isbn"
+		   name="{{ base_input_name}}[isbn]"
+		   class="form-control wiag-input"
+		   style="max-width: 14rem"
+		   value="{{ reference.isbn }}"
+		   spellcheck="false"
+		   aria-label="ISBN">
+	    <span class="input-group-text" style="min-width: 5rem">RI OPAC</span>
+	    <input type="text" id="{{ base_id }}_ri_opac_id"
+		   name="{{ base_input_name}}[riOpacId]"
+		   class="form-control wiag-input"
+		   style="max-width: 25rem"
+		   value="{{ reference.riOpacId }}"
+		   spellcheck="false"
+		   aria-label="RI OPAC">
+	    {% if false  %} {# obsolete 2023-04-24 #}
+		{% set item_type_choice_list = {
+		    '1': 'Bistum',
+		    '4': 'Bischof',
+		    '9': 'GS Band (Bischof)',
+		    '5': 'Domherr',
+		    '6': 'GS Band (Domherr)',
+		    '10': 'Priester Utrecht',
+		} %}
+		<span class="input-group-text" style="min-width: 5rem">Thema/Typ</span>
+		<select class="form-select form-select-sm wiag-input"
+			aria-label="Thema/Typ"
+			id="{{ base_id }}_item_type_id"
+			style="max-width: 12rem"
+			name="{{ base_input_name }}[itemTypeId]">
+		    {% for key, item_type_loop in item_type_choice_list %}
+			{% if key == reference.itemTypeId %}
+			    <option selected value="{{ key }}">{{ item_type_loop }}</option>
+			{% else %}
+			    <option value="{{ key }}">{{ item_type_loop }}</option>
+			{% endif %}
+		    {% endfor %}
+		</select>
+	    {% endif %}
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">Titel</span>
+	    <textarea id="{{ base_id }}_full_citation"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[fullCitation]"
+		      aria-label="full citation"
+		      class="form-control form-control-sm wiag-input">{{ reference.fullcitation }}</textarea>
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">Kurztitel</span>
+	    <input type="text" id="{{ base_id }}_title_short"
+		   name="{{ base_input_name}}[titleShort]"
+		   class="form-control wiag-input"
+		   value="{{ reference.titleShort }}"
+		   spellcheck="false"
+		   aria-label="Kurztitel">
+	    <span class="input-group-text" style="min-width: 5rem">Online</span>
+	    <input type="text" id="{{ base_id }}_online_resource"
+		   name="{{ base_input_name}}[onlineResource]"
+		   class="form-control wiag-input"
+		   value="{{ reference.onlineResource }}"
+		   spellcheck="false"
+		   aria-label="Online Ressource">
+	    <div class="input-group-text">
+		<input class="form-check-input mt-0 me-1" type="checkbox" value="1" aria-label="Checkbox indicating whether the volume is online" id="{{ base_id }}_isOnline" name="{{ base_input_name }}[isOnline]" {% if reference.isOnline %}checked="checked"{% endif %}>
+		<label class="form-check-label" for="{{ base_id }}_isOnline">
+		    Freigabe GS Digital
+		</label>
 	    </div>
-	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text" style="min-width: 10rem">Kurztitel</span>
-		<input type="text" id="{{ base_id }}_title_short"
-		       name="{{ base_input_name}}[titleShort]"
-		       class="form-control wiag-input"
-		       value="{{ reference.titleShort }}"
-		       spellcheck="false"
-		       aria-label="Kurztitel">
-		<span class="input-group-text" style="min-width: 5rem">Online</span>
-		<input type="text" id="{{ base_id }}_online_resource"
-		       name="{{ base_input_name}}[onlineResource]"
-		       class="form-control wiag-input"
-		       value="{{ reference.onlineResource }}"
-		       spellcheck="false"
-		       aria-label="Online Ressource">
-	    </div>
- 	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text" style="min-width: 10rem">GS Nr., GS Titel</span>
-		<input type="text" id="{{ base_id }}_gs_volume_nr"
-		       name="{{ base_input_name}}[gsVolumeNr]"
-		       class="form-control wiag-input"
-		       value="{{ reference.gsVolumeNr }}"
-		       style="max-width: 9rem"
-		       spellcheck="false"
-		       aria-label="GS Nummer">
-		<textarea id="{{ base_id }}_gs_citation"
-			  name="{{ base_input_name}}[gsCitation]"
-			  class="form-control wiag-input"
-			  style="height: 3rem"
-			  spellcheck="false"
-			  aria-label="GS Titel">{{ reference.gsCitation }}</textarea>
-	    </div>
-	    <div class="input-group input-group-sm mb-1">
-		<span class="input-group-text" style="min-width: 10rem">GS URL</span>
-		<input type="text" id="{{ base_id }}_gs_url"
-		       name="{{ base_input_name}}[gsUrl]"
-		       class="form-control wiag-input"
-		       value="{{ reference.gsUrl }}"
-		       spellcheck="false"
-		       aria-label="GS URL">
-		<span class="input-group-text" style="min-width: 5rem">GS DOI</span>
-		<input type="text" id="{{ base_id }}_gs_doi"
-		       name="{{ base_input_name}}[gsDoi]"
-		       class="form-control wiag-input"
-		       value="{{ reference.gsDoi }}"
-		       spellcheck="false"
-		       aria-label="GS DOI">
-	    </div>
-	    <div class="input-group input-group-sm mt-1">
-		<span class="input-group-text" style="min-width: 10rem">Bemerkung (online)</span>
-		<textarea id="{{ base_id }}_note"
-			  style="height: 3rem"
-			  name="{{ base_input_name }}[note]"
-			  aria-label="Bemerkung"
-			  class="form-control form-control-sm wiag-input">{{ reference.note }}</textarea>
-	    </div>
+	</div>
+ 	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text" style="min-width: 10rem">GS Zitation</span>
+	    <textarea id="{{ base_id }}_gs_citation"
+		      name="{{ base_input_name}}[gsCitation]"
+		      class="form-control wiag-input"
+		      style="height: 3rem"
+		      spellcheck="false"
+		      aria-label="GS Titel">{{ reference.gsCitation }}</textarea>
+	</div>
+	<div class="input-group input-group-sm mt-1">
+	    <span class="input-group-text" style="min-width: 10rem">Bemerkung (online)</span>
+	    <textarea id="{{ base_id }}_note"
+		      style="height: 3rem"
+		      name="{{ base_input_name }}[note]"
+		      aria-label="Bemerkung"
+		      class="form-control form-control-sm wiag-input">{{ reference.note }}</textarea>
 	</div>
     </div>
 </div>
@@ -132,5 +152,10 @@
 		      name="{{ base_input_name }}[comment]"
 		      class="form-control form-control-sm wiag-input">{{ reference.comment }}</textarea>
 	</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+	referenziert: {{ reference.referencecount }}
     </div>
 </div>

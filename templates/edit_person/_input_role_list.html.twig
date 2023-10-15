@@ -1,0 +1,22 @@
+{# TODO remove itemTypeId #}
+<div data-controller="insert sync"
+     data-insert-url-value="{{ path('edit_person_new_role', {
+			    'personIndex': personIndex
+			    }) }}"
+     data-insert-point-value="last"
+     data-insert-hide-trigger-value="yes">
+    {# {% for role in person.role|sort((a, b) => a.dateSortKey <=> b.dateSortKey) %} #}
+    {% for role in person.role %}
+	{{ include('edit_person/_input_role.html.twig', {
+	    current_idx: loop.index0,
+	    is_last: loop.last,
+	    role_id: role.id,
+	}) }}
+    {% endfor %}
+</div>
+{% for error_obj in person.item.inputErrorSection('role') %}
+    <div class="row">
+	{% set text_attr=error_obj.level == 'error' ? "text-danger" : "text-warning" %}
+	<div class="col-12 {{ text_attr }}">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

@@ -35,7 +35,7 @@
 		<div class="input-group mt-2">
 		    <div class="me-2"
 			 {{ stimulus_controller('autocomplete', {
-			     url: path('diocese_name'),
+			     url: path('diocese_suggest', { 'field': 'name', 'altes-reich': 'yes'}),
 			 }) }}>
 			{{ form_errors(form.name) }}
 			{{ form_widget(form.name, {

@@ -1,0 +1,15 @@
+<div data-controller="insert"
+     data-insert-url-value="{{ path('edit_diocese_new_skos_label', {
+			    'itemIndex': itemIndex
+			    }) }}"
+     data-insert-hide-trigger-value="yes"
+     data-insert-point-value="last">
+    {% for label in diocese.altLabels %}
+	{{ include('edit_diocese/_input_skos_label.html.twig', {
+	    'skosLabel': label,
+	    'itemIndex': itemIndex,
+	    'currentIndex': loop.index0,
+	    'is_last': loop.last,
+	}) }}
+    {% endfor %}
+</div>

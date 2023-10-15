@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Literatur{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+	<div class="row ms-2 col-12">
+	    <h1>Literatur</h1>
+	</div>
+	{{ form_start(form, {
+	    'attr': {
+		'data-controller': 'submit-form',
+		'data-action': 'change->submit-form#onChange',
+	    }
+	}) }}
+	    <div class="row ms-2">
+		<div class="col-12">
+		    <div class="d-flex flex-wrap">
+			<div class="w-20 me-2">
+			    {{ form_label(form.itemType) }}
+			    {{ form_errors(form.itemType) }}
+			    {{ form_widget(form.itemType, {
+				'attr': {
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			</div>
+			<div class="w-30 me-2"
+			     {{ stimulus_controller('autocomplete', {
+				 url: path('reference_suggest_entry')
+			     }) }}>
+			    {{ form_label(form.searchText) }}
+			    {{ form_errors(form.searchText) }}
+			    {{ form_widget(form.searchText, {
+				'attr': {
+				    'data-autocomplete-target': "input",
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			    <ul class="list-group autocomplete-target"
+				data-autocomplete-target="results"
+				style="max-width: 22rem;"></ul>
+			</div>
+			<div class="w-15 me-2">
+			    {{ form_label(form.sortBy) }}
+			    {{ form_errors(form.sortBy) }}
+			    {{ form_widget(form.sortBy, {
+				'attr': {
+				    'class': 'wiag-input'
+				}
+			    }) }}
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div class="row mt-2 ms-2">
+		<div class="col-12">
+		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
+		</div>
+	    </div>
+	{{ form_end(form) }}
+	{{ include('edit_reference/_list.html.twig', {
+	    formType: 'list',
+	    itemTypeId: '4',
+	}) }}
+    </div>
+{% endblock %}

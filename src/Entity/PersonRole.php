@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Item;
 use App\Repository\PersonRoleRepository;
 use App\Service\UtilService;
 
@@ -76,15 +77,15 @@ class PersonRole
     private $diocese;
 
     /**
-     * fallback if dioceseId is NULL and institutionId is NULL
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $institutionTypeId;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $dioceseName;
+
+    /**
+     * 2023-10-05 obsolete?
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $institutionTypeId;
 
     /**
      * @ORM\Column(type="string", length=31, nullable=true)
@@ -262,8 +263,18 @@ class PersonRole
     public function setRoleName(?string $roleName): self
     {
         $this->roleName = $roleName;
-
         return $this;
+    }
+
+    public function getDisplayRoleName(): ?string {
+        $role_txt = null;
+        $uncertain_txt = $this->uncertain > 0 ? " ?" : "";
+        if (!is_null($this->role)) {
+            $role_txt = $this->role->getName().$uncertain_txt;
+        } elseif (!is_null($this->roleName) and trim($this->roleName) != "") {
+            $role_txt = $this->roleName.$uncertain_txt;
+        }
+        return $role_txt;
     }
 
     public function getDioceseId(): ?int
@@ -359,15 +370,15 @@ class PersonRole
         return $this;
     }
 
-    public function getInstitutionTypeId(): ?int
+    public function getInstitutionCorpusId(): ?string
     {
         if ($this->institution) {
-            return $this->institution->getItemTypeId();
+            return $this->institution->getCorpusId();
         } elseif ($this->diocese) {
-            return $this->diocese->getItemTypeId();
+            return $this->diocese->getCorpusId();
         }
 
-        return $this->institutionTypeId;
+        return null;
     }
 
     public function setInstitutionTypeId(?int $institutionTypeId): self

@@ -1,0 +1,53 @@
+<div data-hide-on-input-target="result">
+    {# manage open/close for person entries #}
+    {% set body_id_list = personList|map(p => 'body'~attribute(p, "id"))|join(' ') %}
+    <div class="row mx-2">
+	<div class="col">
+	    {# disable submit via enter-key #}
+	    <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+	    {# toggle collapse button #}
+	    <button class="btn btn-sm btn-secondary float-start"
+		    type="button"
+		    data-bs-toggle="collapse"
+		    data-bs-target=".multi-collapse"
+		    aria-expanded="false"
+		    aria-controls="{{ body_id_list }}"
+		    {{ stimulus_controller('toggle-arrow', {
+			state: true,
+			imgOpen: 'down',
+			imgClosed: 'right'
+		    }) }}
+		    data-action="toggle-arrow#toggle"
+		    data-value="down">öffnen/schließen</button>
+	</div>
+    </div>
+    <div data-controller="submit-form">
+	<div class="row mx-2">
+	    <div class="col">
+		<button type="button"
+			name="formType"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
+	    </div>
+	    <div class="col-12">
+		{% for person in personList %}
+		    {{ include('edit_person/_item.html.twig', {
+			personIndex: loop.index0,
+			person: person,
+		    }) }}
+		{% endfor %}
+	    </div>
+	</div>
+	{# submit #}
+	<div class="row mx-2"
+	     data-controller="submit-by-key"> {# attaches an event listener to window #}
+	    <div class="col">
+		<button type="button"
+			name="formType"
+			data-submit-by-key-target="button"
+			data-action="submit-form#submitList"
+			class="btn btn-primary btn-sm float-end">Speichern</button>
+	    </div>
+	</div>
+    </div>
+</div>

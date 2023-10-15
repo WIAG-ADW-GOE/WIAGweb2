@@ -6,21 +6,14 @@ use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
-use App\Entity\Role;
-use App\Entity\Diocese;
-use App\Entity\Institution;
 use App\Entity\ReferenceVolume;
-use App\Entity\InstitutionPlace;
 use App\Entity\Authority;
-use App\Entity\PlaceIdExternal;
 use App\Entity\UrlExternal;
-use App\Form\Model\BishopFormModel;
+
 use App\Service\UtilService;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\Tools\Pagination\Paginator;
-
 
 /**
  * @method Person|null find($id, $lockMode = null, $lockVersion = null)
@@ -30,13 +23,9 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  */
 class PersonRepository extends ServiceEntityRepository {
 
-    private $utilService;
-
-    public function __construct(ManagerRegistry $registry, UtilService $utilService)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Person::class);
-
-        $this->utilService = $utilService;
     }
 
     // /**
@@ -69,23 +58,457 @@ class PersonRepository extends ServiceEntityRepository {
     */
 
     /**
+     * findEditPersonIds($model, $limit = 0, $offset = 0) {
+     *
+     * @return list of IDs matching conditions given by $model.
      *
      */
-    public function findList($id_list) {
+    public function findEditPersonIds($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        // avoid to join the same table twice
+        $joined_list = array();
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, bp, role, role_type, institution, idext')
+                   ->join('p.item', 'i');
+
+        // pr is required for sorting
+        $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
+        $joined_list[] = 'pr';
+
+        $corpusParam = explode(',', $model->corpus);
+
+        $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = i.id AND c.corpusId in (:corpus)")
+           ->setParameter('corpus', $corpusParam);
+        $joined_list[] = 'c';
+
+        $this->addConditions($qb, $model, $joined_list);
+        $this->addFacets($qb, $model);
+
+        // do sorting in an extra step, see below
+        $qb->select('p.id as id,'.
+                    'p.givenname,'.
+                    '(CASE WHEN p.familyname IS NULL THEN 0 ELSE 1 END)  as hasFamilyname,'.
+                    'p.familyname,'.
+                    'i.commentDuplicate as comment_duplicate,'.
+                    'i.editStatus as edit_status,'.
+                    'min(pr.institutionName) as institution_name,'.
+                    'min(pr.dioceseName) as diocese_name,'.
+                    'min(pr.dateSortKey) as date_sort_key')
+           ->andWhere("i.mergeStatus in ('child', 'original')");
+
+        if (in_array("- alle -", $model->editStatus)) {
+            $qb->andWhere("i.editStatus NOT IN ('Dublette')");
+        } else {
+            $qb->andWhere("i.editStatus in (:edit_status)")
+               ->setParameter('edit_status', $model->editStatus);
+        }
+
+        if ($model->monastery || $model->sortBy == "institution" ) { // restrict sorting to matches
+            $qb->join('App\Entity\Institution', 'institution',
+                      'WITH', "institution.id = pr.institutionId and institution.corpusId in ('cap', 'mon')")
+               ->addSelect('min(institution.nameShort) as inst_name');
+        }
+
+        if ($model->sortBy == "idInSource") {
+            $qb->join('App\Entity\ItemCorpus', 'corpus',
+                      'WITH', "corpus.itemId = i.id")
+               ->addSelect('min(corpus.idInCorpus) as id_in_corpus');
+        }
+
+        if ($model->place) {
+            $qb->addSelect('min(inst_place.placeName) as place_name');
+        }
+
+        $qb->groupBy('p.id');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // sort
+        // doctrine min function returns a string; convert it to int
+        $result = array_map(function($el) {
+            $val = $el['date_sort_key'];
+            $el['date_sort_key'] = is_null($val) ? $val : intval($val);
+            return $el;
+        }, $result);
+
+        $result = $this->sortQuery($result, $model);
+
+        if ($limit > 0) {
+            $result = array_slice($result, $offset, $limit);
+        }
+
+        return array_column($result, "id");
+
+    }
+
+    private function sortQuery($result, $model) {
+        $sort_by = $model->sortBy;
+        $sort_list = ['givenname', 'familyname'];
+        if ($model->sortBy == 'givenname') {
+            $sort_list = ['givenname', 'familyname'];
+        } elseif ($model->sortBy == 'familyname') {
+            $sort_list = ['hasFamilyname', 'familyname', 'givenname'];
+        } elseif ($model->sortBy == 'institution') {
+            $sort_list = ['institution_name'];
+        } elseif ($model->sortBy == 'diocese') {
+            $sort_list = ['diocese_name'];
+        } elseif ($model->sortBy == 'year') {
+            $sort_list = [];
+        } elseif ($model->sortBy == 'commentDuplicate') {
+            $sort_list = ['comment_duplicate'];
+        } elseif ($model->sortBy == 'idInSource') {
+            $sort_list = ['id_in_corpus'];
+        } elseif ($model->sortBy == 'editStatus') {
+            $sort_list = ['edit_status'];
+        }
+
+        $sort_list[] = 'date_sort_key';
+        $sort_list[] = 'id';
+
+        return UtilService::sortByFieldList($result, $sort_list, $model->sortOrder);
+
+    }
+
+    public function addConditions($qb, $model, $joined_list = array()) {
+
+        $corpus = $model->corpus;
+        $comment_edit = $model->comment;
+        $comment_duplicate = $model->commentDuplicate;
+        $domstift = $model->domstift;
+        $monastery = $model->monastery; // used in edit form
+        $diocese = $model->diocese;
+        $office = $model->office;
+        $name = $model->name;
+        $place = $model->place;
+        $reference = $model->reference;
+        $year = $model->year;
+        $someid = $model->someid;
+
+        // include in queries for corpus 'can' also canons from the Digitales Personenregister
+        // bishops from Digitales Personenregister have no independent entries in item_name_role,
+        // however their offices are visible in detail view (query via item_name_role)
+
+        // if (in_array('epc', $corpus)) {
+        //     $qb->join(
+        //         'App\Entity\ItemCorpus', 'c',
+        //         'WITH', "c.itemId = inr.itemIdName AND c.corpusId = 'epc'");
+        // } elseif ($corpus == 'can') {
+        //     $qb->join(
+        //         'App\Entity\ItemCorpus', 'c',
+        //         'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in ('can', 'dreg-can')"
+        //     );
+        // }
+
+        if ($model->corpus == 'can') {
+            $corpusParam = ['can', 'dreg-can'];
+        }else {
+            $corpusParam = explode(',', $model->corpus);
+        }
+
+        if (!in_array('c', $joined_list)) {
+            $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in (:corpus)")
+               ->setParameter('corpus', $corpusParam);
+            $joined_list[] = 'c';
+        }
+
+        // queries for bishops only consider Gatz-offices (query, sort, facet)
+        if (!in_array('pr', $joined_list) and ($office or $domstift or $diocese or $place)) {
+            if ($corpus == 'epc') {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+            } elseif ($corpus == 'can') {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+            }
+            $joined_list[] = 'pr';
+        }
+
+        if ($domstift) {
+            $qb->join('App\Entity\Institution', 'domstift', 'WITH',
+                      "domstift.id = pr.institutionId and domstift.corpusId = 'cap'");
+        }
+
+        if ($reference) {
+            $qb->leftjoin('i.reference', 'ref')
+               ->leftjoin('\App\Entity\ReferenceVolume', 'vol',
+                          'WITH', 'vol.referenceId = ref.referenceId AND vol.itemTypeId = i.itemTypeId')
+               ->andWhere('vol.titleShort LIKE :q_ref')
+               ->setParameter('q_ref', '%'.$reference.'%');
+        }
+
+        if ($comment_duplicate) {
+            $qb->andWhere('i.commentDuplicate LIKE :comment_duplicate')
+               ->setParameter('comment_duplicate', '%'.$comment_duplicate.'%');
+        }
+
+        if ($comment_edit) {
+            $qb->andWhere('p.comment LIKE :comment_edit')
+               ->setParameter('comment_edit', '%'.$comment_edit.'%');
+        }
+
+        if ($office) {
+            $qb->leftjoin('pr.role', 'role')
+               ->andWhere('pr.roleName LIKE :q_office OR role.name LIKE :q_office')
+               ->setParameter('q_office', '%'.$office.'%');
+        }
+
+        if ($place) {
+            $qb->join('App\Entity\PersonRole', 'pr_place', 'WITH', 'pr_place.personId = pr.personId')
+               ->join('App\Entity\InstitutionPlace', 'inst_place', 'WITH',
+                      'pr_place.institutionId = inst_place.institutionId '.
+                      'AND ( '.
+                      'pr_place.numDateBegin IS NULL AND pr_place.numDateEnd IS NULL '.
+                      'OR (inst_place.numDateBegin < pr_place.numDateBegin AND pr_place.numDateBegin < inst_place.numDateEnd) '.
+                      'OR (inst_place.numDateBegin < pr_place.numDateEnd AND pr_place.numDateEnd < inst_place.numDateEnd) '.
+                      'OR (pr_place.numDateBegin < inst_place.numDateBegin AND inst_place.numDateBegin < pr_place.numDateEnd) '.
+                      'OR (pr_place.numDateBegin < inst_place.numDateEnd AND inst_place.numDateEnd < pr_place.numDateEnd))');
+        }
+
+        // add conditions
+
+        // $domstift is AND-combined with $office because both are joined via 'pr'
+        if ($domstift) {
+            $qb->andWhere('domstift.name LIKE :q_domstift')
+               ->setParameter('q_domstift', '%'.$domstift.'%');
+        }
+
+        if ($monastery) {
+            $qb->andWhere('institution.name LIKE :q_monastery')
+               ->setParameter('q_monastery', '%'.$monastery.'%');
+        }
+
+        if ($diocese) {
+            // if a diocese is given via diocese_id, there is also a value for diocese_name
+            // do not AND-combine diocese and domstift
+            $diocese = str_ireplace("erzbistum", "", $diocese);
+            $diocese = str_ireplace("bistum", "", $diocese);
+            $diocese = trim($diocese);
+            if ($corpus == 'epc') {
+                $qb ->andWhere("pr.dioceseName LIKE :q_diocese");
+            } else {
+                $qb->join('App\Entity\PersonRole', 'pr_dioc', 'WITH', 'pr_dioc.personId = pr.personId')
+                    ->andWhere("pr_dioc.dioceseName LIKE :q_diocese");
+
+            }
+
+            $qb->setParameter('q_diocese', '%'.$diocese.'%');
+        }
+
+        if ($place) {
+            $qb->andWhere('inst_place.placeName LIKE :q_place')
+               ->setParameter('q_place', '%'.$place.'%');
+        }
+
+        if ($name) {
+            // search also for name in 'Digitales Personenregister' (?)
+            if ($corpus == 'epc' or $corpus == 'can') {
+                $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = inr.itemIdRole');
+            } else {
+                $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = p.id');
+            }
+            // require that every word of the search query occurs in the name, regardless of the order
+            $q_list = UtilService::nameQueryComponents($name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('name_lookup.nameVariant LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
+        }
+
+        if ($someid || $year) {
+            if ($someid) {
+                // look for $someid in merged ancestors
+                $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+                $with_id_in_source = $model->isEdit;
+                $list_size_max = 200;
+                $descendant_id_list = $itemRepository->findIdByAncestor(
+                    $someid,
+                    $with_id_in_source,
+                    $list_size_max,
+                );
+
+                // look for $someid in external links
+                $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                    $someid,
+                    $list_size_max
+                );
+
+                $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+
+                if ($model->corpus == 'epc' or $model->corpus == 'can') {
+                    $qb->andWhere("inr.itemIdRole in (:q_id_list)")
+                       ->setParameter('q_id_list', $q_id_list);
+                } else {
+                    $qb->andWhere("p.id in (:q_id_list)")
+                       ->setParameter('q_id_list', $q_id_list);
+                }
+            }
+            if ($year) {
+                // we have no join to person at the level of ItemNameRole.itemIdRole so far
+                if ($model->corpus == 'epc' or $model->corpus == 'can') {
+                    $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = inr.itemIdRole');
+                    $qb->andWhere("p_year.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p_year.dateMax + :mgnyear")
+                       ->setParameter('mgnyear', Person::MARGINYEAR)
+                       ->setParameter('q_year', $year);
+                } else {
+                    $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p.dateMax + :mgnyear")
+                       ->setParameter('mgnyear', Person::MARGINYEAR)
+                       ->setParameter('q_year', $year);
+                }
+            }
+        }
+
+        $misc = $model->misc;
+        if ($misc) {
+            $qb->leftjoin('p.role', 'pr_misc')
+               ->leftjoin('pr_misc.institution', 'inst_misc')
+               ->leftjoin('i.itemProperty', 'i_prop')
+               ->leftjoin('i_prop.type', 'i_prop_type')
+               ->leftjoin('pr_misc.roleProperty', 'r_prop')
+               ->leftjoin('r_prop.type', 'r_prop_type')
+               ->andWhere("(i.normdataEditedBy LIKE :misc)".
+                          " OR (p.noteName LIKE :misc)".
+                          " OR (p.notePerson LIKE :misc)".
+                          " OR (p.academicTitle LIKE :misc)".
+                          " OR (i.commentDuplicate LIKE :misc)".
+                          " OR (i_prop.value LIKE :misc)".
+                          " OR (i_prop_type.name LIKE :misc)".
+                          " OR (r_prop.value LIKE :misc)".
+                          " OR (r_prop_type.name LIKE :misc)".
+                          " OR (pr.roleName LIKE :misc)".
+                          " OR (pr.note LIKE :misc)".
+                          " OR (pr.dioceseName LIKE :misc)".
+                          " OR (inst_misc.name LIKE :misc)")
+               ->setParameter("misc", '%'.$misc.'%');
+        }
+
+        $dateCreated = UtilService::parseDateRange($model->dateCreated);
+        if ($dateCreated) {
+            $qb->andWhere(":q_min <= i.dateCreated AND i.dateCreated <= :q_max")
+               ->setParameter('q_min', $dateCreated[0])
+               ->setParameter('q_max', $dateCreated[1]);
+        }
+        $dateChanged = UtilService::parseDateRange($model->dateChanged);
+        if ($dateChanged) {
+            $qb->andWhere(":q_min <= i.dateChanged AND i.dateChanged <= :q_max")
+               ->setParameter('q_min', $dateChanged[0])
+               ->setParameter('q_max', $dateChanged[1]);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * add conditions set by facets
+     */
+    private function addFacets($qb, $model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
+
+        $facetDiocese = isset($model->facetInstitution) ? $model->facetInstitution : null;
+        if ($facetDiocese) {
+            $valFctDioc = array_column($facetDiocese, 'name');
+            $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
+               ->andWhere("i.itemTypeId = ${itemTypeId}")
+               ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
+               ->setParameter('valFctDioc', $valFctDioc);
+        }
+
+        $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
+        if ($facetOffice) {
+            $valFctOfc = array_column($facetOffice, 'name');
+            $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')
+               ->andWhere("i.itemTypeId = ${itemTypeId}")
+               ->andWhere("prfctofc.roleName IN (:valFctOfc)")
+               ->setParameter('valFctOfc', $valFctOfc);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
+     * countBishopDiocese($model)
+     *
+     * return array of dioceses related to a person's role (used for facet)
+     */
+    public function countBishopDiocese($model) {
+        $corpus = $model->corpus;
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) AS n')
+                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
+                   ->join('i.itemCorpus', 'c')
+                   ->join('p.role', 'prcount')
+                   ->join('p.role', 'pr') # for form conditions
+                   ->andWhere('c.corpusId = :corpus')
+                   ->andWhere("i.isOnline = 1")
+                   ->andWhere("prcount.dioceseName IS NOT NULL")
+                   ->setParameter("corpus", $corpus);
+
+        $this->addPersonConditions($qb, $model);
+        $this->addFacets($qb, $model);
+
+        $qb->groupBy('prcount.dioceseName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
+     * countBishopOffice($model)
+     *
+     * return array of offices related to a person's role (used for facet)
+     */
+    public function countBishopOffice($model) {
+        $corpus = $model->corpus;
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
+                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
+                   ->join('i.itemCorpus', 'c')
+                   ->join('p.role', 'prcount')
+                   ->join('p.role', 'pr') # for form conditions
+                   ->andWhere('c.corpusId = :corpus')
+                   ->andWhere("i.isOnline = 1")
+                   ->andWhere("prcount.roleName IS NOT NULL")
+                   ->setParameter("corpus", $corpus);
+
+        $this->addPersonConditions($qb, $model);
+        $this->addFacets($qb, $model);
+
+        $qb->groupBy('prcount.roleName');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
+    /**
+     *
+     */
+    public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
                    ->join('p.item', 'i') # avoid query in twig ...
+                   ->leftjoin('i.itemNameRole', 'inr')
                    ->leftjoin('i.itemProperty', 'ip')
-                   ->leftjoin('i.idExternal', 'idext')
+                   ->leftjoin('i.urlExternal', 'urlext')
+                   ->leftjoin('i.reference', 'ref')
                    ->leftjoin('p.birthplace', 'bp')
                    ->leftjoin('p.role', 'role')
                    ->leftjoin('role.role', 'role_type')
                    ->leftjoin('role.institution', 'institution')
                    ->andWhere('p.id in (:id_list)')
-                   ->andWhere('i.isDeleted = 0')
                    ->addOrderBy('role.dateSortKey')
                    ->addOrderBy('role.id')
                    ->setParameter('id_list', $id_list);
+
+        if (!$with_deleted) {
+            $qb->andWhere('i.isDeleted = 0');
+        }
 
         // sorting of birthplaces see annotation
 
@@ -95,15 +518,16 @@ class PersonRepository extends ServiceEntityRepository {
         $em = $this->getEntityManager();
         $itemRepository = $em->getRepository(Item::class);
 
-        // there is not much potential for optimization
-        foreach($person_list as $person) {
-            $itemRepository->setSibling($person);
-        }
-
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
         $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+
+        // set ancestors
+        if ($with_ancestors) {
+            $itemRepository->setAncestor($item_list);
+        }
+
         // set reference volumes
         $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
 
@@ -111,7 +535,7 @@ class PersonRepository extends ServiceEntityRepository {
         $em->getRepository(Authority::class)->setAuthority($item_list);
 
         // restore order as in $id_list
-        $person_list = $this->utilService->reorder($person_list, $id_list, "id");
+        $person_list = UtilService::reorder($person_list, $id_list, "id");
 
         return $person_list;
     }
@@ -129,15 +553,54 @@ class PersonRepository extends ServiceEntityRepository {
         return $role_list;
     }
 
+    public function findItemNameRole($id_list) {
+        $qb = $this->createQueryBuilder('p_name')
+                   ->select('p_name, p_role')
+                   ->join('p.item', 'i')
+                   ->join('i.itemNameRole', 'inr')
+                   ->join('\App\Entity\Person', 'p_role', 'WITH', 'p_role.personId = inr.itemIdRole');
+
+        $query = $qb->getQuery();
+
+        // TODO order like $id_list
+        return $query->getResult();
+    }
 
     /**
+     * 2023-10-12 obsolete
+     * set sibling (only for bishops)
+     */
+    public function setSibling($person_list) {
+        $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+        foreach($person_list as $person) {
+            $itemRepository->setSibling($person);
+
+            $sibling = $person->getSibling();
+            // add external url, if not yet present
+            if (!is_null($sibling)) {
+                $person_url_external = $person->getItem()->getUrlExternal();
+                $url_value_list = array();
+                foreach($person_url_external as $uext) {
+                    $url_value_list[] = $uext->getValue();
+                }
+                foreach($sibling->getItem()->getUrlExternal() as $uext) {
+                    if (false === array_search($uext->getValue(), $url_value_list)) {
+                        $person_url_external->add($uext);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 2023-10-12 obsolete?
      * setPersonName($canon_list)
      *
      * set personName foreach element of `$canon_list`.
      */
     public function setPersonName($canon_list) {
-
         $id_list = array_map(function($el) {return $el->getPersonIdName();}, $canon_list);
+        $id_list = array_unique($id_list);
 
         $qb = $this->createQueryBuilder('p')
                    ->select('p')
@@ -152,226 +615,184 @@ class PersonRepository extends ServiceEntityRepository {
             $id_person_map[$r->getId()] = $r;
         }
 
-        // set personName, personName->sibling, personName->urlByType, personName->sibling->urlByType
-        $em = $this->getEntityManager();
-        $itemRepository = $em->getRepository(Item::class);
-        $urlExternalRepository = $em->getRepository(UrlExternal::class);
+        // set sibling in an extra call to PersonRepository->setSibling
         foreach($canon_list as $canon) {
             $person_id_name = $canon->getPersonIdName();
             $person = $id_person_map[$person_id_name];
-            // set sibling (only relevant for bishops)
-            if ($person->getItem()->getSource() == 'Bischof') {
-                $itemRepository->setSibling($person);
-            }
-
-            $urlByType = $urlExternalRepository->groupByType($person_id_name);
-            $person->setUrlByType($urlByType);
-
-            $sibling = $person->getSibling();
-            if ($sibling) {
-                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-                $sibling->setUrlByType($urlByType);
-            }
-
             $canon->setPersonName($person);
         }
 
         return null;
     }
 
+    /**
+     * adjust data
+     * @return IDs of entries with missing date range information
+     */
+    public function findMissingDateRange($limit = null, $offset = null) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p.id as personId')
+                   ->andWhere('p.dateMin is NULL OR p.dateMax is NULL');
+
+        if (!is_null($limit)) {
+            $qb->setMaxResults($limit);
+        }
+        if (!is_null($offset)) {
+            $qb->setFirstResult($offset);
+        }
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        return array_column($result, 'personId');
+
+    }
 
     /**
-     * usually used for asynchronous JavaScript request
+     * return list of IDs matching conditions in $model
+     */
+    public function priestUtIds($model, $limit = 0, $offset = 0) {
+        $result = null;
+
+        $name = $model->name;
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+        $year = $model->year;
+        $someid = $model->someid;
+
+        $qb = $this->createQueryBuilder('p')
+                   ->select('distinct(p.id) as personId, ip_ord_date.dateValue as sort')
+                   ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
+                   ->join('i.itemCorpus', 'corpus')
+                   ->join('\App\Entity\ItemProperty',
+                          'ip_ord_date',
+                          'WITH',
+                          'ip_ord_date.itemId = i.id AND ip_ord_date.propertyTypeId = :ordination')
+                   ->andWhere("corpus.corpusId = 'utp'")
+                   ->andWhere('i.isOnline = 1')
+                   ->setParameter(':ordination', ItemProperty::ITEM_PROPERTY_TYPE_ID['ordination_priest']);
+
+        $qb = $this->addPriestUtConditions($qb, $model);
+        $qb = $this->addPriestUtFacets($qb, $model);
+
+        if ($religious_order) {
+            $qb->addOrderBy('rlgord.abbreviation');
+        }
+        if ($birthplace) {
+            $qb->addSelect('bp.placeName as birthplace')
+               ->addOrderBy('birthplace');
+        }
+        $qb->addOrderBy('p.familyname')
+           ->addOrderBy('p.givenname')
+           ->addOrderBy('sort', 'ASC')
+           ->addOrderBy('p.id');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit)
+               ->setFirstResult($offset);
+        }
+
+        $query = $qb->getQuery();
+        $result =  $query->getResult();
+
+        // doctrine distinct function returns a string
+        $result = array_map(function($el) {
+            $val = $el['personId'];
+            return is_null($val) ? $val : intval($val);
+        }, $result);
+
+        return $result;
+    }
+
+    private function addPriestUtConditions($qb, $model) {
+        $birthplace = $model->birthplace;
+        $religious_order = $model->religiousOrder;
+
+        if ($birthplace) {
+            $qb->join('\App\Entity\PersonBirthplace', 'bp', 'WITH', 'p.id = bp.personId')
+               ->andWhere('bp.placeName LIKE :birthplace')
+               ->setParameter('birthplace', '%'.$birthplace.'%');
+        }
+
+        if ($religious_order) {
+            $qb->join('p.religiousOrder', 'rlgord')
+               ->andWhere("rlgord.abbreviation LIKE :religious_order")
+               ->setParameter('religious_order', '%'.$religious_order.'%');
+        }
+
+        $year = $model->year;
+        if ($year) {
+            $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                          " AND :q_year < p.dateMax + :mgnyear")
+               ->setParameter(':mgnyear', self::MARGINYEAR)
+               ->setParameter('q_year', $year);
+        }
+
+        $name = $model->name;
+        if ($name) {
+            $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId');
+            $q_list = UtilService::nameQueryComponents($name);
+            foreach($q_list as $key => $q_name) {
+                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
+                   ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
+            }
+        }
+
+        $someid = $model->someid;
+        if ($someid) {
+            $qb->andWhere("i.idPublic = :q_id OR i.idInSource = :q_id OR i.idInSource = :q_id_long")
+               ->setParameter('q_id', $someid)
+               ->setParameter('q_id_long', 'id_'.$someid);
+        }
+        return $qb;
+    }
+
+    /**
+     * add conditions set by facets
+     */
+    private function addPriestUtFacets($qb, $model) {
+        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
+
+        $facetReligiousOrder = $model->facetReligiousOrder;
+        if ($facetReligiousOrder) {
+            $valFctRo = array_column($facetReligiousOrder, 'name');
+            $qb->join('\App\Entity\Person', 'pfctro', 'WITH', 'i.id = pfctro.id')
+               ->join('pfctro.religiousOrder', 'rofct')
+               ->andWhere("rofct.abbreviation IN (:valFctRo)")
+               ->setParameter('valFctRo', $valFctRo);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * countPriestUtOrder($model)
      *
-     * $item_type_id is not used here (needed for uniform signature)
+     * return array of religious orders
      */
-    public function suggestRole($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Role::class);
-        $qb = $repository->createQueryBuilder('r')
-                             ->select("DISTINCT r.name AS suggestion")
-                             ->andWhere('r.name LIKE :name')
-                             ->setParameter('name', '%'.$name.'%');
+    public function countPriestUtOrder($model) {
 
-        $qb->setMaxResults($hint_size);
+        $qb = $this->createQueryBuilder('p')
+                   ->select('ro.abbreviation AS name, COUNT(DISTINCT(p.id)) AS n')
+                   ->join('p.item', 'i')
+                   ->join('i.itemCorpus', 'corpus')
+                   ->join('p.religiousOrder', 'ro')
+                   ->andWhere("corpus.corpusId = 'utp'")
+                   ->andWhere("i.isOnline = 1")
+                   ->andWhere("i.isDeleted = 0")
+                   ->andWhere("ro.abbreviation IS NOT NULL");
+
+        $this->addPriestUtConditions($qb, $model);
+        // only relevant if there is more than one facet
+        // $this->addPriestUtFacets($qb, $model);
+
+        $qb->groupBy('ro.id')
+           ->orderBy('ro.abbreviation');
 
         $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
+        $result = $query->getResult();
+        return $result;
     }
 
-    /**
-     * usually used for asynchronous JavaScript request
-     *
-     * $item_type is not used here (needed for uniform signature)
-     */
-    public function suggestDiocese($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Diocese::class);
-        $qb = $repository->createQueryBuilder('d')
-                         ->select("DISTINCT d.name AS suggestion")
-                         ->andWhere('d.name LIKE :name')
-                         ->orderBy('d.name')
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hint_size);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestInstitution($item_type_id, $name, $hint_size) {
-        $repository = $this->getEntityManager()->getRepository(Institution::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT i.name AS suggestion")
-                         ->andWhere('i.name LIKE :name')
-                         ->andWhere('i.itemTypeId in (:item_type_id)')
-                         ->addOrderBy('i.name')
-                         ->setParameter('name', '%'.$name.'%')
-                         ->setParameter('item_type_id', $item_type_id);
-
-        $qb->setMaxResults($hint_size);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-
-    /**
-     * autocomplete for references
-     *
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestTitleShort($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(ReferenceVolume::class);
-        $qb = $repository->createQueryBuilder('v')
-                         ->select("DISTINCT v.titleShort AS suggestion")
-                         ->andWhere('v.titleShort LIKE :name')
-                         ->andWhere('v.itemTypeId = :item_type_id')
-                         ->addOrderBy('v.titleShort')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestPropertyName($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.name AS suggestion")
-                         ->join('i.itemProperty', 'prop')
-                         ->andWhere('prop.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestPropertyValue($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.value AS suggestion")
-                         ->join('i.itemProperty', 'prop')
-                         ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestRolePropertyName($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.name AS suggestion")
-                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
-                         ->andWhere('prop.name LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestRolePropertyValue($item_type_id, $name, $hintSize) {
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT prop.value AS suggestion")
-                         ->join('App\Entity\PersonRoleProperty', 'prop', 'WITH', 'i.id = prop.personId')
-                         ->andWhere('prop.value LIKE :name')
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->setParameter('name', '%'.$name.'%');
-
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
-
-
-
-    /**
-     * usually used for asynchronous JavaScript request
-     */
-    public function suggestEditStatus($item_type_id, $name, $hintSize) {
-        // do not filter by name 'i.editStatus LIKE :name'
-        $repository = $this->getEntityManager()->getRepository(Item::class);
-        $qb = $repository->createQueryBuilder('i')
-                         ->select("DISTINCT i.editStatus AS suggestion")
-                         ->andWhere('i.itemTypeId = :item_type_id')
-                         ->andWhere('i.editStatus IS NOT NULL')
-                         ->setParameter('item_type_id', $item_type_id)
-                         ->orderBy('i.editStatus');
-
-        $qb->setMaxResults($hintSize);
-
-        $query = $qb->getQuery();
-        $suggestions = $query->getResult();
-
-        return $suggestions;
-    }
 
 }

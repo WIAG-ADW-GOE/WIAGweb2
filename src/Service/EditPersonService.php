@@ -3,9 +3,10 @@
 namespace App\Service;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
+use App\Entity\ItemCorpus;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
-use App\Entity\IdExternal;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
@@ -15,12 +16,13 @@ use App\Entity\ReferenceVolume;
 use App\Entity\Role;
 use App\Entity\Diocese;
 use App\Entity\Institution;
+use App\Entity\UrlExternal;
 use App\Entity\Authority;
 use App\Entity\GivennameVariant;
 use App\Entity\FamilynameVariant;
-use App\Entity\NameLookup;
 use App\Entity\InputError;
-
+use App\Entity\UserWiag;
+use App\Service\EditService;
 use App\Service\UtilService;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -37,14 +39,12 @@ class EditPersonService {
 
     private $router;
     private $entityManager;
-    private $utilService;
 
     public function __construct(UrlGeneratorInterface $router,
-                                EntityManagerInterface $entityManager,
-                                UtilService $utilService) {
+                                EntityManagerInterface $entityManager) {
+
         $this->entityManager = $entityManager;
         $this->router = $router;
-        $this->utilService = $utilService;
     }
 
 
@@ -53,7 +53,7 @@ class EditPersonService {
      *
      * @return list of persons containing the data in $form_data
      */
-    public function mapFormData($item_type_id, $form_data) {
+    public function mapFormData($form_data, $user_id) {
 
         $person_repository = $this->entityManager->getRepository(Person::class);
         $person_list = array();
@@ -71,12 +71,7 @@ class EditPersonService {
                 $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
                 $person->getItem()->setFormIsExpanded($expanded_param);
             } else {
-                $item = new Item();
-                $item->setId($id);
-                $item->setItemTypeId($item_type_id);
-                $person = new Person();
-                $person->setItem($item); // sets ID
-
+                $person = new Person($user_id);
                 $this->mapAndValidatePerson($person, $data);
 
                 // set form collapse state
@@ -91,7 +86,7 @@ class EditPersonService {
     }
 
     /**
-     * update $target with data in $person
+     * update $target with data in $person, call entitymanager->persist()
      */
     public function update($target, $person, $current_user_id) {
 
@@ -99,22 +94,40 @@ class EditPersonService {
 
         // item property
         $target_item = $target->getItem();
+        $source_item = $person->getItem();
+
+        // corpus
+        $target_corpus = $target_item->getItemCorpus();
+        $source_corpus = $source_item->getItemCorpus();
+        $this->setItemAttributeList($target_item, $target_corpus, $source_corpus);
+
+        // item property
         $target_prop = $target_item->getItemProperty();
-        $source_prop = $person->getItem()->getItemProperty();
+        $source_prop = $source_item->getItemProperty();
         $this->setItemAttributeList($target_item, $target_prop, $source_prop);
         // reference
         $target_ref = $target_item->getReference();
-        $source_ref = $person->getItem()->getReference();
+        $source_ref = $source_item->getReference();
         $this->setItemAttributeList($target_item, $target_ref, $source_ref);
-        // id external
-        $target_ref = $target_item->getIdExternal();
-        $source_ref = $person->getItem()->getIdExternal();
-        $this->setItemAttributeList($target_item, $target_ref, $source_ref);
-
-        // merging?
-        if ($target_item->getMergeStatus() == 'merging') {
-            $this->updateMergeMetaData($target, $person);
+        // url external
+        $target_uext = $target_item->getUrlExternal();
+        $source_uext = $source_item->getUrlExternal();
+        // - look for changes
+        // -- 2023-10-06 obsolete in wiag3?
+        $target_uext_wiag = $target_item->getUrlExternalByAuthority('WIAG-ID');
+        $source_uext_wiag = $source_item->getUrlExternalByAuthority('WIAG-ID');
+        if ($target_uext_wiag != $source_uext_wiag) {
+            $target_item->setWiagChanged(true);
         }
+
+        $target_uext_gs = $target_item->getUrlExternalByAuthority('GSN');
+        $source_uext_gs = $source_item->getUrlExternalByAuthority('GSN');
+        if ($target_uext_gs != $source_uext_gs) {
+            $target_item->setGsChanged(true);
+        }
+        // - copy url external
+        $this->setItemAttributeList($target_item, $target_uext, $source_uext);
+
 
         $this->copyCore($target, $person);
 
@@ -130,25 +143,43 @@ class EditPersonService {
             $person->getFamilynameVariants(),
         );
         // errors (relevant for warnings)
-        foreach($person->getInputError() as $e) {
-            $target->getInputError()->add($e);
+        foreach($person->getItem()->getInputError() as $e) {
+            $target_item->getInputError()->add($e);
         }
 
         // roles
         $this->setRole($target, $person);
 
-        $expanded = $person->getItem()->getFormIsExpanded();
-        $target->getItem()->setFormIsExpanded($expanded);
+        // online?
+        $item = $target->getItem();
+        $this->updateIsOnline($item);
+    }
 
+    public function updateIsOnline($item) {
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+
+        $item->setIsOnline(0);
+        $corpus_id_list = $item->getCorpusIdList();
+        // 'can' takes precedence
+        foreach (['can', 'epc'] as $corpus_id) {
+            $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+            $online_status = $corpus->getOnlineStatus();
+            if (in_array($corpus_id, $corpus_id_list) and $item->getEditStatus() == $online_status) {
+                $item->setIsOnline(1);
+                break;
+            }
+        }
+
+        return $item;
     }
 
     /**
-     * copy collection $source_list to $target_list
+     * clear $target_list; copy collection $source_list to $target_list;
      */
     private function setItemAttributeList($target, $target_list, $source_list) {
 
         // - remove entries
-        // $target_ref = $target->getItem()->getReference();
+        // e.g. $target_ref = $target->getItem()->getReference();
         foreach ($target_list as $t) {
             $target_list->removeElement($t);
             $t->setItem(null);
@@ -169,11 +200,14 @@ class EditPersonService {
     /**
      * copy (validated) data from $source to $target
      */
-    private function copyItem($target, $source, $current_user_id) {
+    private function copyItem($target, $source, $user_id) {
         $field_list = [
+            'isOnline',
+            'isDeleted',
             'editStatus',
             'commentDuplicate',
             'mergeStatus',
+            'normdataEditedBy',
         ];
 
         foreach ($field_list as $field) {
@@ -182,7 +216,14 @@ class EditPersonService {
             $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
         }
 
-        $this->updateChangedMetaData($target->getItem(), $current_user_id);
+        foreach ($source->getItem()->getMergeParent() as $parent_id) {
+            $target->getItem()->getMergeParent()->add($parent_id);
+        }
+
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+        $user = $userWiagRepository->find($user_id);
+
+        $target->getItem()->updateChangedMetaData($user);
     }
 
     private function copyCore($target, $source) {
@@ -192,6 +233,10 @@ class EditPersonService {
             'prefixname',
             'dateBirth',
             'dateDeath',
+            'numDateBirth',
+            'numDateDeath',
+            'dateMin',
+            'dateMax',
             'comment',
             'noteName',
             'academicTitle',
@@ -258,8 +303,8 @@ class EditPersonService {
         }
     }
 
-    private function emptyDate($s) {
-        return (is_null($s) || $s == '?' || $s == 'unbekannt');
+    static function emptyDate($s) {
+        return (is_null($s) || $s == "" || $s == '?' || $s == 'unbekannt');
     }
 
     /**
@@ -267,7 +312,7 @@ class EditPersonService {
      *
      * update dateMin and dateMax
      */
-    private function updateDateRange($person) {
+    static function updateDateRange($person) {
         $date_min = null;
         $date_max = null;
 
@@ -309,110 +354,41 @@ class EditPersonService {
         return $person;
     }
 
-    /**
-     * compose ID public
-     */
-    public function makeIdPublic($item_type_id, $numeric_part)  {
-
-        $width = Item::ITEM_TYPE[$item_type_id]['numeric_field_width'];
-        $numeric_field = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
-
-        $mask = Item::ITEM_TYPE[$item_type_id]['id_public_mask'];
-        $id_public = str_replace("#", $numeric_field, $mask);
-        return $id_public;
-    }
 
     /**
-     * create IdExternal object
+     * create UrlExternal object
      */
-    public function makeIdExternal($item, $authority) {
-        $id_external = new IdExternal();
+    public function makeUrlExternal($item, $authority) {
+        $url_external = new UrlExternal();
         if (!is_null($item->getId())) {
-            $id_external->setItemId($item->getId());
+            $url_external->setItemId($item->getId());
         }
-        $id_external->setItem($item);
-        $id_external->setAuthorityId($authority->getId());
-        $id_external->setAuthority($authority);
-        return $id_external;
+        $url_external->setItem($item);
+        $url_external->setAuthority($authority); // sets authorityId
+        return $url_external;
     }
 
-    /**
-     * create Person object
-     */
-    public function makePerson($item_type_id, $user_wiag_id) {
-        $item = Item::newItem($item_type_id, $user_wiag_id);
-        $person = Person::newPerson($item);
-        $edit_status_default = Item::ITEM_TYPE[$item_type_id]['edit_status_default'];
-        $person->getItem()->setEditStatus($edit_status_default);
-
-        return $person;
-    }
-
-    /**
-     * create person object and persist
-     */
-    public function initMetaData($person, $item_type_id, $user_wiag_id) {
-
-        $item = $person->getItem();
-        $item->setItemTypeId($item_type_id);
-        $person->setItemTypeId($item_type_id);
-
-        $now_date = new \DateTimeImmutable('now');
-        $item->setCreatedBy($user_wiag_id);
-        $item->setDateCreated($now_date);
-
-        // redundant but neccessary to meet DB constraints
-        $this->updateChangedMetaData($item, $user_wiag_id);
-
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $id_in_source = intval($itemRepository->findMaxIdInSource($item_type_id)) + 1;
-        $id_in_source = strval($id_in_source);
-        $item->setIdInSource($id_in_source);
-
-        $id_public = $this->makeIdPublic($item_type_id, $id_in_source);
-        $item->setIdPublic($id_public);
-
-        return $person;
-    }
-
-    /**
-     * updateMergeMetaData($person)
-     *
-     * find merged entities; update merge meta data
-     */
-    public function updateMergeMetaData($target, $person) {
+    public function readParentList($person) {
         $parent_id = $person->getItem()->getMergeParent();
 
-        $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
 
         $parent_list = array();
         foreach($parent_id as $p_id) {
-            $parent_list[] = $itemRepository->find($p_id);
+            $parent_list[] = $personRepository->find($p_id);
         }
 
-        // child
-        $target->getItem()->setMergeStatus('child');
-        $target->getItem()->setIdPublic($parent_list[0]->getIdPublic());
-        // parents
-        $child_id = $target->getId();
-        foreach ($parent_list as $item) {
-            $item->setMergedIntoId($child_id);
-            $item->setMergeStatus('parent');
-            $item->setIsOnline(0);
-        }
+        return $parent_list;
     }
 
     /**
-     * updateEditMetaData($item, $user_wiag_id)
+     * updateItemAsParent(Person $parent, $childId)
      *
-     * update meta data for $item
      */
-    public function updateChangedMetaData($item, $user_wiag_id) {
-
-        $now_date = new \DateTimeImmutable('now');
-        $item->setChangedBy($user_wiag_id);
-        $item->setDateChanged($now_date);
-        return($item);
+    public function updateItemAsParent(Item $item, $childId) {
+        $item->setMergedIntoId($childId);
+        $item->setMergeStatus('parent');
+        $item->setIsOnline(0);
     }
 
     /**
@@ -426,24 +402,26 @@ class EditPersonService {
             if (str_contains($person->$get_fnc(), $substring)) {
                 $field = Person::EDIT_FIELD_LIST[$key];
                 $msg = "Das Feld '".$field."' enthält '".$substring."'.";
-                $person->getInputError()->add(new InputError('name', $msg));
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
             }
         }
     }
 
     /**
-     * map content of $data to $obj_list
+     * map content of $data to $person
      */
     public function mapAndValidatePerson($person, $data) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
 
         // item
         $item = $person->getItem();
+        $item->setId($data['id']);
+        $person->setId($data['id']);
 
         $edit_status = trim($data['item']['editStatus']);
         if ($edit_status == "") {
             $msg = "Das Feld 'Status' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('status', $msg));
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
         // item: checkboxes
@@ -458,8 +436,18 @@ class EditPersonService {
         $item->setIdInSource($data['item']['idInSource']);
 
         // item: status values, editorial notes
-        $key_list = ['editStatus', 'mergeStatus', 'changedBy', 'commentDuplicate'];
+        $key_list = [
+            'editStatus',
+            'mergeStatus',
+            'changedBy',
+            'commentDuplicate',
+            'normdataEditedBy'
+        ];
+
         UtilService::setByKeys($item, $data['item'], $key_list);
+
+        // online?
+        $this->updateIsOnline($item);
 
         $collect_merge_parent = array();
         if (array_key_exists('mergeParent', $data['item'])) {
@@ -486,80 +474,151 @@ class EditPersonService {
                      'notePerson'];
         UtilService::setByKeys($person, $data, $key_list);
 
-        // add error if $needle occurs in one of the fields
+        // add an error if $needle occurs in one of the fields
         $needle = Item::JOIN_DELIM;
         $this->complainSubstring($person, $key_list, Item::JOIN_DELIM);
 
         if (is_null($person->getGivenname())) {
             $msg = "Das Feld 'Vorname' kann nicht leer sein.";
-            $person->getInputError()->add(new InputError('name', $msg));
+            $item->getInputError()->add(new InputError('name', $msg));
         }
 
         // name variants
-        $this->mapNameVariants($person, $data);
+        $givenname_variants = trim($data['givennameVariants']);
+        $familyname_variants = trim($data['familynameVariants']);
+        self::mapNameVariants($person, $givenname_variants, $familyname_variants);
 
         // numerical values for dates
-        $date_birth = $person->getDateBirth();
-        if (!is_null($date_birth)) {
-            $year = $this->utilService->parseDate($date_birth, 'lower');
-            if (!is_null($year)) {
-                $person->setNumDateBirth($year);
-            } else {
-                $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
-                $person->getInputError()->add(new InputError('name', $msg));
-            }
-        } else {
-            $person->setNumDateBirth(null);
+        self::setNumDates($person);
+
+        // reference to a bishop is stored as an external url
+        if (array_key_exists('bishop', $data)) {
+            $data['urlext'][] = [
+                'deleteFlag' => "",
+                'urlName' => "WIAG-ID",
+                'value' => $data['bishop'],
+                'note' => "",
+            ];
         }
 
-        $date_death = $person->getDateDeath();
-        if (!is_null($date_death)) {
-            $year = $this->utilService->parseDate($date_death, 'upper');
-            if (!is_null($year)) {
-                $person->setNumDateDeath($year);
-            } else {
-                $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
-                $person->getInputError()->add(new InputError('name', $msg));
+        // role
+        if (array_key_exists('role', $data)) {
+            foreach($data['role'] as $data_loop) {
+                $this->mapRole($person, $data_loop);
             }
-        } else {
-            $person->setNumDateDeath(null);
         }
 
-        // roles, reference, free properties
-        $section_map = [
-            'role'  => 'mapRole',
-            'ref'   => 'mapReference',
-            'prop'  => 'mapItemProperty',
-            'idext' => 'mapIdExternal'
-        ];
+        // corpus
+        $corpus_found = false;
+        if (array_key_exists('corpus', $data)) {
+            foreach($data['corpus'] as $key => $data_loop) {
+                $corpus_flag = $this->mapItemCorpusMayBe($item, $key, $data_loop);
+                $corpus_found = ($corpus_found or $corpus_flag);
+            }
+        }
 
-        foreach($section_map as $key => $mapFunction) {
-            if (array_key_exists($key, $data)) {
-                foreach($data[$key] as $data_loop) {
-                    $this->$mapFunction($person, $data_loop);
+        if (!$corpus_found) {
+            // keep existing data
+            if (array_key_exists('corpus', $data)) { // edit person
+                foreach($data['corpus'] as $key => $data_loop) {
+                    $corpus_flag = $this->mapItemCorpus($item, $key, $data_loop);
                 }
             }
+            $msg = "Mindestens ein Corpus sollte ausgewählt sein.";
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
+        // reference
+        if (array_key_exists('ref', $data)) {
+            foreach($data['ref'] as $data_loop) {
+                $this->mapReference($item, $data_loop);
+            }
+        }
+
+        // property
+        if (array_key_exists('prop', $data)) {
+            foreach($data['prop'] as $data_loop) {
+                $this->mapItemProperty($item, $data_loop);
+            }
+        }
+
+        // url external
+        if (array_key_exists('urlext', $data)) {
+            foreach($data['urlext'] as $data_loop) {
+                $this->mapUrlExternal($item, $data_loop);
+            }
+        }
+
+        // set warning when role list is empty
+        $this->checkRoleList($person);
+
         // date min/date max
-        $this->updateDateRange($person);
+        self::updateDateRange($person);
 
         // validation
         if ($item->getIsOnline() && $item->getIsDeleted()) {
             $msg = "Der Eintrag kann nicht gleichzeitig online und gelöscht sein.";
-            $person->getInputError()->add(new InputError('status', $msg));
+            $item->getInputError()->add(new InputError('status', $msg));
         }
 
         return $person;
     }
 
     /**
+     * checkRoleList($person)
+     *
+     * add a warning if no valid role is found
+     */
+    private function checkRoleList($person) {
+        $role_found = false;
+        $role_list = $person->getRole();
+        foreach ($role_list as $person_role) {
+            if ($person_role->getDeleteFlag() != "delete") {
+                $role_found = true;
+            }
+        }
+
+        if (!$role_found) {
+            $msg = "Hinweis: Der Eintrag hat keine Angaben zu Ämtern!";
+            $person->getItem()->getInputError()->add(new InputError('role', $msg, 'warning'));
+        }
+
+    }
+
+    static function setNumDates($person) {
+        $date_birth = $person->getDateBirth();
+        if (!self::emptyDate($date_birth)) {
+            $year = UtilService::parseDate($date_birth, 'lower');
+            if (!is_null($year)) {
+                $person->setNumDateBirth($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_birth."' gefunden.";
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
+            }
+        } else {
+            $person->setNumDateBirth(null);
+        }
+
+        $date_death = $person->getDateDeath();
+        if (!self::emptyDate($date_death)) {
+            $year = UtilService::parseDate($date_death, 'upper');
+            if (!is_null($year)) {
+                $person->setNumDateDeath($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_death."' gefunden.";
+                $person->getItem()->getInputError()->add(new InputError('name', $msg));
+            }
+        } else {
+            $person->setNumDateDeath(null);
+        }
+    }
+
+    /**
      * map name variants do not mark them as persistent
      */
-    private function mapNameVariants($person, $data) {
+    static function mapNameVariants($person, $gnv_str, $fnv_str) {
         // givenname
-        $gnv_data = trim($data['givennameVariants']);
-        $person->setFormGivennameVariants($gnv_data);
+        $person->setFormGivennameVariants($gnv_str);
         $person_id = $person->getId();
 
         // - remove entries; not neccessary since $person is empty
@@ -567,8 +626,8 @@ class EditPersonService {
 
         // - set new entries
         // -- ';' is an alternative separator
-        $gnv_data = str_replace(';', ',', $gnv_data);
-        $gnv_list = explode(',', $gnv_data);
+        $gnv_str = str_replace(';', ',', $gnv_str);
+        $gnv_list = explode(',', $gnv_str);
         foreach ($gnv_list as $gnv) {
             if (trim($gnv) != "") {
                 $gnv_new = new GivenNameVariant();
@@ -579,14 +638,15 @@ class EditPersonService {
         }
 
         // familyname
-        $fnv_data = trim($data['familynameVariants']);
-        $person->setFormFamilynameVariants($fnv_data);
+        $person->setFormFamilynameVariants($fnv_str);
 
         // - remove entries; not neccessary since $person is empty
         $person_fnv = $person->getFamilynameVariants();
 
         // - set new entries
-        $fnv_list = explode(',', $fnv_data);
+        // -- ';' is an alternative separator
+        $fnv_str = str_replace(';', ',', $fnv_str);
+        $fnv_list = explode(',', $fnv_str);
         foreach ($fnv_list as $fnv) {
             if (trim($fnv) != "") {
                 $fnv_new = new FamilyNameVariant();
@@ -606,7 +666,7 @@ class EditPersonService {
 
         // $key_list = ['role', 'institution', 'date_begin', 'date_end'];
         $key_list = ['role', 'institution'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
 
         $role = null;
 
@@ -625,6 +685,10 @@ class EditPersonService {
         $role_role = $roleRoleRepository->findOneByName($role_name);
         if ($role_role) {
             $role->setRole($role_role);
+        } elseif ($role_name == "") {
+            $role->setRole(null);
+            $msg = "Warnung: Es ist kein Amt angegeben.";
+            $role->getInputError()->add(new InputError('role', $msg, 'warning'));
         } else {
             $role->setRole(null);
             $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
@@ -648,8 +712,8 @@ class EditPersonService {
 
         // numerical values for dates
         $date_begin = $role->getDateBegin();
-        if (!$this->emptyDate($date_begin)) {
-            $year = $this->utilService->parseDate($date_begin, 'lower');
+        if (!self::emptyDate($date_begin)) {
+            $year = UtilService::parseDate($date_begin, 'lower');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateBegin']);
                 $role->setNumDateBegin($year);
@@ -663,8 +727,8 @@ class EditPersonService {
 
         $date_end = $role->getDateEnd();
 
-        if (!$this->emptyDate($date_end)) {
-            $year = $this->utilService->parseDate($date_end, 'upper');
+        if (!self::emptyDate($date_end)) {
+            $year = UtilService::parseDate($date_end, 'upper');
             if (!is_null($year)) {
                 UtilService::setByKeys($role, $data, ['dateEnd']);
                 $role->setNumDateEnd($year);
@@ -679,9 +743,9 @@ class EditPersonService {
         // sort key
         $sort_key = UtilService::SORT_KEY_MAX;
         if (!$this->emptyDate($date_begin)) {
-            $sort_key = $this->utilService->sortKeyVal($date_begin);
+            $sort_key = UtilService::sortKeyVal($date_begin);
         } elseif (!$this->emptyDate($date_end)) {
-            $sort_key = $this->utilService->sortKeyVal($date_end);
+            $sort_key = UtilService::sortKeyVal($date_end);
         }
 
         // - we got a parse result or both, $date_begin and $date_end are empty
@@ -698,7 +762,7 @@ class EditPersonService {
         // copy input errors
         if ($data['deleteFlag'] != "delete") {
             foreach($role->getInputError() as $r_e) {
-                $person->getInputError()->add($r_e);
+                $person->getItem()->getInputError()->add($r_e);
             }
         }
 
@@ -740,7 +804,7 @@ class EditPersonService {
                 // dd($inst_name, $inst_type_id, $query_result);
                 if (count($query_result) < 1) {
                     $msg = "'{$inst_name}' ist nicht in der Liste der Klöster/Domstifte eingetragen.";
-                    $role->getInput_error()->add(new InputError('role', $msg, 'warning'));
+                    $role->getInputError()->add(new InputError('role', $msg, 'warning'));
                     $role->setInstitution(null);
                     $role->setInstitutionName($inst_name);
                 } else {
@@ -762,7 +826,7 @@ class EditPersonService {
 
         // the property entry is considered empty if no value is set
         $key_list = ['value'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $roleProperty = null;
 
         // new roleProperty
@@ -778,7 +842,7 @@ class EditPersonService {
         // set data
         UtilService::setByKeys($roleProperty, $data, ['deleteFlag']);
 
-        $property_type = $this->entityManager->getRepository(RolePropertyType::class)
+        $property_type = $this->entityManager->getRepository(ItemPropertyType::class)
                                              ->find($data['type']);
         $roleProperty->setPropertyTypeId($property_type->getId());
         $roleProperty->setType($property_type);
@@ -786,7 +850,7 @@ class EditPersonService {
         // case of completely missing data see above
         if (trim($data['value']) == "") {
             $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('role', $msg));
+            $person->getItem()->getInputError()->add(new InputError('role', $msg));
         } else {
             $roleProperty->setValue($data['value']);
         }
@@ -797,16 +861,12 @@ class EditPersonService {
     /**
      * fill person's references with $data
      */
-    private function mapReference($person, $data) {
+    private function mapReference($item, $data) {
         $referenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
-        $id = $data['id'];
-        $item = $person->getItem();
-        $item_type_id = $item->getItemTypeId();
-
         $key_list = ['volume', 'page', 'idInReference'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $reference = null;
 
         if ($no_data) {
@@ -822,18 +882,17 @@ class EditPersonService {
         $reference->setVolumeTitleShort($volume_name); # save data for the form
 
         if ($volume_name != "") {
-            $volume_query_result = $volumeRepository->findByTitleShortAndType($volume_name, $item_type_id);
+            $volume_query_result = $volumeRepository->findByTitleShort($volume_name);
             if ($volume_query_result) {
                 $volume = $volume_query_result[0];
-                $reference->setItemTypeId($item_type_id);
                 $reference->setReferenceId($volume->getReferenceId());
             } else {
                 $error_msg = "Keinen Band für '".$volume_name."' gefunden.";
-                $person->getInputError()->add(new InputError('reference', $error_msg));
+                $item->getInputError()->add(new InputError('reference', $error_msg));
             }
         } else {
             $error_msg = "Das Feld 'Bandtitel' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('reference', $error_msg));
+            $item->getInputError()->add(new InputError('reference', $error_msg));
         }
 
         $key_list = ['deleteFlag', 'page','idInReference'];
@@ -842,14 +901,63 @@ class EditPersonService {
         return $reference;
     }
 
-    private function mapItemProperty($person, $data) {
+    /**
+     * set corpus if flag is set, copy data if possible
+     */
+    private function mapItemCorpusMayBe($item, $corpus_id, $data) {
+
+        $flag_set = array_key_exists('flag', $data);
+        $has_data = array_key_exists('idInCorpus', $data);
+
+        if ($flag_set) {
+            $item_corpus = new ItemCorpus();
+            $item_corpus->setItem($item);
+            $item->getItemCorpus()->add($item_corpus);
+            $item_corpus->setCorpusId($corpus_id);
+
+            if ($has_data) {
+                $item_corpus->setIdInCorpus($data['idInCorpus']);
+                $item_corpus->setIdPublic($data['idPublic']);
+            } else {
+                $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+
+                // ID in corpus
+                $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+                $id_in_corpus = strval($id_in_corpus);
+                $item_corpus->setIdInCorpus($id_in_corpus);
+
+                // ID public
+                $id_public = EditService::makeIdPublic($corpus_id, $id_in_corpus, $this->entityManager);
+                $item_corpus->setIdPublic($id_public);
+            }
+        }
+
+        return $flag_set;
+    }
+
+    /**
+     * set corpus if flag is set, copy data if possible
+     */
+    private function mapItemCorpus($item, $corpus_id, $data) {
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setCorpusId($corpus_id);
+
+        $item_corpus->setIdInCorpus($data['idInCorpus']);
+        $item_corpus->setIdPublic($data['idPublic']);
+
+        return $item_corpus;
+    }
+
+
+    private function mapItemProperty($item, $data) {
 
         $id = $data['id'];
-        $item = $person->getItem();
-
         // the property entry is considered empty if no value is set
         $key_list = ['value'];
-        $no_data = $this->utilService->no_data($data, $key_list);
+        $no_data = UtilService::no_data($data, $key_list);
         $itemProperty = null;
 
         // new itemProperty
@@ -880,21 +988,20 @@ class EditPersonService {
     }
 
     /**
-     * fill id external with $data
+     * fill url external with $data
      */
-    private function mapIdExternal($person, $data) {
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+    private function mapUrlExternal($item, $data) {
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
-        $item = $person->getItem();
-        $id_external_list = $item->getIdExternal();
-        $id_external = null;
+        $url_external_list = $item->getUrlExternal();
+        $url_external = null;
         $value = is_null($data['value']) ? null : trim($data['value']);
         if (is_null($value) || $value == "") {
-            return $id_external;
+            return $url_external;
             } else {
             $authority_name = $data["urlName"];
-            $auth_query = $authorityRepository->findByNameAndIDRange($authority_name, 1000);
+            $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
             if (!is_null($auth_query) && count($auth_query) > 0) {
                 $authority = $auth_query[0];
                 // drop base URL if present
@@ -903,24 +1010,322 @@ class EditPersonService {
                     $value = array_slice($val_list, -1)[0];
                 }
 
-                $id_external = $this->makeIdExternal($item, $authority);
-                UtilService::setByKeys($id_external, $data, ['deleteFlag', 'value']);
+                $url_external = $this->makeUrlExternal($item, $authority);
+                $key_list = ['deleteFlag', 'value', 'note'];
+                UtilService::setByKeys($url_external, $data, $key_list);
 
-                $id_external_list->add($id_external);
+                $url_external_list->add($url_external);
 
                 // validate: avoid merge separator
                 $separator = "|";
                 if (str_contains($value, $separator)) {
                     $msg = "Eine externe ID enthält '".$separator."'.";
-                    $person->getInputError()->add(new InputError('external id', $msg));
+                    $item->getInputError()->add(new InputError('external id', $msg));
                 }
             } else {
                 $msg = "Keine eindeutige Institution für '".$authority_name."' gefunden.";
-                $person->getInputError()->add(new InputError('external id', $msg));
+                $item->getInputError()->add(new InputError('external id', $msg));
             }
         }
 
-        return $id_external;
+        return $url_external;
+    }
+
+    /**
+     * update $target with data in $person_gso
+     */
+    public function updateFromGso($person, $person_gso, $current_user_id) {
+        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+        // item
+
+        $user = $userWiagRepository->find($current_user_id);
+        $person->getItem()->updateChangedMetaData($user);
+
+        $edit_status = $person_gso->getItem()->getStatus();
+        $person->getItem()->setEditStatus($edit_status);
+
+        // item property: no data in $person_gso
+
+        // reference
+        $this->copyReferenceFromGso($person, $person_gso);
+
+        // GND
+        $this->copyGndFromGso($person->getItem(), $person_gso);
+
+        // core
+        $this->copyCoreFromGso($person, $person_gso);
+
+        // name variants
+        // - function call is the same for form data
+        $givenname_variants = $person_gso->getVornamenVarianten();
+        $familyname_variants = $person_gso->getFamiliennamenVarianten();
+        self::mapNameVariants($person, $givenname_variants, $familyname_variants);
+        // call of persist can not be part of mapNameVariants
+        foreach ($person->getGivennameVariants() as $gnv) {
+            $this->entityManager->persist($gnv);
+        }
+        foreach ($person->getFamilynameVariants() as $fnv) {
+            $this->entityManager->persist($fnv);
+        }
+
+        // roles
+        $this->mapRoleFromGso($person, $person_gso);
+
+        $this->updateDateRange($person);
+
+    }
+
+    /**
+     * clear $target_list; copy collection $source_list to $target_list;
+     */
+    private function copyReferenceFromGso($person, $person_gso) {
+        $volumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
+
+        $ref_list_gso = $person_gso->getItem()->getReference();
+        $ref_list = $person->getItem()->getReference();
+
+
+        // - remove entries
+        foreach ($ref_list as $r) {
+            $ref_list->removeElement($r);
+            $r->setItem(null);
+            $this->entityManager->remove($r);
+        }
+
+        // - set new entries
+        foreach ($ref_list_gso as $ref_gso) {
+            $page = $ref_gso->getSeiten();
+            $is_bio = str_contains($page, "<b>");
+            if ($is_bio) {
+                $gs_volume_nr = $ref_gso->getReferenceVolume()->getNummer();
+                $vol = $volumeRepository->findOneByGsVolumeNr($gs_volume_nr);
+
+                $ref = new ItemReference();
+                $ref->setReferenceId($vol->getReferenceId());
+                $ref->setPage($page);
+
+                $ref_list->add($ref);
+                $ref->setItem($person->getItem());
+                $ref->setItemTypeId(0); // 2023-07-28; field is obsolete but still required
+                $this->entityManager->persist($ref);
+            }
+        }
+
+        return count($ref_list);
+
+    }
+
+    private function copyGndFromGso($item, $person_gso) {
+        $auth_gnd_id = Authority::ID['GND'];
+        $auth_gs_id = Authority::ID['GS'];
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+
+        // - remove entries, but not GSN
+        $target_uext = $item->getUrlExternal();
+        foreach ($target_uext as $t) {
+            if ($t->getAuthorityId() != $auth_gs_id) {
+                $target_uext->removeElement($t);
+                $t->setItem(null);
+                $this->entityManager->remove($t);
+            }
+        }
+
+        $count_url = 0;
+        $gnd = $person_gso->getGndnummer();
+        if (!is_null($gnd) and trim($gnd) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_gnd = $authorityRepository->find($auth_gnd_id);
+            $uext->setAuthority($authority_gnd); // sets authorityId
+            $uext->setValue($gnd);
+            $item->getUrlExternal()->add($uext);
+            $this->entityManager->persist($uext);
+
+            $count_url += 1;
+        }
+
+        return $count_url;
+    }
+
+    public function setGsn($item, $gsn) {
+        $auth_gs_id = Authority::ID['GS'];
+        $authorityRepository = $this->entityManager->getRepository(Authority::class);
+
+        $count_url = 1;
+        if (!is_null($gsn) and trim($gsn) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_gs = $authorityRepository->find($auth_gs_id);
+            $uext->setAuthority($authority_gs);
+            $uext->setValue($gsn);
+            $item->getUrlExternal()->add($uext);
+            $this->entityManager->persist($uext);
+
+            $count_url += 1;
+        }
+
+        return $count_url;
+    }
+
+
+    private function copyCoreFromGso($person, $person_gso) {
+        $field_list = [
+            ['givenname', 'vorname'],
+            ['familyname', 'familienname'],
+            ['prefixname', 'namenspraefix'],
+            ['dateBirth', 'geburtsdatum'],
+            ['dateDeath', 'sterbedatum'],
+            ['noteName', 'namenszusatz'],
+            ['academicTitle', 'titel'],
+            ['notePerson', 'anmerkungen'],
+        ];
+
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field[1]);
+            $set_fnc = 'set'.ucfirst($field[0]);
+            $person->$set_fnc($person_gso->$get_fnc());
+        }
+
+        // numerical values for dates
+        self::setNumDates($person);
+
+        return $person;
+    }
+
+    /**
+     *
+     */
+    private function mapRoleFromGso($person, $person_gso) {
+        $roleRepository = $this->entityManager->getRepository(PersonRole::class);
+        $roleRoleRepository = $this->entityManager->getRepository(Role::class);
+
+        // clear roles in $person
+        $role_list = $person->getRole();
+        foreach($role_list as $r) {
+            $r_prop = $r->getRoleProperty();
+            // $r_prop should always be empty
+            foreach($r_prop as $r_p) {
+                $r_prop->removeElement($r_p);
+                $this->entityManager->remove($r_p);
+            }
+            $role_list->removeElement($r);
+            $r->setPerson(null);
+            $this->entityManager->remove($r);
+        }
+
+        $role_list_gso = $person_gso->getRole();
+        $count_role = 0;
+        foreach ($role_list_gso as $role_gso) {
+            if ($role_gso->isEmpty()) {
+                continue;
+            }
+
+            $role = new PersonRole();
+            $person->getRole()->add($role);
+            $role->setPerson($person);
+
+            $this->fillRoleFromGso($person->getItem()->getInputError(), $role, $role_gso);
+            $this->entityManager->persist($role);
+
+            $count_role += 1;
+        }
+        return $count_role;
+    }
+
+    /**
+     * parse data in $role_gso and fill $role
+     */
+    private function fillRoleFromGso($inputError, $role, $role_gso) {
+
+        $field_list = [
+            ['roleName', 'bezeichnung'],
+            ['dioceseName', 'dioezese'],
+            ['dateBegin', 'von'],
+            ['dateEnd', 'bis'],
+            ['note', 'anmerkung']
+        ];
+
+        foreach ($field_list as $field) {
+            $get_fnc = 'get'.ucfirst($field[1]);
+            $set_fnc = 'set'.ucfirst($field[0]);
+            $role->$set_fnc($role_gso->$get_fnc());
+        }
+
+        $role->setUncertain(0);
+
+        $roleRepository = $this->entityManager->getRepository(Role::class);
+        $role_name = $role->getRoleName();
+        $role_role = $roleRepository->findOneByName($role_name);
+        if ($role_role) {
+            $role->setRole($role_role);
+        } else {
+            $role->setRole(null);
+            $msg = "Das Amt '{$role_name}' ist nicht in der Liste der Ämter eingetragen.";
+            $inputError->add(new InputError('role', $msg, 'warning'));
+        }
+
+        // set institution
+        $institutionRepository = $this->entityManager->getRepository(Institution::class);
+        $institution_id_gsn = $role_gso->getKlosterid();
+        $institution = $institutionRepository->findOneByIdGsn($institution_id_gsn);
+        if (!is_null($institution)) {
+            $role->setInstitution($institution);
+        }
+
+        // set diocese
+        $dioceseRepository = $this->entityManager->getRepository(Diocese::class);
+        $diocese_name = $role->getDioceseName();
+        if (!is_null($diocese_name) and trim($diocese_name) != "") {
+            $diocese = $dioceseRepository->findOneByName($role->getDioceseName());
+            if (!is_null($diocese)) {
+                $role->setDiocese($diocese);
+            }
+        }
+
+        // numerical values for dates
+        $date_begin = $role->getDateBegin();
+        if (!$this->emptyDate($date_begin)) {
+            $year = UtilService::parseDate($date_begin, 'lower');
+            if (!is_null($year)) {
+                $role->setNumDateBegin($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_begin."' gefunden.";
+                $inputError->add(new InputError('role', $msg, 'warning'));
+            }
+        } else {
+            $role->setNumDateBegin(null);
+        }
+
+        $date_end = $role->getDateEnd();
+
+        if (!$this->emptyDate($date_end)) {
+            $year = UtilService::parseDate($date_end, 'upper');
+            if (!is_null($year)) {
+                $role->setNumDateEnd($year);
+            } else {
+                $msg = "Keine gültige Datumsangabe in '".$date_end."' gefunden.";
+                $inputError->add(new InputError('role', $msg, 'warning'));
+            }
+        } else {
+            $role->setNumDateEnd(null);
+        }
+
+        // sort key
+        $sort_key = UtilService::SORT_KEY_MAX;
+        if (!$this->emptyDate($date_begin)) {
+            $sort_key = UtilService::sortKeyVal($date_begin);
+        } elseif (!$this->emptyDate($date_end)) {
+            $sort_key = UtilService::sortKeyVal($date_end);
+        }
+
+        // - we got a parse result or both, $date_begin and $date_end are empty
+        $role->setDateSortKey($sort_key);
+
+        // free role properties are not present in GSO
+
+        return $role;
     }
 
 }

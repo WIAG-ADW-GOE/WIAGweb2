@@ -76,12 +76,13 @@ class MonasteryController extends AbstractController {
                     $service->update($monastery_list[0]);
                     $updated_n += 1;
                 } else {
-                    $new_item = Item::newItem($this->getUser()->getId(), 'Kloster');
-                    $new_monastery = Institution::newInstitution($new_item);
-                    $new_monastery->setIdGsn($gsn);
-                    $service->update($new_monastery);
-                    $entityManager->persist($new_item);
-                    $entityManager->persist($new_monastery);
+                    $user_id = intval($this->getUser()->getId());
+                    $item_type_id = Item::ITEM_TYPE_ID['Kloster']['id'];
+                    $monastery_new = new Institution($item_type_id, $user_id);
+                    $monastery_new->setIdGsn($gsn);
+                    $service->update($monastery_new);
+                    $entityManager->persist($monastery_new->getItem());
+                    $entityManager->persist($monastery_new);
                     $created_n += 1;
                 }
             }

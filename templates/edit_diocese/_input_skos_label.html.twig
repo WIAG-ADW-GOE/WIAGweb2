@@ -1,0 +1,56 @@
+{% set base_id=editFormId~'_'~itemIndex %}
+{% set base_input_name=editFormId~'['~itemIndex~']' %}
+{% set base_id_skosLabel=base_id~'_skosLabel_'~currentIndex %}
+{% set base_input_name_skosLabel=base_input_name~'[skosLabel]['~currentIndex~']' %}
+<div class="row"
+     data-controller="input-state">
+    {# col with add button and delete button #}
+    <div class="col-1 text-end pe-0">
+	{{ include('edit_diocese/_insert_delete.html.twig', { obj: skosLabel, base_id_delete: base_id_skosLabel, base_name_delete: base_input_name_skosLabel }) }}
+    </div>
+    <div class="col-11">
+	<div class="input-group input-group-sm mb-1">
+	    {# id (hidden) #}
+	    <input type="text"
+		   id="{{ base_id_skosLabel }}_id"
+		   name="{{ base_input_name_skosLabel }}[id]"
+		   class="form-control form-control-sm d-none"
+		   value="{{ skosLabel.id }}">
+	    <span class="input-group-text" style="min-width: 5rem">Sprache</span>
+	    <select id="{{ base_id_skosLabel }}_lang"
+		    name="{{ base_input_name_skosLabel}}[lang]"
+		    class="form-select"
+		    style="max-width: 5rem"
+		    aria-label="Sprache">
+		{% for lang in ['de', 'fr', 'la', 'it', 'pl', 'cz', 'nl', 'en'] %}
+		    <option value="{{ lang }}" {% if lang == skosLabel.lang %}selected{% endif %}>{{ lang }}</option>
+		{% endfor %}
+	    </select>
+	    <span class="input-group-text" style="min-width: 5rem">Bezeichnung</span>
+	    <input type="text" id="{{ base_id_skosLabel }}_label"
+		   name="{{ base_input_name_skosLabel}}[label]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ skosLabel.label }}"
+		   style="min-width: 22rem; max-width: 28rem"
+		   spellcheck="false"
+		   aria-label="Bezeichnung">
+	    <span class="input-group-text" style="min-width: 5rem">Reihenfolge</span>
+	    <input type="text" id="{{ base_id_skosLabel }}_displayOrder"
+		   name="{{ base_input_name_skosLabel}}[displayOrder]"
+		   class="form-control form-control-sm wiag-input"
+		   value="{{ skosLabel.displayOrder }}"
+		   style="min-width: 3rem; max-width: 5rem"
+		   spellcheck="false"
+		   aria-label="Reihenfolge">
+	</div>
+	<div class="input-group input-group-sm mb-1">
+	    <span class="input-group-text">Bemerkung</span>
+	    <input type="text" id="{{ base_id_skosLabel }}_comment"
+		   name="{{ base_input_name_skosLabel}}[comment]"
+		   class="form-control form_control-sm wiag_input"
+		   value="{{ skosLabel.comment }}"
+		   spellcheck="false"
+		   aria-label="Bemerkung">
+	</div>
+    </div>
+</div>

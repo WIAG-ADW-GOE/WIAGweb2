@@ -11,14 +11,14 @@ use Doctrine\ORM\Mapping as ORM;
 class ItemReference
 {
 
-    /**
+     /**
      * @ORM\ManyToOne(targetEntity="Item", inversedBy="reference")
      * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
      */
     private $item;
 
     /**
-     * set this manually join columns: item_type_id, reference_id
+     * set this manually join column: reference_id
      */
     private $referenceVolume;
 
@@ -54,11 +54,6 @@ class ItemReference
      * @ORM\Column(type="integer")
      */
     private $itemId;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $itemTypeId;
 
     /**
      * @ORM\Column(type="integer")
@@ -165,18 +160,6 @@ class ItemReference
         $this->itemId = $itemId;
 
         return $this;
-    }
-
-    public function setItemTypeId(int $itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
-
-        return $this;
-    }
-
-    public function getItemTypeId(): ?int
-    {
-        return $this->itemTypeId;
     }
 
     public function setReferenceId(int $referenceId): self {

@@ -5,17 +5,28 @@
 	<a class="nav-link dropdown-toggle fw-bold" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
-	<li><a class="dropdown-item" href="{{ path('edit_bishop_query') }}">Bischöfe</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_bishop_new') }}">Bischöfe anlegen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query') }}">Personen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_new') }}" target="_blank" rel="noopener">Personen anlegen (neuer Tab)</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
 	<li><hr class="dropdown-divider"></li>
-	<li><span class="dropdown-header">Basisdaten</span></li>
-	<li><a class="dropdown-item" href="{{ path('edit_reference') }}">Referenzen</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_prop') }}">Attribute</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}">Klöster</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'itemTypeId' : '4'}) }}">Dubletten Bischöfe</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'itemTypeId' : '5'}) }}">Dubletten Domherren</a></li>
+	<li><hr class="dropdown-divider"></li>
+	<li><span class="dropdown-header">Basisdaten (neuer Tab)</span></li>
+	<li><a class="dropdown-item" href="{{ path('edit_reference_query') }}" target="_blank" rel="noopener">Literatur</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_authority_query') }}" target="_blank" rel="noopener">Normdaten/Externe Ressourcen</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_prop') }}" target="_blank" rel="noopener">Attribute</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_role_query') }}" target="_blank" rel="noopener">Ämter</a></li>
+	{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DATA_EDIT') %}
+	    <li><hr class="dropdown-divider"></li>
+	    <li><span class="dropdown-header">Externe Quellen</span></li>
+	    <li><a class="dropdown-item" href="{{ path('edit_monastery_update') }}" target="_blank" rel="noopener">Klöster</a></li>
+	    <li><a class="dropdown-item" href="{{ path('gso_update_info') }}" target="_blank" rel="noopener">Domherren aus dem Digitalen Personenregister</a></li>
+	{% endif %}
 	{% if is_granted('ROLE_EDIT_USER') %}
 	    <li><hr class="dropdown-divider"></li>
-	    <li><a class="dropdown-item" href="{{ path('user_register') }}">Benutzer eintragen</a></li>
-	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benuterdaten bearbeiten</a></li>
-	{% endif  %}
+	    <li><a class="dropdown-item" href="{{ path('user_list') }}">Benutzerverwaltung</a></li>
+	{% endif %}
+
     </ul>
 </li>

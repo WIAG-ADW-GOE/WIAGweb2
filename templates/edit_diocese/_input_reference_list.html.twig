@@ -1,0 +1,18 @@
+<div data-controller="insert sync"
+     data-insert-url-value="{{ path('edit_diocese_new_reference', {
+			    'itemIndex': itemIndex
+			    }) }}"
+     data-insert-point-value="last"
+     data-insert-hide-trigger-value="yes">
+	{% for ref in diocese.item.reference %}
+	{{ include('edit_diocese/_input_reference.html.twig', {
+		current_idx: loop.index0,
+		is_last: loop.last,
+	}) }}
+    {% endfor %}
+</div>
+{% for error_obj in diocese.item.inputErrorSection('reference') %}
+    <div class="row">
+	<div class="col-12 text-danger">{{ error_obj.msg }}</div>
+    </div>
+{% endfor %}

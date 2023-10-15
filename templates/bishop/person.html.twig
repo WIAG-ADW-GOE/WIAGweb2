@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set itemTypeId = 4 %}
     {% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
     {% set citation %}"{{ personName.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
@@ -73,7 +74,7 @@
 		{% endfor %}
 		{% for person_loop in personRole %}
 		    {% if person_loop.item.getsource == 'Bischof GS' or person_loop.item.getsource == 'Domherr GS' %}
-			{% set gsnid = person_loop.item.getidexternalobj('GS') %}
+			{% set gsnid = person_loop.item.geturlexternalobj('GS') %}
 			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 			{{ include('person/_person_role_group.html.twig', {
 			    person: person_loop,
@@ -94,30 +95,9 @@
 		{% endfor %}
 
 		{# external IDs #}
-		{% if personName.item.displayIdExternal %}
-		    <div class="row mx-2 mt-3 mb-2">
-			<div class="col-12">
-			    {{ include('person/_person_id_external.html.twig', {
-				ids: personName.item.displayIdExternal
-			    }) }}
-			</div>
-		    </div>
-		{% endif %}
-		{% set url_by_type=personName.urlbytype %}
-		{% if url_by_type is null or url_by_type is empty %}
-		    {% set url_by_type=personName.sibling ? personName.sibling.urlbytype : [] %}
-		{% endif %}
-		{% for urltype in url_by_type|keys %}
-		    <div class="row mx-2 mt-3 mb-2">
-			<div class="col-12">
-			    {{ include('person/_person_url_external.html.twig', {
-				urltype: urltype,
-				urls: url_by_type[urltype],
-			    }) }}
-			</div>
-		    </div>
-		{% endfor %}
+		{{ include('person/_person_url_external.html.twig') }}
 
+		{# citation #}
 		<div class="row mx-2">
 		    <div class="col-12">
 			Empfohlene Zitierweise:

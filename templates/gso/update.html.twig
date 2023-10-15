@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {% set chunk_size=40 %}
+    <div class="container-fluid mb-2">
+	<div class="row ms-2">
+	    <div class="col-12">
+		<div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernommen</div>
+		<p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>aktualisiert</h4>
+		<ul class="list-group list-group-flush">
+		    {% for person in updateList %}
+			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                    {% else %}
+			<li class="list-group-item">keine</li>
+		    {% endfor %}
+		</ul>
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>neu übernommen</h4>
+		<ul class="list-group list-group-flush">
+		    {% for person in newList %}
+			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                    {% else %}
+			<li class="list-group-item">keine</li>
+		    {% endfor %}
+		</ul>
+	    </div>
+	</div>
+    </div>
+{% endblock %}

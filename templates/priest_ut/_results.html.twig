@@ -9,9 +9,11 @@
 	</thead>
 	<tbody>
 	    {% for person in personList %}
-		{% set patronym = person.item.itemPropertyValue('patronym') %}
+		{% set patronym_prop = person.item.itemPropertyValue('Patronym') %}
+		{# there is usually only one patronym #}
+		{% set patronym = patronym_prop ? patronym_prop[0].value : '' %}
 		{% set personname %}{{ [person.givenname, patronym, person.prefixname, person.familyname]|join(' ') }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}
-		{% set prop = person.item.combineitemproperty %}
+		{% set prop = person.item.arrayitemproperty %}
 		{% set propkeys = prop|keys %}
 		<tr>
 		    <td><button
@@ -32,7 +34,7 @@
 		    </td>
 		    <td>
 			{% if prop and 'ordination_priest' in propkeys %}
-			    <small>{{ prop.ordination_priest }}{% if 'ordination_priest_place' in propkeys %} ({{ prop.ordination_priest_place }}) {% endif %}{% if 'ordination_priest_date' in propkeys %} {{ prop.ordination_priest_date|date("d.m.Y") }} {% endif %}
+			    <small>{{ prop.ordination_priest[0].value }}{% if 'ordination_priest_place' in propkeys %} ({{ prop.ordination_priest_place[0].value }}) {% endif %}{% if prop['ordination_priest'][0].date is defined %} {{ prop['ordination_priest'][0].date|date("d.m.Y") }} {% endif %}
 			    </small><br/>
 			{% endif %}
 			{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}

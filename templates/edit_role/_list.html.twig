@@ -1,0 +1,101 @@
+<div class="ps-0">
+    <form id ="{{ editFormId }}"
+	  name="{{ editFormId }}"
+	  action="{{ path('edit_role_save') }}"
+	  method="post"
+	  data-controller="submit-form">
+	{% set role_count = roleList|length %}
+	{% set body_id_list = range(1,role_count)|map(r => 'body'~r)|join(' ') %}
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<span>Treffer: {{ role_count > 0 ? role_count : 'keine' }}</span>
+	    </div>
+	</div>
+	<div class="row mx-2 mt-2">
+	    <div class="col-12">
+		{# disable submit via enter-key #}
+		<button type="submit" disabled style="display: none" aria-hidden="true"></button>
+		{# toggle collapse button #}
+		{% if role_count > 0 %}
+		    {% if role_count <= 40 %}
+			<button class="btn btn-sm btn-secondary"
+				type="button"
+				data-bs-toggle="collapse"
+				data-bs-target=".multi-collapse"
+				aria-expanded="false"
+				aria-controls="{{ body_id_list }}"
+				{{ stimulus_controller('toggle-arrow', {
+				    state: true,
+				    imgOpen: 'down',
+				    imgClosed: 'right'
+				}) }}
+				data-action="toggle-arrow#toggle"
+				aria-label="Listenelemente aufklappen oder schließen"
+				{# avoid overflow of the number of input field elements #}
+				data-value="down">öffnen/schließen</button>
+		    {% endif %}
+		    {% if role_count > 7 %}
+			<button type="button"
+				name="formType"
+				value="list"
+				data-action="submit-form#submit"
+				class="btn btn-primary btn-sm float-end">Speichern</button>
+		    {% endif %}
+		{% endif %}
+	    </div>
+	</div>
+	<div class="row ms-2 mx-0">
+	    <div class="col-12">
+		<div data-controller="insert"
+		     data-insert-url-value="{{ path('edit_role_new_role', {
+					    edit_form_id: editFormId,
+					    }) }}"
+		     data-insert-point-value="lastButOne">
+		    {% if role_count > 7 %}
+			<div class="input-group input-group-sm mt-1 ">
+			    <button class="btn btn-sm btn-outline-secondary show-new-element"
+					   type="button"
+				    data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+			</div>
+		    {% endif %}
+		    {% for ref in roleList %}
+			{{ include('edit_role/_item.html.twig', {
+			    role: ref,
+			    current_idx: loop.index,
+			}) }}
+		    {% endfor %}
+		    <div class="input-group input-group-sm mt-1 ">
+			<button class="btn btn-sm btn-outline-secondary"
+				id="ref_insert_bottom"
+				type="button"
+				data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
+		    </div>
+		</div>
+	    </div>
+	</div>
+	{# submit #}
+	<div class="row ms-2 mx-2"
+	     data-controller="submit-by-key"> {# attaches an event listener to window #}
+	    <div class="col">
+		{% set debug = false %}
+		{% if debug %}
+		    <div class="float-end">
+			<span class="me-2">debug mode</span>
+			<button type="submit"
+				      name="formType"
+				value="debug"
+				data-submit-by-key-target="button"
+				class="btn btn-primary btn-sm float-end">Speichern</button>
+		    </div>
+		{% else %}
+		    <button type="button"
+				  name="formType"
+				  value="list"
+				  data-submit-by-key-target="button"
+				  data-action="submit-form#submit"
+				  class="btn btn-primary btn-sm float-end">Speichern</button>
+		{% endif %}
+	    </div>
+	</div>
+    </form>
+</div>

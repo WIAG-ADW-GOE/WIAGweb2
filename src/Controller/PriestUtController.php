@@ -13,6 +13,9 @@ use App\Form\Model\PriestUtFormModel;
 use App\Entity\Role;
 
 use App\Service\PersonService;
+use App\Service\UtilService;
+use App\Service\AutocompleteService;
+
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,6 +33,11 @@ class PriestUtController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
 
+    private $autocomplete = null;
+
+    public function __construct(AutocompleteService $service) {
+        $this->autocomplete = $service;
+    }
 
     /**
      * display query form for priestUts; handle query
@@ -54,7 +62,7 @@ class PriestUtController extends AbstractController {
         $form->handleRequest($request);
         $model = $form->getData();
 
-        $itemRepository = $entityManager->getRepository(Item::class);
+        $personRepository = $entityManager->getRepository(Person::class);
 
         if ($form->isSubmitted() && !$form->isValid()) {
             return $this->renderForm('priest_ut/query.html.twig', [
@@ -62,9 +70,7 @@ class PriestUtController extends AbstractController {
                     'form' => $form,
             ]);
         } else {
-            // $count_result = $itemRepository->countPriestUt($model);
-
-            $id_all = $itemRepository->priestUtIds($model);
+            $id_all = $personRepository->priestUtIds($model);
             $count = count($id_all);
             // $count = $count_result["n"];
 
@@ -72,14 +78,7 @@ class PriestUtController extends AbstractController {
             $page_number = $request->request->get('pageNumber');
 
             // set offset to page begin
-            if (!is_null($offset)) {
-                $offset = intdiv($offset, self::PAGE_SIZE) * self::PAGE_SIZE;
-            } elseif (!is_null($page_number) && $page_number > 0) {
-                $page_number = min($page_number, intdiv($count, self::PAGE_SIZE) + 1);
-                $offset = ($page_number - 1) * self::PAGE_SIZE;
-            } else {
-                $offset = 0;
-            }
+            $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
 
             $personRepository = $entityManager->getRepository(Person::class);
 
@@ -113,18 +112,18 @@ class PriestUtController extends AbstractController {
         $offset = $request->request->get('offset');
         $model = $form->getData();
 
-        $itemRepository = $entityManager->getRepository(Item::class);
+        $personRepository = $entityManager->getRepository(Person::class);
 
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $itemRepository->priestUtIds($model,
+            $ids = $personRepository->priestUtIds($model,
                                                 2,
                                                 $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $itemRepository->priestUtIds($model,
+            $ids = $personRepository->priestUtIds($model,
                                                 3,
                                                 $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -133,10 +132,6 @@ class PriestUtController extends AbstractController {
 
         $personRepository = $entityManager->getRepository(Person::class);
         $person_id = $ids[$idx];
-
-        // old version 2022-10-07
-        // $person = $personRepository->findWithOffice($person_id);
-        // $entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
 
         $person_list = $personRepository->findList([$person_id]);
         if (!is_null($person_list) && count($person_list) > 0) {
@@ -192,17 +187,14 @@ class PriestUtController extends AbstractController {
         }
 
 
-        $itemRepository = $entityManager->getRepository(Item::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
 
-        $id_all = $itemRepository->priestUtIds($model);
+        $id_all = $personRepository->priestUtIds($model);
         $person_list = $personRepository->findList($id_all);
 
         $node_list = array();
         foreach($person_list as $person) {
-            // not really expensive
-            $itemReferenceRepository->setReferenceVolume([$person]);
             $birthplace = $person->getBirthplace();
             if ($birthplace) {
                 $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
@@ -231,7 +223,7 @@ class PriestUtController extends AbstractController {
                                  String $field) {
         $name = $request->query->get('q');
         $fnName = 'suggestPriestUt'.ucfirst($field);
-        $suggestions = $repository->$fnName($name, self::HINT_SIZE);
+        $suggestions = $this->autocomplete->$fnName($name, self::HINT_SIZE);
 
         return $this->render('priest_ut/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),

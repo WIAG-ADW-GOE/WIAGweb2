@@ -2,17 +2,19 @@
 
 namespace App\Entity;
 
+use App\Form\Model\Common as Model;
 use App\Entity\InputError;
 use App\Repository\ItemPropertyTypeRepository;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 /**
  * @ORM\Entity(repositoryClass=ItemPropertyTypeRepository::class)
  */
-class ItemPropertyType
-{
+class ItemPropertyType extends Model {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -26,45 +28,43 @@ class ItemPropertyType
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=63)
-     */
-    private $label;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
-    private $itemTypeId;
+    private $displayOrder;
+
+    /**
+     * no db mapping
+     */
+    private $referenceCount = 0;
+
+
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getLabel(): ?string
-    {
-        return $this->label;
-    }
-
-    public function setLabel(string $label): self
-    {
-        $this->label = $label;
 
         return $this;
     }
@@ -81,16 +81,26 @@ class ItemPropertyType
         return $this;
     }
 
-    public function getItemTypeId(): ?int
+    public function getDisplayOrder()
     {
-        return $this->itemTypeId;
+        return $this->displayOrder;
     }
 
-    public function setItemTypeId(int $itemTypeId): self
+    public function setDisplayOrder($displayOrder): self
     {
-        $this->itemTypeId = $itemTypeId;
+        $this->displayOrder = $displayOrder;
 
         return $this;
     }
+
+    public function getReferenceCount(): int {
+        return $this->referenceCount;
+    }
+
+    public function setReferenceCount($count) {
+        $this->referenceCount = $count;
+        return $this;
+    }
+
 
 }

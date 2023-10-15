@@ -4,11 +4,18 @@ import { Modal } from 'bootstrap';
 export default class extends Controller {
     static targets = ['modal', 'modalBody'];
     static values = {
-	queryUrl: String,
+	openUrl: String,
 	mergeItemUrl: String,
     };
 
+    // set this to a Modal object, when the Modal is opened
     modal = null;
+    // button used to open the modal
+    openBtn = null;
+    // form holding the selection options
+    selectForm = null;
+
+    // 2023-07-05 obsolete?!
     personID = null;
     // DOM ID of the item's form section
     elmtID = null;
@@ -19,17 +26,21 @@ export default class extends Controller {
         // console.log('☕');
     };
 
+    async openMergeQuery(event) {
+	this.openBtn = event.currentTarget;
+	return this.openModal(event);
+    }
+
+    // generic open modal function
     async openModal(event) {
+	event.preventDefault();
         this.modal = new Modal(this.modalTarget);
-	this.elmtID = event.currentTarget.value;
-	this.personID = event.currentTarget.dataset.personId;
-	this.listIndex = event.currentTarget.dataset.listIndex;
         this.modal.show();
 
 	// fetch uses the current URL if it is called with an empty URL
 
 	// fill modal
-	const response = await fetch(this.queryUrlValue);
+	const response = await fetch(this.openUrlValue);
 	var modalBody = await response.text();
 	this.modalBodyTarget.innerHTML = modalBody;
     }
@@ -41,41 +52,123 @@ export default class extends Controller {
 	return null;
     }
 
+    /**
+     * return a symbol (indicate that server request is processed)
+     */
+    waitSymbol() {
+	// <span><i class="mt-2 ms-2 fa-solid fa-rotate fa-spin"></i></span>
+	var span = document.createElement("span");
+	var symbol = document.createElement("i");
+	symbol.classList.add("mt-2", "ms-2", "fa-solid", "fa-rotate", "fa-spin");
+	span.appendChild(symbol);
+	return span;
+    }
 
+    /**
+     * submit query and show choice list
+     */
     async submitQuery(event, msg = null) {
-	// avoid weird duplicate queries through buttons and the ENTER key
-	if ((event.type == 'click' && event.target.tagName == "BUTTON")
-	    || (event.type == 'keyup' && event.key == 'Enter')) {
 
-	    event.preventDefault();
+	event.preventDefault();
 
-	    var form_elmt = this.modalBodyTarget.getElementsByTagName('form').item(0);
-
-	    var body = new URLSearchParams(new FormData(form_elmt));
-	    // include name - value pairs of page navigation buttons
-	    const btn = event.target;
+	var body = new URLSearchParams(new FormData(event.target.form));
+	// include name - value pairs of page navigation buttons
+	const target_name = event.target.name;
+	const target_value = event.target.value;
+	if (event.target.tagName == "BUTTON" && target_name != "" && target_value != "") {
 	    // console.log(btn.name, btn.value);
-	    if (btn.tagName == "BUTTON" && btn.name != "" && btn.value != "") {
-		// console.log(btn.name);
-		body.append(btn.name, btn.value);
-	    }
+	    body.append(target_name, target_value);
+	}
 
-	    const response = await fetch(this.queryUrlValue, {
-		method: form_elmt.method,
-		body: body,
-	    });
+	// this works for input Elements (submit via ENTER), page navigation buttons and submit buttons
+	const url = event.target.form.action;
 
-	    var modalBody = await response.text();
-	    this.modalBodyTarget.innerHTML = modalBody;
-	    if (msg !== null) {
-		var msg_elmt = this.modalBodyTarget.getElementsByClassName('wiag-form-warning').item(0);
-		msg_elmt.innerHTML = msg;
-	    }
+	this.modalBodyTarget.replaceChildren(this.waitSymbol());
+
+	const response = await fetch(url, {
+	    method: "POST",
+	    body: body,
+	});
+
+
+	var modalBody = await response.text();
+
+	this.modalBodyTarget.innerHTML = modalBody;
+	// read form
+	const form_list = this.modalBodyTarget.getElementsByTagName("form");
+	if (form_list.length > 1) {
+	    this.selectForm = form_list.item(1);
+	}
+
+	if (msg !== null) {
+	    var msg_elmt = this.modalBodyTarget.getElementsByClassName('wiag-form-warning').item(0);
+	    msg_elmt.innerHTML = msg;
 	}
 	return null;
     }
 
     async submitForm(event) {
+	event.preventDefault();
+
+	if (this.selectForm === null) {
+	    // TODO insert message
+	    console.log("select form is missing");
+	    return null; // modal stays open
+	}
+	else {
+	    var select_form_data = new FormData(this.selectForm);
+	}
+
+	// issue a warning if no selection was made
+	if (!select_form_data.has('selected')) {
+	    // TODO insert message
+	    console.log("no selection found");
+	    return null; // modal stays open
+	}
+
+	const selected = select_form_data.get('selected')
+
+	// this.openBtn was saved when the modal was created
+	var body = new URLSearchParams(new FormData(this.openBtn.form));
+	var url = this.openBtn.getAttribute("formaction");
+	if (selected) {
+	    var q_params = new URLSearchParams({ 'selected': selected });
+	    url = url + "?" + q_params.toString();
+	}
+	const response = await fetch(url, {
+	    method: "POST",
+	    body: body,
+	});
+
+	this.modal.hide();
+
+	// this is specific for a local merge operation
+	// and can be made optional by a parameter if neccessary
+	const wrap_element = document.createElement("div");
+	wrap_element.innerHTML = await response.text();
+	this.openBtn.form.replaceWith(wrap_element.firstElementChild);
+
+    }
+
+    /**
+     * 2023-07-04 not in use: merge status is only known after successful saving
+     * remove form element from DOM when it corresponds to idInSource
+     */
+    eatByIdInSource(idInSource, formList) {
+	var target = null;
+	for (target of formList.children) {
+	    if (target.dataset.idInSource == idInSource) {
+		break;
+	    }
+	}
+
+	if (target !== null) {
+	    target.remove();
+	}
+    }
+
+    // 2023-07-05 open merge form in a new tab
+    async submitForm_legacy(event) {
 	const form_elmt = document.getElementById('merge_select_form');
 
 	if (form_elmt === null) {
@@ -100,50 +193,10 @@ export default class extends Controller {
 	var url = url_comp_list.join('/');
 
 	this.modal.hide();
-	window.location.assign(url);
+	window.open(url, '_blank');
 
 	return null;
     }
 
-    /**
-     * updateEntry(form_elmt)
-     *
-     * fetch data for the current item and the merge item; update form section for item
-     * 2022-12-22 obsolete?
-     */
-    async updateEntry(request_body) {
-	// console.log('this is updateEntry');
-	// find the form section to update
-	const entry_elmt = document.getElementById(this.elmtID);
-
-	// wrapper
-	const wrap = document.createElement("div");
-	// get new data from the server
-	var url = this.mergeItemUrlValue + '/' + this.personID + '/' + this.listIndex;
-
-	const response = await fetch(url, {
-	    method: "POST",
-	    body: request_body,
-	});
-
-	wrap.innerHTML = await response.text();
-	entry_elmt.firstElementChild.innerHTML = wrap.firstElementChild.firstElementChild.innerHTML;
-    }
-
-    /**
-     * 2022-12-22 obsolete?
-     */
-    async mergeItem(event) {
-	// console.log('this is mergeItem');
-	this.elmtID = event.currentTarget.value;
-	this.personID = event.currentTarget.dataset.personId;
-	this.listIndex = event.currentTarget.dataset.listIndex;
-
-	const merge_select = event.currentTarget.dataset.mergeSelect;
-
-	var request_body = new URLSearchParams({"merge_select": merge_select});
-
-	await this.updateEntry(request_body);
-    }
 
 }

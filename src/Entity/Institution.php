@@ -83,22 +83,26 @@ class Institution
      */
     private $itemTypeId;
 
-    public function __construct() {
+    /**
+     * @ORM\Column(type="string", length=31)
+     */
+    private $corpusId;
+
+    public function __construct($item_type_id, $user_id) {
         $this->institutionPlace = new ArrayCollection();
+        $this->item = new Item($item_type_id, $user_id);
+        $this->itemTypeId = $item_type_id;
+    }
+
+    public function getItem()
+    {
+        return $this->item;
     }
 
     public function setItem($item) {
         $this->item = $item;
         return $this;
     }
-
-    static public function newInstitution(Item $item) {
-        $institution = new Institution();
-        $institution->setItem($item)
-                    ->setItemTypeId($item->getItemTypeId());
-        return $institution;
-    }
-
 
     public function getId(): ?int
     {
@@ -125,6 +129,7 @@ class Institution
     public function setIdGsn(?int $idGsn): self
     {
         $this->idGsn = $idGsn;
+        $this->item->setIdInSource($idGsn);
 
         return $this;
     }
@@ -227,6 +232,18 @@ class Institution
 
     public function getInstitutionPlace() {
         return $this->institutionPlace;
+    }
+
+    public function getCorpusId(): ?string
+    {
+        return $this->corpusId;
+    }
+
+    public function setCorpusId(string $corpusId): self
+    {
+        $this->corpusId = $corpusId;
+
+        return $this;
     }
 
 }

@@ -2,13 +2,13 @@
 namespace App\Controller;
 
 use App\Entity\Item;
-use App\Entity\ItemType;
+use App\Entity\ItemCorpus;
+use App\Entity\ItemNameRole;
 use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Diocese;
 use App\Entity\CanonLookup;
 use App\Entity\Authority;
-use App\Entity\IdExternal;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
 
@@ -58,20 +58,22 @@ class IdController extends AbstractController {
         $format = $request->query->get('format') ?? 'html';
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
-        $itemTypeRepository = $this->entityManager->getRepository(ItemType::class);
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
         $itemResult = $itemRepository->findByIdPublicOrParent($id);
-        if (!is_null($itemResult) && count($itemResult) > 0) {
+        if (!is_null($itemResult) and count($itemResult) > 0) {
             $item = $itemResult[0];
-            $itemTypeId = $item->getItemTypeId();
-            $itemId = $item->getId();
+            $item_id = $item->getId();
+            $corpus = $itemCorpusRepository->findCorpusPrio($item_id);
+            $corpus_id = $corpus->getCorpusId();
 
-            $itemTypeResult = $itemTypeRepository->find($itemTypeId);
-
-            $typeName = $itemTypeResult->getNameApp();
-
-            # e.g. bishop($itemId, $format)
-            return $this->$typeName($itemId, $format);
+            if ($corpus_id == 'dioc') {
+                return $this->diocese($item_id, $format);
+            } elseif ($corpus_id == 'utp') {
+                return $this->priestOfUtrecht($item_id, $format);
+            } else {
+                return $this->person($item_id, $corpus, $format);
+            }
 
         } else {
             return $this->render('home\message.html.twig', [
@@ -82,30 +84,25 @@ class IdController extends AbstractController {
 
      }
 
-    public function bishop($id, $format) {
+    /**
+     * @return HTML or data for ID $id
+     */
+    public function person($id, $corpus, $format) {
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
-        $personRepository = $this->entityManager->getRepository(Person::class);
-        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
-        $person = $personRepository->find($id);
         // collect office data in an array of Items
-        $personRole = $itemRepository->getBishopOfficeData($person);
-
+        $item_list = $itemRepository->findItemNameRole([$id]);
+        $item = array_values($item_list)[0];
+        $person = $item->getPerson();
+        $person_role_list = $item->getPersonRole();
 
         if ($format == 'html') {
-
-            $itemRepository->setSibling($person);
-            // find external URLs for sibling (Domherr GS)
-            $sibling = $person->getSibling();
-            if (!is_null($sibling)) {
-                $urlByType = $urlExternalRepository->groupByType($sibling->getId());
-                $sibling->setUrlByType($urlByType);
-            }
-
-            return $this->render('bishop/person.html.twig', [
+            return $this->render('person/person.html.twig', [
                 'personName' => $person,
-                'personRole' => $personRole,
+                'personRole' => $person_role_list,
+                'corpus' => $corpus->getCorpusId(),
+                'pageTitle' => $corpus->getPageTitle(),
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
@@ -113,7 +110,7 @@ class IdController extends AbstractController {
             }
 
             // build data array
-            $node_list = [$this->personService->personData($format, $person, $personRole)];
+            $node_list = [$this->personService->personData($format, $person, $person_role_list)];
 
             return $this->personService->createResponse($format, $node_list);
         }
@@ -169,13 +166,10 @@ class IdController extends AbstractController {
         }, $canon_list);
 
         if ($format == 'html') {
-
             return $this->render('canon/person.html.twig', [
                 'personName' => $personName,
                 'personRole' => $personRole,
             ]);
-
-
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
@@ -188,7 +182,7 @@ class IdController extends AbstractController {
         }
     }
 
-    public function priest_ut($id, $format) {
+    public function priestOfUtrecht($id, $format) {
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         // old version 2022-10-07
@@ -265,8 +259,8 @@ class IdController extends AbstractController {
 
         $gnd_id = Authority::ID['GND'];
 
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
-        $gnd_list = $idExternalRepository->findValues($gnd_id);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+        $gnd_list = $urlExternalRepository->findValues($gnd_id);
 
 
         $cdata = array_merge($cbeaconheader, array_column($gnd_list, 'value'));
@@ -291,16 +285,16 @@ class IdController extends AbstractController {
      */
     public function detailsByGndId(string $id, Request $request) {
 
-        $idExternalRepository = $this->entityManager->getRepository(IdExternal::class);
+        $urlExternalRepository = $this->entityManager->getRepository(urlExternal::class);
         $gnd_id = Authority::ID['GND'];
 
-        $idext = $idExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
+        $urlext = $urlExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
 
-        if (is_null($idext) || count($idext) < 1) {
+        if (is_null($urlext) || count($urlext) < 1) {
             throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
         }
 
-        $id = $idext[0]->getItemId();
+        $id = $urlext[0]->getItemId();
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
 

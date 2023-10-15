@@ -29,6 +29,11 @@
 			<p>Strukturierung, Standardisierung und Bereitstellung von Forschungsdaten aus Sach- und Schriftquellen des Mittelalters und der Frühen Neuzeit</p>
 		    </div>
 		</div>
+		<div class="row mx-2">
+		    <div class="col-5">
+			<span class="fw-bold">Version WIAG 3</span>
+		    </div>
+		</div>
 	    </div>
 	    <nav class="navbar navbar-expand-lg navbar-light bg-white">
 		<div class="container-fluid mx-3">
@@ -72,9 +77,9 @@
 				    <a class="nav-link dropdown-toggle fw-bold" href="#" id="collections" role="button" data-bs-toggle="dropdown" aria-expanded="false">Datensammlungen</a>
 				{% endif %}
 				<ul class="dropdown-menu" aria-labelledby="collections">
-				    <li><a class="dropdown-item" href="{{ path('bishop_query') }}">Bischöfe des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('person_query', { 'corpusId': 'epc' }) }}">Bischöfe des Alten Reiches</a></li>
 				    <li><a class="dropdown-item" href="{{ path('diocese_query') }}">Bistümer des Alten Reiches</a></li>
-				    <li><a class="dropdown-item" href="{{ path('canon_query') }}">Domherren des Alten Reiches</a></li>
+				    <li><a class="dropdown-item" href="{{ path('person_query', { 'corpusId': 'can' }) }}">Domherren des Alten Reiches</a></li>
 				    <li><a class="dropdown-item" href="{{ path('priest_ut_query') }}">Priester des Bistums Utrecht</a></li>
 				</ul>
 			    </li>

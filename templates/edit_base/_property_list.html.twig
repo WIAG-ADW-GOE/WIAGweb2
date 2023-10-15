@@ -1,77 +1,105 @@
 <div class="row">
     <div class="col-12">
 	<div class="table-responsive">
-	    <table class="table table-borderless w-75">
+	    <table class="table">
 		<thead class="thead-light">
 		    <tr>
 			<th scope="col"></th> {# checkbox edit status #}
-			<th scope="col" class="d-none">Id</th>
+			<th scope="col">Id</th>
 			<th scope="col">Name</th>
-			<th scope="col">Anzeige (Label)</th>
+			<th scope="col">Reihenfolge</th>
 			<th scope="col">Bemerkung</th>
+			<th scope="col">referenziert</th>
+			<th scope="col"></th> {# löschen #}
 		    </tr>
 		</thead>
 		<tbody>
+		    {% set process_new=false %}
 		    {% for prop_type in innerTypeList %}
-			{% set field_key = 'getName' %}
+			{% if prop_type.isNew %}
+			    {% set process_new=true %}
+			{% endif %}
 			<tr data-controller="on-input"
 			    data-action="input->on-input#mark">
 			    <td><input class="form-check-input"
 				       type="checkbox"
-				       {% if prop_type.formisedited is defined and prop_type.formIsEdited > 0 %}
-				       checked="checked"
-				       {% endif %}
+				       {% if prop_type.isedited %}checked="checked"{% endif %}
 				       id="{{ base_id }}_{{ loop.index0 }}_formIsEdited"
 				       name="{{ base_input_name }}[{{ loop.index0 }}][formIsEdited]"
 				       data-on-input-target="checkbox">
+				<input class="form-check-input d-none"
+				       type="checkbox"
+				       {% if prop_type.isNew %}checked="checked"{% endif %}
+				       id="{{ base_id }}_{{ loop.index0 }}_isNew"
+				       name="{{ base_input_name }}[{{ loop.index0 }}][isNew]">
 			    </td>
-			    <td class ="d-none"><input type="text"
-				       class="form-control form-control-sm"
-				       id="{{ base_id }}_{{ loop.index0 }}_id"
-				       name="{{ base_input_name }}[{{ loop.index0 }}][id]"
-				       value="{{ prop_type.id }}">
+			    <td style="width: 4rem"><input type="text"
+							   readonly="readonly"
+							   class="form-control form-control-sm"
+							   id="{{ base_id }}_{{ loop.index0 }}_id"
+							   name="{{ base_input_name }}[{{ loop.index0 }}][id]"
+							   value="{{ prop_type.id }}">
 			    </td>
-			    {% for field_name in ['name', 'label', 'comment'] %}
-				<td><input type="text"
-					   class="form-control form-control-sm"
-					   id="{{ base_id }}_{{ loop.parent.loop.index0 }}_{{ field_name }}"
-					   name="{{ base_input_name }}[{{ loop.parent.loop.index0 }}][{{ field_name }}]"
-					   value="{{ attribute(prop_type, field_name) }}">
+			    {% for field_name in ['name', 'displayOrder', 'comment'] %}
+				<td {% if loop.index == 2 %}style="width: 7rem"{% endif %}><input type="text"
+					class="form-control form-control-sm"
+					id="{{ base_id }}_{{ loop.parent.loop.index0 }}_{{ field_name }}"
+					name="{{ base_input_name }}[{{ loop.parent.loop.index0 }}][{{ field_name }}]"
+					value="{{ attribute(prop_type, field_name) }}">
 				</td>
 			    {% endfor %}
+			    <td style="width: 6rem">{{ prop_type.referenceCount }}</td>
+			    {% if prop_type.isNew %}
+				<td></td>
+			    {% else %}
+			    <td>{{ include('edit_base/_delete_button.html.twig', {
+				'obj': prop_type,
+				'base_id_delete': base_id~'_'~loop.index0,
+				'base_name_delete': base_input_name~'['~loop.index0~']' }) }}</td>
+			    {% endif %}
 			</tr>
 			{% if prop_type.inputError is defined %}
 			    {% for error in prop_type.inputError %}
 				<tr>
-				    <td></td>
-				    <td colspan="3" class="text-danger">{{ error.msg }}</td>
+				    <td colspan="2"></td>
+				    <td colspan="5" class="text-danger">{{ error.msg }}</td>
 				</tr>
 			    {% endfor %}
 			{% endif %}
 		    {% endfor %}
-		    {% set next_idx = innerTypeList|length %}
+		    {# new entry #}
+		    {% if not process_new %}
 		    <tr data-controller="on-input"
 			data-action="input->on-input#mark">
 			<td><input class="form-check-input"
 				   type="checkbox"
-				   id="{{ base_id }}_{{ next_idx }}_formIsEdited"
-				   name="{{ base_input_name }}[{{ next_idx }}][formIsEdited]"
+				   id="{{ base_id }}_{{ nextId }}_formIsEdited"
+				   name="{{ base_input_name }}[{{ nextId }}][formIsEdited]"
 				   data-on-input-target="checkbox">
+			    <input class="form-check-input d-none"
+				   type="checkbox"
+				   checked="checked"
+				   id="{{ base_id }}_{{ nextId }}_isNew"
+				   name="{{ base_input_name }}[{{ nextId }}][isNew]">
 			</td>
-			<td class="d-none"><input type="text"
-						  class="form-control form-control-sm"
-						  id="{{ base_id }}_{{ next_idx }}_id"
-						  name="{{ base_input_name }}[{{ next_idx }}][id]">
+			<td style="width: 4rem"><input type="text"
+						       readonly="readonly"
+						       class="form-control form-control-sm"
+						       id="{{ base_id }}_{{ nextId }}_id"
+						       value="{{ nextId }}"
+						       name="{{ base_input_name }}[{{ nextId }}][id]">
 			</td>
-			{% for field_name in ['name', 'label', 'comment'] %}
+			{% for field_name in ['name', 'displayOrder', 'comment'] %}
 			    <td><input type="text"
 				       {% if loop.index == 1 %}placeholder="neu"{% endif %}
 				       class="form-control form-control-sm"
-				       id="{{ base_id }}_{{ next_idx }}_{{ field_name }}"
-				       name="{{ base_input_name }}[{{ next_idx }}][{{ field_name }}]">
+				       id="{{ base_id }}_{{ nextId }}_{{ field_name }}"
+				       name="{{ base_input_name }}[{{ nextId }}][{{ field_name }}]">
 			    </td>
 			{% endfor %}
+			<td colspan="2"></td>
 		    </tr>
+		    {% endif %}
 		</tbody>
 	    </table>
 	</div>

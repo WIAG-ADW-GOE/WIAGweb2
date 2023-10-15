@@ -24,7 +24,7 @@
 			<tbody>
 			    {% for user in user_list %}
 				<tr>
-				    <td><a href="{{ path('user_edit', { 'email': user.email}) }}">{{ user.id }}</a></td>
+				    <td><a href="{{ path('edit_user', { 'email': user.email}) }}">{{ user.id }}</a></td>
 				    <td>{{ user.active > 0 ? 'ja' : 'nein' }}</td>
 				    <td>{{ user.name }}</td>
 				    <td>{{ user.givenname }}</td>
@@ -41,6 +41,9 @@
 			</tbody>
 		    </table>
 		</div>
+	    </div>
+	    <div>
+		<a class="btn btn-primary" role="button" href="{{ path('user_register') }}">Neuer Eintrag</a>
 	    </div>
 	</div>
     </div>
