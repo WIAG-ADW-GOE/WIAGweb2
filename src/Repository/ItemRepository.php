@@ -427,18 +427,20 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return meta data and GSN for items with type in $item_type_id_list
+     * @return meta data and GSN for items with corpus_id in $corpus_id_list
      */
-    public function findGsnByItemTypeId($item_type_id_list) {
-        $authority_id = Authority::ID['GS'];
+    public function findGsnByCorpusId($corpus_id_list) {
+        $authority_id = Authority::ID['GSN'];
 
         $qb = $this->createQueryBuilder('i')
                    ->select('i.id, i.dateChanged, uext.value as gsn')
                    ->join('i.urlExternal', 'uext')
+                   ->join('i.itemCorpus', 'ic')
                    ->andWhere('uext.authorityId = :authority_id')
-                   ->andWhere('i.itemTypeId in (:item_type_id_list)')
+                   ->andWhere('ic.corpusId in (:corpus_id_list)')
                    ->setParameter('authority_id', $authority_id)
-                   ->setParameter('item_type_id_list', $item_type_id_list);
+                   ->setParameter('corpus_id_list', $corpus_id_list)
+                   ->groupBy('i.id');
 
         $query = $qb->getQuery();
         return $query->getResult();

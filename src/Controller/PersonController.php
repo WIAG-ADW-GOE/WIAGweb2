@@ -411,8 +411,13 @@ class PersonController extends AbstractController {
         $query_param = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
+        $corpus_id_list = [$corpus];
+        if ($corpus == 'can') {
+            $corpus_id_list[] = 'dreg-can';
+        }
+
         $is_online = 1;
-        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE, $is_online, $corpus);
+        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE, $is_online, $corpus_id_list);
 
         return $this->render('person/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),

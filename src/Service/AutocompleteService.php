@@ -261,7 +261,7 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      */
-    public function suggestName($q_param, $resultSize, $isOnline = 0, $corpus = null) {
+    public function suggestName($q_param, $resultSize, $isOnline = 0, $corpus_id_list = null) {
 
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
@@ -269,9 +269,9 @@ class AutocompleteService extends ServiceEntityRepository {
                          ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
                          ->join('i.itemCorpus', 'c');
 
-        if (!is_null($corpus)) {
-            $qb->andWhere('c.corpusId = :corpus')
-               ->setParameter('corpus', $corpus);
+        if (!is_null($corpus_id_list)) {
+            $qb->andWhere('c.corpusId in (:cil)')
+               ->setParameter('cil', $corpus_id_list);
         }
 
         // require that every word of the search query occurs in the name, regardless of the order

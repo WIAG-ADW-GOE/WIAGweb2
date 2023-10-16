@@ -49,12 +49,8 @@ class GsoController extends AbstractController {
         $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
 
         // get canons in WIAG
-        $item_type_id = [
-            Item::ITEM_TYPE_ID['Domherr GS']['id'],
-            Item::ITEM_TYPE_ID['Bischof GS']['id'],
-        ];
 
-        $item_list = $itemRepository->findGsnByItemTypeId($item_type_id);
+        $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
         $gsn_list = array_column($item_list, 'gsn');
 
         // get meta data for those canons from GSO
@@ -102,17 +98,13 @@ class GsoController extends AbstractController {
         $personRepository = $doctrine->getRepository(Person::class, 'default');
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
         $nameLookupRepository = $doctrine->getRepository(NameLookup::class, 'default');
-        $canonLookupRepository = $doctrine->getRepository(CanonLookup::class, 'default');
+        $itemNameRoleRepository = $doctrine->getRepository(ItemNameRole::class, 'default');
 
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
 
         // get canons in WIAG
-        $item_type_id = [
-            Item::ITEM_TYPE_ID['Domherr GS']['id'],
-            Item::ITEM_TYPE_ID['Bischof GS']['id'],
-        ];
 
-        $item_list = $itemRepository->findGsnByItemTypeId($item_type_id);
+        $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
         $gsn_list = array_column($item_list, 'gsn');
 
         // get meta data for those canons from GSO
@@ -252,8 +244,7 @@ class GsoController extends AbstractController {
 
         $institutionRepository = $entityManager->getRepository(Institution::class, 'default');
 
-        $item_type_domstift = Item::ITEM_TYPE_ID['Domstift']['id'];
-        $domstift_list = $institutionRepository->findByItemTypeId($item_type_domstift);
+        $domstift_list = $institutionRepository->findByCorpusId('cap');
 
         $domstift_gsn_list = array();
         foreach($domstift_list as $domstift) {
@@ -303,12 +294,14 @@ class GsoController extends AbstractController {
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
         $itemRepository = $doctrine->getRepository(Item::class, 'default');
 
-        $item_type_id = Item::ITEM_TYPE_ID['Domherr GS']['id'];
+
         $current_user_id = $this->getUser()->getId();
 
         $person_insert_list = array();
 
-        $next_num_id_public = $itemRepository->findMaxNumIdPublic($item_type_id) + 1;
+        // TODO 2023-10-16
+        //
+        $next_num_id_public = $itemRepository->findMaxNumIdPublic(['dreg-can', 'dreg-epc']) + 1;
 
         foreach($gso_insert_list as $person_gso) {
             $person_new = new Person($item_type_id, $current_user_id);

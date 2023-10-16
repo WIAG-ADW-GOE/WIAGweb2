@@ -15,7 +15,7 @@
     {% endif %}
     </div>
     <div>
-	{% set id_public, gsn=person.item.idpublicvisible, person.item.geturlexternalobj('GS') %}
+	{% set id_public, gsn=person.item.idpublicvisible, person.item.geturlexternalobj('GSN') %}
 	{% if id_public and id_public != "" %}
 	    <a href="{{ path('id', { 'id': id_public }) }}" target="_blank" rel="noopener">{{ id_public }}</a>
 	{% endif %}
