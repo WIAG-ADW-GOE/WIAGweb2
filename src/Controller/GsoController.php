@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
@@ -41,6 +42,7 @@ class GsoController extends AbstractController {
         $entityManager = $doctrine->getManager('default');
 
         $itemRepository = $entityManager->getRepository(Item::class, 'default');
+        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class, 'default');
         $personRepository = $entityManager->getRepository(Person::class, 'default');
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
@@ -49,7 +51,6 @@ class GsoController extends AbstractController {
         $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
 
         // get canons in WIAG
-
         $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
         $gsn_list = array_column($item_list, 'gsn');
 
@@ -57,13 +58,13 @@ class GsoController extends AbstractController {
         $gso_item_list = $this->personGsoIdsByList($doctrine, $gsn_list);
 
         // missing list holds elements of $item_list not found in GSO
-        list($update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
+        list($find_or_update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
 
 
-        $id_list = array_keys($update_list);
-        $person_update_list = $personRepository->findList($id_list);
+        $id_list = array_keys($find_or_update_list);
+        $person_find_or_update_list = $personRepository->findList($id_list);
         // add visible id_public
-        $urlExternalRepository->setIdPublicVisible($person_update_list);
+        $urlExternalRepository->setIdPublicVisible($person_find_or_update_list);
 
         $id_missing_list = array_column($missing_list, 'id');
         $person_missing_list = $personRepository->findList($id_missing_list);
@@ -76,11 +77,17 @@ class GsoController extends AbstractController {
         $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
         $id_new_list = array_column($canon_gso_ids_new, 'person_id');
 
+        // TODO 2023-10-17
+        // Finde Personen mit corpus_id = dreg-epc
+        // list of Domstifte
+        $ic_cap_list = $itemCorpusRepository->findByCorpusId('cap');
+        $cap_id_list = UtilService::collectionColumn($ic_cap_list, 'itemId');
+
         $person_new_list = $gsoPersonsRepository->findList($id_new_list);
 
         return $this->render("gso/update_info.html.twig", [
             'countReferenced' => count($item_list),
-            'updateList' => $person_update_list,
+            'updateList' => $person_find_or_update_list,
             'missingList' => $person_missing_list,
             'newList' => $person_new_list,
             'gsUrl' => $auth_gs->getUrlFormatter(),
@@ -103,7 +110,6 @@ class GsoController extends AbstractController {
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
 
         // get canons in WIAG
-
         $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
         $gsn_list = array_column($item_list, 'gsn');
 

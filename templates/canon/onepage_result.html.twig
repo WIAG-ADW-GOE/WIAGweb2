@@ -24,7 +24,7 @@
 			<h1>Domherren</h1>
 		    {% endif %}
 		    {% if limitReached %}
-			<p>anzeigt: {{ canonNodeList|length }} Einträge (Limit erreicht)</p>
+			<p>angezeigt: {{ canonNodeList|length }} Einträge (Limit erreicht)</p>
 		    {% endif %}
 		</div>
 		{% for node in canonNodeList %}
@@ -69,7 +69,7 @@
 		    {% for person_loop in node.personRole %}
 		    {# offices, parameter: item #}
 		    <div class="row col-12 mx-2">
-			{% if person_loop.itemTypeID == 6 %}
+			{% if person_loop.itemTypeID in [6, 9] %}
 			    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ person_loop.item.geturiextbyauthid(200) }}"> GSN {{ person_loop.item.UrlExternalByAuthorityId(200) }}</a></h4></div>
 			{% endif %}
 			{% if person_loop.itemTypeID == 4 %}

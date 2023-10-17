@@ -1004,7 +1004,7 @@ class EditPersonService {
             $auth_query = $authorityRepository->findByUrlNameFormatter($authority_name);
             if (!is_null($auth_query) && count($auth_query) > 0) {
                 $authority = $auth_query[0];
-                // drop base URL if present
+                // remove base URL in $value if present
                 if ($authority_name == 'Wikipedia-Artikel') {
                     $val_list = explode('/', $value);
                     $value = array_slice($val_list, -1)[0];

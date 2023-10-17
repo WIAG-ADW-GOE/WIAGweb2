@@ -455,7 +455,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
 
 
-        // delete
+        // delete all entries related to persons in $id_list
         $qb = $this->createQueryBuilder('inr')
                    ->andWhere ('inr.itemIdRole in (:id_list)')
                    ->setParameter('id_list', $id_list);
@@ -466,6 +466,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         }
         $entityManager->flush();
 
+        // set/restore entries based on online status, corpus and references to the Digitales Personenregister
         $n = 0;
         $person_list = $personRepository->findList($id_list);
 
@@ -481,6 +482,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $id = $p_loop->getId();
                 $inr = new ItemNameRole($id, $id);
                 $inr->setItem($item);
+                $inr->setPersonRole($p_loop);
                 $entityManager->persist($inr);
                 $id_primary_list[] = $id;
                 $n += 1;
@@ -492,6 +494,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                     if ($item_id != $id) {
                         $inr = new ItemNameRole($id, $item_id);
                         $inr->setItem($item);
+                        $inr->setPersonRole($personRepository->find($item_id));
                         $entityManager->persist($inr);
                         $n += 1;
                         $id_secondary_list[] = $item_id;
@@ -513,7 +516,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $id_dreg = $p_loop->getId();
                 $inr = new ItemNameRole($id_dreg, $id_dreg);
                 $inr->setItem($item);
+                $inr->setPersonRole($p_loop);
                 $entityManager->persist($inr);
+
                 $n += 1;
 
             }
