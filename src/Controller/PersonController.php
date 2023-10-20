@@ -124,7 +124,7 @@ class PersonController extends AbstractController {
             $person_list = $personRepository->findList($id_list);
 
 
-            // set person->role to dreg-roles for the combination can, epc, dreg-epc
+            // set person->role to dreg-roles for the combination can, epc, dreg
             // (relatively rare cases)
             // if ($corpusId == 'can') {
             //     $this->setListViewRole($person_list, $entityManager);
@@ -146,7 +146,7 @@ class PersonController extends AbstractController {
     }
 
     /**
-     * 2023-09-29 obsolete? was relevant for can, epc, dreg-epc
+     * 2023-09-29 obsolete? was relevant for can, epc, dreg
      * set $person->role to dreg-roles if present
      */
     private function setListViewRole($person_list, $entityManager) {
@@ -234,7 +234,6 @@ class PersonController extends AbstractController {
                 }
             }
         }
-
 
         // TODO 2023-08-15 clean up sibling
         // $personRepository->setSibling([$person]);

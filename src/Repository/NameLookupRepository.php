@@ -87,7 +87,6 @@ class NameLookupRepository extends ServiceEntityRepository
             $nl_new->setPersonId($person->getId());
             $entityManager->persist($nl_new);
 
-            // obsolete 2023-09-21 $nl_new->setGnFn($variant[0]);
             $nl_new->setNameVariant($variant[1]);
         }
     }

@@ -603,17 +603,38 @@ class Item {
             return null;
         }
         $id_public_cand = null;
-        foreach($this->itemCorpus as $ic_loop) {
-            if ($ic_loop->getCorpusId() == 'epc') {
+        foreach (['epc', 'can', 'dreg-can'] as $corpus_id) {
+            foreach ($this->itemCorpus as $ic_loop) {
                 $id_public_cand = $ic_loop->getIdPublic();
-            } elseif ($ic_loop->getCorpusId() == 'can' and is_null($id_public_cand)) {
-                $id_public_cand = $ic_loop->getIdPublic();
-            } elseif (is_null($id_public_cand)) {
-                $id_public_cand = $ic_loop->getIdPublic();
+                if ($ic_loop->getCorpusId() == $corpus_id) {
+                    return $id_public_cand;
+                }
             }
         }
 
         return $id_public_cand;
+
+    }
+
+    /**
+     * @return main corpus ID (epc > can)
+     */
+    public function getIdInCorpusMain(): ?string
+    {
+        if (is_null($this->itemCorpus)) {
+            return null;
+        }
+        $iic_cand = null;
+        foreach (['epc', 'can'] as $corpus_id) {
+            foreach($this->itemCorpus as $ic_loop) {
+                $iic_cand = $corpus_id.'-'.$ic_loop->getIdInCorpus();
+                if ($ic_loop->getCorpusId() == $corpus_id) {
+                    return $iic_cand;
+                }
+            }
+        }
+
+        return $iic_cand;
 
     }
 

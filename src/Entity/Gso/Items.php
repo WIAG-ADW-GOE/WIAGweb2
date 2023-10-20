@@ -32,11 +32,6 @@ class Items
      */
     private $reference;
 
-     /**
-     * no db mapping
-     */
-    private $currentGsn;
-
     /**
      * @ORM\Column(type="boolean")
      */
@@ -92,6 +87,19 @@ class Items
         $this->deleted = $deleted;
 
         return $this;
+    }
+
+    public function getGsn() {
+        return $this->gsn;
+    }
+
+    public function hasGsn($gsn) {
+        foreach ($this->gsn as $gsn_loop) {
+            if ($gsn_loop->getNummer() == $gsn) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

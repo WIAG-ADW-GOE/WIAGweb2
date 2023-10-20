@@ -447,7 +447,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * update entries related to $id_list, they may be restored by insertByListMayBe
+     * update entries related to $id_list
      */
     public function updateByIdList($id_list) {
         $entityManager = $this->getEntityManager();
@@ -504,14 +504,14 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         }
 
-        // independent GS entries
+        // independent GS entries, dreg-can only
         foreach ($person_list as $p_loop) {
             $id = $p_loop->getId();
             $item = $p_loop->getItem();
             $corpus_id_list = $item->getCorpusIdList();
             if ($item->getIsOnline() == 1
-                and !in_array($id, $id_secondary_list)
-                and (in_array('dreg-can', $corpus_id_list) or in_array('dreg-epc', $corpus_id_list))
+                and !in_array($id, $id_secondary_list) // this prevents dublicate entries
+                and (in_array('dreg-can', $corpus_id_list))
             ) {
                 $id_dreg = $p_loop->getId();
                 $inr = new ItemNameRole($id_dreg, $id_dreg);

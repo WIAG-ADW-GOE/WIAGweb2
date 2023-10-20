@@ -447,27 +447,30 @@ class ItemRepository extends ServiceEntityRepository
 
     }
 
-    public function findMaxNumIdPublic($item_type_id) {
-        $item_type_id_params = Item::ITEM_TYPE[$item_type_id];
-        $field_start = $item_type_id_params["numeric_field_start"];
-        $field_width = $item_type_id_params["numeric_field_width"];
+    /**
+     * 2023-10-18 obsolete
+     */
+    // public function findMaxNumIdPublic($item_type_id) {
+    //     $item_type_id_params = Item::ITEM_TYPE[$item_type_id];
+    //     $field_start = $item_type_id_params["numeric_field_start"];
+    //     $field_width = $item_type_id_params["numeric_field_width"];
 
-        // parameter binding for SUBSTRING does not work?!
-        $qb = $this->createQueryBuilder('i')
-                   ->select('MAX(SUBSTRING(i.idPublic,'.$field_start.','.$field_width.')) as max_id')
-                   ->andWhere('i.itemTypeId = :item_type_id')
-                   ->setParameter('item_type_id', $item_type_id);
+    //     // parameter binding for SUBSTRING does not work?!
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select('MAX(SUBSTRING(i.idPublic,'.$field_start.','.$field_width.')) as max_id')
+    //                ->andWhere('i.itemTypeId = :item_type_id')
+    //                ->setParameter('item_type_id', $item_type_id);
 
-        $query = $qb->getQuery();
-        $result = $query->getOneOrNullResult();
+    //     $query = $qb->getQuery();
+    //     $result = $query->getOneOrNullResult();
 
-        if (!is_null($query)) {
-            return intval($result['max_id']);
-        } else {
-            return null;
-        }
+    //     if (!is_null($query)) {
+    //         return intval($result['max_id']);
+    //     } else {
+    //         return null;
+    //     }
 
-    }
+    // }
 
     /**
      * @return list of items with associated persons via item_name_role and all data

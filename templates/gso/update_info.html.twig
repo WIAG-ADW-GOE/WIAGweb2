@@ -30,7 +30,11 @@
 	</div>
 	<div class="row ms-2 mt-2">
 	    <div class="col-12">
-		<h4>neue Datensätze im Digitalen Personenregister</h4>
+		{% if isInfo %}
+		    <h4>neue Datensätze im Digitalen Personenregister</h4>
+		{% else %}
+		    <h4>neue Datensätze</h4>
+		{% endif %}
 		<ul class="list-group list-group-flush">
 		    {% for person in newList %}
 			{{ include("gso/_item_li_new.html.twig", { 'person': person }) }}
@@ -52,10 +56,12 @@
 		</ul>
 	    </div>
 	</div>
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		<a href="{{ path('gso_update') }}" class="btn btn-primary" role="button>">Start</a>
+	{% if isInfo %}
+	    <div class="row ms-2 mt-2">
+		<div class="col-12">
+		    <a href="{{ path('gso_update') }}" class="btn btn-primary" role="button>">Start</a>
+		</div>
 	    </div>
-	</div>
+	{% endif %}
     </div>
 {% endblock %}

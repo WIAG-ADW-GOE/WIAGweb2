@@ -557,4 +557,19 @@ class PersonRole
         return $description;
     }
 
+    /**
+     *
+     */
+    public function isAtInstitutionList($inst_id_list) {
+        $inst_id = null;
+        if (!is_null($this->institutionId)) {
+            $inst_id = $this->institutionId;
+        } elseif (!is_null($this->institution)) {
+            $inst_id = $this->institution->getId();
+        }
+
+        return (!is_null($inst_id)
+                and in_array($inst_id, $inst_id_list));
+    }
+
 }

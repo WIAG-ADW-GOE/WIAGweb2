@@ -936,7 +936,7 @@ class EditPersonService {
     }
 
     /**
-     * set corpus if flag is set, copy data if possible
+     * set corpus, copy data
      */
     private function mapItemCorpus($item, $corpus_id, $data) {
 
@@ -1037,12 +1037,13 @@ class EditPersonService {
     public function updateFromGso($person, $person_gso, $current_user_id) {
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         // item
+        $item = $person->getItem();
 
         $user = $userWiagRepository->find($current_user_id);
-        $person->getItem()->updateChangedMetaData($user);
+        $item->updateChangedMetaData($user);
 
         $edit_status = $person_gso->getItem()->getStatus();
-        $person->getItem()->setEditStatus($edit_status);
+        $item->setEditStatus($edit_status);
 
         // item property: no data in $person_gso
 
@@ -1050,7 +1051,7 @@ class EditPersonService {
         $this->copyReferenceFromGso($person, $person_gso);
 
         // GND
-        $this->copyGndFromGso($person->getItem(), $person_gso);
+        $this->copyGndFromGso($item, $person_gso);
 
         // core
         $this->copyCoreFromGso($person, $person_gso);
@@ -1073,7 +1074,46 @@ class EditPersonService {
 
         $this->updateDateRange($person);
 
+        // set corpus_id and id_public (for dreg-can only)
+        $this->setCorpusDreg($person, $person_gso);
+
+        return $person;
     }
+
+    private function setCorpusDreg($person, $person_gso) {
+        $institutionRepository = $this->entityManager->getRepository(Institution::class, 'default');
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class, 'default');
+
+        $domstift_list = $institutionRepository->findByCorpusId('cap');
+        $id_cap_list = UtilService::collectionColumn($domstift_list, 'id');
+
+        $item = $person->getItem();
+        $id_in_corpus = $person_gso->getItemId();
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setIdInCorpus($id_in_corpus);
+        $this->entityManager->persist($item_corpus);
+
+        $dreg_can_flag = false;
+        $corpus_id = 'dreg';
+        foreach ($person->getRole() as $pr) {
+            if ($pr->isAtInstitutionList($id_cap_list)) {
+                $corpus_id = 'dreg-can';
+                break;
+            }
+        }
+        if ($corpus_id == 'dreg-can') {
+            $next_num_id_public = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+            $id_public = EditService::makeIdPublic($corpus_id, $next_num_id_public, $this->entityManager);
+            $item_corpus->setIdPublic($id_public);
+        }
+        $item_corpus->setCorpusId($corpus_id);
+
+        return $item_corpus;
+    }
+
 
     /**
      * clear $target_list; copy collection $source_list to $target_list;
@@ -1106,7 +1146,6 @@ class EditPersonService {
 
                 $ref_list->add($ref);
                 $ref->setItem($person->getItem());
-                $ref->setItemTypeId(0); // 2023-07-28; field is obsolete but still required
                 $this->entityManager->persist($ref);
             }
         }
@@ -1117,7 +1156,7 @@ class EditPersonService {
 
     private function copyGndFromGso($item, $person_gso) {
         $auth_gnd_id = Authority::ID['GND'];
-        $auth_gs_id = Authority::ID['GS'];
+        $auth_gs_id = Authority::ID['GSN'];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         // - remove entries, but not GSN
@@ -1149,7 +1188,7 @@ class EditPersonService {
     }
 
     public function setGsn($item, $gsn) {
-        $auth_gs_id = Authority::ID['GS'];
+        $auth_gs_id = Authority::ID['GSN'];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         $count_url = 1;

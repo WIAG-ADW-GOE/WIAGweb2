@@ -64,7 +64,7 @@ class PersonsRepository extends EntityRepository
     /**
      * @return ID, and modification date for persons with an office in $domstift_gsn_list
      */
-    public function findCanonIDs($domstift_gsn_list) {
+    public function findCanonIds($domstift_gsn_list) {
         $qb = $this->createQueryBuilder('p')
                    ->select('p.id as person_id')
                    ->join('p.role', 'o')
@@ -90,11 +90,12 @@ class PersonsRepository extends EntityRepository
      */
     public function findList($id_list, $with_deleted = false) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, role, ref, vol')
+                   ->select('p, i, role, ref, vol, gsn')
                    ->join('p.item', 'i') # avoid query in twig ...
+                   ->join('i.gsn', 'gsn')
                    ->leftjoin('i.reference', 'ref')
                    ->leftjoin('ref.referenceVolume', 'vol')
-                   ->leftjoin('p.role', 'role')
+                   ->leftjoin('p.role', 'role') // see condition 'role.deleted = 0' below
                    ->andWhere('p.id in (:id_list)')
                    ->addOrderBy('p.familienname')
                    ->addOrderBy('p.vorname')

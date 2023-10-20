@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\UrlExternal;
 use App\Entity\Item;
 use App\Entity\Authority;
+use App\Service\UtilService;
+
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -109,6 +112,7 @@ class UrlExternalRepository extends ServiceEntityRepository
         return $query->getOneOrNullResult();
 
     }
+
 
     /**
      *
@@ -287,6 +291,90 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
 
     /**
+     * find GSN without item (dreg), for items that are online; (GSO update)
+     */
+    public function findNewGsn() {
+        // get GSN for corpora 'dreg-can', 'dreg'
+        $qb_item = $this->createQueryBuilder('uext')
+                        ->select('uext.value as gsn')
+                        ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', "ic.itemId = uext.itemId AND ic.corpusId IN ('dreg', 'dreg-can')")
+                        ->andWhere('uext.authorityId = :dreg')
+                        ->setParameter('dreg', Authority::ID['GSN']);
+
+        $query_item = $qb_item->getQuery();
+        $uext_item_list = $query_item->getResult();
+
+        $gsn_item_list = array_column($uext_item_list, 'gsn');
+
+        // get all GSN references of active items
+        $qb_ref = $this->createQueryBuilder('uext')
+                       ->select('uext.value as gsn')
+                       ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', "ic.itemId = uext.itemId AND ic.corpusId NOT IN ('dreg', 'dreg-can')")
+                       ->join('\App\Entity\Item', 'i', 'WITH', "i.id = uext.itemId AND i.isOnline = 1")
+                        ->andWhere('uext.authorityId = :dreg')
+                        ->setParameter('dreg', Authority::ID['GSN']);
+
+        $query_ref = $qb_ref->getQuery();
+        $uext_ref_list = $query_ref->getResult();
+
+        $gsn_ref_list = array_column($uext_ref_list, 'gsn');
+
+        return array_diff($gsn_ref_list, $gsn_item_list);
+
+    }
+
+    public function findAllGsn($value_list = null) {
+        // get all GSN references of active items
+        $qb_ref = $this->createQueryBuilder('uext')
+                       ->select('uext')
+                       ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', "ic.itemId = uext.itemId")
+                       ->join('\App\Entity\Item', 'i', 'WITH', "i.id = uext.itemId and i.mergeStatus in ('child', 'original') and i.isDeleted = 0")
+                       ->andWhere('uext.authorityId = :dreg')
+                       ->setParameter('dreg', Authority::ID['GSN']);
+
+        if (!is_null($value_list)) {
+            $qb_ref->andWhere('uext.value in (:value_list)')
+                   ->setParameter('value_list', $value_list);
+        }
+
+        $query = $qb_ref->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * find all referencing IDs (active merge_status only)
+     */
+    public function findIdsByIdList($id_list, $authority_id) {
+        $qb = $this->createQueryBuilder('uext')
+                   ->select('uext_ref.itemId as id')
+                   ->join('\App\Entity\UrlExternal', 'uext_ref',
+                          'WITH', 'uext.value = uext_ref.value')
+                   ->join('\App\Entity\Item', 'item',
+                          'WITH', "item.id = uext_ref.itemId AND item.mergeStatus in ('child', 'original')")
+                   ->andWhere('uext.authorityId = :authority_id')
+                   ->andWhere('uext.itemId in (:id_list)')
+                   ->setParameter('authority_id', $authority_id)
+                   ->setParameter('id_list', $id_list);
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    /**
+     * find all referencing IDs (active merge_status only)
+     */
+    public function findIdsByValueList($value_list, $authority_id) {
+        $qb = $this->createQueryBuilder('uext')
+                   ->select('uext.itemId as id')
+                   ->andWhere('uext.authorityId = :authority_id')
+                   ->andWhere('uext.value in (:value_list)')
+                   ->setParameter('authority_id', $authority_id)
+                   ->setParameter('value_list', $value_list);
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+
+    /**
      * 2023-10-10 obsolete
      * @return list of pair of IDs for references to Digitales Personenregister
      */
@@ -296,7 +384,7 @@ class UrlExternalRepository extends ServiceEntityRepository
     //                ->select('uext.itemId AS id, i_dreg.id AS id_dreg')
     //                ->join('\App\Entity\UrlExternal', 'uext_dreg', 'WITH', 'uext_dreg.value = uext.value and uext_dreg.authorityId = :auth_dreg_id')
     //                ->join('\App\Entity\Item', 'i_dreg', 'WITH', 'uext_dreg.itemId = i_dreg.id')
-    //                ->join('\App\Entity\ItemCorpus', 'ic_dreg', 'WITH', "ic_dreg.itemId = i_dreg.id AND ic_dreg.corpusId in ('dreg-can', 'dreg-epc')")
+    //                ->join('\App\Entity\ItemCorpus', 'ic_dreg', 'WITH', "ic_dreg.itemId = i_dreg.id AND ic_dreg.corpusId in ('dreg-can', 'dreg')")
     //                ->andWhere('uext.itemId in (:id_list)')
     //                ->setParameter('auth_dreg_id', $auth_dreg_id)
     //                ->setParameter('id_list', $id_list);

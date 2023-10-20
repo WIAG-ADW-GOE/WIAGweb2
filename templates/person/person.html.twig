@@ -80,7 +80,7 @@
 		    {% endif %}
 		{% endfor %}
 		{% for person_loop in personRole %}
-		    {% if 'dreg-can' in person_loop.item.corpusIdList or 'dreg-epc' in person_loop.item.corpusIdList%}
+		    {% if 'dreg-can' in person_loop.item.corpusIdList or 'dreg' in person_loop.item.corpusIdList%}
 			{% set gsnid = person_loop.item.geturlexternalobj('GSN') %}
 			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
 			{{ include('person/_person_role_group.html.twig', {

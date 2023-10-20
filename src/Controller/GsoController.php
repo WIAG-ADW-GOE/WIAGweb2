@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\ItemCorpus;
+use App\Entity\ItemNameRole;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
@@ -11,6 +12,7 @@ use App\Entity\NameLookup;
 use App\Entity\CanonLookup;
 use App\Entity\Gso\Persons;
 use App\Entity\Gso\Items;
+use App\Entity\Gso\Gsn;
 
 use App\Service\UtilService;
 use App\Service\EditPersonService;
@@ -37,62 +39,56 @@ class GsoController extends AbstractController {
      * @Route("/edit/gso-update-info", name="gso_update_info")
      */
     public function gsoUpdateInfo(Request $request, ManagerRegistry $doctrine) {
-
-        $entityManager_gso = $doctrine->getManager('gso');
         $entityManager = $doctrine->getManager('default');
-
-        $itemRepository = $entityManager->getRepository(Item::class, 'default');
-        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class, 'default');
-        $personRepository = $entityManager->getRepository(Person::class, 'default');
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
-        $auth_gs = $authorityRepository->findOneByUrlNameFormatter('Personendatenbank der Germania Sacra');
 
-        $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
+        // $gsn_changed = $this->updateGsn($doctrine);
 
-        // get canons in WIAG
-        $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
-        $gsn_list = array_column($item_list, 'gsn');
+        // $meta_list contains GSO meta data for persons in $person_update_list.
+        // The element type of $person_new_list is PersonGso.
+        // The elements of $person_update_list belong to 'dreg' or 'dreg-can'.
+        $data_transfer = $this->collectPerson($doctrine);
 
-        // get meta data for those canons from GSO
-        $gso_item_list = $this->personGsoIdsByList($doctrine, $gsn_list);
-
-        // missing list holds elements of $item_list not found in GSO
-        list($find_or_update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
-
-
-        $id_list = array_keys($find_or_update_list);
-        $person_find_or_update_list = $personRepository->findList($id_list);
-        // add visible id_public
-        $urlExternalRepository->setIdPublicVisible($person_find_or_update_list);
-
-        $id_missing_list = array_column($missing_list, 'id');
-        $person_missing_list = $personRepository->findList($id_missing_list);
-        // add visible id_public
-        $urlExternalRepository->setIdPublicVisible($person_missing_list);
-
-        // find all canons in GSO (by Domstift)
-        $canon_gso_ids = $this->canonGsoIds($doctrine);
-
-        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
-        $id_new_list = array_column($canon_gso_ids_new, 'person_id');
-
-        // TODO 2023-10-17
-        // Finde Personen mit corpus_id = dreg-epc
-        // list of Domstifte
-        $ic_cap_list = $itemCorpusRepository->findByCorpusId('cap');
-        $cap_id_list = UtilService::collectionColumn($ic_cap_list, 'itemId');
-
-        $person_new_list = $gsoPersonsRepository->findList($id_new_list);
-
+        $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
         return $this->render("gso/update_info.html.twig", [
-            'countReferenced' => count($item_list),
-            'updateList' => $person_find_or_update_list,
-            'missingList' => $person_missing_list,
-            'newList' => $person_new_list,
+            'countReferenced' => $data_transfer['count_ref'],
+            'updateList' => $data_transfer['person_update_list'],
+            'missingList' => $data_transfer['person_missing_list'],
+            'newList' => $data_transfer['person_new_list'],
             'gsUrl' => $auth_gs->getUrlFormatter(),
+            'isInfo' => true,
         ]);
 
+    }
+
+    /**
+     * GSN may change in Digitales Personenregister; adopt the current GSN
+     */
+    public function updateGsn($doctrine) {
+        $entityManager = $doctrine->getManager('default');
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
+        $gsoGsnRepository = $doctrine->getRepository(Gsn::class, 'gso');
+
+        $uext_gsn_list = $urlExternalRepository->findAllGsn();
+
+        $gsn_map = [];
+        foreach ($uext_gsn_list as $uext_gsn) {
+            $gsn = $uext_gsn->getValue();
+            $gsn_current = $gsoGsnRepository->findCurrentGsn($gsn);
+            if (!is_null($gsn_current) and $gsn_current['gsn'] != $gsn) {
+                $gsn_map[$gsn] = $gsn_current['gsn'];
+            }
+        }
+
+
+        $uext_list = $urlExternalRepository->findAllGsn(array_keys($gsn_map));
+        foreach ($uext_list as $uext) {
+            $uext->setValue($gsn_map[$uext->getValue()]);
+        }
+        $entityManager->flush();
+
+
+        return $gsn_map;
     }
 
     /**
@@ -100,66 +96,113 @@ class GsoController extends AbstractController {
      * @Route("/edit/gso-update", name="gso_update")
      */
     public function gsoUpdate(Request $request, ManagerRegistry $doctrine) {
+
+        // $entityManager = $doctrine->getManager('default');
+        // $itemRepository = $entityManager->getRepository(Item::class, 'default');
+        // $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
+
+        // $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
+
+        // $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg']);
+
+        // list($person_update_list, $person_new_list, $person_missing_list) = $this->collectPerson($doctrine, $item_list);
+
+        // $entityManager = $doctrine->getManager('default');
+        // $itemRepository = $doctrine->getRepository(Item::class, 'default');
+        // $personRepository = $doctrine->getRepository(Person::class, 'default');
+        // $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
+        // $nameLookupRepository = $doctrine->getRepository(NameLookup::class, 'default');
+        // $itemNameRoleRepository = $doctrine->getRepository(ItemNameRole::class, 'default');
+
+        // $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
+
+        // // get canons in WIAG
+        // $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
+        // $gsn_list = array_column($item_list, 'gsn');
+
+        // // get meta data for those canons from GSO
+        // $gso_item_list = $this->personGsoIdsByList($doctrine, $gsn_list);
+
+        // // missing list holds elements of $item_list not found in GSO
+        // list($update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
+
         $entityManager = $doctrine->getManager('default');
-        $itemRepository = $doctrine->getRepository(Item::class, 'default');
-        $personRepository = $doctrine->getRepository(Person::class, 'default');
-        $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
-        $nameLookupRepository = $doctrine->getRepository(NameLookup::class, 'default');
-        $itemNameRoleRepository = $doctrine->getRepository(ItemNameRole::class, 'default');
+        $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
+        $itemNameRoleRepository = $entityManager->getRepository(itemNameRole::class, 'default');
+        $nameLookupRepository = $entityManager->getRepository(nameLookup::class, 'default');
 
-        $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
+        $data_transfer = $this->collectPerson($doctrine);
 
-        // get canons in WIAG
-        $item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg-eps']);
-        $gsn_list = array_column($item_list, 'gsn');
-
-        // get meta data for those canons from GSO
-        $gso_item_list = $this->personGsoIdsByList($doctrine, $gsn_list);
-
-        // missing list holds elements of $item_list not found in GSO
-        list($update_list, $missing_list) = $this->updateRequired($item_list, $gso_item_list, 'gsn');
 
         // update data
-        $person_update_list = $this->updateList($doctrine, $update_list);
+        // - update entries and return list with all office data (corpus = 'dreg' or 'dreg-can');
+        $person_updated_list = $this->updateList($doctrine, $data_transfer['meta_update_list']);
         $entityManager->flush();
-        // - read list from database (e.g. with reference volumes)
-        $id_list = array_keys($update_list);
-        $person_update_list = $personRepository->findList($id_list);
+        // // - read list from database (e.g. with reference volumes)
+        // $id_list = UtilService::collectionColumn($person_update_list, 'id');
+        // $person_update_list = $personRepository->findList($id_list);
 
-        // add visible id_public
-        $urlExternalRepository->setIdPublicVisible($person_update_list);
+        // // add visible id_public
+        // $urlExternalRepository->setIdPublicVisible($person_update_list);
 
-        $id_missing_list = array_column($missing_list, 'id');
-        $person_missing_list = $personRepository->findList($id_missing_list);
+        // $id_missing_list = array_column($missing_list, 'id');
+        // $person_missing_list = $personRepository->findList($id_missing_list);
 
-        // find all canons in GSO (by Domstift)
-        $canon_gso_ids = $this->canonGsoIds($doctrine);
+        // // find all canons in GSO (by Domstift)
+        // $canon_gso_ids = $this->canonGsoIds($doctrine);
 
-        $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
-        $id_new_list = array_column($canon_gso_ids_new, 'person_id');
 
-        // insert new data
-        $person_gso_list = $gsoPersonsRepository->findList($id_new_list);
 
-        $person_insert_list = $this->insertList($doctrine, $person_gso_list);
+        // $canon_gso_ids_new = UtilService::arrayDiffByField($canon_gso_ids, $gso_item_list, 'person_id');
+        // $id_new_list = array_column($canon_gso_ids_new, 'person_id');
 
+        // // insert new data
+        // $person_gso_list = $gsoPersonsRepository->findList($id_new_list);
+
+        $person_inserted_list = $this->insertList($doctrine, $data_transfer['person_new_list']);
+        $entityManager->flush();
+
+        // update item_name_role
+        // Collect affected IDs of all corpora.
+        $id_updated_list_dreg = UtilService::collectionColumn($person_updated_list, 'id');
+        $iul_db = $urlExternalRepository->findIdsByIdList($id_updated_list_dreg, Authority::ID['GSN']);
+        $id_updated_list = array_column($iul_db, 'id');
+
+        $id_inserted_list_dreg = UtilService::collectionColumn($person_inserted_list, 'id');
+        $iil_db = $urlExternalRepository->findIdsByIdList($id_inserted_list_dreg, Authority::ID['GSN']);
+        $id_inserted_list = array_column($iil_db, 'id');
+
+        $affected_id_list = array_merge($id_updated_list, $id_inserted_list);
+        $itemNameRoleRepository->updateByIdList($affected_id_list);
+
+        // update name_role
+        foreach ($person_updated_list as $p_loop) {
+            $nameLookupRepository->update($p_loop);
+        }
+
+        foreach ($person_inserted_list as $p_loop) {
+            $nameLookupRepository->update($p_loop);
+        }
         $entityManager->flush();
 
         // update lookup_tables
-        $insert_id_list = array();
-        foreach ($person_insert_list as $person_insert) {
-            $insert_id_list[] = $person_insert->getId();
-            $nameLookupRepository->update($person_insert);
-            $canonLookupRepository->addCanonGsMayBe($person_insert);
-        }
+        // $insert_id_list = array();
+        // foreach ($person_insert_list as $person_insert) {
+        //     $insert_id_list[] = $person_insert->getId();
+        //     $nameLookupRepository->update($person_insert);
+        //     $canonLookupRepository->addCanonGsMayBe($person_insert);
+        // }
 
-        return $this->render("gso/update.html.twig", [
-            'countReferenced' => count($item_list),
-            'updateList' => $person_update_list,
-            'missingList' => $person_missing_list,
-            'newList' => $person_insert_list
+        $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
+        return $this->render("gso/update_info.html.twig", [
+            'countReferenced' => $data_transfer['count_ref'],
+            'updateList' => $person_updated_list,
+            'missingList' => $data_transfer['person_missing_list'],
+            'newList' => $person_inserted_list,
+            'isInfo' => false,
+            'gsUrl' => $auth_gs->getUrlFormatter(),
         ]);
-
     }
 
     /**
@@ -247,7 +290,6 @@ class GsoController extends AbstractController {
         $entityManager = $doctrine->getManager('default');
 
         $personsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
-
         $institutionRepository = $entityManager->getRepository(Institution::class, 'default');
 
         $domstift_list = $institutionRepository->findByCorpusId('cap');
@@ -264,19 +306,19 @@ class GsoController extends AbstractController {
     /**
      * find GSO entry for each element in $update_list and update it's data
      */
-    private function updateList($doctrine, $update_list) {
+    private function updateList($doctrine, $meta_data_list) {
         $personRepository = $doctrine->getRepository(Person::class, 'default');
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
 
         $current_user_id = $this->getUser()->getId();
 
-        $id_list = array_keys($update_list);
+        $id_list = array_keys($meta_data_list);
         $person_update_list = $personRepository->findList($id_list);
 
         foreach($person_update_list as $person_target) {
             $item_id = $person_target->getItem()->getId();
-            $gso_person_id = $update_list[$item_id]['gso_person_id'];
+            $gso_person_id = $meta_data_list[$item_id]['gso_person_id'];
             $person_gso_list = $gsoPersonsRepository->findList([$gso_person_id]);
             $person_gso = $person_gso_list[0];
 
@@ -300,36 +342,119 @@ class GsoController extends AbstractController {
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
         $itemRepository = $doctrine->getRepository(Item::class, 'default');
 
-
         $current_user_id = $this->getUser()->getId();
 
         $person_insert_list = array();
 
-        // TODO 2023-10-16
-        //
-        $next_num_id_public = $itemRepository->findMaxNumIdPublic(['dreg-can', 'dreg-epc']) + 1;
-
+        $n_insert = 0;
         foreach($gso_insert_list as $person_gso) {
-            $person_new = new Person($item_type_id, $current_user_id);
-            $this->editPersonService->initMetaData($person_new, $item_type_id);
-            $id_public = EditPersonService::makeIdPublic($item_type_id, $next_num_id_public);
-            $next_num_id_public += 1;
-            $person_new->getItem()->setIdPublic($id_public);
-            $entityManager->persist($person_new);
+            $person = new Person($current_user_id);
+            $entityManager->persist($person);
             $entityManager->flush();
             // read object to obtain ID for roles etc. (ID is only available via Item);
-            $person_id = $person_new->getItem()->getId();
-            $person_new = $personRepository->findOneById($person_id);
-
-            $this->editPersonService->updateFromGso($person_new, $person_gso, $current_user_id);
-            // set GSN in an extra step
-            $this->editPersonService->setGsn($person_new->getItem(), $person_gso->getItem()->getIdPublic());
+            $person_id = $person->getItem()->getId();
+            $person = $personRepository->findOneById($person_id);
+            $item = $person->getItem();
+            // set GSN in an extra step; Gso/Items->getIdPublic() returns the current GSN
+            $this->editPersonService->setGsn($item, $person_gso->getItem()->getIdPublic());
+            $this->editPersonService->updateFromGso($person, $person_gso, $current_user_id);
             // canons from GSO are always online
-            $person_new->getItem()->setIsOnline(1);
-            $person_insert_list[] = $person_new;
+            $item->setIsOnline(1);
+
+            $person_insert_list[] = $person;
+            $n_insert += 1;
         }
         return $person_insert_list;
 
     }
+
+
+    /**
+     * get all person records that need an update or that are missing in GSO
+     */
+    private function collectPerson($doctrine) {
+        $entityManager = $doctrine->getManager('default');
+        $entityManager_gso = $doctrine->getManager('gso');
+
+        $itemRepository = $entityManager->getRepository(Item::class, 'default');
+        $personRepository = $entityManager->getRepository(Person::class, 'default');
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
+        $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
+
+        // consider only active entries (online);
+        $dreg_item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg']);
+
+        // * in WIAG
+        $dreg_gsn_list = array_column($dreg_item_list, 'gsn');
+
+        // get GSO meta data for canons in WIAG
+        $dreg_gso_meta_list = $this->personGsoIdsByList($doctrine, $dreg_gsn_list);
+
+        // check update date; missing list holds elements of $item_list not found in GSO
+
+        list($meta_update_list, $missing_list) = $this->updateRequired($dreg_item_list, $dreg_gso_meta_list, 'gsn');
+
+        $id_list = array_keys($meta_update_list);
+        $person_update_list = $personRepository->findList($id_list);
+        // add visible id_public
+        $urlExternalRepository->setIdPublicVisible($person_update_list);
+
+        $id_missing_list = array_column($missing_list, 'id');
+        $person_missing_list = $personRepository->findList($id_missing_list);
+        // add visible id_public
+        $urlExternalRepository->setIdPublicVisible($person_missing_list);
+
+        // * not yet in WIAG
+        // find all canons in GSO (by Domstift)
+        $canon_cap_gso_all = $this->canonGsoIds($doctrine);
+
+        $canon_cap_gso = UtilService::arrayDiffByField($canon_cap_gso_all, $dreg_gso_meta_list, 'person_id');
+
+        $cap_pid_list = array_column($canon_cap_gso, 'person_id');
+
+        // * find all references of active entries (online)
+        // without an corresponding item (dreg, dreg-can) in WIAG
+        $niw_gsn_list = $urlExternalRepository->findNewGsn();
+
+        $niw_gso_meta_list = $this->personGsoIdsByList($doctrine, $niw_gsn_list);
+
+        // missing (online in WIAG, but not in Digitales Personenregister)
+        $niw_missing_gsn_list = array_diff($niw_gsn_list, array_column($niw_gso_meta_list, 'gsn'));
+        $niw_missing_id_list = $urlExternalRepository->findIdsByValueList($niw_missing_gsn_list, Authority::ID['GSN']);
+        $person_niw_missing_list = $personRepository->findList(array_column($niw_missing_id_list, 'id'));
+
+        // get new entries for import
+        $niw_pid_list = array_column($niw_gso_meta_list, 'person_id');
+        $new_pid_list = array_unique(array_merge($cap_pid_list, $niw_pid_list));
+
+        $person_new_list = $gsoPersonsRepository->findList($new_pid_list);
+        // $person_new_list is usually smaller than $new_pid_list,
+        // because entries without offices are dropped.
+        // check if there are new GSN in Digitales Personenregister
+        $updated_gsn_list = array();
+        foreach ($niw_gsn_list as $niw_gsn) {
+            foreach ($person_new_list as $p_new) {
+                $gso_item = $p_new->getItem();
+                if ($gso_item->hasGsn($niw_gsn)
+                    and $gso_item->getIdPublic() != $niw_gsn) {
+                    $urlExternalRepository->updateValue($niw_gsn, $gso_item->getIdPublic());
+                    $updated_gsn_list[$niw_gsn] = $gso_item->getIdPublic();
+                }
+            }
+        }
+        $entityManager->flush();
+
+        $person_missing_all = array_merge($person_missing_list, $person_niw_missing_list);
+        $data_transfer = [
+            'count_ref' => count($dreg_item_list),
+            'meta_update_list' => $meta_update_list,
+            'person_update_list' => $person_update_list,
+            'person_new_list' => $person_new_list,
+            'person_missing_list' => $person_missing_all
+        ];
+
+        return $data_transfer;
+    }
+
 
 }

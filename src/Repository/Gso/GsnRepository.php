@@ -59,4 +59,29 @@ class GsnRepository extends EntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+    /**
+     * GSNs may change in Digitales Personenregister
+     */
+    public function findCurrentGsn($gsn) {
+        $qb = $this->createQueryBuilder('g')
+                   ->select('g_min.nummer as gsn, g_min.id')
+                   ->join('\App\Entity\Gso\Gsn', 'g_min', 'WITH', "g.itemId = g_min.itemId and g_min.deleted = 0 and g_min.itemStatus = 'online'")
+                   ->orderBy('g_min.id', 'ASC')
+                   ->andWhere('g.nummer = :gsn')
+                   ->setParameter('gsn', $gsn);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        if (count($result) == 0) {
+            return null;
+        } else {
+            return $result[0];
+        }
+
+    }
+
+
 }
