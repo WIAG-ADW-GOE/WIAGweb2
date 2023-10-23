@@ -83,6 +83,8 @@ class EditPersonController extends AbstractController {
         $model = $form->getData();
 
         $person_list = array();
+        $count = 0;
+
         if ($form->isSubmitted() && $form->isValid() && $model->isValid() || $model->isEmpty()) {
 
             $personRepository = $this->entityManager->getRepository(Person::class);
@@ -135,6 +137,9 @@ class EditPersonController extends AbstractController {
             $template_params = [
                 'form' => $form,
                 'error_list' => $model->getInputError(),
+                'count' => $count,
+                'pageSize' => $model->listSize,
+                'offset' => 0,
             ];
         }
 

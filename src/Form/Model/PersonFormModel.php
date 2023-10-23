@@ -134,8 +134,8 @@ class PersonFormModel {
         if ($dateCreated != "") {
             $range = UtilService::dateRange($dateCreated);
             foreach ($range as $range_elmt) {
-                $msg = "Ungültiges Datumsformat: ".$dateCreated."; ".$format_msg;
                 if ($range_elmt === false) {
+                    $msg = "Ungültiges Datumsformat: ".$dateCreated."; ".$format_msg;
                     $this->inputError->add(new InputError('two', $msg, 'error'));
                     break;
                 }
