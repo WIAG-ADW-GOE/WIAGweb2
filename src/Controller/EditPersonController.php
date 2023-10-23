@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
 use App\Entity\ItemReference;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
@@ -486,8 +487,14 @@ class EditPersonController extends AbstractController {
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
-
         $essential_auth_list = $authorityRepository->findList(array_values(Authority::ID));
+
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+        $cc_qr = $corpusRepository->findByEditForm('person', ['editChoiceOrder' => 'ASC']);
+        $corpus_choice = [];
+        foreach ($cc_qr as $cc_loop) {
+            $corpus_choice[$cc_loop->getCorpusId()] = $cc_loop->getName();
+        }
 
         $param_list_combined = array_merge($param_list, [
             'menuItem' => 'edit-menu',
@@ -495,6 +502,7 @@ class EditPersonController extends AbstractController {
             'userWiagRepository' => $userWiagRepository,
             'essentialAuthorityList' => $essential_auth_list,
             'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
+            'corpusChoice' => $corpus_choice,
         ]);
 
         return $this->renderForm($template, $param_list_combined);

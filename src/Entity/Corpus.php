@@ -59,6 +59,16 @@ class Corpus
      */
     private $defaultStatus;
 
+    /**
+     * @ORM\Column(type="string", length=31, nullable=true)
+     */
+    private $editForm;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $editChoiceOrder;
+
 
 
     public function getId(): ?int
@@ -146,6 +156,30 @@ class Corpus
     public function getDefaultStatus(): ?string
     {
         return $this->defaultStatus;
+    }
+
+    public function getEditForm(): ?string
+    {
+        return $this->editForm;
+    }
+
+    public function setEditForm(string $editForm): self
+    {
+        $this->editForm = $editForm;
+
+        return $this;
+    }
+
+    public function getEditChoiceOrder(): ?int
+    {
+        return $this->editChoiceOrder;
+    }
+
+    public function setEditChoiceOrder(?int $editChoiceOrder): self
+    {
+        $this->editChoiceOrder = $editChoiceOrder;
+
+        return $this;
     }
 
 

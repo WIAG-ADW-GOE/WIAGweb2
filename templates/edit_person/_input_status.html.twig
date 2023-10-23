@@ -1,33 +1,27 @@
 {% import "util.html.twig" as util %}
 <div class="row">
-    <div class="col-12">
+    <div class="col-4">
 	<div class="input-group input-group-sm mb-1 mt-1">
 	    {# get corpus IDs (hidden) #}
 	    {% for item_corpus in person.item.ItemCorpus %}
 		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
 		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
 	    {% endfor %}
-	    <span class="input-group-text">Corpus</span>
-	    <div class="input-group-text" style="background-color: MintCream;">
-		<input class="form-check-input mt-0 me-1"
-		       type="checkbox"
-		       value="1"
-		       aria-label="checkbox for corpus 'epc'"
-		       id="{{ base_id }}_corpus_epc"
-		       name="{{ base_input_name }}[corpus][epc][flag]"
-		       {% if 'epc' in person.item.corpusIdList %}checked="checked"{% endif %}>
-		<label class="form-check-label" for="{{ base_id }}_corpus_epc">Bischof</label>
-	    </div>
-	    <div class="input-group-text" style="background-color: MintCream;">
-		<input class="form-check-input mt-0 me-1"
-		       type="checkbox"
-		       value="1"
-		       aria-label="checkbox for corpus 'can'"
-		       id="{{ base_id }}_corpus_can"
-		       name="{{ base_input_name }}[corpus][can][flag]"
-		       {% if 'can' in person.item.corpusIdList %}checked="checked"{% endif %}>
-		<label class="form-check-label" for="{{ base_id }}_corpus_can">Domherr</label>
-	    </div>
+	    <label class="input-group-text" for="{{ base_id }}_corpus">Corpus</label>
+	    <select class="form-select" id="{{ base_id }}_corpus" name="{{ base_input_name }}[corpus_id][]" size="2" multiple aria-label="Corpus Auswahl">
+		{# default = 'can' for new entries #}
+		{% for corpus_id, corpus_name in corpusChoice %}
+		    {% if person.item.hasCorpus(corpus_id) or (person.item.id == 0 and corpus_id == 'can') %}
+			<option selected value="{{ corpus_id }}">{{ corpus_name }}</option>
+		    {% else %}
+			<option value="{{ corpus_id }}">{{ corpus_name }}</option>
+		    {% endif %}
+		{% endfor %}
+	    </select>
+	</div>
+    </div>
+    <div class="col-8">
+	<div class="input-group input-group-sm mb-1 mt-1">
 	    <span class="input-group-text ms-2">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
 		 url: path('person_suggest', { field: 'editStatus' }),

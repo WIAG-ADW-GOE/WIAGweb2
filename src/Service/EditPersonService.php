@@ -491,6 +491,7 @@ class EditPersonService {
         // numerical values for dates
         self::setNumDates($person);
 
+        // 2023-10-21 obsolete
         // reference to a bishop is stored as an external url
         if (array_key_exists('bishop', $data)) {
             $data['urlext'][] = [
@@ -510,18 +511,17 @@ class EditPersonService {
 
         // corpus
         $corpus_found = false;
-        if (array_key_exists('corpus', $data)) {
-            foreach($data['corpus'] as $key => $data_loop) {
-                $corpus_flag = $this->mapItemCorpusMayBe($item, $key, $data_loop);
-                $corpus_found = ($corpus_found or $corpus_flag);
+        if (array_key_exists('corpus_id', $data)) {
+            foreach ($data['corpus_id'] as $corpus_id) {
+                $corpus_found = $this->mapItemCorpusOrInit($item, $data, $corpus_id);
             }
         }
 
         if (!$corpus_found) {
             // keep existing data
-            if (array_key_exists('corpus', $data)) { // edit person
+            if (array_key_exists('corpus', $data)) {
                 foreach($data['corpus'] as $key => $data_loop) {
-                    $corpus_flag = $this->mapItemCorpus($item, $key, $data_loop);
+                    $this->mapItemCorpus($item, $key, $data_loop);
                 }
             }
             $msg = "Mindestens ein Corpus sollte ausgewählt sein.";
@@ -902,37 +902,34 @@ class EditPersonService {
     }
 
     /**
-     * set corpus if flag is set, copy data if possible
+     * copy data for $corpus_id or initialize itemCorpus
      */
-    private function mapItemCorpusMayBe($item, $corpus_id, $data) {
+    private function mapItemCorpusOrInit($item, $data, $corpus_id) {
 
-        $flag_set = array_key_exists('flag', $data);
-        $has_data = array_key_exists('idInCorpus', $data);
+        $has_data = (array_key_exists('corpus', $data) and array_key_exists($corpus_id, $data['corpus']));
 
-        if ($flag_set) {
-            $item_corpus = new ItemCorpus();
-            $item_corpus->setItem($item);
-            $item->getItemCorpus()->add($item_corpus);
-            $item_corpus->setCorpusId($corpus_id);
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+        $item_corpus->setCorpusId($corpus_id);
 
-            if ($has_data) {
-                $item_corpus->setIdInCorpus($data['idInCorpus']);
-                $item_corpus->setIdPublic($data['idPublic']);
-            } else {
-                $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+        if ($has_data) {
+            $item_corpus->setIdInCorpus($data['corpus'][$corpus_id]['idInCorpus']);
+            $item_corpus->setIdPublic($data['corpus'][$corpus_id]['idPublic']);
+        } else {
+            $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
-                // ID in corpus
-                $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
-                $id_in_corpus = strval($id_in_corpus);
-                $item_corpus->setIdInCorpus($id_in_corpus);
+            // ID in corpus
+            $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+            $id_in_corpus = strval($id_in_corpus);
+            $item_corpus->setIdInCorpus($id_in_corpus);
 
-                // ID public
-                $id_public = EditService::makeIdPublic($corpus_id, $id_in_corpus, $this->entityManager);
-                $item_corpus->setIdPublic($id_public);
-            }
+            // ID public
+            $id_public = EditService::makeIdPublic($corpus_id, $id_in_corpus, $this->entityManager);
+            $item_corpus->setIdPublic($id_public);
         }
 
-        return $flag_set;
+        return $item_corpus;
     }
 
     /**
@@ -986,6 +983,33 @@ class EditPersonService {
 
         return $itemProperty;
     }
+
+    private function mapCorpus($item, $corpus_id) {
+
+        $item_corpus = new ItemCorpus();
+        $item_corpus->setItem($item);
+        $item->getItemCorpus()->add($item_corpus);
+
+
+
+        // set data
+        UtilService::setByKeys($item_corpus, $data, ['deleteFlag']);
+
+        $property_type = $this->entityManager->getRepository(ItemCorpusType::class)
+                                             ->find($data['type']);
+        $item_corpus->setCorpusTypeId($property_type->getId());
+        $item_corpus->setType($property_type);
+
+        // case of completely missing data see above
+        if (trim($data['value']) == "") {
+            $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
+            $person->getInputError()->add(new InputError('name', $msg));
+        }
+        $item_corpus->setValue($data['value']);
+
+        return $item_corpus;
+    }
+
 
     /**
      * fill url external with $data

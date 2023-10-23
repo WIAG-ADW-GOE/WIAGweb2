@@ -161,10 +161,12 @@ class OnePageController extends AbstractController {
                 $person_all_list,
                 function($v) use ($item_id_role) { return ($v->getId() == $item_id_role); }
             );
-            if ($item->getCorpusId() == 'can') {
-                $can = array_values($person_role)[0];
+            // changed 2023-10-23
+            $person_role_loop = array_values($person_role)[0];
+            if ($person_role_loop->getItem()->hasCorpus('can')) {
+                $can = $person_role_loop;
             } else {
-                $dreg = array_values($person_role)[0];
+                $dreg = $person_role_loop;
             }
         }
         // build node

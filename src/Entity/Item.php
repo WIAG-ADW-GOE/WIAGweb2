@@ -387,6 +387,15 @@ class Item {
         return $list;
     }
 
+    public function hasCorpus($corpus_id) {
+        foreach ($this->itemCorpus as $ic) {
+            if ($ic->getCorpusId() == $corpus_id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function concatIdInCorpus() {
         $list = null;
         if (is_null($this->itemCorpus)) {
