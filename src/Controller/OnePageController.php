@@ -242,4 +242,45 @@ class OnePageController extends AbstractController {
             return $result;
         });
     }
+
+     /**
+     * show references for selected canons
+     * @Route("/domherr/onepage/literatur/{corpusIdRef}", name="person_onepage_references")
+     */
+    public function references(Request $request,
+                               EntityManagerInterface $entityManager,
+                               $corpusIdRef) {
+
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+
+        $model = new PersonFormModel;
+        $model->corpus = 'can'; // query corpus is always 'can'
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+        ]);
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+
+        $id_list = $itemNameRoleRepository->findPersonIds($model);
+        $reference_list = $itemNameRoleRepository->referenceListByCorpus($id_list, $corpusIdRef);
+
+        $title = 'Literatur andere';
+        $criteria_list = ['titleShort', 'displayOrder', 'referenceId'];
+        if ($corpusIdRef == 'dreg-can') {
+                $title = 'Literatur Germania Sacra';
+                $criteria_list = ['displayOrder', 'titleShort', 'referenceId'];
+        }
+
+        $reference_list = UtilService::sortByFieldList($reference_list, $criteria_list);
+
+        return $this->render('canon/onepage_references.html.twig', [
+            'title' => $title,
+            'reference_list' => $reference_list,
+        ]);
+    }
+
+
+
 }

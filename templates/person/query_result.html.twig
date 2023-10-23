@@ -36,10 +36,8 @@
 			{% endfor %}
 			{% if is_granted('ROLE_CANON_ONEPAGE') %}
 			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste chron.</button>
-			    {% if false %}
-			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'itemType': '6'}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
-			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'itemType': '4-5'}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
-			    {% endif %}
+			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'dreg-can'}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
+			    <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'can'}) }} name="onepage_references_others" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
 			{% endif %}
 		    {% endif %}
 		    <a href="{{ path('person_query', { 'corpusId': corpus }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>

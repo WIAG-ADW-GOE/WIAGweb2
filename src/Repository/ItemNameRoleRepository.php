@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ItemNameRole;
 use App\Entity\Item;
+use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
@@ -530,6 +531,25 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         return $n;
 
     }
+
+    /**
+     * one page HTML list
+     */
+    public function referenceListByCorpus($id_list, $corpus_id) {
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('ref_vol')
+                   ->join('\App\Entity\ItemReference', 'ir', 'WITH', 'ir.itemId = inr.itemIdRole')
+                   ->join('\App\Entity\ReferenceVolume', 'ref_vol', 'WITH', 'ref_vol.referenceId = ir.referenceId')
+                   ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', "ic.itemId = inr.itemIdRole and ic.corpusId = :corpus_id")
+                   ->andWhere('inr.itemIdName in (:id_list)')
+                   ->setParameter('id_list', $id_list)
+                   ->setParameter('corpus_id', $corpus_id);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
+    }
+
 
 
 }

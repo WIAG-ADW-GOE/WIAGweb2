@@ -87,7 +87,6 @@ class PersonController extends AbstractController {
 
         // we need to pass an instance of PersonFormModel, because facets depend on it's data
         $model = new PersonFormModel;
-
         $model->corpus = $corpusId;
 
         // call with empty $request?
