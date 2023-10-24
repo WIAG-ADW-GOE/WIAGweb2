@@ -27,14 +27,14 @@
 		{# use this hidden element to trigger the confirmed action #}
 		{# set delete flag and save the edit form list #}
 		<button type="submit"
-			id="delete_{{ reference.id }}"
-			data-action="submit-form#submit"
-			form="{{ editFormId }}"
-			formaction="{{ path('edit_reference_delete', {'q_id': reference.id ?? 0 }) }}"
-			class="d-none"></button>
+			      id="delete_{{ reference.id }}"
+			      data-action="submit-form#submit"
+			      form="{{ editFormId }}"
+			      formaction="{{ path('edit_reference_delete', {'q_id': reference.id ?? 0 }) }}"
+			      class="d-none"></button>
 		<button type="BUTTON"
-			class="btn btn-sm btn-danger"
-			data-action="submit-confirm#confirm">Eintrag löschen</button>
+			      class="btn btn-sm btn-danger"
+			      data-action="submit-confirm#confirm">Eintrag löschen</button>
 	    </div>
 	</div>
 	<div class="input-group input-group-sm mb-1">
@@ -62,30 +62,6 @@
 		   value="{{ reference.riOpacId }}"
 		   spellcheck="false"
 		   aria-label="RI OPAC">
-	    {% if false  %} {# obsolete 2023-04-24 #}
-		{% set item_type_choice_list = {
-		    '1': 'Bistum',
-		    '4': 'Bischof',
-		    '9': 'GS Band (Bischof)',
-		    '5': 'Domherr',
-		    '6': 'GS Band (Domherr)',
-		    '10': 'Priester Utrecht',
-		} %}
-		<span class="input-group-text" style="min-width: 5rem">Thema/Typ</span>
-		<select class="form-select form-select-sm wiag-input"
-			aria-label="Thema/Typ"
-			id="{{ base_id }}_item_type_id"
-			style="max-width: 12rem"
-			name="{{ base_input_name }}[itemTypeId]">
-		    {% for key, item_type_loop in item_type_choice_list %}
-			{% if key == reference.itemTypeId %}
-			    <option selected value="{{ key }}">{{ item_type_loop }}</option>
-			{% else %}
-			    <option value="{{ key }}">{{ item_type_loop }}</option>
-			{% endif %}
-		    {% endfor %}
-		</select>
-	    {% endif %}
 	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 10rem">Titel</span>

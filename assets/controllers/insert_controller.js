@@ -55,7 +55,6 @@ export default class extends Controller {
 
 	const wrap = document.createElement("div");
 	wrap.innerHTML = await response.text();
-
 	// console.log(this.pointValue);
 
 	var new_elmt = null;

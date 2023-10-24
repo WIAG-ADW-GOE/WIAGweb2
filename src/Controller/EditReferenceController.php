@@ -200,8 +200,7 @@ class EditReferenceController extends AbstractController {
                         $reference->getInputError()->add(new InputError('general', $msg, 'error'));
                         $error_flag = true;
                     }
-                }
-                else { // only item.display_order is accessible
+                } else { // only item.display_order is accessible
                     UtilService::setByKeys(
                         $reference,
                         $data,
