@@ -93,9 +93,8 @@ class OnePageController extends AbstractController {
             // group by item_id_name in the order of $id_list
 
             foreach($id_list as $id_loop) {
-                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $id_loop);
+                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $model, $id_loop);
             }
-
 
             // 2023-09-07 sequential version
             // hildesheim 21 s, 128 MB
@@ -122,10 +121,11 @@ class OnePageController extends AbstractController {
             $id_list = array_slice($id_all, $chunk_offset, $limit);
         }
 
+
         // sort elements of $canon_node_list by first relevant office, then by name
-        // 2023-09-07 this seems to be the sorting returned by findPersonIds
         if ($model->domstift) {
-            $this->sortByRelevantOffice($person_node_list);
+            // person order: this seems to be the sorting returned by findPersonIds
+            // $this->sortByRelevantOffice($person_node_list);
         }
 
         $title = $model->domstift;
@@ -147,45 +147,52 @@ class OnePageController extends AbstractController {
 
     }
 
-    private function extractNode($item_name_role_list, $person_all_list, $id_name) {
+    /**
+     * extract node data for one person with $id_name out of $person_all_list
+     *
+     * sort roles by domstift
+     */
+    private function extractNode($item_name_role_list, $person_all_list, $model, $id_name) {
         $item_name_role = array_filter(
             $item_name_role_list,
             function($v) use ($id_name) { return ($v->getItemIdName() == $id_name); }
         );
-        // extract from person_all_list
-        $can = null;
-        $dreg = null;
+        $person_name = null;
+        $person_role = null;
         foreach ($item_name_role as $item) {
             $item_id_role = $item->getItemIdRole();
-            $person_role = array_filter(
+            $person_role_filter = array_filter(
                 $person_all_list,
                 function($v) use ($item_id_role) { return ($v->getId() == $item_id_role); }
             );
-            // changed 2023-10-23
-            $person_role_loop = array_values($person_role)[0];
-            if ($person_role_loop->getItem()->hasCorpus('can')) {
-                $can = $person_role_loop;
+            $person_role_loop = array_values($person_role_filter)[0];
+            if ($person_role_loop->getItem()->hasCorpus('epc') or $person_role_loop->getItem()->hasCorpus('can')) {
+                $person_name = $person_role_loop;
             } else {
-                $dreg = $person_role_loop;
+                $person_role = $person_role_loop;
             }
         }
+
         // build node
-        $person = null;
-        $person_role = array();
-        if (!is_null($can)) {
-            $person = $can;
-            $person_role = [$can];
-            if (!is_null($dreg)) {
-                $person_role[] = $dreg;
+        if (!is_null($person_name)) {
+            $node_name = $person_name;
+            $node_role = [$person_name];
+            if (!is_null($person_role)) {
+                $node_role[] = $person_role;
             }
         } else {
-            $person = $dreg;
-            $person_role = [$dreg];
+            $node_name = $person_role;
+            $node_role = [$person_role];
         }
         $node = [
-            'personName' => $person,
-            'personRole' => $person_role
+            'personName' => $node_name,
+            'personRole' => $node_role
         ];
+
+        foreach ($node_role as $nr_loop) {
+            $this->sortRole($nr_loop, $model);
+        }
+
         return $node;
     }
 

@@ -636,6 +636,22 @@ class Person {
         return $comment_line;
     }
 
+    public function concatProperties() {
+
+        $elt_cands = array();
+        $property_list = $this->combinePropertyList();
+        foreach ($property_list as $prop) {
+            $elt_cands[] = $prop['name'].': '.$prop['value'];
+        }
+
+        if (count($elt_cands) > 0) {
+            return implode("; ", $elt_cands);
+        } else {
+            return null;
+        }
+
+    }
+
     public function describe(): string {
         $description = $this->getDisplayname();
 
