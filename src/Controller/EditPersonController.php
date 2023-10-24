@@ -1155,7 +1155,7 @@ class EditPersonController extends AbstractController {
         $status_choices = $this->statusChoices($itemTypeId);
 
         $authority_choices = [
-            'GSN' => Authority::ID['GS'],
+            'GSN' => Authority::ID['GSN'],
             'GND' => Authority::ID['GND'],
             'Wikidata' => Authority::ID['Wikidata']
         ];

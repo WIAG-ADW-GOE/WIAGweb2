@@ -14,6 +14,8 @@ use Doctrine\Common\Collections\Collection;
  */
 class Institution
 {
+    const CORPUS_ID = 'mon'; // domstifte have 'cap'
+
     /**
      * @ORM\OneToOne(targetEntity="Item")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
@@ -88,10 +90,11 @@ class Institution
      */
     private $corpusId;
 
-    public function __construct($item_type_id, $user_id) {
+    public function __construct($user_id) {
         $this->institutionPlace = new ArrayCollection();
-        $this->item = new Item($item_type_id, $user_id);
-        $this->itemTypeId = $item_type_id;
+        $this->item = new Item($user_id);
+        // 2023-10-24 clean up;
+        $this->itemTypeId = 0;
     }
 
     public function getItem()

@@ -77,9 +77,10 @@ class MonasteryService {
     }
 
     /**
-     * update($gsn)
+     * update($monastery)
      *
      * update institution where institution.idGsn is $gsn; fetch $data via call to the Klosterdatenbank API
+     * corpus_id is not set nor overwritten here
      */
     public function update($monastery) {
 
@@ -94,7 +95,7 @@ class MonasteryService {
             $monastery->setNote(substr($data["note"], 0, $field_size));
         }
 
-        // update $monastery->getInstitutionPlace()
+        // update $monastery->institutionPlace
         // - remove entries
         $ip_list = $monastery->getInstitutionPlace();
         foreach ($ip_list as $ip) {
@@ -102,6 +103,7 @@ class MonasteryService {
             $ip->setInstitution(null);
             $this->entityManager->remove($ip);
         }
+
 
         $placeRepository = $this->entityManager->getRepository(Place::class);
         foreach ($data["locations"] as $data_location) {

@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\Institution;
 use App\Service\MonasteryService;
 
@@ -47,6 +48,7 @@ class MonasteryController extends AbstractController {
     function updateStep(Request $request,
                         MonasteryService $service,
                         EntityManagerInterface $entityManager) {
+
         $debug_flag = false;
         $chunk_size = $request->query->get('chunkSize');
         $offset = $request->query->get('offset');
@@ -70,19 +72,27 @@ class MonasteryController extends AbstractController {
             $created_n = 0;
             foreach ($list as $gsn) {
                 $repository = $entityManager->getRepository(Institution::class);
-                $monastery_list = $repository->findByIdGsn($gsn);
+                $monastery_q_list = $repository->findByIdGsn($gsn);
 
-                if (!is_null($monastery_list) && count($monastery_list) > 0) {
-                    $service->update($monastery_list[0]);
+                if (!is_null($monastery_q_list) && count($monastery_q_list) > 0) {
+                    $monastery = array_values($monastery_q_list)[0];
+                    $service->update($monastery);
                     $updated_n += 1;
                 } else {
                     $user_id = intval($this->getUser()->getId());
-                    $item_type_id = Item::ITEM_TYPE_ID['Kloster']['id'];
-                    $monastery_new = new Institution($item_type_id, $user_id);
+                    $monastery_new = new Institution($user_id);
                     $monastery_new->setIdGsn($gsn);
+                    $monastery_new->setCorpusId(Institution::CORPUS_ID);
                     $service->update($monastery_new);
                     $entityManager->persist($monastery_new->getItem());
                     $entityManager->persist($monastery_new);
+
+                    $item_corpus = new ItemCorpus();
+                    $item_corpus->setItem($monastery_new->getItem());
+                    $item_corpus->setCorpusId(Institution::CORPUS_ID);
+                    $item_corpus->setIdInCorpus($gsn);
+                    $entityManager->persist($item_corpus);
+
                     $created_n += 1;
                 }
             }
@@ -100,6 +110,7 @@ class MonasteryController extends AbstractController {
             //     $status = 240;
             // }
         }
+
 
         if ($debug_flag) {
             // access dump data
