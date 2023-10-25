@@ -79,63 +79,68 @@ class ItemRepository extends ServiceEntityRepository
         return $result;
     }
 
-    public function personDoubletIds($model, $limit = 0, $offset = 0, $online_only = true) {
-        $urlExternalRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+    /**
+     * 2023-10-25; new version in UrlExternalRepository
+     */
+    // public function personDoubletIds($model, $limit = 0, $offset = 0, $online_only = true) {
+    //     $urlExternalRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
 
-        // exclude merged and deleted
-        // include 'n' in the query as a prerequisite for the HAVING-clause
-        $qb = $urlExternalRepository->createQueryBuilder('u')
-                                    ->select("u.authorityId, u.value, COUNT(u.value) as n")
-                                    ->join("u.item", "i")
-                                    ->andWhere("i.itemTypeId = :item_type_id")
-                                    ->andWhere("i.mergeStatus <> 'parent'")
-                                    ->andWhere("i.isDeleted <> '1'")
-                                    ->addGroupBy("u.authorityId")
-                                    ->addGroupBy("u.value")
-                                    ->andHaving("n > 1")
-                                    ->setParameter("item_type_id", $model['itemTypeId']);
-
-        $authority = $model['authority'];
-        if ($authority != "") {
-            $qb->andWhere("u.authorityId = :authority_id")
-               ->setParameter('authority_id', $authority);
-        }
-        // '- alle -' returns null, which is filtered out by array_filter
-        $edit_status = array_filter(array_values($model['editStatus']));
-        if (!is_null($edit_status) and count($edit_status) > 0) {
-            $qb->andWhere("i.editStatus in (:q_status)")
-               ->setParameter('q_status', $edit_status);
-        } else {
-            $qb->andWhere("i.editStatus <> 'Dublette'");
-        }
+    //     // exclude merged and deleted
+    //     // include 'n' in the query as a prerequisite for the HAVING-clause
+    //     $qb = $urlExternalRepository->createQueryBuilder('u')
+    //                                 ->select("u.authorityId, u.value, COUNT(u.value) as n")
+    //                                 ->join("u.item", "i")
+    //                                 ->join("i.itemCorpus", "ic")
+    //                                 ->andWhere("i.mergeStatus <> 'parent'")
+    //                                 ->andWhere("i.isDeleted <> '1'")
+    //                                 ->andWhere("ic.corpusId in ('epc', 'can')")
+    //                                 ->addGroupBy("u.authorityId")
+    //                                 ->addGroupBy("u.value")
+    //                                 ->andHaving("n > 1");
 
 
-        $query = $qb->getQuery();
-        $group_result = $query->getResult();
+    //     $authority = $model['authority'];
+    //     if ($authority != "") {
+    //         $qb->andWhere("u.authorityId = :authority_id")
+    //            ->setParameter('authority_id', $authority);
+    //     }
+    //     // '- alle -' returns null, which is filtered out by array_filter
+    //     $edit_status = array_filter(array_values($model['editStatus']));
+    //     if (!is_null($edit_status) and count($edit_status) > 0) {
+    //         $qb->andWhere("i.editStatus in (:q_status)")
+    //            ->setParameter('q_status', $edit_status);
+    //     } else {
+    //         $qb->andWhere("i.editStatus <> 'Dublette'");
+    //     }
 
-        $value_list = array_column($group_result, "value");
 
-        $qb = $this->createQueryBuilder('i')
-                   ->select('DISTINCT(i.id) as personId')
-                   ->join('i.urlExternal', 'uext')
-                   ->addOrderBy("uext.value")
-                   ->andWhere("uext.value in (:value_list)")
-                   ->andWhere("i.itemTypeId = :item_type_id")
-                   ->setParameter("value_list", $value_list)
-                   ->setParameter("item_type_id", $model['itemTypeId']);
+    //     $query = $qb->getQuery();
+    //     $group_result = $query->getResult();
 
-        if (!is_null($edit_status) and count($edit_status) > 0) {
-            $qb->andWhere("i.editStatus in (:q_status)")
-               ->setParameter('q_status', $edit_status);
-        } else {
-            $qb->andWhere("i.editStatus <> 'Dublette'");
-        }
+    //     $value_list = array_column($group_result, "value");
 
-        $query = $qb->getQuery();
-        $result = $query->getResult();
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select('DISTINCT(i.id) as personId')
+    //                ->join('i.urlExternal', 'uext')
+    //                ->join('i.itemCorpus', 'ic')
+    //                ->addOrderBy("uext.value")
+    //                ->andWhere("i.mergeStatus in ('child', 'original')")
+    //                ->andWhere("uext.value in (:value_list)")
+    //                ->andWhere("ic.corpusId in ('epc', 'can')")
+    //                ->setParameter("value_list", $value_list);
 
-        return array_column($result, 'personId');
-    }
+    //     if (!is_null($edit_status) and count($edit_status) > 0) {
+    //         $qb->andWhere("i.editStatus in (:q_status)")
+    //            ->setParameter('q_status', $edit_status);
+    //     } else {
+    //         $qb->andWhere("i.editStatus <> 'Dublette'");
+    //     }
+
+    //     $query = $qb->getQuery();
+    //     $result = $query->getResult();
+
+    //     return array_column($result, 'personId');
+    // }
 
     public function setSibling($person) {
         // get person from Domherrendatenbank

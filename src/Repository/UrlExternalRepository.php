@@ -394,6 +394,61 @@ class UrlExternalRepository extends ServiceEntityRepository
     //     return $query->getResult();
     // }
 
+    public function personDoubletIds($model) {
+        // collect IDs with an entry in url_external
+        $qb_id = $this->createQueryBuilder('u')
+                   ->select('distinct(ic.itemId) as id')
+                   ->join('\App\Entity\ItemCorpus', 'ic',
+                          'WITH', "ic.itemId = u.itemId AND ic.corpusId in ('can', 'epc')")
+                   ->join('\App\Entity\Item', 'i',
+                          'WITH', "i.id = u.itemId AND i.mergeStatus in ('child', 'original')")
+                   ->andWhere('u.authorityId = :auth_id')
+                   ->setParameter('auth_id', $model['authority']);
+
+        if (!in_array('- alle -', $model['editStatus'])) {
+            $qb_id->andWhere('i.editStatus in (:status)')
+                  ->setParameter('status', $model['editStatus']);
+        }
+
+        $query_id = $qb_id->getQuery();
+        $id_list = array_column($query_id->getResult(), 'id');
+
+        // find multiple entries
+        $qb_m = $this->createQueryBuilder('u')
+                     ->select('u.value, count(u.value) as n')
+                     ->andWhere('u.itemId in (:id_list)')
+                     ->andWhere('u.authorityId = :auth_id')
+                     ->groupBy('u.value')
+                     ->having('n > 1')
+                     ->setParameter('auth_id', $model['authority'])
+                     ->setParameter('id_list', $id_list);
+
+
+        $query_m = $qb_m->getQuery();
+        $m_list = $query_m->getResult();
+        $value_list = array_column($m_list, 'value');
+
+        // map back to IDs
+        $qb = $this->createQueryBuilder('u')
+                   ->select('distinct(ic.itemId) as id')
+                   ->join('\App\Entity\ItemCorpus', 'ic',
+                          'WITH', "ic.itemId = u.itemId AND ic.corpusId in ('can', 'epc')")
+                   ->join('\App\Entity\Item', 'i',
+                          'WITH', "i.id = u.itemId AND i.mergeStatus in ('child', 'original')")
+                   ->andWhere('u.value in (:value_list)')
+                   ->setParameter('value_list', $value_list);
+
+        if (!in_array('- alle -', $model['editStatus'])) {
+            $qb->andWhere('i.editStatus in (:status)')
+                  ->setParameter('status', $model['editStatus']);
+        }
+
+        $query= $qb->getQuery();
+        $d_list = $query->getResult();
+
+        return array_column($d_list, 'id');
+
+    }
 
 
 }

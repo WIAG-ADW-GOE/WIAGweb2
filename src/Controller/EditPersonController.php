@@ -1140,19 +1140,16 @@ class EditPersonController extends AbstractController {
     /**
      * display query form for doublets
      *
-     * @Route("/edit/person/query-doublet/{itemTypeId}", name="edit_person_query_doublet")
+     * @Route("/edit/person/query-doublet", name="edit_person_query_doublet")
      */
-    public function queryDoublet(Request $request, int $itemTypeId) {
+    public function queryDoublet(Request $request) {
         // parameters
         $list_size = 20;
 
-        // set defaults
-        $edit_status_default_list = [
-            Item::ITEM_TYPE_ID['Bischof']['id'] => null, # all status values
-            Item::ITEM_TYPE_ID['Domherr']['id'] => null, # all status values
-        ];
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
-        $status_choices = $this->statusChoices($itemTypeId);
+        // set defaults
+        $status_choices = $this->statusChoices();
 
         $authority_choices = [
             'GSN' => Authority::ID['GSN'],
@@ -1161,9 +1158,8 @@ class EditPersonController extends AbstractController {
         ];
 
         $model = [
-            'editStatus' => [$edit_status_default_list[$itemTypeId]],
-            'authority' => Authority::ID['GS'],
-            'itemTypeId' => $itemTypeId
+            'editStatus' => ['online'],
+            'authority' => Authority::ID['GSN'],
         ];
 
         $form = $this->createFormBuilder($model)
@@ -1191,13 +1187,13 @@ class EditPersonController extends AbstractController {
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemRepository = $this->entityManager->getRepository(Item::class);
 
-        $limit = 0; $offset = 0;
-        $id_all = $itemRepository->personDoubletIds($model, $limit, $offset);
+
+        $id_all = $urlExternalRepository->personDoubletIds($model);
         $count = count($id_all);
 
-            //
-            $offset = $request->query->get('offset');
-            $page_number = $request->query->get('pageNumber');
+        //
+        $offset = $request->query->get('offset');
+        $page_number = $request->query->get('pageNumber');
 
             // set offset to page begin
             if (!is_null($offset)) {
@@ -1226,7 +1222,6 @@ class EditPersonController extends AbstractController {
             }
 
             $template_params = [
-                'itemTypeId' => $itemTypeId,
                 'personList' => $person_list,
                 'form' => $form,
                 'error_list' => null,
@@ -1236,7 +1231,7 @@ class EditPersonController extends AbstractController {
             ];
 
         $template = 'edit_person/query_doublet.html.twig';
-        return $this->renderEditElements($template, $itemTypeId, $template_params);
+        return $this->renderEditElements($template, $template_params);
 
     }
 
