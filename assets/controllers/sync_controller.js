@@ -1,7 +1,7 @@
 import { Controller } from 'stimulus';
 
 export default class extends Controller {
-    static targets = ['copy', 'check', 'fill', 'toggle', 'expand', 'click'];
+    static targets = ['copy', 'check', 'fill', 'toggle', 'expand', 'click', 'mark'];
     static values = {
 	fillStatus: String,
 	fillUrl: String,
@@ -49,6 +49,12 @@ export default class extends Controller {
 	    this.fillStatusValue = 'filled';
 	}
 
+    }
+
+    mark(event) {
+	console.log('sync#mark');
+	// TODO 2023-10-26
+	// console.log(this.markTarget.classList);
     }
 
     toggle () {

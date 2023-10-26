@@ -1,28 +1,8 @@
 {% import "util.html.twig" as util %}
 <div class="row">
-    <div class="col-4">
+    <div class="col-6">
 	<div class="input-group input-group-sm mb-1 mt-1">
-	    {# get corpus IDs (hidden) #}
-	    {% for item_corpus in person.item.ItemCorpus %}
-		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
-		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
-	    {% endfor %}
-	    <label class="input-group-text" for="{{ base_id }}_corpus">Corpus</label>
-	    <select class="form-select" id="{{ base_id }}_corpus" name="{{ base_input_name }}[corpus_id][]" size="2" multiple aria-label="Corpus Auswahl">
-		{# default = 'can' for new entries #}
-		{% for corpus_id, corpus_name in corpusChoice %}
-		    {% if person.item.hasCorpus(corpus_id) or (person.item.id == 0 and corpus_id == 'can') %}
-			<option selected value="{{ corpus_id }}">{{ corpus_name }}</option>
-		    {% else %}
-			<option value="{{ corpus_id }}">{{ corpus_name }}</option>
-		    {% endif %}
-		{% endfor %}
-	    </select>
-	</div>
-    </div>
-    <div class="col-8">
-	<div class="input-group input-group-sm mb-1 mt-1">
-	    <span class="input-group-text ms-2">Status</span>
+	    <span class="input-group-text">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
 		 url: path('person_suggest', { field: 'editStatus' }),
 		 }) }} >
@@ -66,6 +46,39 @@
 			   aria-label="Zusammengesetzt aus">
 		{% endfor %}
 	    {% endif %}
+	</div>
+    </div>
+    <div class="col-4">
+	<div class="input-group input-group-sm mb-1 mt-1"
+	     data-controller="sync">
+	    {# get corpus IDs (hidden) #}
+	    {% for item_corpus in person.item.ItemCorpus %}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
+		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
+	    {% endfor %}
+	    <label class="input-group-text wiag-input-text-warning"
+		   for="{{ base_id }}_corpus"
+		   data-sync-target="mark">Corpus</label>
+	    <select class="form-select"
+		    id="{{ base_id }}_corpus"
+		    name="{{ base_input_name }}[corpus_id][]"
+		    size="2"
+		    multiple
+		    aria-label="Corpus Auswahl"
+		    data-action="sync#mark">
+		{# default = 'can' for new entries #}
+		{% for corpus_id, corpus_name in corpusChoice %}
+		    {% if person.item.hasCorpus(corpus_id) or (person.item.id == 0 and corpus_id == 'can') %}
+			<option selected value="{{ corpus_id }}">{{ corpus_name }}</option>
+		    {% else %}
+			<option value="{{ corpus_id }}">{{ corpus_name }}</option>
+		    {% endif %}
+		{% endfor %}
+	    </select>
+	</div>
+    </div>
+    <div class="col-2">
+	<div class="input-group input-group-sm mb-1 mt-1">
 	    {% if person.item.formType == 'edit' %}
 		{# dropdown "Aktion" #}
 		<div class="dropdown ms-auto">
