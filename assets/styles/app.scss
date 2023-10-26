@@ -70,11 +70,14 @@
     background: #b3ccff;
 }
 
-.wiag-input-text-warning {
-    // background: #b6c0df
-    background: #F1AA58;
+.wiag-background-highlight {
+    background: $orange-400;
 }
 
+.wiag-border-changed {
+    border-color: $blue-400;
+    border-width: thick;
+}
 
 .wiag-bg-internal {
     background: #cce8cf;

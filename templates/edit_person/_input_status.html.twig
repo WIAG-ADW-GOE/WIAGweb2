@@ -56,7 +56,7 @@
 		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idPublic'], item_corpus.idPublic) }}
 		{{ util.hiddenInput(base_id, base_input_name, ['corpus', item_corpus.corpusId, 'idInCorpus'], item_corpus.idInCorpus) }}
 	    {% endfor %}
-	    <label class="input-group-text wiag-input-text-warning"
+	    <label class="input-group-text wiag-background-highlight"
 		   for="{{ base_id }}_corpus"
 		   data-sync-target="mark">Corpus</label>
 	    <select class="form-select"
@@ -65,11 +65,11 @@
 		    size="2"
 		    multiple
 		    aria-label="Corpus Auswahl"
-		    data-action="sync#mark">
+		    data-action="sync#markChanged">
 		{# default = 'can' for new entries #}
 		{% for corpus_id, corpus_name in corpusChoice %}
 		    {% if person.item.hasCorpus(corpus_id) or (person.item.id == 0 and corpus_id == 'can') %}
-			<option selected value="{{ corpus_id }}">{{ corpus_name }}</option>
+			<option selected value="{{ corpus_id }}">{{ corpus_name }} (ante)</option>
 		    {% else %}
 			<option value="{{ corpus_id }}">{{ corpus_name }}</option>
 		    {% endif %}

@@ -51,10 +51,9 @@ export default class extends Controller {
 
     }
 
-    mark(event) {
+    markChanged(event) {
 	console.log('sync#mark');
-	// TODO 2023-10-26
-	// console.log(this.markTarget.classList);
+	this.markTarget.classList.add('wiag-border-changed');
     }
 
     toggle () {
