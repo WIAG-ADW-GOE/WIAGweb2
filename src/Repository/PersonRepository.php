@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
@@ -315,11 +316,12 @@ class PersonRepository extends ServiceEntityRepository {
 
         if ($someid || $year) {
             if ($someid) {
+                $id_list_list = array();
                 // look for $someid in merged ancestors
                 $itemRepository = $this->getEntityManager()->getRepository(Item::class);
                 $with_id_in_source = $model->isEdit;
                 $list_size_max = 200;
-                $descendant_id_list = $itemRepository->findIdByAncestor(
+                $id_list_list[] = $itemRepository->findIdByAncestor(
                     $someid,
                     $with_id_in_source,
                     $list_size_max,
@@ -327,12 +329,23 @@ class PersonRepository extends ServiceEntityRepository {
 
                 // look for $someid in external links
                 $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
-                $uext_id_list = $uextRepository->findIdBySomeNormUrl(
+                $id_list_list[] = $uextRepository->findIdBySomeNormUrl(
                     $someid,
                     $list_size_max
                 );
 
-                $q_id_list = array_unique(array_merge($descendant_id_list, $uext_id_list));
+                // look fo $someid in item_corpus
+                $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
+
+                $sip_list = explode('-', $someid);
+                if (count($sip_list) == 2) {
+                    $iid_q_list = $itemCorpusRepository->findItemIdByCorpusAndId($sip_list[0], $sip_list[1]);
+                    if (!is_null($iid_q_list)) {
+                        $id_list_list[] = array($iid_q_list['itemId']);
+                    }
+                }
+
+                $q_id_list = array_unique(array_merge(...$id_list_list));
 
                 if ($model->corpus == 'epc' or $model->corpus == 'can') {
                     $qb->andWhere("inr.itemIdRole in (:q_id_list)")
