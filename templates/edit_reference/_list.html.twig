@@ -44,7 +44,7 @@
 					    edit_form_id: editFormId,
 					    item_type_id: itemTypeId,
 					    }) }}"
-		     data-insert-point-value="lastButOne">
+		     data-insert-point-id-value="ref-insert-point">
 		    {% if reference_count > 7 %}
 			<div class="input-group input-group-sm mt-1 ">
 			    <button class="btn btn-sm btn-outline-secondary show-new-element"
@@ -57,10 +57,10 @@
 			    reference: ref,
 			    current_idx: loop.index,
 			}) }}
-			{% else %}
+		    {% else %}
 			<span>Treffer: keine</span>
 		    {% endfor %}
-		    <div class="input-group input-group-sm mt-1 ">
+		    <div class="input-group input-group-sm mt-1" id="ref-insert-point">
 			<button class="btn btn-sm btn-outline-secondary"
 				       id="ref_insert_bottom"
 				       type="button"

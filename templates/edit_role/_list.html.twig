@@ -50,11 +50,11 @@
 		     data-insert-url-value="{{ path('edit_role_new_role', {
 					    edit_form_id: editFormId,
 					    }) }}"
-		     data-insert-point-value="lastButOne">
+		     data-insert-point-id-value="role-insert-point">
 		    {% if role_count > 7 %}
 			<div class="input-group input-group-sm mt-1 ">
 			    <button class="btn btn-sm btn-outline-secondary show-new-element"
-					   type="button"
+ 				    type="button"
 				    data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
 			</div>
 		    {% endif %}
@@ -64,6 +64,7 @@
 			    current_idx: loop.index,
 			}) }}
 		    {% endfor %}
+		    <div id="role-insert-point" class="d-none"></div>
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
 				id="ref_insert_bottom"

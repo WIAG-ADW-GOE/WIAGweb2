@@ -6,6 +6,7 @@ export default class extends Controller {
 	url: String,
 	hideTrigger: String,
 	point: String,
+	pointId: String,
     };
 
     connect() {
@@ -55,17 +56,20 @@ export default class extends Controller {
 
 	const wrap = document.createElement("div");
 	wrap.innerHTML = await response.text();
-	// console.log(this.pointValue);
 
 	var new_elmt = null;
-	if (this.pointValue == "last") {
-	    new_elmt = this.element.appendChild(wrap.firstElementChild);
-	} else if (this.pointValue == "lastButOne") {
-	    new_elmt = this.element.insertBefore(
-		wrap.firstElementChild,
-		this.element.lastElementChild
-	    );
-	}
+	var insert_elmt = document.getElementById(this.pointIdValue);
+	new_elmt = this.element.insertBefore(wrap.firstElementChild, insert_elmt);
+
+	// obsolete 2023-10-27
+	// if (this.pointValue == "last") {
+	//     new_elmt = this.element.appendChild(wrap.firstElementChild);
+	// } else if (this.pointValue == "lastButOne") {
+	//     new_elmt = this.element.insertBefore(
+	// 	wrap.firstElementChild,
+	// 	this.element.lastElementChild
+	//     );
+	// }
 
 	// show new element in browser window
 	if (currentTarget.classList.contains('show-new-element')) {

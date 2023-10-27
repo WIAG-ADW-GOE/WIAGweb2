@@ -50,7 +50,7 @@
 		     data-insert-url-value="{{ path('edit_authority_new_authority', {
 					    edit_form_id: editFormId,
 					    }) }}"
-		     data-insert-point-value="lastButOne">
+		     data-insert-point-id-value="auth-insert-point">
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary show-new-element"
 				type="button"
@@ -62,6 +62,7 @@
 			    current_idx: loop.index,
 			}) }}
 		    {% endfor %}
+		    <div id="auth-insert-point" class="d-none"></div>
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
 				type="button"

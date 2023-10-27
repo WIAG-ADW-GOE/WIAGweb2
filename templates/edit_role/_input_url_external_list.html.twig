@@ -3,7 +3,7 @@
 			    'itemIndex': itemIndex
 			    }) }}"
      data-insert-hide-trigger-value="yes"
-     data-insert-point-value="last">
+     data-insert-point-id-value="url-insert-point">
     {% for url_ext in role.item.urlexternal %}
 	{{ include('edit_role/_input_url_external.html.twig', {
 	    'urlext': url_ext,
@@ -12,4 +12,5 @@
 	    'isLast': loop.last,
 	}) }}
     {% endfor %}
+    <div id="url-insert-point" class="d-none"></div>
 </div>

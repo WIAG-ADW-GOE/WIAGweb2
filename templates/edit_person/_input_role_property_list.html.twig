@@ -4,13 +4,14 @@
 			    'personIndex': personIndex,
 			    'roleIndex': roleIndex,
 			    }) }}"
-     data-insert-point-value="lastButOne">
+     data-insert-point-id-value="{{personIndex}}_{{ roleIndex }}_role-prop-insert-point">
     {% for role_prop in role.roleProperty %}
 	{{ include('edit_person/_input_role_property.html.twig', {
 	    prop: role_prop,
 	    current_idx: loop.index0
 	}) }}
     {% endfor %}
+    <div id="{{personIndex}}_{{ roleIndex }}_role-prop-insert-point" class="d-none"></div>
     <div class="input-group input-group-sm mt-1">
 	<button class="btn btn-sm btn-outline-secondary"
 		       type="button"

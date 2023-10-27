@@ -59,22 +59,33 @@
 	    <label class="input-group-text wiag-background-highlight"
 		   for="{{ base_id }}_corpus"
 		   data-sync-target="mark">Corpus</label>
-	    <select class="form-select"
-		    id="{{ base_id }}_corpus"
-		    name="{{ base_input_name }}[corpus_id][]"
-		    size="2"
-		    multiple
-		    aria-label="Corpus Auswahl"
-		    data-action="sync#markChanged">
-		{# default = 'can' for new entries #}
+	    <ul class="list-group border" id="{{ base_id }}_corpus">
 		{% for corpus_id, corpus_name in corpusChoice %}
 		    {% if person.item.hasCorpus(corpus_id) or (person.item.id == 0 and corpus_id == 'can') %}
-			<option selected value="{{ corpus_id }}">{{ corpus_name }} (ante)</option>
+			<li class="list-group-item list-group-item-sm border-0">
+			    <input class="form-check-input me-1"
+				   id="{{ base_id }}_corpus_id_{{ corpus_id }}"
+				   name="{{ base_input_name }}[corpus_id][{{ corpus_id }}]"
+				   type="checkbox"
+				   value="{{ corpus_id }}"
+				   aria-label="Corpus-Auswahl" checked
+				   data-action="sync#markChanged">
+			    {{ corpus_name }} (ante)
+			</li>
 		    {% else %}
-			<option value="{{ corpus_id }}">{{ corpus_name }}</option>
+			<li class="list-group-item list-group-item-sm border-0">
+			    <input class="form-check-input me-1"
+				   id="{{ base_id }}_corpus_{{ corpus_id }}"
+				   name="{{ base_input_name }}[corpus_id][{{ corpus_id }}]"
+				   type="checkbox"
+				   value="{{ corpus_id }}"
+				   aria-label="Corpus-Auswahl"
+				   data-action="sync#markChanged">
+			    {{ corpus_name }}
+			</li>
 		    {% endif %}
 		{% endfor %}
-	    </select>
+	    </ul>
 	</div>
     </div>
     <div class="col-2">

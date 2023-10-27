@@ -165,7 +165,6 @@ class EditReferenceController extends AbstractController {
                 $reference->setFormIsExpanded($form_is_expanded);
             }
             if (isset($data['isEdited'])) {
-                $reference->setIsEdited(1);
                 if (!$id > 0) {
                     // new entry
                     $form_is_expanded = 1;
@@ -174,6 +173,7 @@ class EditReferenceController extends AbstractController {
                     $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
+                $reference->setIsEdited(1);
                 if (UtilService::missingKeyList($data, ReferenceVolume::EDIT_FIELD_LIST) == array()) {
                     $referenceCount = $itemReferenceRepository->referenceCount($reference->getReferenceId());
                     $reference->setReferenceCount($referenceCount);

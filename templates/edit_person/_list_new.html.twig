@@ -10,7 +10,7 @@
 	    <div class="col-12">
 		<div data-controller="insert"
 		     data-insert-url-value="{{ path('edit_person_new_entry') }}"
-		     data-insert-point-value="lastButOne">
+		     data-insert-point-id-value="person-insert-point">
 		    <button class="btn btn-sm btn-outline-secondary show-new-element"
 				   type="button"
 				   data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>
@@ -20,6 +20,7 @@
 			    person: person,
 			}) }}
 		    {% endfor %}
+		    <div id="person-insert-point" class="d-none"></div>
 		    <button class="btn btn-sm btn-outline-secondary"
 			    type="button"
 			    data-action="insert#insert"><img class="pb-1" src="{{ asset('images/symbols/plus-square.svg') }}" alt="Plus">&ensp;Neuer Eintrag</button>

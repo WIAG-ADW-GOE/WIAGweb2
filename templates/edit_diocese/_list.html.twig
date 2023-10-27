@@ -43,7 +43,7 @@
 		     data-insert-url-value="{{ path('edit_diocese_new_diocese', {
 					    edit_form_id: editFormId,
 					    }) }}"
-		     data-insert-point-value="lastButOne">
+		     data-insert-point-id-value="dioc-insert-point">
 		    {% if diocese_count > 7 %}
 			<div class="input-group input-group-sm mt-1 ">
 			    <button class="btn btn-sm btn-outline-secondary show-new-element"
@@ -59,6 +59,7 @@
 			{% else %}
 			<span>Treffer: keine</span>
 		    {% endfor %}
+		    <div id="dioc-insert-point" class="d-none"></div>
 		    <div class="input-group input-group-sm mt-1 ">
 			<button class="btn btn-sm btn-outline-secondary"
 				id="ref_insert_bottom"

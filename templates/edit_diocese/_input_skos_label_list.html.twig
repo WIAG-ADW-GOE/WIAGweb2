@@ -3,7 +3,7 @@
 			    'itemIndex': itemIndex
 			    }) }}"
      data-insert-hide-trigger-value="yes"
-     data-insert-point-value="last">
+     data-insert-point-id-value="{{ itemIndex }}_skos-label-insert-point">
     {% for label in diocese.altLabels %}
 	{{ include('edit_diocese/_input_skos_label.html.twig', {
 	    'skosLabel': label,
@@ -12,4 +12,5 @@
 	    'is_last': loop.last,
 	}) }}
     {% endfor %}
+    <div id="{{ itemIndex }}_skos-label-insert-point" class="d-none"></div>
 </div>
