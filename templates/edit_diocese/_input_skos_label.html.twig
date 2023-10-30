@@ -2,6 +2,24 @@
 {% set base_input_name=editFormId~'['~itemIndex~']' %}
 {% set base_id_skosLabel=base_id~'_skosLabel_'~currentIndex %}
 {% set base_input_name_skosLabel=base_input_name~'[skosLabel]['~currentIndex~']' %}
+{% set lang_list = {
+    'la': 'lateinisch',
+    'de': 'deutsch',
+    'fr': 'französisch',
+    'it': 'italienisch',
+    'pl': 'polnisch',
+    'cz': 'tschechisch',
+    'nl': 'niederländisch',
+    'en': 'englisch',
+    'es': 'spanisch',
+    'pt': 'portugiesisch',
+    'da': 'dänisch',
+    'sv': 'schwedisch',
+    'fi': 'finnisch',
+    'et': 'estisch',
+    'lt': 'lettisch',
+    'lv': 'litauisch',
+} %}
 <div class="row"
      data-controller="input-state">
     {# col with add button and delete button #}
@@ -20,10 +38,10 @@
 	    <select id="{{ base_id_skosLabel }}_lang"
 		    name="{{ base_input_name_skosLabel}}[lang]"
 		    class="form-select"
-		    style="max-width: 5rem"
+		    style="max-width: 9rem"
 		    aria-label="Sprache">
-		{% for lang in ['de', 'fr', 'la', 'it', 'pl', 'cz', 'nl', 'en'] %}
-		    <option value="{{ lang }}" {% if lang == skosLabel.lang %}selected{% endif %}>{{ lang }}</option>
+		{% for key, lang in lang_list  %}
+		    <option value="{{ key }}" {% if key == skosLabel.lang %}selected{% endif %}>{{ lang }}</option>
 		{% endfor %}
 	    </select>
 	    <span class="input-group-text" style="min-width: 5rem">Bezeichnung</span>
