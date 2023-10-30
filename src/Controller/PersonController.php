@@ -38,7 +38,7 @@ class PersonController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
     /** max size of data response */
-    const DATA_MAX_SIZE = 3000;
+    const DATA_MAX_SIZE = 6000;
 
 
     private $autocomplete = null;

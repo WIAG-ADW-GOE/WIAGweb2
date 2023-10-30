@@ -126,7 +126,11 @@ class PersonRoleProperty
 
     public function getName(): ?string
     {
-        return $this->name;
+        if (!is_null($this->type)) {
+            return $this->type->getName();
+        } else {
+            return $this->name;
+        }
     }
 
     public function setName(string $name): self
