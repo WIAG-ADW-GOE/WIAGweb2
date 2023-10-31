@@ -54,7 +54,7 @@
 				    <a class="nav-link fw-bold" role="button" href="{{ path('home') }}">Start</a>
 				{% endif %}
 			    </li>
-
+			    {% if false %} {# menu item about #}
 			    <li class="nav-item dropdown">
 				{% if menuItem == 'about' %}
 				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="about-wiag" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Über WIAG</a>
@@ -70,6 +70,7 @@
 				    <li><a class="dropdown-item" href="{{ path('contact') }}">Kontakt</a></li>
 				</ul>
 			    </li>
+			    {% endif %}
 			    <li class="nav-item dropdown">
 				{% if menuItem == 'collections' %}
 				    <a class="nav-link dropdown-toggle fw-bold active" href="#" id="collections" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Datensammlungen</a>
@@ -84,11 +85,8 @@
 				</ul>
 			    </li>
 			    <li class="nav-item">
-				{% if menuItem == 'service' %}
-				    <a class="nav-link fw-bold active" role="button" aria-current="page" href="{{ path('data_service') }}">Datenservice</a>
-				{% else %}
-				    <a class="nav-link fw-bold" role="button" href="{{ path('data_service') }}">Datenservice</a>
-				{% endif %}
+				{% set ref_list_classes = menuItem == 'ref-list' ? "nav-link fw-bold active" : "nav-link fw-bold" %}
+				<a class="{{ ref_list_classes }}" role="button" aria-current="page" href="{{ path('reference_list') }}">Referenzwerke</a>
 			    </li>
 			    {# edit #}
 			    {% if is_granted('ROLE_EDIT_MENU') %}
