@@ -1164,13 +1164,19 @@ class EditPersonService {
                 $gs_volume_nr = $ref_gso->getReferenceVolume()->getNummer();
                 $vol = $volumeRepository->findOneByGsVolumeNr($gs_volume_nr);
 
-                $ref = new ItemReference();
-                $ref->setReferenceId($vol->getReferenceId());
-                $ref->setPage($page);
+                if (!is_null($vol)) {
+                    $ref = new ItemReference();
+                    $ref->setReferenceId($vol->getReferenceId());
+                    $ref->setPage($page);
 
-                $ref_list->add($ref);
-                $ref->setItem($person->getItem());
-                $this->entityManager->persist($ref);
+                    $ref_list->add($ref);
+                    $ref->setItem($person->getItem());
+                    $this->entityManager->persist($ref);
+                } else {
+                    // dump("Fehlende Band-Nummer: ", $gs_volume_nr);
+                    // 2023-10-31 TODO Vor dem Import auf fehlende Literatur prüfen,
+                    // und/oder den gesamten Datensatz nicht aktualisieren.
+                }
             }
         }
 
