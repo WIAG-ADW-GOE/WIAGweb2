@@ -178,6 +178,20 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
             }
     }
 
+    public function findByCorpusId($corpus_id) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v, idsExternal')
+                   ->innerJoin('App\Entity\ItemReference', 'ir', 'WITH', 'ir.referenceId = v.referenceId')
+                   ->innerJoin('App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.itemId = ir.itemId and ic.corpusId = :corpus_id')
+                   ->leftJoin('v.idsExternal', 'idsExternal')
+                   ->orderBy('v.displayOrder')
+                   ->setParameter('corpus_id', $corpus_id);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+
     public function suggestEntry($query_param) {
         $qb = $this->createQueryBuilder('v')
                    ->select('v.gsCitation as suggestion')

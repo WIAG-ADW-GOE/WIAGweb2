@@ -3,8 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\ReferenceVolume;
-use App\Repository\ReferenceVolumeRepository;
-use App\Repository\ItemTypeRepository;
+use App\Entity\Corpus;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,18 +23,20 @@ class ReferenceVolumeController extends AbstractController {
      * @Route("/referenz/liste", name="reference_list")
      */
     public function list(Request $request,
-                         ItemTypeRepository $itemTypeRepository,
-                         ReferenceVolumeRepository $repository) {
-
-        $type_list = $itemTypeRepository->findBy([], ['id' => 'ASC']);
+                         EntityManagerInterface $entityManager) {
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
 
         $result = array();
-        foreach($type_list as $type) {
-            $ref_list = $repository->findBy(
-                ['itemTypeId' => $type->getId()],
-                ['displayOrder' => 'ASC']
-            );
-            $result[$type->getName()] = $ref_list;
+        foreach (['dioc', 'epc', 'can', 'utp'] as $corpus_id) {
+            // $ref_list = $referenceVolumeRepository->findByCorpusId($corpus_id);
+            $q_corpus = $corpusRepository->findByCorpusId($corpus_id);
+            $corpus = array_values($q_corpus)[0];
+            $ref_list = $referenceVolumeRepository->findByCorpusId($corpus_id);
+            $result[$corpus_id] = [
+                'title' => $corpus->getComment(),
+                'list' => $ref_list,
+            ];
         }
 
         return $this->renderForm('reference/list.html.twig', [

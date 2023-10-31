@@ -11,9 +11,9 @@
     <div class="container-fluid">
 	<div class="row col-12 my-3 mx-2">
 	    <h2>Referenzwerke</h2>
-	    {% for type in type_list|keys %}
-		<h3>{{ type_list[type] }}</h3>
-		{% for ref in reference_list[type] %}
+	    {% for corpus in reference_list %}
+		<h3>{{ corpus['title'] }}</h3>
+		{% for ref in corpus['list'] %}
 		<dl class="row mx-2">
 		    <dt class="col-sm-4">{{ ref.titleShort }}</dt>
 		    <dd class="col">
