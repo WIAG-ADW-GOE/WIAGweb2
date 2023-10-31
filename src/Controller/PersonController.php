@@ -53,9 +53,8 @@ class PersonController extends AbstractController {
      * @Route("/bischof")
      */
     public function query_bishop(Request $request,
-                                 EntityManagerInterface $entityManager,
-                                 RouterInterface $router) {
-        return $this->query('epc', $request, $entityManager, $router);
+                                 EntityManagerInterface $entityManager) {
+        return $this->query('epc', $request, $entityManager);
     }
 
     /**
@@ -64,9 +63,8 @@ class PersonController extends AbstractController {
      * @Route("/domherr")
      */
     public function query_canon(Request $request,
-                                 EntityManagerInterface $entityManager,
-                                 RouterInterface $router) {
-        return $this->query('can', $request, $entityManager, $router);
+                                 EntityManagerInterface $entityManager) {
+        return $this->query('can', $request, $entityManager);
     }
 
     /**
@@ -76,8 +74,7 @@ class PersonController extends AbstractController {
      */
     public function query($corpusId,
                           Request $request,
-                          EntityManagerInterface $entityManager,
-                          RouterInterface $router) {
+                          EntityManagerInterface $entityManager) {
 
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
@@ -108,6 +105,7 @@ class PersonController extends AbstractController {
                 'form' => $form,
                 'corpus' => $corpusId,
                 'pageTitle' => $corpus->getPageTitle(),
+                'msg' => null,
             ]);
         } else {
             $offset = $request->request->get('offset');
@@ -284,6 +282,8 @@ class PersonController extends AbstractController {
                               EntityManagerInterface $entityManager,
                               PersonService $personService) {
 
+
+
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
@@ -311,10 +311,16 @@ class PersonController extends AbstractController {
         $model->isDeleted = 0; # 2023-10-12 obsolete?
         $id_all = $itemNameRoleRepository->findPersonIds($model);
 
-        if (count($id_all) >= self::DATA_MAX_SIZE) {
+        $data_max_size = self::DATA_MAX_SIZE;
+        if (count($id_all) >= $data_max_size) {
+            $msg = "Das Maximum von $data_max_size für die Zahl der Datensätze bei der Ausgabe strukturierter Daten ist überschritten. Schränken Sie die Auswahl ein.";
+            return $this->queryError($corpusId, $msg, $entityManager);
+        }
+
+        if (count($id_all) >= $data_max_size) {
             $error_node_list['error'] = [
                 'message' => "Query result is larger than the upper limmit",
-                'limit' => self::DATA_MAX_SIZE,
+                'limit' => $data_max_size,
             ];
             return $personService->createResponse($format, $error_node_list);
         }
@@ -375,6 +381,36 @@ class PersonController extends AbstractController {
         }
 
         return $personService->createResponse($format, $node_list);
+
+    }
+
+    public function queryError($corpusId,
+                               $msg,
+                               EntityManagerInterface $entityManager) {
+
+        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
+
+
+        // we need to pass an instance of PersonFormModel, because facets depend on it's data
+        $model = new PersonFormModel;
+        $model->corpus = $corpusId;
+
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+            'action' => $this->generateUrl('person_query', ['corpusId' => $corpusId]),
+        ]);
+
+        return $this->renderForm('person/query.html.twig', [
+                'menuItem' => 'collections',
+                'form' => $form,
+                'corpus' => $corpusId,
+                'pageTitle' => $corpus->getPageTitle(),
+                'msg' => $msg,
+        ]);
 
     }
 

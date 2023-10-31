@@ -20,8 +20,11 @@
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		</div>
 	    </div>
-	</div>
-
+	    {% if msg %}
+		<div class="row col-12 ms-2 mt-2">
+		    <p>{{ msg }}</p>
+		</div>
+	    {% endif %}
     {{ form_end(form) }}
 
 {% endblock %}

@@ -32,6 +32,7 @@ class PersonFormType extends AbstractType
             'data_class' => PersonFormModel::class,
             'forceFacets' => false,
             'repository' => null,
+            'action' => "",
         ]);
 
     }
@@ -40,6 +41,7 @@ class PersonFormType extends AbstractType
         $model = $options['data'] ?? null;
         $forceFacets = $options['forceFacets'];
         $repository = $options['repository'];
+        $action = $options['action'];
 
         $builder
             ->add('name', TextType::class, [
@@ -116,7 +118,6 @@ class PersonFormType extends AbstractType
         }
 
         if ($forceFacets) {
-
             $this->createFacetOffice($builder, $model, $repository);
 
             if ($model->corpus == 'can') {
@@ -128,6 +129,10 @@ class PersonFormType extends AbstractType
             if ($model->corpus == 'epc') {
                 $this->createFacetDiocese($builder, $model, $repository);
             }
+        }
+
+        if ($action != "") {
+            $builder->setAction($action);
         }
 
         // add facets with current model data
