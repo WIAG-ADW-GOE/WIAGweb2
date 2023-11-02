@@ -119,6 +119,19 @@ class ItemCorpusRepository extends ServiceEntityRepository
         return $query->getOneOrNullResult();
     }
 
+    public function findPairs($item_id, $corpus_id_list) {
+        $qb = $this->createQueryBuilder('ic')
+                   ->select('ic.itemId, ic.corpusId')
+                   ->andWhere('ic.itemId = :item_id')
+                   ->andWhere('ic.corpusId in (:corpus_id_list)')
+                   ->setParameter('item_id', $item_id)
+                   ->setParameter('corpus_id_list', $corpus_id_list);
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        return $result;
+    }
+
 
     // 2023-09-08 obsolete
     // public function findItemIdByIdPublic($id_public) {

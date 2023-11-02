@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ItemNameRole;
 use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Authority;
@@ -452,9 +453,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
      */
     public function updateByIdList($id_list) {
         $entityManager = $this->getEntityManager();
+        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
-
 
         // delete all entries related to persons in $id_list
         $qb = $this->createQueryBuilder('inr')
@@ -488,11 +489,12 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $id_primary_list[] = $id;
                 $n += 1;
                 // secondary entry
-                $dreg_value = $item->getGsn();
+                $gsn = $item->getGsn();
                 $online_flag = true;
-                $item_id_dreg_list = $urlExternalRepository->findItemId($dreg_value, Authority::ID['GSN'], $online_flag);
+                $item_id_dreg_list = $urlExternalRepository->findItemId($gsn, Authority::ID['GSN'], $online_flag);
                 foreach ($item_id_dreg_list as $item_id) {
-                    if ($item_id != $id) {
+                    $iic_pairs = $itemCorpusRepository->findPairs($item_id, ['dreg', 'dreg-can']);
+                    if (($item_id != $id) and !is_null($iic_pairs) and (count($iic_pairs) > 0)) {
                         $inr = new ItemNameRole($id, $item_id);
                         $inr->setItem($item);
                         $inr->setPersonRole($personRepository->find($item_id));
@@ -549,7 +551,5 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         return $query->getResult();
 
     }
-
-
 
 }
