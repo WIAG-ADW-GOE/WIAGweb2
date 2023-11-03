@@ -1,9 +1,9 @@
 {# params: inst_corpus_id, controller select-institution #}
 {# the autocompletion list depends on itemTypeId of the institution #}
 {% set inst_ac_url = {
-    'dioc': path('person_suggest_base', { field: 'diocese' }),
-    'mon': path('person_suggest_base', { field: 'institution' }),
-    'cap': path('person_suggest_base', { field: 'institution' }),
+    'dioc': path('person_suggest', { field: 'diocese' }),
+    'mon': path('person_suggest', { field: 'institution' }),
+    'cap': path('person_suggest', { field: 'institution' }),
 } %}
 <select class="form-select form-select-sm"
 	style="min-width: 10rem"

@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Corpus
 {
 
+    const EDIT_LIST = ['can', 'epc'];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

@@ -418,20 +418,46 @@ class PersonController extends AbstractController {
     /**
      * respond to asynchronous JavaScript request
      *
-     * @Route("/person-suggest/{field}", name="person_suggest")
+     * @Route("/person-suggest/{field}/{hintSizeParam}", name="person_suggest")
      * response depends on item type
      */
     public function autocomplete(Request $request,
-                                 String $field) {
+                                 String $field,
+                                 int $hintSizeParam = 0) {
         $query_param = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE);
+        $hint_size = $hintSizeParam == 0 ? self::HINT_SIZE : $hintSizeParam;
+
+        $suggestions = $this->autocomplete->$fnName($query_param, $hint_size);
 
         return $this->render('person/_autocomplete.html.twig', [
             'suggestions' => array_column($suggestions, 'suggestion'),
         ]);
     }
+
+    /**
+     * respond to asynchronous JavaScript request
+     *
+     * @Route("/person-suggest-edit/{field}", name="person_suggest_edit")
+     * response depends on item type
+     */
+    public function autocompleteEdit(Request $request,
+                                     String $field) {
+        $query_param = $request->query->get('q');
+        $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
+
+        $hint_size = self::HINT_SIZE;
+        $is_online = 0;
+        $corpus_id_list = Corpus::EDIT_LIST;
+
+        $suggestions = $this->autocomplete->$fnName($query_param, $hint_size, $is_online, $corpus_id_list);
+
+        return $this->render('person/_autocomplete.html.twig', [
+            'suggestions' => array_column($suggestions, 'suggestion'),
+        ]);
+    }
+
 
     /**
      * respond to asynchronous JavaScript request
@@ -458,23 +484,5 @@ class PersonController extends AbstractController {
         ]);
     }
 
-    /**
-     * respond to asynchronous JavaScript request
-     * 2023-09-27 obsolete? see above: autocomplete
-     *
-     * @Route("/person-suggest-base/{field}", name="person_suggest_base")
-     * response is independent from corpus
-     */
-    public function autocompleteBase(Request $request,
-                                     String $field) {
-        $query_param = $request->query->get('q');
-        $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
-
-        $suggestions = $this->autocomplete->$fnName($query_param, self::HINT_SIZE);
-
-        return $this->render('person/_autocomplete.html.twig', [
-            'suggestions' => array_column($suggestions, 'suggestion'),
-        ]);
-    }
 
 }

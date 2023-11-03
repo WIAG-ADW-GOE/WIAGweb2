@@ -4,7 +4,7 @@
 	<div class="input-group input-group-sm mb-1 mt-1">
 	    <span class="input-group-text">Status</span>
 	    <div {{ stimulus_controller('autocomplete', {
-		 url: path('person_suggest', { field: 'editStatus' }),
+		 url: path('person_suggest', { 'field': 'editStatus', 'hintSizeParam': '30' }),
 		 }) }} >
 		<input type="text" id="{{ base_id }}_item_editStatus"
 		       name="{{ base_input_name}}[item][editStatus]"

@@ -24,7 +24,7 @@
 		{# domstift #}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_base', { 'field': 'domstift' }),
+			 url: path('person_suggest', { 'field': 'domstift' }),
 		     }) }}>
 		    {{ form_label(form.domstift) }}
 		    {{ form_errors(form.domstift) }}
@@ -43,7 +43,7 @@
 	    {# diocese #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest_base', { 'field': 'diocese' }),
+		     url: path('person_suggest', { 'field': 'diocese' }),
 		 }) }}>
 		{{ form_label(form.diocese) }}
 		{{ form_errors(form.diocese) }}
@@ -80,7 +80,7 @@
 	    {% if corpus == "can" %}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_base', { 'field': 'place' }),
+			 url: path('person_suggest_online', { 'corpus': corpus, 'field': 'place' }),
 		     }) }}>
 		    {{ form_label(form.place) }}
 		    {{ form_errors(form.place) }}

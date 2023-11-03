@@ -40,7 +40,7 @@
 {% set user=userWiagRepository.find(person.item.changedBy) %}
 <div class="row">
     <div class="col-12">
-	<span class="ms-1">{{ person.item.idPublic }}</span><span class="m-2">&mdash;</span><span>Item-ID: {{ person.id }}</span>
+	<span class="ms-1">{{ person.item.idPublic }}</span><span class="m-2">&mdash;</span><span>Item-ID/Person-ID: {{ person.id }}</span>
 	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ person.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
 	{# store data into the form #}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'idPublic'], person.item.idPublic) }}

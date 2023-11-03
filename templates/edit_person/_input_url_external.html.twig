@@ -23,7 +23,7 @@
 		   value="{{ url_auth_id }}">
 	    <div class="w-50"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest_base', { field: 'urlName' }),
+		     url: path('person_suggest', { field: 'urlName' }),
 		 }) }}>
 		{% set url_auth_name = urlext.authority ? urlext.authority.urlNameFormatter : "" %}
  		<input type="text" id="{{ base_id_urlext }}_urlName"

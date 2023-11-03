@@ -16,7 +16,7 @@ use Doctrine\Common\Collections\Collection;
  * @ORM\Entity(repositoryClass=ItemRepository::class)
  */
 class Item {
-    const DEFAULT_STATUS_NEW = 'angelegt';
+    const DEFAULT_STATUS_NEW = 'Neuaufnahme';
 
     // obsolete in WIAGweb3
     // redundant to table item_type (simpler, faster than a query)
