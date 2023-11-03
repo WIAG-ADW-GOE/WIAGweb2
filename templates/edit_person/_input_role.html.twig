@@ -57,7 +57,7 @@
 		</div>
 		{# default for corpus is 'mon' #}
 		{{ include('edit_person/_input_institution.html.twig', {
-		    inst_corpus_id: role.getInstitutionCorpusId() ?? 'mon'
+		    inst_corpus_id: role.institutionCorpusIdHint ?? 'mon'
 		})  }}
 		<span class="input-group-text wiag-input-text-blue">von, bis</span>
 		<input type="text" id="{{ base_id_role }}_dateBegin"

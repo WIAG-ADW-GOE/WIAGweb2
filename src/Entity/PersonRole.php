@@ -370,15 +370,17 @@ class PersonRole
         return $this;
     }
 
-    public function getInstitutionCorpusId(): ?string
-    {
-        if ($this->institution) {
-            return $this->institution->getCorpusId();
-        } elseif ($this->diocese) {
-            return $this->diocese->getCorpusId();
+    /**
+     * return preferred type to select the institution or diocese
+     */
+    public function getInstitutionCorpusIdHint(): ?string {
+        if ($this->institution or (!is_null($this->institutionName) and $this->institutionName != "")) {
+            return 'mon';
+        } elseif ($this->diocese or (!is_null($this->dioceseName) and $this->dioceseName != "")) {
+            return 'dioc';
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     public function setInstitutionTypeId(?int $institutionTypeId): self
