@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Entity\Diocese;
+use App\Entity\Lang;
 use App\Entity\PersonRole;
 use App\Entity\ItemReference;
 use App\Entity\UrlExternal;
@@ -223,6 +224,7 @@ class EditDioceseController extends AbstractController {
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'dioceseList' => $diocese_list,
+            'langList' => $this->languageList($entityManager),
         ]);
 
     }
@@ -376,8 +378,22 @@ class EditDioceseController extends AbstractController {
             'itemIndex' => $index,
             'base_id' => $edit_form_id.'_'.$index,
             'base_input_name' => $edit_form_id.'['.$index.']',
+            'langList' => $this->languageList($entityManager),
         ]);
 
+    }
+
+    private function languageList(EntityManagerInterface $entityManager) {
+        $langRepository = $entityManager->getRepository(Lang::class);
+
+        $lang_q = $langRepository->findAll();
+
+        $lang_list = array();
+        foreach ($lang_q as $lang) {
+            $lang_list[$lang->getIsoKey()] = $lang->getName();
+        }
+
+        return $lang_list;
     }
 
     /**
@@ -386,7 +402,7 @@ class EditDioceseController extends AbstractController {
      * @Route("/edit/diocese/new-diocese", name="edit_diocese_new_diocese")
      */
     public function newDiocese(Request $request,
-                            EntityManagerInterface $entityManager) {
+                               EntityManagerInterface $entityManager) {
 
         $current_user_id = $this->getUser()->getId();
         $obj = new Diocese($current_user_id);
@@ -400,6 +416,7 @@ class EditDioceseController extends AbstractController {
             'editFormId' => $request->query->get('edit_form_id'),
             'current_idx' => $request->query->get('current_idx'),
             'diocese' => $obj,
+            'langList' => $this->languageList($entityManager),
         ]);
 
     }

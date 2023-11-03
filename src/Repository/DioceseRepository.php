@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Diocese;
+use App\Entity\Lang;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
 
@@ -209,6 +210,26 @@ class DioceseRepository extends ServiceEntityRepository
 
         return $suggestions;
     }
+
+    /**
+     * usually used for asynchronous JavaScript request
+     */
+    public function suggestLang($name, $hintSize) {
+        $repository = $this->getEntityManager()->getRepository(Lang::class);
+        $qb = $repository->createQueryBuilder('l')
+                         ->select("DISTINCT l.name AS suggestion")
+                         ->andWhere("l.name like :name")
+                         ->setParameter('name', $name.'%')
+                         ->orderBy('l.name');
+
+        $qb->setMaxResults($hintSize);
+
+        $query = $qb->getQuery();
+        $suggestions = $query->getResult();
+
+        return $suggestions;
+    }
+
 
     public function findByModel($model) {
         $referenceRepository = $this->getEntityManager()->getRepository(ReferenceVolume::class);

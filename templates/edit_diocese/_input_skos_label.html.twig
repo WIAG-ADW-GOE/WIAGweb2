@@ -2,24 +2,7 @@
 {% set base_input_name=editFormId~'['~itemIndex~']' %}
 {% set base_id_skosLabel=base_id~'_skosLabel_'~currentIndex %}
 {% set base_input_name_skosLabel=base_input_name~'[skosLabel]['~currentIndex~']' %}
-{% set lang_list = {
-    'la': 'lateinisch',
-    'de': 'deutsch',
-    'fr': 'französisch',
-    'it': 'italienisch',
-    'pl': 'polnisch',
-    'cz': 'tschechisch',
-    'nl': 'niederländisch',
-    'en': 'englisch',
-    'es': 'spanisch',
-    'pt': 'portugiesisch',
-    'da': 'dänisch',
-    'sv': 'schwedisch',
-    'fi': 'finnisch',
-    'et': 'estisch',
-    'lt': 'lettisch',
-    'lv': 'litauisch',
-} %}
+
 <div class="row"
      data-controller="input-state">
     {# col with add button and delete button #}
@@ -40,10 +23,28 @@
 		    class="form-select"
 		    style="max-width: 9rem"
 		    aria-label="Sprache">
-		{% for key, lang in lang_list  %}
+		{% for key, lang in langList  %}
 		    <option value="{{ key }}" {% if key == skosLabel.lang %}selected{% endif %}>{{ lang }}</option>
 		{% endfor %}
 	    </select>
+	    {% if false %} {# 2023-11-03 Version with Autocomplete #}
+		<span class="input-group-text">Sprache</span>
+		<div {{ stimulus_controller('autocomplete', {
+		     url: path('diocese_suggest', { 'field': 'lang' }),
+		     }) }} >
+		    <input type="text" id="{{ base_id_skosLabel }}_lang"
+			   name="{{ base_input_name_skosLabel}}_lang"
+			   class="form-control form-control-sm wiag-input"
+			   value="{{ skosLabel.lang }}"
+			   style="max-width: 12em"
+			   spellcheck="false"
+			   aria-label="Status"
+			   data-autocomplete-target="input">
+		    <ul class="list-group autocomplete-target"
+			data-autocomplete-target="results"
+			style="max-width: 20rem;"></ul>
+		</div>
+	    {% endif %}
 	    <span class="input-group-text" style="min-width: 5rem">Bezeichnung</span>
 	    <input type="text" id="{{ base_id_skosLabel }}_label"
 		   name="{{ base_input_name_skosLabel}}[label]"
