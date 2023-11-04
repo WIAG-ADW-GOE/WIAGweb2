@@ -1,7 +1,7 @@
 <?php
 namespace App\Controller;
 
-use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\Diocese;
 use App\Entity\Lang;
 use App\Entity\PersonRole;
@@ -89,7 +89,7 @@ class EditDioceseController extends AbstractController {
                          EntityManagerInterface $entityManager) {
 
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
-        $itemRepository = $entityManager->getRepository(Item::class);
+        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
         $current_user_id = $this->getUser()->getId();
@@ -160,8 +160,7 @@ class EditDioceseController extends AbstractController {
 
         // save
         if (!$error_flag) {
-            $item_type_id = ITEM::ITEM_TYPE_ID['Bistum']['id'];
-            $max_id = $itemRepository->maxIdInSource($item_type_id);
+            $max_id = $itemCorpusRepository->findMaxIdInCorpus('dioc');
             $next_id = $max_id + 1;
             foreach ($diocese_list as $diocese) {
                 $item = $diocese->getItem();

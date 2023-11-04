@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Item;
+use App\Entity\ItemCorpus;
 use App\Entity\ItemType;
 use App\Entity\Role;
 use App\Entity\PersonRole;
@@ -134,7 +134,7 @@ class EditRoleController extends AbstractController {
 
         $roleRepository = $entityManager->getRepository(Role::class);
         $personRoleRepository = $entityManager->getRepository(PersonRole::class);
-        $itemRepository = $entityManager->getRepository(Item::class);
+        $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
         $current_user_id = $this->getUser()->getId();
@@ -213,8 +213,7 @@ class EditRoleController extends AbstractController {
 
         // save
         if (!$error_flag) {
-            $item_type_id = ITEM::ITEM_TYPE_ID['Amt']['id'];
-            $max_id = $itemRepository->maxIdInSource($item_type_id);
+            $max_id = $itemCorpusRepository->findMaxIdInCorpus('ofcm');
             $next_id = $max_id + 1;
             foreach ($role_list as $key => $role) {
                 $item = $role->getItem();
