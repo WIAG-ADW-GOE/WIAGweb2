@@ -464,8 +464,9 @@ class EditDioceseController extends AbstractController {
      *
      * @Route("/edit/diocese/new-skos-label/{itemIndex}", name="edit_diocese_new_skos_label")
      */
-    public function newSkosLabel(Request $request,
-                                   int $itemIndex) {
+    public function newSkosLabel(EntityManagerInterface $entityManager,
+                                 Request $request,
+                                 int $itemIndex) {
 
         $edit_form_id = 'diocese_edit_form';
 
@@ -477,6 +478,7 @@ class EditDioceseController extends AbstractController {
             'currentIndex' => $request->query->get('current_idx'),
             'skosLabel' => $skos_label,
             'is_last' => true,
+            'langList' => $this->languageList($entityManager),
         ]);
 
     }
