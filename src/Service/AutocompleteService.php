@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
 use App\Entity\Role;
 use App\Entity\Person;
 use App\Entity\PersonBirthplace;
@@ -218,6 +219,8 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
+     * @return suggestions for edit status values for editable corpora
+     *
      * usually used for asynchronous JavaScript request
      */
     public function suggestEditStatus($name, $hintSize) {
@@ -226,8 +229,11 @@ class AutocompleteService extends ServiceEntityRepository {
         $repository = $this->getEntityManager()->getRepository(Item::class);
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT i.editStatus AS suggestion")
+                         ->join('i.itemCorpus', 'ic')
+                         ->andWhere('ic.corpusId in (:corpus_id_list)')
                          ->andWhere('i.editStatus IS NOT NULL')
-                         ->andWhere("i.mergeStatus <> 'parent'")
+                         ->andWhere("i.mergeStatus in ('child', 'original')")
+                         ->setParameter('corpus_id_list', Corpus::EDIT_LIST)
                          ->orderBy('i.editStatus');
 
         $qb->setMaxResults($hintSize);
