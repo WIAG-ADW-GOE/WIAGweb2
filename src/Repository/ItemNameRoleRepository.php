@@ -494,7 +494,8 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $item_id_dreg_list = $urlExternalRepository->findItemId($gsn, Authority::ID['GSN'], $online_flag);
                 foreach ($item_id_dreg_list as $item_id) {
                     $iic_pairs = $itemCorpusRepository->findPairs($item_id, ['dreg', 'dreg-can']);
-                    if (($item_id != $id) and !is_null($iic_pairs) and (count($iic_pairs) > 0)) {
+                    $is_dreg = (!is_null($iic_pairs) and (count($iic_pairs) > 0));
+                    if (($item_id != $id) and $is_dreg) {
                         $inr = new ItemNameRole($id, $item_id);
                         $inr->setItem($item);
                         $inr->setPersonRole($personRepository->find($item_id));
@@ -504,7 +505,6 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                     }
                 }
             }
-
         }
 
         // independent GS entries, dreg-can only
@@ -531,7 +531,6 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $entityManager->flush();
 
         return $n;
-
     }
 
     /**
