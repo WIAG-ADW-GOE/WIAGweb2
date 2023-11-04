@@ -83,7 +83,6 @@ class PersonRepository extends ServiceEntityRepository {
         $joined_list[] = 'c';
 
         $this->addConditions($qb, $model, $joined_list);
-        $this->addFacets($qb, $model);
 
         // do sorting in an extra step, see below
         $qb->select('p.id as id,'.
@@ -231,7 +230,7 @@ class PersonRepository extends ServiceEntityRepository {
         if ($reference) {
             $qb->leftjoin('i.reference', 'ref')
                ->leftjoin('\App\Entity\ReferenceVolume', 'vol',
-                          'WITH', 'vol.referenceId = ref.referenceId AND vol.itemTypeId = i.itemTypeId')
+                          'WITH', 'vol.referenceId = ref.referenceId')
                ->andWhere('vol.titleShort LIKE :q_ref')
                ->setParameter('q_ref', '%'.$reference.'%');
         }
@@ -319,22 +318,28 @@ class PersonRepository extends ServiceEntityRepository {
                 $id_list_list = array();
                 // look for $someid in merged ancestors
                 $itemRepository = $this->getEntityManager()->getRepository(Item::class);
-                $with_id_in_source = $model->isEdit;
+                $with_id_in_corpus = $model->isEdit;
                 $list_size_max = 200;
                 $id_list_list[] = $itemRepository->findIdByAncestor(
                     $someid,
-                    $with_id_in_source,
+                    $with_id_in_corpus,
                     $list_size_max,
                 );
-
                 // look for $someid in external links
                 $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                // look for any person here, further restrictions on the result set (if neccessary) are made elsewhere
+                if ($model->isEdit) {
+                    $corpus_id_list_url_query = ['epc', 'can'];
+                } else {
+                    $corpus_id_list_url_query = ['epc', 'can', 'dreg', 'dreg-can'];
+                }
                 $id_list_list[] = $uextRepository->findIdBySomeNormUrl(
                     $someid,
+                    $corpus_id_list_url_query,
                     $list_size_max
                 );
 
-                // look fo $someid in item_corpus
+                // look for $someid in item_corpus
                 $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
 
                 $sip_list = explode('-', $someid);
@@ -413,31 +418,32 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
+     * 2023-11-04 obsolete
      * add conditions set by facets
      */
-    private function addFacets($qb, $model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
+    // private function addFacets($qb, $model) {
+    //     $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
 
-        $facetDiocese = isset($model->facetInstitution) ? $model->facetInstitution : null;
-        if ($facetDiocese) {
-            $valFctDioc = array_column($facetDiocese, 'name');
-            $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
-               ->andWhere("i.itemTypeId = ${itemTypeId}")
-               ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
-               ->setParameter('valFctDioc', $valFctDioc);
-        }
+    //     $facetDiocese = isset($model->facetInstitution) ? $model->facetInstitution : null;
+    //     if ($facetDiocese) {
+    //         $valFctDioc = array_column($facetDiocese, 'name');
+    //         $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
+    //            ->andWhere("i.itemTypeId = ${itemTypeId}")
+    //            ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
+    //            ->setParameter('valFctDioc', $valFctDioc);
+    //     }
 
-        $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
-        if ($facetOffice) {
-            $valFctOfc = array_column($facetOffice, 'name');
-            $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')
-               ->andWhere("i.itemTypeId = ${itemTypeId}")
-               ->andWhere("prfctofc.roleName IN (:valFctOfc)")
-               ->setParameter('valFctOfc', $valFctOfc);
-        }
+    //     $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
+    //     if ($facetOffice) {
+    //         $valFctOfc = array_column($facetOffice, 'name');
+    //         $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')
+    //            ->andWhere("i.itemTypeId = ${itemTypeId}")
+    //            ->andWhere("prfctofc.roleName IN (:valFctOfc)")
+    //            ->setParameter('valFctOfc', $valFctOfc);
+    //     }
 
-        return $qb;
-    }
+    //     return $qb;
+    // }
 
     /**
      * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese

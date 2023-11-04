@@ -79,16 +79,17 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
     */
 
-    public function findIdBySomeNormUrl($someid, $list_size_max = 200) {
+    public function findIdBySomeNormUrl($someid, $corpus_id_list, $list_size_max = 200) {
 
         $qb = $this->createQueryBuilder('u')
                    ->select('DISTINCT u.itemId')
                    ->join('u.authority', 'auth')
                    ->join('u.item', 'i')
+                   ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.itemId = u.itemId')
                    ->andWhere("auth.urlType in ('Normdaten', 'Interner Identifier')")
+                   ->andWhere('ic.corpusId in (:cil)')
                    ->andWhere('u.value like :someid')
-                   ->andWhere('i.itemTypeId in (:item_type_list)')
-                   ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
+                   ->setParameter('cil', $corpus_id_list)
                    ->setParameter(':someid', '%'.$someid.'%');
 
         $qb->setMaxResults($list_size_max);

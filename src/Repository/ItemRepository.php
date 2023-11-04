@@ -258,11 +258,11 @@ class ItemRepository extends ServiceEntityRepository
 
         // else: check if id_public points to a current item or to an ancestor
 
-        $with_id_in_source = false;
+        $with_id_in_corpus = false;
         $list_size_max = 200;
         $descendant_id_list = $this->findIdByAncestor(
             $id_public,
-            $with_id_in_source,
+            $with_id_in_corpus,
             $list_size_max,
         );
 
@@ -324,15 +324,17 @@ class ItemRepository extends ServiceEntityRepository
      * call this function only for persons
      * @return items containing $id in ancestor list
      */
-    public function findIdByAncestor(string $q_id, $with_id_in_source, $list_size_max) {
+    public function findIdByAncestor(string $q_id, $with_id_in_corpus, $list_size_max) {
 
-        if ($with_id_in_source) {
+        if ($with_id_in_corpus) {
             $qb = $this->createQueryBuilder('i')
-                       ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
+                       ->join('i.itemCorpus', 'ic')
+                       ->andWhere("ic.idPublic like :q_id OR ic.idInCorpus like :q_id")
                        ->setParameter('q_id', '%'.$q_id.'%');
         } else {
             $qb = $this->createQueryBuilder('i')
-                       ->andWhere("i.idPublic like :q_id")
+                       ->join('i.itemCorpus', 'ic')
+                       ->andWhere("ic.idPublic like :q_id")
                        ->setParameter('q_id', '%'.$q_id.'%');
         }
 
@@ -360,15 +362,13 @@ class ItemRepository extends ServiceEntityRepository
 
         if ($with_id_in_source) {
             $qb = $this->createQueryBuilder('i')
-                       ->andWhere("i.idPublic like :q_id OR i.idInSource like :q_id")
-                       ->andWhere("i.itemTypeId in (:item_type_list)")
-                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
+                       ->join('i.itemCorpus', 'ic')
+                       ->andWhere("ic.idPublic like :q_id OR ic.idInSource like :q_id")
                        ->setParameter('q_id', '%'.$q_id.'%');
         } else {
             $qb = $this->createQueryBuilder('i')
-                       ->andWhere("i.idPublic like :q_id")
-                       ->andWhere("i.itemTypeId in (:item_type_list)")
-                       ->setParameter('item_type_list', Item::ITEM_TYPE_WIAG_PERSON_LIST)
+                       ->join('i.itemCorpus', 'ic')
+                       ->andWhere("ic.idPublic like :q_id")
                        ->setParameter('q_id', '%'.$q_id.'%');
         }
 
@@ -409,27 +409,28 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
+     * 2023-11-04 obsolete
      * @return maximum value for id_in_source, if it is numerical
      */
-    public function maxIdInSource($item_type_id) {
-        // Doctrine does not know the function CAST nor CONVERT
-        $qb = $this->createQueryBuilder('i')
-                   ->select('i.idInSource')
-                   ->andWhere('i.itemTypeId = :item_type_id')
-                   ->setParameter('item_type_id', $item_type_id);
+    // public function maxIdInSource($item_type_id) {
+    //     // Doctrine does not know the function CAST nor CONVERT
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select('i.idInSource')
+    //                ->andWhere('i.itemTypeId = :item_type_id')
+    //                ->setParameter('item_type_id', $item_type_id);
 
-        $query = $qb->getQuery();
-        $q_result = $query->getResult();
+    //     $query = $qb->getQuery();
+    //     $q_result = $query->getResult();
 
-        $max = 0;
-        foreach($q_result as $val) {
-            $val = intval($val['idInSource']);
-            if($max < $val) {
-                $max = $val;
-            }
-        }
-        return $max;
-    }
+    //     $max = 0;
+    //     foreach($q_result as $val) {
+    //         $val = intval($val['idInSource']);
+    //         if($max < $val) {
+    //             $max = $val;
+    //         }
+    //     }
+    //     return $max;
+    // }
 
     /**
      * @return meta data and GSN for items with corpus_id in $corpus_id_list
