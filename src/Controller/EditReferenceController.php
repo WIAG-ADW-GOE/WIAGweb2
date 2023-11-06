@@ -47,15 +47,15 @@ class EditReferenceController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
-        $item_type_choices = [
+        $corpus_choices = [
             '- alle -' => '',
-            'Bischof/Domherr' => '4, 5',
-            'GS-Bände' => '6, 9',
-            'Bistum' => '1',
-            'Priester Utrecht' => '10',
+            'Bischof/Domherr' => 'epc, can',
+            'GS-Bände' => 'dreg, dreg-can',
+            'Bistum' => 'dioc',
+            'Priester Utrecht' => 'utp',
         ];
 
-        $default_item_type = $item_type_choices['- alle -'];
+        $default_corpus = $corpus_choices['- alle -'];
 
         $sort_by_choices = [
             'ID' => 'referenceId',
@@ -65,16 +65,16 @@ class EditReferenceController extends AbstractController {
         ];
 
         $model = [
-            'itemType' => '',
+            'corpus' => '',
             'sortBy' => 'referenceId',
             'searchText' => '',
         ];
 
         $form = $this->createFormBuilder($model)
                      ->setMethod('GET')
-                     ->add('itemType', ChoiceType::class, [
+                     ->add('corpus', ChoiceType::class, [
                          'label' => 'Thema',
-                         'choices' => $item_type_choices,
+                         'choices' => $corpus_choices,
                          'required' => false,
                      ])
                      ->add('searchText', TextType::class, [
@@ -96,7 +96,7 @@ class EditReferenceController extends AbstractController {
         $reference_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
         } else {
-            $model['itemType'] = $default_item_type;
+            $model['corpus'] = $default_corpus;
         }
 
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
@@ -112,9 +112,9 @@ class EditReferenceController extends AbstractController {
         $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
 
         $item_type_id = '';
-        if ($model['itemType'] != '- alle -') {
-            $item_type_cand = explode(' ,', $model['itemType']);
-            $item_type_id = $item_type_cand[0];
+        if ($model['corpus'] != '- alle -') {
+            $corpus_cand = explode(' ,', $model['corpus']);
+            $corpus_id = $corpus_cand[0];
         }
 
         $template = 'edit_reference/query.html.twig';
