@@ -200,24 +200,24 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * 2023-10-05 obsolete
      */
-    public function findMaxIdInSource($itemTypeId) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select("i.idInSource")
-                   ->andWhere('i.itemTypeId = :itemTypeId')
-                   ->setParameter('itemTypeId', $itemTypeId);
-        $query = $qb->getQuery();
-        $result = $query->getResult();
+    // public function findMaxIdInSource($itemTypeId) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select("i.idInSource")
+    //                ->andWhere('i.itemTypeId = :itemTypeId')
+    //                ->setParameter('itemTypeId', $itemTypeId);
+    //     $query = $qb->getQuery();
+    //     $result = $query->getResult();
 
-        $max_id = 0;
-        foreach ($result as $el) {
-            $cand = intval($el['idInSource']);
-            if ($cand > $max_id) {
-                $max_id = $cand;
-            }
-        }
-        return $max_id;
+    //     $max_id = 0;
+    //     foreach ($result as $el) {
+    //         $cand = intval($el['idInSource']);
+    //         if ($cand > $max_id) {
+    //             $max_id = $cand;
+    //         }
+    //     }
+    //     return $max_id;
 
-    }
+    // }
 
     /**
      * 2023-10-10 obsolete
@@ -452,6 +452,16 @@ class ItemRepository extends ServiceEntityRepository
         return $query->getResult();
 
     }
+
+    public function findMaxId() {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('MAX(i.id)');
+
+        $query = $qb->getQuery();
+        $result = $query->getOneOrNullResult();
+        return array_values($result)[0];
+    }
+
 
     /**
      * 2023-10-18 obsolete

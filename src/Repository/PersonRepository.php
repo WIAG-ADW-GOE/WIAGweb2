@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
 use App\Entity\ItemCorpus;
 use App\Entity\ItemProperty;
 use App\Entity\Person;
@@ -315,49 +316,58 @@ class PersonRepository extends ServiceEntityRepository {
 
         if ($someid || $year) {
             if ($someid) {
-                $id_list_list = array();
-                // look for $someid in merged ancestors
-                $itemRepository = $this->getEntityManager()->getRepository(Item::class);
-                $with_id_in_corpus = $model->isEdit;
-                $list_size_max = 200;
-                $id_list_list[] = $itemRepository->findIdByAncestor(
-                    $someid,
-                    $with_id_in_corpus,
-                    $list_size_max,
-                );
-                // look for $someid in external links
-                $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
-                // look for any person here, further restrictions on the result set (if neccessary) are made elsewhere
-                if ($model->isEdit) {
-                    $corpus_id_list_url_query = ['epc', 'can'];
+
+                // look for corpus
+                if (in_array($someid, Corpus::EDIT_LIST)) {
+                        $qb->andWhere('c.corpusId = :corpus_id')
+                           ->setParameter('corpus_id', $someid);
                 } else {
-                    $corpus_id_list_url_query = ['epc', 'can', 'dreg', 'dreg-can'];
-                }
-                $id_list_list[] = $uextRepository->findIdBySomeNormUrl(
-                    $someid,
-                    $corpus_id_list_url_query,
-                    $list_size_max
-                );
 
-                // look for $someid in item_corpus
-                $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
+                    // ID is more specific
 
-                $sip_list = explode('-', $someid);
-                if (count($sip_list) == 2) {
-                    $iid_q_list = $itemCorpusRepository->findItemIdByCorpusAndId($sip_list[0], $sip_list[1]);
-                    if (!is_null($iid_q_list)) {
-                        $id_list_list[] = array($iid_q_list['itemId']);
+                    $id_list_list = array();
+                    // look for $someid in merged ancestors
+                    $itemRepository = $this->getEntityManager()->getRepository(Item::class);
+                    $with_id_in_corpus = $model->isEdit;
+                    $list_size_max = 200;
+                    $id_list_list[] = $itemRepository->findIdByAncestor(
+                        $someid,
+                        $with_id_in_corpus,
+                        $list_size_max,
+                    );
+
+                    // look for $someid in external links
+                    $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
+                    // look for any person here, further restrictions on the result set (if neccessary) are made elsewhere
+                    if ($model->isEdit) {
+                        $corpus_id_list_url_query = ['epc', 'can'];
+                    } else {
+                        $corpus_id_list_url_query = ['epc', 'can', 'dreg', 'dreg-can'];
                     }
-                }
+                    $id_list_list[] = $uextRepository->findIdBySomeNormUrl(
+                        $someid,
+                        $corpus_id_list_url_query,
+                        $list_size_max
+                    );
 
-                $q_id_list = array_unique(array_merge(...$id_list_list));
+                    // look for $someid in item_corpus
+                    if ($model->isEdit) {
+                        $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
+                        $iid_q_list = $itemCorpusRepository->findItemIdByCorpusAndId($someid);
+                        if (!is_null($iid_q_list) and count($iid_q_list) > 0) {
+                            $id_list_list[] = array_column($iid_q_list, 'itemId');
+                        }
+                    }
 
-                if ($model->corpus == 'epc' or $model->corpus == 'can') {
-                    $qb->andWhere("inr.itemIdRole in (:q_id_list)")
-                       ->setParameter('q_id_list', $q_id_list);
-                } else {
-                    $qb->andWhere("p.id in (:q_id_list)")
-                       ->setParameter('q_id_list', $q_id_list);
+                    $q_id_list = array_unique(array_merge(...$id_list_list));
+
+                    if (!$model->isEdit) {
+                        $qb->andWhere("inr.itemIdRole in (:q_id_list)")
+                           ->setParameter('q_id_list', $q_id_list);
+                    } else {
+                        $qb->andWhere("p.id in (:q_id_list)")
+                           ->setParameter('q_id_list', $q_id_list);
+                    }
                 }
             }
             if ($year) {

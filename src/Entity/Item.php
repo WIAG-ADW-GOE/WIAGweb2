@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\Collection;
  */
 class Item {
     const DEFAULT_STATUS_NEW = 'Neuaufnahme';
+    const DEFAULT_STATUS_MERGE = 'generiert';
 
     // obsolete in WIAGweb3
     // redundant to table item_type (simpler, faster than a query)
