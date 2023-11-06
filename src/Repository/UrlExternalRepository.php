@@ -250,7 +250,9 @@ class UrlExternalRepository extends ServiceEntityRepository
                             'ic_vis.idPublic as id_public_vis, '.
                             'ic_vis.corpusId as corpus_id')
                    ->join('\App\Entity\UrlExternal', 'uext_vis', 'WITH', 'uext_vis.value = uext.value')
-                   ->join('\App\Entity\ItemCorpus', 'ic_vis', 'WITH'. 'ic_vis.itemId = uext_vis.itemId')
+                   ->join('\App\Entity\ItemCorpus', 'ic_vis', 'WITH', 'ic_vis.itemId = uext_vis.itemId')
+                   ->join('\App\Entity\Item', 'i_vis', 'WITH', 'i_vis.id = uext_vis.itemId')
+                   ->andWhere('i_vis.isOnline = 1')
                    ->andWhere('ic_vis.corpusId in (:corpus_id_list)')
                    ->andWhere('uext.value in (:gsn_list)')
                    ->andWhere('uext.itemId in (:id_list)')
@@ -261,7 +263,6 @@ class UrlExternalRepository extends ServiceEntityRepository
 
         $query = $qb->getQuery();
         $result = $query->getResult();
-
 
         // match id_public by id
         // the result list is not large so the filter is no performance problem
