@@ -5,13 +5,6 @@
       method="post">
     {# disable submit via enter-key #}
     <button type="submit" disabled class="d-none" aria-hidden="true"></button>
-    {# obsolete #}
-    {% set itemTypeId=4 %}
-    <input type="text"
-	   class="d-none"
-	   id="{{ editFormId }}_itemTypeId"
-	   name="{{ editFormId }}[itemTypeId]"
-	   value="{{ itemTypeId }}">
     <div class="row mx-2">
 	<div class="col">
 	    <button type="button"

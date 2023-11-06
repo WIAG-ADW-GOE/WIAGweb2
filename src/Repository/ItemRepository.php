@@ -62,22 +62,23 @@ class ItemRepository extends ServiceEntityRepository
 
     /**
      * get list of references for a given item type
+     * 2023-11-06 obsolete
      */
-    public function referenceByItemType($itemTypeId) {
-        $qb = $this->createQueryBuilder('i')
-                   ->select('r')
-                   ->join('\App\Entity\ItemReference', 'ir', 'WITH', 'i.id = ir.itemId')
-                   ->join('\App\Entity\ReferenceVolume', 'r', 'WITH', 'ir.referenceId = r.id')
-                   ->andWhere('i.itemTypeId = :itemTypeId')
-                   ->setParameter(':itemTypeId', $itemTypeId)
-                   ->orderBy('r.displayOrder');
+    // public function referenceByItemType($itemTypeId) {
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->select('r')
+    //                ->join('\App\Entity\ItemReference', 'ir', 'WITH', 'i.id = ir.itemId')
+    //                ->join('\App\Entity\ReferenceVolume', 'r', 'WITH', 'ir.referenceId = r.id')
+    //                ->andWhere('i.itemTypeId = :itemTypeId')
+    //                ->setParameter(':itemTypeId', $itemTypeId)
+    //                ->orderBy('r.displayOrder');
 
-        $query = $qb->getQuery();
+    //     $query = $qb->getQuery();
 
-        $result = $query->getResult();
+    //     $result = $query->getResult();
 
-        return $result;
-    }
+    //     return $result;
+    // }
 
     /**
      * 2023-10-25; new version in UrlExternalRepository
@@ -142,60 +143,70 @@ class ItemRepository extends ServiceEntityRepository
     //     return array_column($result, 'personId');
     // }
 
-    public function setSibling($person) {
-        // get person from Domherrendatenbank
-        $f_found = false;
-        $sibling = $this->findSibling($person);
-        if ($sibling) {
-            $person->setSibling($sibling);
-            $f_found = true;
-        }
-        return $f_found;
-    }
+    /**
+     * 2023-11-06 obsolete
+     */
+    // public function setSibling($person) {
+    //     // get person from Domherrendatenbank
+    //     $f_found = false;
+    //     $sibling = $this->findSibling($person);
+    //     if ($sibling) {
+    //         $person->setSibling($sibling);
+    //         $f_found = true;
+    //     }
+    //     return $f_found;
+    // }
 
-    public function findSibling($person) {
-        $authorityWIAG = Authority::ID['WIAG-ID'];
-        $wiagid = $person->getItem()->getIdPublic();
-        $sibling = null;
-        if (!is_null($wiagid) && $wiagid != "") {
-            $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
-            $item = $this->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
-            if ($item) {
-                $personRepository = $this->getEntityManager()->getRepository(Person::class);
-                $sibling_list = $personRepository->findList([$item[0]->getId()]);
-                $sibling = $sibling_list[0];
-            }
-        }
-        return $sibling;
-    }
+    /**
+     * 2023-11-06 obsolete
+     */
+    // public function findSibling($person) {
+    //     $authorityWIAG = Authority::ID['WIAG-ID'];
+    //     $wiagid = $person->getItem()->getIdPublic();
+    //     $sibling = null;
+    //     if (!is_null($wiagid) && $wiagid != "") {
+    //         $itemTypeCanon = Item::ITEM_TYPE_ID['Domherr']['id'];
+    //         $item = $this->findByUrlExternal($itemTypeCanon, $wiagid, $authorityWIAG);
+    //         if ($item) {
+    //             $personRepository = $this->getEntityManager()->getRepository(Person::class);
+    //             $sibling_list = $personRepository->findList([$item[0]->getId()]);
+    //             $sibling = $sibling_list[0];
+    //         }
+    //     }
+    //     return $sibling;
+    // }
 
-    public function findByUrlExternal($itemTypeId, $value, $authId, $isonline = true) {
-        if (!is_array($itemTypeId)) {
-            $itemTypeId = [$itemTypeId];
-        }
 
-        $qb = $this->createQueryBuilder('i')
-                   ->addSelect('i')
-                   ->join('i.urlExternal', 'ext')
-                   ->andWhere('i.itemTypeId in (:itemTypeId)')
-                   ->andWhere('ext.value = :value')
-                   ->andWhere('ext.authorityId = :authId')
-                   ->setParameter(':itemTypeId', $itemTypeId)
-                   ->setParameter(':value', $value)
-                   ->setParameter(':authId', $authId);
+    /**
+     * 2023-11-06 obsolete
+     */
+    // public function findByUrlExternal($itemTypeId, $value, $authId, $isonline = true) {
+    //     if (!is_array($itemTypeId)) {
+    //         $itemTypeId = [$itemTypeId];
+    //     }
 
-        if ($isonline) {
-            $qb->andWhere('i.isOnline = 1');
-            // $online_status = Item::ITEM_TYPE[$itemTypeId]['online_status'];
-            // $qb->andWhere('i.editStatus = :online_status')
-            //    ->setParameter('online_status', $online_status);
-        }
+    //     $qb = $this->createQueryBuilder('i')
+    //                ->addSelect('i')
+    //                ->join('i.urlExternal', 'ext')
+    //                ->andWhere('i.itemTypeId in (:itemTypeId)')
+    //                ->andWhere('ext.value = :value')
+    //                ->andWhere('ext.authorityId = :authId')
+    //                ->setParameter(':itemTypeId', $itemTypeId)
+    //                ->setParameter(':value', $value)
+    //                ->setParameter(':authId', $authId);
 
-        $query = $qb->getQuery();
-        $item = $query->getResult();
+    //     if ($isonline) {
+    //         $qb->andWhere('i.isOnline = 1');
+    //         // $online_status = Item::ITEM_TYPE[$itemTypeId]['online_status'];
+    //         // $qb->andWhere('i.editStatus = :online_status')
+    //         //    ->setParameter('online_status', $online_status);
+    //     }
 
-        return $item;
-    }
+    //     $query = $qb->getQuery();
+    //     $item = $query->getResult();
+
+    //     return $item;
+    // }
 
     /**
      * 2023-10-05 obsolete

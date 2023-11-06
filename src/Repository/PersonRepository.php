@@ -780,7 +780,6 @@ class PersonRepository extends ServiceEntityRepository {
      * add conditions set by facets
      */
     private function addPriestUtFacets($qb, $model) {
-        $itemTypeId = Item::ITEM_TYPE_ID['Priester Utrecht'];
 
         $facetReligiousOrder = $model->facetReligiousOrder;
         if ($facetReligiousOrder) {

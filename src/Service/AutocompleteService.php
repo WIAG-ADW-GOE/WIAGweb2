@@ -34,7 +34,6 @@ class AutocompleteService extends ServiceEntityRepository {
     /**
      * usually used for asynchronous JavaScript request
      *
-     * $item_type_id is not used here (needed for uniform signature)
      */
     public function suggestRole($queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Role::class);
@@ -301,7 +300,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * 2023-09-06 TODO replace item_type_id by corpus_id
+     *
      */
     public function suggestCommentDuplicate($queryParam, $hintSize) {
         $repository = $this->getEntityManager()->getRepository(Item::class);

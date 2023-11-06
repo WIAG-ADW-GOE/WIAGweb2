@@ -78,8 +78,6 @@ class EditBaseController extends AbstractController {
         $edit_form_id = 'prop_edit_form';
         $form_data = $request->request->get($edit_form_id);
 
-        $item_type_id = $form_data['itemTypeId'];
-
         /* map/validate form */
         // the properties are not linked to items yet
 
