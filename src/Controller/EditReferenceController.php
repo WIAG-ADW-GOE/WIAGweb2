@@ -111,7 +111,6 @@ class EditReferenceController extends AbstractController {
         $sort_criteria[] = 'id';
         $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
 
-        $item_type_id = '';
         if ($model['corpus'] != '- alle -') {
             $corpus_cand = explode(' ,', $model['corpus']);
             $corpus_id = $corpus_cand[0];
@@ -153,10 +152,6 @@ class EditReferenceController extends AbstractController {
             $reference_list[$reference->getId()] = $reference;
         }
 
-        // - default
-        // reference_volume.item_type_id is obsolete 2023-05-05
-        $item_type_id = 0;
-
         foreach($form_data as $data) {
             $id = $data['id'];
             $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
@@ -170,7 +165,6 @@ class EditReferenceController extends AbstractController {
                     $form_is_expanded = 1;
                     $reference = new ReferenceVolume();
                     $reference->setFormIsExpanded($form_is_expanded);
-                    $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
                 $reference->setIsEdited(1);
@@ -235,7 +229,6 @@ class EditReferenceController extends AbstractController {
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'itemTypeId' => $item_type_id,
         ]);
 
     }
@@ -262,9 +255,6 @@ class EditReferenceController extends AbstractController {
             $reference_list[$reference->getId()] = $reference;
         }
 
-        // - default
-        // reference_volume.item_type_id is obsolete 2023-05-05
-        $item_type_id = 0;
 
         // deletion takes priority: all other edit data are lost and sub-forms are closed
         foreach ($reference_list as $reference) {
@@ -287,7 +277,6 @@ class EditReferenceController extends AbstractController {
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'itemTypeId' => $item_type_id,
         ]);
 
     }
@@ -328,9 +317,8 @@ class EditReferenceController extends AbstractController {
      */
     public function newReference(Request $request) {
 
-        $item_type_id = $request->query->get('item_type_id');
         $ref = new ReferenceVolume();
-        $ref->setItemTypeId($item_type_id);
+        $ref->setItemTypeId(0); // obsolete
         $ref->setIsOnline(0);
         $ref->setFormIsExpanded(true);
 
