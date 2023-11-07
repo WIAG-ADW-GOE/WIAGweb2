@@ -132,8 +132,7 @@ class Diocese
     private $referenceCount;
 
     public function __construct($user_id) {
-        $item_type_id = Item::ITEM_TYPE_ID['Bistum']['id'];
-        $this->item = new Item($item_type_id, $user_id);
+        $this->item = new Item($user_id);
         $this->altLabels = new ArrayCollection();
     }
 

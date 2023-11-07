@@ -235,7 +235,7 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     /**
      * set idPublicVisible for external URLs in $person_list via GSN
-     * 2023-10-10 update (used for update from Digitales Personenregister)
+     * 2023-10-10 used for update from Digitales Personenregister
      */
     public function setIdPublicVisible($person_list) {
         $gsn_list = array();
@@ -243,21 +243,20 @@ class UrlExternalRepository extends ServiceEntityRepository
             $gsn_list[$person->getId()] = $person->getItem()->getGsn();
         }
 
-        $type_id_list = [
-            Item::ITEM_TYPE_ID['Domherr']['id'],
-            Item::ITEM_TYPE_ID['Bischof']['id'],
-        ];
+        $corpus_id_list = ['epc', 'can'];
 
         $qb = $this->createQueryBuilder('uext')
                    ->select('uext.itemId as item_id, '.
-                            'i_vis.idPublic as id_public_vis, '.
-                            'i_vis.itemTypeId as item_type_id')
+                            'ic_vis.idPublic as id_public_vis, '.
+                            'ic_vis.corpusId as corpus_id')
                    ->join('\App\Entity\UrlExternal', 'uext_vis', 'WITH', 'uext_vis.value = uext.value')
-                   ->join('uext_vis.item', 'i_vis')
-                   ->andWhere('i_vis.itemTypeId in (:type_id_list)')
+                   ->join('\App\Entity\ItemCorpus', 'ic_vis', 'WITH', 'ic_vis.itemId = uext_vis.itemId')
+                   ->join('\App\Entity\Item', 'i_vis', 'WITH', 'i_vis.id = uext_vis.itemId')
+                   ->andWhere('i_vis.isOnline = 1')
+                   ->andWhere('ic_vis.corpusId in (:corpus_id_list)')
                    ->andWhere('uext.value in (:gsn_list)')
                    ->andWhere('uext.itemId in (:id_list)')
-                   ->setParameter('type_id_list', $type_id_list)
+                   ->setParameter('corpus_id_list', $corpus_id_list)
                    ->setParameter('gsn_list', $gsn_list)
                    ->setParameter('id_list', array_keys($gsn_list));
 
@@ -265,16 +264,15 @@ class UrlExternalRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
 
-
         // match id_public by id
         // the result list is not large so the filter is no performance problem
         foreach ($person_list as $person) {
             $item_id = $person->getId();
             // look for canon IDs first, bishop wins if present
             $match_flag = false;
-            foreach ($type_id_list as $type_id) {
-                $cand_list = array_filter($result, function($v) use ($item_id, $type_id) {
-                    return ($v['item_id'] == $item_id and $v['item_type_id'] == $type_id);
+            foreach ($corpus_id_list as $corpus_id) {
+                $cand_list = array_filter($result, function($v) use ($item_id, $corpus_id) {
+                    return ($v['item_id'] == $item_id and $v['corpus_id'] == $corpus_id);
                 });
                 foreach($cand_list as $cand) {
                     $person->getItem()->setIdPublicVisible($cand['id_public_vis']);

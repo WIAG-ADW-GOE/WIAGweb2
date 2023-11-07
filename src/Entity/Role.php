@@ -99,8 +99,7 @@ class Role
 
 
     public function __construct($user_id) {
-        $item_type_id = Item::ITEM_TYPE_ID['Amt']['id'];
-        $this->item = new Item($item_type_id, $user_id);
+        $this->item = new Item($user_id);
     }
 
     public function setItem($item) {

@@ -190,17 +190,8 @@ class Person {
         $this->itemTypeId = 0;
     }
 
-    /**
-     * 2023-05-24 obsolete
-     */
-    static public function newPerson_legacy(Item $item) {
-        $person = new Person();
-        $person->setItem($item);
-        $person->setItemTypeId($item->getItemTypeId());
-        return $person;
-    }
-
     public function setId($id): self {
+        $this->item->setId($id);
         $this->id = $id;
         return $this;
     }

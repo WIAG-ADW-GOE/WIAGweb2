@@ -232,9 +232,6 @@ class PersonController extends AbstractController {
             }
         }
 
-        // TODO 2023-08-15 clean up sibling
-        // $personRepository->setSibling([$person]);
-
         return $this->render('person/person.html.twig', [
             'form' => $form->createView(),
             'corpus' => $corpusId,

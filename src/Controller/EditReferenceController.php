@@ -47,15 +47,15 @@ class EditReferenceController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
-        $item_type_choices = [
+        $corpus_choices = [
             '- alle -' => '',
-            'Bischof/Domherr' => '4, 5',
-            'GS-Bände' => '6, 9',
-            'Bistum' => '1',
-            'Priester Utrecht' => '10',
+            'Bischof/Domherr' => 'epc, can',
+            'GS-Bände' => 'dreg, dreg-can',
+            'Bistum' => 'dioc',
+            'Priester Utrecht' => 'utp',
         ];
 
-        $default_item_type = $item_type_choices['- alle -'];
+        $default_corpus = $corpus_choices['- alle -'];
 
         $sort_by_choices = [
             'ID' => 'referenceId',
@@ -65,16 +65,16 @@ class EditReferenceController extends AbstractController {
         ];
 
         $model = [
-            'itemType' => '',
+            'corpus' => '',
             'sortBy' => 'referenceId',
             'searchText' => '',
         ];
 
         $form = $this->createFormBuilder($model)
                      ->setMethod('GET')
-                     ->add('itemType', ChoiceType::class, [
+                     ->add('corpus', ChoiceType::class, [
                          'label' => 'Thema',
-                         'choices' => $item_type_choices,
+                         'choices' => $corpus_choices,
                          'required' => false,
                      ])
                      ->add('searchText', TextType::class, [
@@ -96,7 +96,7 @@ class EditReferenceController extends AbstractController {
         $reference_list = array();
         if ($form->isSubmitted() && $form->isValid()) {
         } else {
-            $model['itemType'] = $default_item_type;
+            $model['corpus'] = $default_corpus;
         }
 
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
@@ -111,10 +111,9 @@ class EditReferenceController extends AbstractController {
         $sort_criteria[] = 'id';
         $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
 
-        $item_type_id = '';
-        if ($model['itemType'] != '- alle -') {
-            $item_type_cand = explode(' ,', $model['itemType']);
-            $item_type_id = $item_type_cand[0];
+        if ($model['corpus'] != '- alle -') {
+            $corpus_cand = explode(' ,', $model['corpus']);
+            $corpus_id = $corpus_cand[0];
         }
 
         $template = 'edit_reference/query.html.twig';
@@ -153,10 +152,6 @@ class EditReferenceController extends AbstractController {
             $reference_list[$reference->getId()] = $reference;
         }
 
-        // - default
-        // reference_volume.item_type_id is obsolete 2023-05-05
-        $item_type_id = 0;
-
         foreach($form_data as $data) {
             $id = $data['id'];
             $form_is_expanded = isset($data['formIsExpanded']) ? 1 : 0;
@@ -170,7 +165,6 @@ class EditReferenceController extends AbstractController {
                     $form_is_expanded = 1;
                     $reference = new ReferenceVolume();
                     $reference->setFormIsExpanded($form_is_expanded);
-                    $reference->setItemTypeId($item_type_id);
                     $reference_list[] = $reference;
                 }
                 $reference->setIsEdited(1);
@@ -235,7 +229,6 @@ class EditReferenceController extends AbstractController {
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'itemTypeId' => $item_type_id,
         ]);
 
     }
@@ -262,9 +255,6 @@ class EditReferenceController extends AbstractController {
             $reference_list[$reference->getId()] = $reference;
         }
 
-        // - default
-        // reference_volume.item_type_id is obsolete 2023-05-05
-        $item_type_id = 0;
 
         // deletion takes priority: all other edit data are lost and sub-forms are closed
         foreach ($reference_list as $reference) {
@@ -287,7 +277,6 @@ class EditReferenceController extends AbstractController {
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
-            'itemTypeId' => $item_type_id,
         ]);
 
     }
@@ -328,9 +317,8 @@ class EditReferenceController extends AbstractController {
      */
     public function newReference(Request $request) {
 
-        $item_type_id = $request->query->get('item_type_id');
         $ref = new ReferenceVolume();
-        $ref->setItemTypeId($item_type_id);
+        $ref->setItemTypeId(0); // obsolete
         $ref->setIsOnline(0);
         $ref->setFormIsExpanded(true);
 

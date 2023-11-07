@@ -78,7 +78,6 @@ class PersonRoleRepository extends ServiceEntityRepository
         $role = array();
         $roleLast = null;
         $placeName = array();
-        $itemTypeId = null;
 
         // collect places for roles
         foreach ($result as $r_loop) {

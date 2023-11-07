@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\ItemCorpus;
+use App\Service\UtilService;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -101,22 +103,29 @@ class ItemCorpusRepository extends ServiceEntityRepository
     /**
      *
      */
-    public function findItemIdByCorpusAndId($corpus_id, $id_in_corpus, $with_merged = false) {
+    public function findItemIdByCorpusAndId($two_part_id, $with_merged = false) {
+        $parts = UtilService::splitIdInCorpus($two_part_id);
+        if (is_null($parts)) {
+            return null;
+        }
         $qb = $this->createQueryBuilder('ic')
                    ->select('ic.itemId')
                    ->join('ic.item', 'i')
                    ->andWhere('ic.corpusId = :corpus_id')
-                   ->andWhere('ic.idInCorpus = :id')
                    ->andWhere('i.isDeleted = 0')
-                   ->setParameter('corpus_id', $corpus_id)
-                   ->setParameter('id', $id_in_corpus);
+                   ->setParameter('corpus_id', $parts['corpus_id']);
 
         if (!$with_merged) {
             $qb->andWhere("i.mergeStatus in ('child', 'original')");
         }
 
+        if (!is_null($parts['id'])) {
+            $qb->andWhere('ic.idInCorpus = :id')
+            ->setParameter('id', $parts['id']);
+        }
+
         $query = $qb->getQuery();
-        return $query->getOneOrNullResult();
+        return $query->getResult();
     }
 
     public function findPairs($item_id, $corpus_id_list) {

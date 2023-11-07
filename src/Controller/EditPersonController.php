@@ -342,8 +342,10 @@ class EditPersonController extends AbstractController {
                 // start out with a new object to avoid cascade errors
                 $person_new = new Person($current_user_id);
                 $this->entityManager->persist($person_new);
+                $next_id = $itemRepository->findMaxId() + 1;
+                $person_new->setId($next_id);
                 $this->entityManager->flush();
-                $person_id = $person_new->getItem()->getId();
+                $person_id = $person_new->getId();
             }
 
             // read complete tree to perform deletions if necessary
@@ -515,7 +517,6 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     *
      * @Route("/edit/person/delete-local", name="edit_person_delete_local")
      */
     public function deleteEntryLocal(Request $request) {
@@ -564,8 +565,6 @@ class EditPersonController extends AbstractController {
         $person_repository = $this->entityManager->getRepository(Person::class);
 
         $form_data = $request->request->get(self::EDIT_FORM_ID);
-        // TODO 2023-10-10
-        $item_type_id = $form_data[0]['item']['itemTypeId'];
 
         $id_list = array_column($form_data, 'id');
 
@@ -588,7 +587,7 @@ class EditPersonController extends AbstractController {
 
         $template = 'edit_person/_list.html.twig';
 
-        return $this->renderEditElements($template, $item_type_id, [
+        return $this->renderEditElements($template, [
             'personList' => $person_list,
             'count' => count($person_list),
             'formType' => 'list',
@@ -649,30 +648,30 @@ class EditPersonController extends AbstractController {
      * AJAX 2023-10-10 not in use
      * @Route("/edit/person/item-content/{itemTypeId}/{id}/{index}", name="edit_person_item_content")
      */
-    public function _itemContent(Request $request,
-                                 int $itemTypeId,
-                                 int $id,
-                                 int $index) {
-        $person_repository = $this->entityManager->getRepository(Person::class);
-        $authorityRepository = $this->entityManager->getRepository(Authority::class);
-        $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
+    // public function _itemContent(Request $request,
+    //                              int $itemTypeId,
+    //                              int $id,
+    //                              int $index) {
+    //     $person_repository = $this->entityManager->getRepository(Person::class);
+    //     $authorityRepository = $this->entityManager->getRepository(Authority::class);
+    //     $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
 
-        $query_result = $person_repository->findList([$id]);
-        $person = $query_result[0];
-        $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-        $person->extractSeeAlso();
-        $person->addEmptyDefaultElements($auth_list);
+    //     $query_result = $person_repository->findList([$id]);
+    //     $person = $query_result[0];
+    //     $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
+    //     $person->extractSeeAlso();
+    //     $person->addEmptyDefaultElements($auth_list);
 
-        $item = $person->getItem();
-        $user = $userWiagRepository->find($item->getChangedBy());
-        $item->setChangedByUser($user);
+    //     $item = $person->getItem();
+    //     $user = $userWiagRepository->find($item->getChangedBy());
+    //     $item->setChangedByUser($user);
 
-        return $this->renderEditElements("edit_person/_item_content.html.twig", $itemTypeId, [
-            'person' => $person,
-            'personIndex' => $index,
-            'formType' => 'list',
-        ]);
-    }
+    //     return $this->renderEditElements("edit_person/_item_content.html.twig", $itemTypeId, [
+    //         'person' => $person,
+    //         'personIndex' => $index,
+    //         'formType' => 'list',
+    //     ]);
+    // }
 
     /**
      * @return template for new item property
@@ -897,13 +896,11 @@ class EditPersonController extends AbstractController {
         // find merge candidate
         $second = null;
         foreach ($iic_second_list as $iic) {
-            $cid = UtilService::splitIdInCorpus($iic);
-            if (!is_null($cid)) {
-                $ic_item_id = $itemCorpusRepository->findItemIdByCorpusAndId($cid['corpus'], $cid['id']);
-                if (!is_null($ic_item_id)) {
-                    $second = $itemRepository->find($ic_item_id['itemId']);
-                    break;
-                }
+            $item_id_q = $itemCorpusRepository->findItemIdByCorpusAndId($iic);
+            if (!is_null($item_id_q)) {
+                $item_id = array_values(array_column($item_id_q, 'itemId'))[0];
+                $second = $itemRepository->find($item_id);
+                break;
             }
         }
 
@@ -927,6 +924,7 @@ class EditPersonController extends AbstractController {
             // create new person set corpus data
             $person = new Person($current_user);
             $item = $person->getItem();
+            $item->setEditStatus(Item::DEFAULT_STATUS_MERGE);
             $corpus_list_new = $person->getItem()->getItemCorpus();
             $corpus_found_list = array(); // add each corpus_id only once
             foreach ($parent_list as $parent) {
@@ -985,11 +983,6 @@ class EditPersonController extends AbstractController {
         $id_all = $personRepository->findEditPersonIds($model, $limit, $offset, $online_only);
 
         $person_list = $personRepository->findList($id_all);
-        if (count($person_list) > 0) {
-            $item_type_id = $person_list[0]->getItemTypeId();
-        } else {
-            $item_type_id = Item::ITEM_TYPE_ID['Domherr']['id'];
-        }
 
         // add empty role, reference and id external if not present
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -1004,7 +997,7 @@ class EditPersonController extends AbstractController {
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, $item_type_id, [
+        return $this->renderEditElements($template, [
             'personList' => $person_list,
             'form' => null,
             'title' => null,
@@ -1023,6 +1016,7 @@ class EditPersonController extends AbstractController {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
         $item = $itemRepository->find($id);
 

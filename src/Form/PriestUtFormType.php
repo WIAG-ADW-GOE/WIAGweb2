@@ -169,7 +169,6 @@ class PriestUtFormType extends AbstractType
         $model = clone $modelIn;
         $model->facetOffice = null;
 
-        $itemTypeId = Item::ITEM_TYPE_ID['Bischof'];
         $offices = $this->repository->countPriestUtOffice($model);
 
         $choices = array();

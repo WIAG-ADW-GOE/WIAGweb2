@@ -57,7 +57,7 @@ class ReferenceVolume extends Model {
     /**
      * @ORM\Column(type="integer")
      */
-    private $itemTypeId;
+    private $itemTypeId = 0; // 2023-11-06 obsolete
 
     /**
      * @ORM\Column(type="integer")

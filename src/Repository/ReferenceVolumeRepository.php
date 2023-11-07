@@ -51,16 +51,19 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     */
 
 
-    public function findByCombinedKey($itemTypeId, $referenceId) {
-        $qb = $this->createQueryBuilder('r')
-                   ->andWhere('r.itemTypeId = :itemTypeId')
-                   ->andWhere('r.referenceId = :referenceId')
-                   ->setParameter('itemTypeId', $itemTypeId)
-                   ->setParameter('referenceId', $referenceId);
-        $query = $qb->getQuery();
+    /**
+     * 2023-11-06 obsolete
+     */
+    // public function findByCombinedKey($itemTypeId, $referenceId) {
+    //     $qb = $this->createQueryBuilder('r')
+    //                ->andWhere('r.itemTypeId = :itemTypeId')
+    //                ->andWhere('r.referenceId = :referenceId')
+    //                ->setParameter('itemTypeId', $itemTypeId)
+    //                ->setParameter('referenceId', $referenceId);
+    //     $query = $qb->getQuery();
 
-        return $query->getOneOrNullResult();
-    }
+    //     return $query->getOneOrNullResult();
+    // }
 
     /**
      * set reference volume for references in $person_list
@@ -112,16 +115,19 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
 
     }
 
-    public function findByTitleShortAndType($title, $item_type_id) {
-        $qb = $this->createQueryBuilder('v')
-                   ->select('v')
-                   ->andWhere('v.titleShort LIKE :title')
-                   ->andWhere('v.itemTypeId = :item_type_id')
-                   ->setParameter('title', '%'.$title.'%')
-                   ->setParameter('item_type_id', $item_type_id);
-        $query = $qb->getQuery();
-        return $query->getResult();
-    }
+    /**
+     * 2023-11-06 obsolete
+     */
+    // public function findByTitleShortAndType($title, $item_type_id) {
+    //     $qb = $this->createQueryBuilder('v')
+    //                ->select('v')
+    //                ->andWhere('v.titleShort LIKE :title')
+    //                ->andWhere('v.itemTypeId = :item_type_id')
+    //                ->setParameter('title', '%'.$title.'%')
+    //                ->setParameter('item_type_id', $item_type_id);
+    //     $query = $qb->getQuery();
+    //     return $query->getResult();
+    // }
 
     public function findList($id_list) {
         $qb = $this->createQueryBuilder('v')
@@ -145,12 +151,12 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('v')
                    ->select('v');
 
-        if ($model['itemType'] != '') {
-            $item_type_id = explode(', ', $model['itemType']);
+        if ($model['corpus'] != '') {
+            $cid_list = explode(', ', $model['corpus']);
             $qb->join('\App\Entity\ItemReference', 'ir', 'WITH', 'ir.referenceId = v.referenceId')
-               ->join('\App\Entity\Item', 'i', 'WITH', 'i.id = ir.itemId')
-               ->andWhere('i.itemTypeId in (:item_type_id)')
-               ->setParameter('item_type_id', $item_type_id);
+               ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.itemId = ir.itemId')
+               ->andWhere('ic.corpusId in (:corpus_id)')
+               ->setParameter('corpus_id', $cid_list);
         }
 
         if ($model['searchText'] != '') {
