@@ -37,7 +37,7 @@ class Person {
     private $id = 0;
 
     /**
-     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="Item")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $item;
@@ -177,17 +177,15 @@ class Person {
     private $seeAlso;
 
 
-    public function __construct($user_wiag_id) {
+    public function __construct($item) {
         $this->givennameVariants = new ArrayCollection();
         $this->familynameVariants = new ArrayCollection();
         $this->nameLookup = new ArrayCollection();
         $this->birthPlace = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
-
-        $this->item = new Item($user_wiag_id);
-        // TODO 2023-01-05 clean-up
         $this->itemTypeId = 0;
+        $this->item = $item;
     }
 
     public function setId($id): self {

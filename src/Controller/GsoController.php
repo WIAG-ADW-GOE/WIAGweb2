@@ -296,13 +296,14 @@ class GsoController extends AbstractController {
 
         $n_insert = 0;
         foreach($gso_insert_list as $person_gso) {
-            $person = new Person($current_user_id);
+            $item = new Item($current_user_id);
+            $entityManager->persist($item);
+            $person = new Person($item);
             $entityManager->persist($person);
             $entityManager->flush();
             // read object to obtain ID for roles etc. (ID is only available via Item);
             $person_id = $person->getItem()->getId();
             $person = $personRepository->findOneById($person_id);
-            $item = $person->getItem();
             // set GSN in an extra step; Gso/Items->getIdPublic() returns the current GSN
             $this->editPersonService->setGsn($item, $person_gso->getItem()->getIdPublic());
             $this->editPersonService->updateFromGso($person, $person_gso, $current_user_id);

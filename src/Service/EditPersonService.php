@@ -71,7 +71,8 @@ class EditPersonService {
                 $expanded_param = isset($data['item']['formIsExpanded']) ? 1 : 0;
                 $person->getItem()->setFormIsExpanded($expanded_param);
             } else {
-                $person = new Person($user_id);
+                $item = new Item($user_id);
+                $person = new Person($item);
                 $this->mapAndValidatePerson($person, $data);
 
                 // set form collapse state
@@ -1104,6 +1105,9 @@ class EditPersonService {
         return $person;
     }
 
+    /**
+     * make entry in item_corpus, set id_public for dreg_can
+     */
     private function setCorpusDreg($person, $person_gso) {
         $institutionRepository = $this->entityManager->getRepository(Institution::class, 'default');
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class, 'default');
@@ -1128,6 +1132,7 @@ class EditPersonService {
                 break;
             }
         }
+
         if ($corpus_id == 'dreg-can') {
             $next_num_id_public = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
             $id_public = EditService::makeIdPublic($corpus_id, $next_num_id_public, $this->entityManager);

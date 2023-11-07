@@ -340,12 +340,12 @@ class EditPersonController extends AbstractController {
             // this function is only called if form data have changed
             if ($person_id == 0) { // new entry
                 // start out with a new object to avoid cascade errors
-                $person_new = new Person($current_user_id);
+                $item_new = new Item($current_user_id);
+                $this->entityManager->persist($item_new);
+                $person_new = new Person($item_new);
                 $this->entityManager->persist($person_new);
-                $next_id = $itemRepository->findMaxId() + 1;
-                $person_new->setId($next_id);
                 $this->entityManager->flush();
-                $person_id = $person_new->getId();
+                $person_id = $person_new->getItem()->getId();
             }
 
             // read complete tree to perform deletions if necessary
@@ -632,9 +632,13 @@ class EditPersonController extends AbstractController {
 
     }
 
+    /**
+     * create new Person with Item and empty default elements
+     */
     private function makePerson() {
         $current_user_id = intVal($this->getUser()->getId());
-        $person = new Person($current_user_id);
+        $item = new Item($current_user_id);
+        $person = new Person($item);
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
@@ -881,7 +885,7 @@ class EditPersonController extends AbstractController {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
-        $current_user = $this->getUser()->getId();
+        $current_user_id = $this->getUser()->getId();
 
         // use EDIT_FORM_ID as the name attribute of the form in the template
         $form_data = $request->request->get(self::EDIT_FORM_ID);
@@ -922,8 +926,8 @@ class EditPersonController extends AbstractController {
             $parent_list = $personRepository->findList($id_list);
 
             // create new person set corpus data
-            $person = new Person($current_user);
-            $item = $person->getItem();
+            $item = new Item($current_user_id);
+            $person = new Person($item);
             $item->setEditStatus(Item::DEFAULT_STATUS_MERGE);
             $corpus_list_new = $person->getItem()->getItemCorpus();
             $corpus_found_list = array(); // add each corpus_id only once
