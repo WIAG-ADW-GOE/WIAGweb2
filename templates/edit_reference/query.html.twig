@@ -70,7 +70,7 @@
 		    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
 		    {% if count > pageSize %}
 			{# forward/backward buttons #}
-			{{ include('person/_page_browse.html.twig', {'withPageNumber': true }) }}
+			{{ include('util/_page_browse.html.twig', {'withPageNumber': true }) }}
 		    {% endif %}
 		{% endif %}
 	    </div>
@@ -81,13 +81,13 @@
 		itemTypeId: '4',
 	    }) }}
 	</div>
-	<div class="row mt-1 mx-2">
-	    <div class="col-12">
-		{% if count > pageSize %}
+	{% if count > pageSize %}
+	    <div class="row mt-1 mx-2">
+		<div class="col-12">
 		    {# forward/backward buttons #}
 		    {{ include('person/_page_browse.html.twig', {'withPageNumber': false }) }}
-		{% endif %}
+		</div>
 	    </div>
-	</div>
+	{% endif %}
     </div>
 {% endblock %}

@@ -29,6 +29,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class EditDioceseController extends AbstractController {
 
+    const PAGE_SIZE = 30;
     const EDIT_FORM_ID = 'diocese_edit_form';
 
     /**
@@ -65,10 +66,18 @@ class EditDioceseController extends AbstractController {
         }
 
         $diocese_list = $dioceseRepository->findByModel($model);
+        $count = count($diocese_list);
 
         // sort null last
         $sort_criteria = ['name', 'id'];
         $diocese_list = UtilService::sortByFieldList($diocese_list, $sort_criteria);
+
+        $offset = $request->query->get('offset') ?? 0;
+        $page_number = $request->query->get('pageNumber') ?? 0;
+        // set offset to page begin
+        $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
+
+        $diocese_list = array_slice($diocese_list, $offset, self::PAGE_SIZE);
 
         $template = 'edit_diocese/query.html.twig';
         $edit_form_id = 'diocese_edit_form';
@@ -78,6 +87,9 @@ class EditDioceseController extends AbstractController {
             'form' => $form,
             'editFormId' => $edit_form_id,
             'dioceseList' => $diocese_list,
+            'count' => $count,
+            'offset' => $offset,
+            'pageSize' => self::PAGE_SIZE,
         ]);
 
     }
