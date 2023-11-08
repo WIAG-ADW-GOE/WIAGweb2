@@ -27,6 +27,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class EditRoleController extends AbstractController {
     const SUGGEST_SIZE = 8;
+    const PAGE_SIZE = 30;
 
     /**
      * respond to asynchronous JavaScript request
@@ -105,6 +106,7 @@ class EditRoleController extends AbstractController {
         }
 
         $role_list = $roleRepository->findByModel($model);
+        $count = count($role_list);
 
         // sort null last
         $sort_criteria = array();
@@ -114,6 +116,13 @@ class EditRoleController extends AbstractController {
         $sort_criteria[] = 'id';
         $role_list = UtilService::sortByFieldList($role_list, $sort_criteria);
 
+        $offset = $request->query->get('offset') ?? 0;
+        $page_number = $request->query->get('pageNumber') ?? 0;
+        // set offset to page begin
+        $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
+
+        $role_list = array_slice($role_list, $offset, self::PAGE_SIZE);
+
         $template = 'edit_role/query.html.twig';
         $edit_form_id = 'role_edit_form';
 
@@ -122,6 +131,9 @@ class EditRoleController extends AbstractController {
             'form' => $form,
             'editFormId' => $edit_form_id,
             'roleList' => $role_list,
+            'count' => $count,
+            'offset' => $offset,
+            'pageSize' => self::PAGE_SIZE,
         ]);
 
     }

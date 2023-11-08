@@ -6,11 +6,6 @@
 	  data-controller="submit-form">
 	{% set role_count = roleList|length %}
 	{% set body_id_list = range(1,role_count)|map(r => 'body'~r)|join(' ') %}
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		<span>Treffer: {{ role_count > 0 ? role_count : 'keine' }}</span>
-	    </div>
-	</div>
 	<div class="row mx-2 mt-2">
 	    <div class="col-12">
 		{# disable submit via enter-key #}
