@@ -95,7 +95,8 @@ class PersonRepository extends ServiceEntityRepository {
                     'min(pr.institutionName) as institution_name,'.
                     'min(pr.dioceseName) as diocese_name,'.
                     'min(pr.dateSortKey) as date_sort_key')
-           ->andWhere("i.mergeStatus in ('child', 'original')");
+           ->andWhere("i.mergeStatus in ('child', 'original')")
+           ->andWhere("i.isDeleted = 0");
 
         if (in_array("- alle -", $model->editStatus)) {
             $qb->andWhere("i.editStatus NOT IN ('Dublette')");

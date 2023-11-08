@@ -18,6 +18,11 @@ class Books
     private $id;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $deleted;
+
+    /**
      * @ORM\Column(type="string", length=50, nullable=true)
      */
     private $nummer;
@@ -51,6 +56,12 @@ class Books
     {
         return $this->id;
     }
+
+    public function getDeleted(): ?int
+    {
+        return $this->deleted;
+    }
+
 
     public function getNummer(): ?string
     {

@@ -15,12 +15,12 @@
     {% endif %}
     </div>
     <div>
-	{% set id_public, gsn=person.item.idpublicvisible, person.item.geturlexternalobj('GSN') %}
+	{% set id_public, gsn=person.item.idpublicvisible, person.item.currentGsn %}
 	{% if id_public and id_public != "" %}
 	    <a href="{{ path('id', { 'id': id_public }) }}" target="_blank" rel="noopener">{{ id_public }}</a>
 	{% endif %}
 	{% if gsn %}{% if id_public %}, {% endif %}
-	    <a href="{{ gsn.url }}" target="_blank" rel="noopener">{{ gsn.value }}</a>
+	    <a href="{{ gsUrl~gsn }}" target="_blank" rel="noopener">{{ gsn }}</a>
 	{% endif %}
     </div>
     {% for input_error in person.item.inputerror %}

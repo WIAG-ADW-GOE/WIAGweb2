@@ -1096,51 +1096,9 @@ class EditPersonService {
 
         // roles
         $this->mapRoleFromGso($person, $person_gso);
-
         $this->updateDateRange($person);
 
-        // set corpus_id and id_public (for dreg-can only)
-        $this->setCorpusDreg($person, $person_gso);
-
         return $person;
-    }
-
-    /**
-     * make entry in item_corpus, set id_public for dreg_can
-     */
-    private function setCorpusDreg($person, $person_gso) {
-        $institutionRepository = $this->entityManager->getRepository(Institution::class, 'default');
-        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class, 'default');
-
-        $domstift_list = $institutionRepository->findByCorpusId('cap');
-        $id_cap_list = UtilService::collectionColumn($domstift_list, 'id');
-
-        $item = $person->getItem();
-        $id_in_corpus = $person_gso->getItemId();
-
-        $item_corpus = new ItemCorpus();
-        $item_corpus->setItem($item);
-        $item->getItemCorpus()->add($item_corpus);
-        $item_corpus->setIdInCorpus($id_in_corpus);
-        $this->entityManager->persist($item_corpus);
-
-        $dreg_can_flag = false;
-        $corpus_id = 'dreg';
-        foreach ($person->getRole() as $pr) {
-            if ($pr->isAtInstitutionList($id_cap_list)) {
-                $corpus_id = 'dreg-can';
-                break;
-            }
-        }
-
-        if ($corpus_id == 'dreg-can') {
-            $next_num_id_public = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
-            $id_public = EditService::makeIdPublic($corpus_id, $next_num_id_public, $this->entityManager);
-            $item_corpus->setIdPublic($id_public);
-        }
-        $item_corpus->setCorpusId($corpus_id);
-
-        return $item_corpus;
     }
 
 

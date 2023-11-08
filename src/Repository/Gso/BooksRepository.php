@@ -59,4 +59,29 @@ class BooksRepository extends EntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function findNummerByGsn($gsn_list) {
+        $qb = $this->createQueryBuilder('b')
+                   ->select('DISTINCT b.nummer AS nummer')
+                   ->join('\App\Entity\Gso\Locations', 'l', 'WITH', 'l.bookId = b.id')
+                   ->join('\App\Entity\Gso\Gsn', 'gsn',
+                          'WITH', "gsn.itemId = l.itemId AND gsn.itemStatus = 'online'")
+                   ->andWhere('gsn.nummer in (:gsn_list)')
+                   ->setParameter('gsn_list', $gsn_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+    public function findByNummer($nummer_list, $deleted_flag) {
+        $qb = $this->createQueryBuilder('b')
+                   ->andWhere('b.nummer in (:nummer_list)')
+                   ->andWhere('b.deleted = :deleted_flag')
+                   ->setParameter('deleted_flag', $deleted_flag)
+                   ->setParameter('nummer_list', $nummer_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
 }

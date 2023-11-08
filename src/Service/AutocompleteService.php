@@ -232,6 +232,7 @@ class AutocompleteService extends ServiceEntityRepository {
                          ->andWhere('ic.corpusId in (:corpus_id_list)')
                          ->andWhere('i.editStatus IS NOT NULL')
                          ->andWhere("i.mergeStatus in ('child', 'original')")
+                         ->andWhere("i.isDeleted = 0")
                          ->setParameter('corpus_id_list', Corpus::EDIT_LIST)
                          ->orderBy('i.editStatus');
 
@@ -272,7 +273,8 @@ class AutocompleteService extends ServiceEntityRepository {
         $qb = $repository->createQueryBuilder('i')
                          ->select("DISTINCT n.nameVariant AS suggestion")
                          ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
-                         ->join('i.itemCorpus', 'c');
+                         ->join('i.itemCorpus', 'c')
+                         ->andWhere('i.isDeleted = 0');
 
         if (!is_null($corpus_id_list)) {
             $qb->andWhere('c.corpusId in (:cil)')

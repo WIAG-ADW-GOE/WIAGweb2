@@ -208,7 +208,4 @@ class PersonRoleRepository extends ServiceEntityRepository
         return $result ? $result['n'] : 0;
     }
 
-
-
-
 }

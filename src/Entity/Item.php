@@ -491,6 +491,16 @@ class Item {
     }
 
     /**
+     * get value of a reference to Digitales Personenregister (short cut)
+     * compatible with Items
+     */
+    public function getCurrentGsn() {
+        $dreg_id = Authority::ID['GSN'];
+        return $this->getUrlExternalByAuthority($dreg_id);
+    }
+
+
+    /**
      *
      */
     public function getUrlExternalNonEssential() {

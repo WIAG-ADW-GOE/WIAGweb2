@@ -213,5 +213,16 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
 
     }
 
+    public function findGsVolumeNumber($book_nummer_list) {
+        $qb = $this->createQueryBuilder('v')
+                   ->select('v.gsVolumeNr')
+                   ->andWhere('v.gsVolumeNr in (:book_nummer_list)')
+                   ->setParameter('book_nummer_list', $book_nummer_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+
+    }
+
 
 }

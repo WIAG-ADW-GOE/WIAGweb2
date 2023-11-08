@@ -7,15 +7,18 @@ use App\Entity\ItemNameRole;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
+use App\Entity\ReferenceVolume;
 use App\Entity\UrlExternal;
 use App\Entity\NameLookup;
 use App\Entity\CanonLookup;
 use App\Entity\Gso\Persons;
 use App\Entity\Gso\Items;
+use App\Entity\Gso\Books;
 use App\Entity\Gso\Gsn;
 
 use App\Service\UtilService;
 use App\Service\EditPersonService;
+use App\Service\EditService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -42,9 +45,19 @@ class GsoController extends AbstractController {
         $entityManager = $doctrine->getManager('default');
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
 
+
         // The element type of $data_transfer['person_new_list'] is PersonGso.
         // The elements of $data_transfer['person_update_list'] belong to 'dreg' or 'dreg-can'.
         $data_transfer = $this->collectPerson($doctrine);
+
+        $missing_book_list = $this->findMissingBook($data_transfer, $doctrine);
+
+        if (count($missing_book_list) > 0) {
+            return $this->render("gso/update_error.html.twig", [
+                'countReferenced' => $data_transfer['count_ref'],
+                'missingBookList' => $missing_book_list,
+            ]);
+        }
 
         $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
         return $this->render("gso/update_info.html.twig", [
@@ -62,6 +75,7 @@ class GsoController extends AbstractController {
      * GSN may change in Digitales Personenregister; adopt the current GSN
      *
      * global update of GSN in WIAG (time consuming); see also collectPerson
+     * 2023-11-08 not in use
      */
     public function updateGsn($doctrine) {
         $entityManager = $doctrine->getManager('default');
@@ -139,6 +153,9 @@ class GsoController extends AbstractController {
         foreach ($person_inserted_list as $p_loop) {
             $nameLookupRepository->update($p_loop);
         }
+
+        $urlExternalRepository->setIdPublicVisible($person_inserted_list);
+
         $entityManager->flush();
 
 
@@ -272,7 +289,7 @@ class GsoController extends AbstractController {
 
             // update GSN, do not flush
             $gsn_old = $person_target->getItem()->getGsn();
-            $gsn_new = $person_gso->getItem()->getIdPublic();
+            $gsn_new = $person_gso->getItem()->getCurrentGsn();
             if ($gsn_old != $gsn_new) {
                 $urlExternalRepository->updateValue($gsn_old, $gsn_new);
             }
@@ -289,10 +306,16 @@ class GsoController extends AbstractController {
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
         $itemRepository = $doctrine->getRepository(Item::class, 'default');
+        $itemCorpusRepository = $doctrine->getRepository(ItemCorpus::class, 'default');
+        $institutionRepository = $doctrine->getRepository(Institution::class, 'default');
 
         $current_user_id = $this->getUser()->getId();
 
         $person_insert_list = array();
+
+        $domstift_list = $institutionRepository->findByCorpusId('cap');
+        $id_cap_list = UtilService::collectionColumn($domstift_list, 'id');
+        $next_num_id_public = $itemCorpusRepository->findMaxNumIdPublic('dreg-can') + 1;
 
         $n_insert = 0;
         foreach($gso_insert_list as $person_gso) {
@@ -304,15 +327,42 @@ class GsoController extends AbstractController {
             // read object to obtain ID for roles etc. (ID is only available via Item);
             $person_id = $person->getItem()->getId();
             $person = $personRepository->findOneById($person_id);
-            // set GSN in an extra step; Gso/Items->getIdPublic() returns the current GSN
-            $this->editPersonService->setGsn($item, $person_gso->getItem()->getIdPublic());
+            // set GSN in an extra step;
+            $this->editPersonService->setGsn($item, $person_gso->getItem()->getCurrentGsn());
             $this->editPersonService->updateFromGso($person, $person_gso, $current_user_id);
+
+            // entries in item_corpus
+            $id_in_corpus = $person_gso->getItemId();
+
+            $item_corpus = new ItemCorpus();
+            $item_corpus->setItem($person->getItem());
+            $item->getItemCorpus()->add($item_corpus);
+            $item_corpus->setIdInCorpus($id_in_corpus);
+
+            // - has person a office in a domstift? -> then corpus_id is dreg-can
+            $id_public = null;
+            $corpus_id = 'dreg';
+            foreach ($person->getRole() as $role) {
+                $inst = $role->getInstitution();
+                if (!is_null($inst) and in_array($inst->getId(), $id_cap_list)) {
+                    $corpus_id = 'dreg-can';
+                    $id_public = EditService::makeIdPublic($corpus_id, $next_num_id_public, $entityManager);
+                    $item_corpus->setIdPublic($id_public);
+                    $next_num_id_public += 1;
+                    break;
+                }
+            }
+            $item_corpus->setCorpusId($corpus_id);
+            $entityManager->persist($item_corpus);
+
             // canons from GSO are always online
             $item->setIsOnline(1);
 
             $person_insert_list[] = $person;
             $n_insert += 1;
         }
+
+
         return $person_insert_list;
 
     }
@@ -389,9 +439,9 @@ class GsoController extends AbstractController {
             foreach ($person_new_list as $p_new) {
                 $gso_item = $p_new->getItem();
                 if ($gso_item->hasGsn($niw_gsn)
-                    and $gso_item->getIdPublic() != $niw_gsn) {
-                    $urlExternalRepository->updateValue($niw_gsn, $gso_item->getIdPublic());
-                    $updated_gsn_list[$niw_gsn] = $gso_item->getIdPublic();
+                    and $gso_item->getCurrentGsn() != $niw_gsn) {
+                    $urlExternalRepository->updateValue($niw_gsn, $gso_item->getCurrentGsn());
+                    $updated_gsn_list[$niw_gsn] = $gso_item->getCurrentGsn();
                 }
             }
         }
@@ -407,6 +457,33 @@ class GsoController extends AbstractController {
         ];
 
         return $data_transfer;
+    }
+
+    /**
+     *
+     */
+    private function findMissingBook($data_transfer, $entityManager) {
+        $bookRepository = $entityManager->getRepository(Books::class, 'gso');
+        $referenceRepository = $entityManager->getRepository(ReferenceVolume::class, 'default');
+
+        $gsn_list = array_column($data_transfer['meta_update_list'], 'gsn');
+        foreach ($data_transfer['person_new_list'] as $p_new) {
+            $gsn_list[] = $p_new->getItem()->getCurrentGsn();
+        }
+
+        // get list of books.nummer
+        $bl_q = $bookRepository->findNummerByGsn($gsn_list);
+        $book_nummer_list = array_column($bl_q, 'nummer');
+
+        $wbl_q = $referenceRepository->findGsVolumeNumber($book_nummer_list);
+        $gs_vol_nr_list = array_column($wbl_q, 'gsVolumeNr');
+
+        $delta = array_diff($book_nummer_list, $gs_vol_nr_list);
+
+        $deleted_flag = 0;
+        $missing_ref_book = $bookRepository->findByNummer($delta, $deleted_flag);
+
+        return $missing_ref_book;
     }
 
 

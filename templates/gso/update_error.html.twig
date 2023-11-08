@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid mb-2">
+	<div class="row ms-2">
+	    <div class="col-12">
+		<div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernehmen (Info)</div>
+		<p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
+	    </div>
+	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4 class="text-danger">Literaturtitel fehlen</h4>
+		<p>Bitte mit korrekter GS-Bandnummer in WIAG anlegen</p>
+		{% for book in missingBookList %}
+		    <dl class="row mx-2">
+			<dt class="col-sm-3">{{ book.nummer }}</dt>
+			<dd class="col">{{ book.titel }}</dd>
+		    </dl>
+		{% endfor %}
+	    </div>
+	</div>
+    </div>
+{% endblock %}

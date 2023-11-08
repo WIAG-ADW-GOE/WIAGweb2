@@ -103,6 +103,33 @@ class ItemCorpusRepository extends ServiceEntityRepository
     /**
      *
      */
+    public function findMaxNumIdPublic($corpus_id) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select("i.idPublic")
+                   ->andWhere('i.corpusId = :corpus_id')
+                   ->setParameter('corpus_id', $corpus_id);
+        $query = $qb->getQuery();
+        $result = $query->toIterable();
+
+        $rgx = "/([[:alpha:]-]+)-([0-9]{3,})/";
+
+        $num_id = 1;
+        foreach ($result as $q_ic) {
+            $match_list = array();
+            preg_match($rgx, $q_ic['idPublic'], $match_list);
+            if (count($match_list) > 1) {
+                $cand = intval($match_list[2]);
+                if ($cand > $num_id) {
+                    $num_id = $cand;
+                }
+            }
+        }
+        return $num_id;
+    }
+
+    /**
+     *
+     */
     public function findItemIdByCorpusAndId($two_part_id, $with_merged = false) {
         $parts = UtilService::splitIdInCorpus($two_part_id);
         if (is_null($parts)) {

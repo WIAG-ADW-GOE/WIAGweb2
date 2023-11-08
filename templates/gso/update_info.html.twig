@@ -8,11 +8,14 @@
 {% endblock %}
 
 {% block body %}
-    {% set chunk_size=40 %}
     <div class="container-fluid mb-2">
 	<div class="row ms-2">
 	    <div class="col-12">
-		<div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernehmen</div>
+		{% if isInfo %}
+		    <div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernehmen (Info)</div>
+		{% else %}
+		    <div class="topic-title mb-2">Daten wurden aus dem Digitalen Personenregister ausgelesen</div>
+		{% endif %}
 		<p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
 	    </div>
 	</div>
@@ -37,7 +40,7 @@
 		{% endif %}
 		<ul class="list-group list-group-flush">
 		    {% for person in newList %}
-			{{ include("gso/_item_li_new.html.twig", { 'person': person }) }}
+			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
                     {% else %}
 			<li class="list-group-item">keine</li>
 		    {% endfor %}

@@ -105,7 +105,7 @@ class Items
     /**
      * return current GSN
      */
-    public function getIdPublic() {
+    public function getCurrentGsn() {
         if ($this->gsn->isEmpty()) {
             return null;
         }
@@ -127,7 +127,7 @@ class Items
      * compatible with class Item
      */
     public function getIdPublicVisible() {
-        return $this->getIdPublic();
+        return null;
     }
 
     /**
