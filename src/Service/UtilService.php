@@ -742,6 +742,9 @@ class UtilService {
         return $value;
     }
 
+    /**
+     * compute $offset at page beginn
+     */
     static public function offset($offset, $page_number, $count, $page_size) {
         if (!is_null($offset)) {
             $offset = intdiv($offset, $page_size) * $page_size;
@@ -987,5 +990,6 @@ class UtilService {
         }
 
     }
+
 
 }

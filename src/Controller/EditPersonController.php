@@ -98,18 +98,7 @@ class EditPersonController extends AbstractController {
             $page_number = $request->request->get('pageNumber');
 
             // set offset to page begin
-            if (!is_null($offset)) {
-                $offset = intdiv($offset, $model->listSize) * $model->listSize;
-            } elseif (!is_null($page_number) && $page_number > 0) {
-                $page_number = min($page_number, intdiv($count, $model->listSize) + 1);
-                $offset = ($page_number - 1) * $model->listSize;
-                // this may happen if elements were deleted
-                while ($offset >= $count) {
-                    $offset -= $model->listSize;
-                }
-            } else {
-                $offset = 0;
-            }
+            $offset = UtilService::offset($offset, $page_number, $count, $model->listSize);
 
             $id_list = array_slice($id_all, $offset, $model->listSize);
 

@@ -23,6 +23,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class EditReferenceController extends AbstractController {
 
+    const PAGE_SIZE = 30;
+
     /**
      * respond to asynchronous JavaScript request
      *
@@ -102,6 +104,7 @@ class EditReferenceController extends AbstractController {
         $referenceRepository = $entityManager->getRepository(ReferenceVolume::class);
 
         $reference_list = $referenceRepository->findByModel($model);
+        $count = count($reference_list);
 
         // sort null last
         $sort_criteria = array();
@@ -110,6 +113,13 @@ class EditReferenceController extends AbstractController {
         }
         $sort_criteria[] = 'id';
         $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
+
+        $offset = $request->query->get('offset') ?? 0;
+        $page_number = $request->query->get('pageNumber') ?? 0;
+        // set offset to page begin
+        $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
+
+        $reference_list = array_slice($reference_list, $offset, self::PAGE_SIZE);
 
         if ($model['corpus'] != '- alle -') {
             $corpus_cand = explode(' ,', $model['corpus']);
@@ -124,6 +134,9 @@ class EditReferenceController extends AbstractController {
             'form' => $form,
             'editFormId' => $edit_form_id,
             'referenceList' => $reference_list,
+            'count' => $count,
+            'offset' => $offset,
+            'pageSize' => self::PAGE_SIZE,
         ]);
 
     }
