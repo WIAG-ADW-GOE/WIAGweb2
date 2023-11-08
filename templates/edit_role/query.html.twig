@@ -60,22 +60,22 @@
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>
 		</div>
 	    </div>
-	{{ form_end(form) }}
-	<div class="row mt-2 mx-2">
-	    <div class="col-12">
-		{% if count == 0 %}
-		    Treffer: keine
-		{% elseif count == 1 %}
-		    Treffer: 1
-		{% else %}
-		    Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
-		    {% if count > pageSize %}
-			{# forward/backward buttons #}
-			{{ include('util/_page_browse.html.twig', {'withPageNumber': true }) }}
+	    <div class="row mt-2 mx-2">
+		<div class="col-12">
+		    {% if count == 0 %}
+			Treffer: keine
+		    {% elseif count == 1 %}
+			Treffer: 1
+		    {% else %}
+			Treffer: {{ offset + 1 }} - {{ min(offset + pageSize, count)}} von {{ count }}
+			{% if count > pageSize %}
+			    {# forward/backward buttons #}
+			    {{ include('util/_page_browse.html.twig', {'withPageNumber': true }) }}
+			{% endif %}
 		    {% endif %}
-		{% endif %}
+		</div>
 	    </div>
-	</div>
+	{{ form_end(form) }}
 	{{ include('edit_role/_list.html.twig') }}
 	{% if count > pageSize %}
 	    <div class="row mt-1 mx-2">

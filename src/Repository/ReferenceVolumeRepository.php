@@ -129,11 +129,13 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     //     return $query->getResult();
     // }
 
+    /**
+     * find by $id_list, keep order of $id_list
+     */
     public function findList($id_list) {
         $qb = $this->createQueryBuilder('v')
                    ->select('v')
                    ->andWhere('v.id in (:id_list)')
-                   ->addOrderBy('v.displayOrder', 'ASC')
                    ->setParameter('id_list', $id_list);
         $query = $qb->getQuery();
         $reference_list = $query->getResult();
@@ -141,7 +143,6 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         $reference_list = UtilService::reorder($reference_list, $id_list, "id");
 
         return $reference_list;
-
     }
 
     /**
@@ -191,7 +192,8 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
                    ->innerJoin('App\Entity\ItemReference', 'ir', 'WITH', 'ir.referenceId = v.referenceId')
                    ->innerJoin('App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.itemId = ir.itemId and ic.corpusId = :corpus_id')
                    ->leftJoin('v.idsExternal', 'idsExternal')
-                   ->orderBy('v.displayOrder')
+                   ->addOrderBy('v.displayOrder')
+                   ->addOrderBy('v.gsCitation')
                    ->setParameter('corpus_id', $corpus_id);
 
         $query = $qb->getQuery();
@@ -207,6 +209,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
                               'OR v.fullCitation LIKE :q_search '.
                               'OR v.gsCitation LIKE :q_search '.
                               'OR v.note LIKE :q_search')
+                   ->addOrderBy('v.gsCitation')
                    ->setParameter('q_search', '%'.$query_param.'%');
 
         $query = $qb->getQuery();

@@ -94,6 +94,7 @@ class EditPersonController extends AbstractController {
 
             $count = count($id_all);
 
+            // $offset is null if form is not sent via a page browse button, then $page_number is relevant
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
 

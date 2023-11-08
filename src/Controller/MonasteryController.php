@@ -37,7 +37,9 @@ class MonasteryController extends AbstractController {
                            MonasteryService $service) {
 
 
-        return $this->renderForm('monastery/update.html.twig');
+        return $this->renderForm('monastery/update.html.twig', [
+            'menuItem' => 'edit-menu',
+        ]);
     }
 
     /**
@@ -54,6 +56,7 @@ class MonasteryController extends AbstractController {
         $offset = $request->query->get('offset');
 
         $list = [];
+        $set_size = 0;
         $count = 0;
         $status = 200;
         try {
@@ -65,11 +68,11 @@ class MonasteryController extends AbstractController {
         }
 
         // dd($status, $list);
+        $updated_n = 0;
+        $created_n = 0;
 
         if ($status == 200) {
 
-            $updated_n = 0;
-            $created_n = 0;
             foreach ($list as $gsn) {
                 $repository = $entityManager->getRepository(Institution::class);
                 $monastery_q_list = $repository->findByIdGsn($gsn);
@@ -120,6 +123,7 @@ class MonasteryController extends AbstractController {
         }
 
         $response = $this->render($template, [
+            'menuItem' => 'edit-menu',
             'status' => $status,
             'count' => $count,
             'totalCount' => $offset + $updated_n + $created_n,

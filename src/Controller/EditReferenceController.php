@@ -60,22 +60,29 @@ class EditReferenceController extends AbstractController {
         $default_corpus = $corpus_choices['- alle -'];
 
         $sort_by_choices = [
-            'ID' => 'referenceId',
-            'GS Zitation' => 'gsCitation',
-            'Kurztitel' => 'titleShort',
-            'Anzeigereihenfolge' => 'displayOrder',
+            'ID' => 'ID',
+            'GS Zitation' => 'GS Zitation',
+            'Kurztitel' => 'Kurztitel',
+            'Anzeigereihenfolge' => 'Anzeigereihenfolge',
+        ];
+
+        $sort_by_choices_map = [
+            'ID' => ['referenceId'],
+            'GS Zitation' => ['gsCitation', 'displayOrder', 'referenceId'],
+            'Kurztitel' => ['titleShort', 'displayOrder', 'referenceId'],
+            'Anzeigereihenfolge' => ['displayOrder', 'gsCitation'],
         ];
 
         $model = [
             'corpus' => '',
-            'sortBy' => 'referenceId',
+            'sortBy' => 'Anzeigereihenfolge',
             'searchText' => '',
         ];
 
         $form = $this->createFormBuilder($model)
                      ->setMethod('GET')
                      ->add('corpus', ChoiceType::class, [
-                         'label' => 'Thema',
+                         'label' => 'referenziert in Corpus/Thema',
                          'choices' => $corpus_choices,
                          'required' => false,
                      ])
@@ -109,13 +116,14 @@ class EditReferenceController extends AbstractController {
         // sort null last
         $sort_criteria = array();
         if ($model['sortBy'] != '') {
-            $sort_criteria[] = $model['sortBy'];
+            $sort_criteria = $sort_by_choices_map[$model['sortBy']];
         }
         $sort_criteria[] = 'id';
         $reference_list = UtilService::sortByFieldList($reference_list, $sort_criteria);
 
-        $offset = $request->query->get('offset') ?? 0;
-        $page_number = $request->query->get('pageNumber') ?? 0;
+        // $offset is null if form is not sent via a page browse button, then $page_number is relevant
+        $offset = $request->query->get('offset');
+        $page_number = $request->query->get('pageNumber');
         // set offset to page begin
         $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
 

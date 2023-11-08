@@ -69,11 +69,10 @@ class EditRoleController extends AbstractController {
             'Name' => 'name'
         ];
 
-
         $model = [
             'roleGroup' => '',
             'name' => '',
-            'sortBy' => 'idInSource',
+            'sortBy' => 'name',
         ];
 
         $form = $this->createFormBuilder($model)
@@ -116,8 +115,9 @@ class EditRoleController extends AbstractController {
         $sort_criteria[] = 'id';
         $role_list = UtilService::sortByFieldList($role_list, $sort_criteria);
 
-        $offset = $request->query->get('offset') ?? 0;
-        $page_number = $request->query->get('pageNumber') ?? 0;
+        // $offset is null if form is not sent via a page browse button, then $page_number is relevant
+        $offset = $request->query->get('offset');
+        $page_number = $request->query->get('pageNumber');
         // set offset to page begin
         $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
 
