@@ -63,6 +63,23 @@ class InstitutionRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return matching Domstifte
+     */
+    public function findByCorpusAndName($corpus_id, $name) {
+        $qb = $this->createQueryBuilder('i')
+                   ->select('i.id')
+                   ->andWhere("i.corpusId = :corpus_id")
+                   ->andWhere("i.name like :name")
+                   ->setParameter('name', '%'.$name.'%')
+                   ->setParameter('corpus_id', $corpus_id)
+                   ->addOrderBy('i.nameShort');
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
+
     public function findIfHasItemProperty_legacy(int $item_prop_id) {
 
         $qb = $this->createQueryBuilder('inst')

@@ -8,6 +8,7 @@ use App\Entity\Role;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Authority;
+use App\Entity\Institution;
 use App\Entity\UrlExternal;
 
 use App\Form\PersonFormType;
@@ -45,6 +46,7 @@ class OnePageController extends AbstractController {
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $institutionRepository = $entityManager->getRepository(Institution::class);
         $corpusId = 'can';
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
@@ -58,6 +60,24 @@ class OnePageController extends AbstractController {
         ]);
         $form->handleRequest($request);
         $model = $form->getData();
+
+        // is request related to a Domstift?
+        $domstift_id = null;
+        if (!is_null($model->domstift)) {
+            $cap_q = $institutionRepository->findByCorpusAndName('cap', $model->domstift);
+            if (count($cap_q) > 0) {
+                $domstift_id = array_values($cap_q)[0]['id'];
+            }
+        }
+        $facetDomstift = $model->facetDomstift;
+        if (is_null($domstift_id) and !is_null($facetDomstift)) {
+            $fct_cap_list = array_column($facetDomstift, 'name');
+            $fct_cap_cand = array_values($fct_cap_list)[0];
+            $cap_q = $institutionRepository->findByCorpusAndName('cap', $fct_cap_cand);
+            if (count($cap_q) > 0) {
+                $domstift_id = array_values($cap_q)[0]['id'];
+            }
+        }
 
         $id_all = $itemNameRoleRepository->findPersonIds($model);
         $count = count($id_all);
@@ -93,7 +113,8 @@ class OnePageController extends AbstractController {
             // group by item_id_name in the order of $id_list
 
             foreach($id_list as $id_loop) {
-                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $model, $id_loop);
+                // $domstift_id if not null is used for sorting
+                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $domstift_id, $id_loop);
             }
 
             // 2023-09-07 sequential version
@@ -152,7 +173,7 @@ class OnePageController extends AbstractController {
      *
      * sort roles by domstift
      */
-    private function extractNode($item_name_role_list, $person_all_list, $model, $id_name) {
+    private function extractNode($item_name_role_list, $person_all_list, $domstift_id, $id_name) {
         $item_name_role = array_filter(
             $item_name_role_list,
             function($v) use ($id_name) { return ($v->getItemIdName() == $id_name); }
@@ -190,14 +211,14 @@ class OnePageController extends AbstractController {
         ];
 
         foreach ($node_role as $nr_loop) {
-            $this->sortRole($nr_loop, $model);
+            $this->sortRole($nr_loop, $domstift_id);
         }
 
         return $node;
     }
 
 
-    private function sortRole($person, $model) {
+    private function sortRole($person, $domstift_id) {
         $role = $person->getRole();
         if (is_array($role)) {
             $role_list = $role;
@@ -206,9 +227,8 @@ class OnePageController extends AbstractController {
         }
         $crit_list = ['placeName', 'dateSortKey', 'id'];
         $role_list = UtilService::sortByFieldList($role_list, $crit_list );
-        if ($model->domstift) {
-            $crit_list = ['dateSortKey', 'placeName', 'dateSortKey', 'id'];
-            $role_list = UtilService::sortByDomstift($role_list, $model->domstift);
+        if (!is_null($domstift_id)) {
+            $role_list = UtilService::sortByDomstift($role_list, $domstift_id);
         }
         $person->setRole($role_list);
     }

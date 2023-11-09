@@ -161,16 +161,14 @@ class UtilService {
     /**
      * use criteria in $crit_list to sort $list (array of PersonRole)
      */
-   static function sortByDomstift($list, $domstift) {
+   static function sortByDomstift($list, $domstift_id) {
         // for PHP 8.0.0 and later sorting is stable, until then use second criterion
-        uasort($list, function($a, $b) use ($domstift) {
+        uasort($list, function($a, $b) use ($domstift_id) {
 
             $a_inst = $a->getInstitution();
-            $a_val = $a_inst ? $a_inst->getName() : null;
+            $a_val = $a_inst ? $a_inst->getId() : null;
             $b_inst = $b->getInstitution();
-            $b_val = $b_inst ? $b_inst->getName() : null;
-
-            $domstift_long = 'Domstift '.ucfirst($domstift);
+            $b_val = $b_inst ? $b_inst->getId() : null;
 
             // sort null last
             if (is_null($a_val) && !is_null($b_val)) {
@@ -182,15 +180,15 @@ class UtilService {
             }
 
             $result = 0;
-            if ($a_val == $domstift || $a_val == $domstift_long) {
-                if ($b_val == $domstift || $b_val == $domstift_long) {
+            if ($a_val == $domstift_id) {
+                if ($b_val == $domstift_id) {
                     $result = 0;
                     //
                     $result = self::compare($a, $b, ['dateSortKey', 'id']);
                 } else {
                     $result = -1;
                 }
-            } elseif ($b_val == $domstift || $b_val == $domstift_long) {
+            } elseif ($b_val == $domstift_id) {
                 $result = 1;
             } else {
                 $result = 0;
