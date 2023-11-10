@@ -14,6 +14,7 @@ use App\Entity\UrlExternal;
 
 use App\Service\UtilService;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -567,6 +568,17 @@ class PersonRepository extends ServiceEntityRepository {
         // restore order as in $id_list
         $person_list = UtilService::reorder($person_list, $id_list, "id");
 
+        // sort roles;
+        $crit_list = ['dateSortKey', 'id'];
+        foreach($person_list as $person_role) {
+            $iterator = $person_role->getRole()->getIterator();
+            // define ordering closure, using preferred comparison method/field
+            $iterator->uasort(function ($first, $second) use ($crit_list) {
+                return UtilService::compare($first, $second, $crit_list);
+            });
+            $person_role->setRole($iterator);
+        }
+
         return $person_list;
     }
 
@@ -583,18 +595,19 @@ class PersonRepository extends ServiceEntityRepository {
         return $role_list;
     }
 
-    public function findItemNameRole($id_list) {
-        $qb = $this->createQueryBuilder('p_name')
-                   ->select('p_name, p_role')
-                   ->join('p.item', 'i')
-                   ->join('i.itemNameRole', 'inr')
-                   ->join('\App\Entity\Person', 'p_role', 'WITH', 'p_role.personId = inr.itemIdRole');
+    // see ItemRepository
+    // public function findItemNameRole($id_list) {
+    //     $qb = $this->createQueryBuilder('p_name')
+    //                ->select('p_name, p_role')
+    //                ->join('p.item', 'i')
+    //                ->join('i.itemNameRole', 'inr')
+    //                ->join('\App\Entity\Person', 'p_role', 'WITH', 'p_role.personId = inr.itemIdRole');
 
-        $query = $qb->getQuery();
+    //     $query = $qb->getQuery();
 
-        // TODO order like $id_list
-        return $query->getResult();
-    }
+    //     // TODO order like $id_list
+    //     return $query->getResult();
+    // }
 
     /**
      * 2023-10-12 obsolete

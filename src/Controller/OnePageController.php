@@ -70,7 +70,7 @@ class OnePageController extends AbstractController {
             }
         }
         $facetDomstift = $model->facetDomstift;
-        if (is_null($domstift_id) and !is_null($facetDomstift)) {
+        if (is_null($domstift_id) and !is_null($facetDomstift) and count($facetDomstift) > 0) {
             $fct_cap_list = array_column($facetDomstift, 'name');
             $fct_cap_cand = array_values($fct_cap_list)[0];
             $cap_q = $institutionRepository->findByCorpusAndName('cap', $fct_cap_cand);
@@ -223,7 +223,7 @@ class OnePageController extends AbstractController {
         if (is_array($role)) {
             $role_list = $role;
         } else {
-            $role_list = $role->toArray();
+            $role_list = iterator_to_array($role);
         }
         $crit_list = ['placeName', 'dateSortKey', 'id'];
         $role_list = UtilService::sortByFieldList($role_list, $crit_list );

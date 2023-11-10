@@ -120,7 +120,6 @@ class PersonController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
-
             // set person->role to dreg-roles for the combination can, epc, dreg
             // (relatively rare cases)
             // if ($corpusId == 'can') {
@@ -220,11 +219,21 @@ class PersonController extends AbstractController {
             $item = array_values($item_list)[0];
             $person = $item->getPerson();
             $person_role_list = $item->getPersonRole();
+            $crit_list = ['dateSortKey', 'id'];
+            foreach($person_role_list as $person_role) {
+                $iterator = $person_role->getRole()->getIterator();
+                // define ordering closure, using preferred comparison method/field
+                $iterator->uasort(function ($first, $second) use ($crit_list) {
+                    return UtilService::compare($first, $second, $crit_list);
+                });
+                $person_role->setRole($iterator);
+            }
         } else {
             $inr = $itemNameRoleRepository->findByItemIdName($person_id);
             $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
             $person_role_list = $personRepository->findList($p_id_list);
             $person = null;
+            // order of roles: see annotation in App\Entity\Person.php
             foreach($person_role_list as $person_role) {
                 if ($person_role->getId() == $person_id) {
                     $person = $person_role;

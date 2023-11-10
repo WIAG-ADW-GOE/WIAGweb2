@@ -159,7 +159,7 @@ class UtilService {
 
 
     /**
-     * use criteria in $crit_list to sort $list (array of PersonRole)
+     * sort offices with $domstift_id first then by placename and date
      */
    static function sortByDomstift($list, $domstift_id) {
         // for PHP 8.0.0 and later sorting is stable, until then use second criterion
