@@ -76,7 +76,7 @@
 				    <div class="d-flex mt-2"><h4 class="ms-auto subsection"><a href="{{ path('id', {id: person_loop.item.idPublic}) }}">{{ person_loop.item.idPublic}}</a></h4></div>
 				{% endif %}
 			    {% endif %}
-			    {% for o in person_loop.role %}
+			    {% for o in person_loop.getRoleSortedIteratorByDomstift(domstiftId, roleSortCritList) %}
 				<div custom-style="Aemter" class="d-flex">
 				    {% set datestr=null %}
 				    {% if not o.datebegin and not o.dateend %}

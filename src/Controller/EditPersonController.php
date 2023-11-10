@@ -372,7 +372,6 @@ class EditPersonController extends AbstractController {
                 $target_item->setMergeStatus('child');
                 $target_item->clearMergeParent();
                 $idPublic = $parent_list[0]->getItem()->getIdPublic();
-                $target_item->setIdPublic($idPublic);
                 $target_id = $target->getId();
                 $ancestor_list = array();
                 foreach ($parent_list as $parent) {
@@ -408,6 +407,7 @@ class EditPersonController extends AbstractController {
             $itemNameRoleRepository->updateByIdList($affected_id_list);
 
             $person=$target;
+
         }
 
         // add empty elements for blank form sections

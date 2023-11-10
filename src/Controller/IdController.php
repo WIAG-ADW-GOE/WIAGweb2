@@ -96,20 +96,12 @@ class IdController extends AbstractController {
         $item = array_values($item_list)[0];
         $person = $item->getPerson();
         $person_role_list = $item->getPersonRole();
-        $crit_list = ['dateSortKey', 'id'];
-        foreach($person_role_list as $person_role) {
-            $iterator = $person_role->getRole()->getIterator();
-            // define ordering closure, using preferred comparison method/field
-            $iterator->uasort(function ($first, $second) use ($crit_list) {
-                return UtilService::compare($first, $second, $crit_list);
-            });
-            $person_role->setRole($iterator);
-        }
 
         if ($format == 'html') {
             return $this->render('person/person.html.twig', [
                 'personName' => $person,
                 'personRole' => $person_role_list,
+                'roleSortCritList' => ['dateSortKey', 'id'],
                 'corpus' => $corpus->getCorpusId(),
                 'pageTitle' => $corpus->getPageTitle(),
             ]);

@@ -62,23 +62,26 @@ class OnePageController extends AbstractController {
         $model = $form->getData();
 
         // is request related to a Domstift?
-        $domstift_id = null;
+        $domstift = null;
         if (!is_null($model->domstift)) {
             $cap_q = $institutionRepository->findByCorpusAndName('cap', $model->domstift);
             if (count($cap_q) > 0) {
-                $domstift_id = array_values($cap_q)[0]['id'];
+                $domstift = array_values($cap_q)[0];
             }
         }
         $facetDomstift = $model->facetDomstift;
-        if (is_null($domstift_id) and !is_null($facetDomstift) and count($facetDomstift) > 0) {
+        if (is_null($domstift) and !is_null($facetDomstift) and count($facetDomstift) == 1) {
             $fct_cap_list = array_column($facetDomstift, 'name');
             $fct_cap_cand = array_values($fct_cap_list)[0];
             $cap_q = $institutionRepository->findByCorpusAndName('cap', $fct_cap_cand);
             if (count($cap_q) > 0) {
-                $domstift_id = array_values($cap_q)[0]['id'];
+                $domstift = array_values($cap_q)[0];
             }
         }
 
+        if (!is_null($domstift)) {
+            $model->domstift = $domstift->getName();
+        }
         $id_all = $itemNameRoleRepository->findPersonIds($model);
         $count = count($id_all);
 
@@ -113,8 +116,7 @@ class OnePageController extends AbstractController {
             // group by item_id_name in the order of $id_list
 
             foreach($id_list as $id_loop) {
-                // $domstift_id if not null is used for sorting
-                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $domstift_id, $id_loop);
+                $person_node_list[] = $this->extractNode($item_name_role_list, $person_all_list, $id_loop);
             }
 
             // 2023-09-07 sequential version
@@ -149,13 +151,8 @@ class OnePageController extends AbstractController {
             // $this->sortByRelevantOffice($person_node_list);
         }
 
-        $title = $model->domstift;
-        if ($title) {
-            $part_list = explode(" ", $title);
-            if (count($part_list) == 1) {
-                $title = 'Domstift '.$title;
-            }
-            $title = ucwords($title);
+        if (!is_null($domstift)) {
+            $title = $domstift->getName();
         } else {
             $title = "Domherren";
         }
@@ -163,6 +160,8 @@ class OnePageController extends AbstractController {
         return $this->render('person/onepage_result.html.twig', [
             'title' => $title,
             'canonNodeList' => $person_node_list,
+            'domstiftId' => !is_null($domstift) ? $domstift->getId() : null,
+            'roleSortCritList' => ['placeName', 'dateSortKey', 'id'],
             'limitReached' => count($person_node_list) >= $global_limit,
         ]);
 
@@ -171,9 +170,8 @@ class OnePageController extends AbstractController {
     /**
      * extract node data for one person with $id_name out of $person_all_list
      *
-     * sort roles by domstift
      */
-    private function extractNode($item_name_role_list, $person_all_list, $domstift_id, $id_name) {
+    private function extractNode($item_name_role_list, $person_all_list, $id_name) {
         $item_name_role = array_filter(
             $item_name_role_list,
             function($v) use ($id_name) { return ($v->getItemIdName() == $id_name); }
@@ -210,14 +208,13 @@ class OnePageController extends AbstractController {
             'personRole' => $node_role
         ];
 
-        foreach ($node_role as $nr_loop) {
-            $this->sortRole($nr_loop, $domstift_id);
-        }
-
         return $node;
     }
 
 
+    /**
+     * 2023-11-10 obsolete
+     */
     private function sortRole($person, $domstift_id) {
         $role = $person->getRole();
         if (is_array($role)) {
@@ -233,6 +230,9 @@ class OnePageController extends AbstractController {
         $person->setRole($role_list);
     }
 
+    /**
+     * 2023-11-10 obsolete
+     */
     private function sortByRelevantOffice($person_node_list) {
         uasort($person_node_list, function($a, $b) {
             // first criterion: earliest office
@@ -302,7 +302,7 @@ class OnePageController extends AbstractController {
 
         $reference_list = UtilService::sortByFieldList($reference_list, $criteria_list);
 
-        return $this->render('canon/onepage_references.html.twig', [
+        return $this->render('person/onepage_references.html.twig', [
             'title' => $title,
             'reference_list' => $reference_list,
         ]);

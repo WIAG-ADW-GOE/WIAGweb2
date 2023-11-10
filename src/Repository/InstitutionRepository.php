@@ -68,7 +68,7 @@ class InstitutionRepository extends ServiceEntityRepository
      */
     public function findByCorpusAndName($corpus_id, $name) {
         $qb = $this->createQueryBuilder('i')
-                   ->select('i.id')
+                   ->select('i')
                    ->andWhere("i.corpusId = :corpus_id")
                    ->andWhere("i.name like :name")
                    ->setParameter('name', '%'.$name.'%')

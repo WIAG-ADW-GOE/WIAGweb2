@@ -157,55 +157,6 @@ class UtilService {
         return $list;
     }
 
-
-    /**
-     * sort offices with $domstift_id first then by placename and date
-     */
-   static function sortByDomstift($list, $domstift_id) {
-        // for PHP 8.0.0 and later sorting is stable, until then use second criterion
-        uasort($list, function($a, $b) use ($domstift_id) {
-
-            $a_inst = $a->getInstitution();
-            $a_val = $a_inst ? $a_inst->getId() : null;
-            $b_inst = $b->getInstitution();
-            $b_val = $b_inst ? $b_inst->getId() : null;
-
-            // sort null last
-            if (is_null($a_val) && !is_null($b_val)) {
-                return 1;
-            }
-
-            if (is_null($b_val) && !is_null($a_val)) {
-                return -1;
-            }
-
-            $result = 0;
-            if ($a_val == $domstift_id) {
-                if ($b_val == $domstift_id) {
-                    $result = 0;
-                    //
-                    $result = self::compare($a, $b, ['dateSortKey', 'id']);
-                } else {
-                    $result = -1;
-                }
-            } elseif ($b_val == $domstift_id) {
-                $result = 1;
-            } else {
-                $result = 0;
-            }
-
-            // other criteria
-            if ($result == 0) {
-                $result = self::compare($a, $b, ['placeName', 'dateSortKey', 'id']);
-            }
-
-            return $result;
-
-        });
-
-        return $list;
-    }
-
     /**
      * use $field to reorder $list
      *
@@ -978,7 +929,7 @@ class UtilService {
     static public function splitIdInCorpus($id_in_corpus) {
         $match_list = array();
 
-        $flag = preg_match("/(^[a-z]{3,4})-([0-9]{3,})/", trim($id_in_corpus), $match_list);
+        $flag = preg_match("/(^[a-z]{3,4})-([0-9_%]{3,})/", trim($id_in_corpus), $match_list);
         if ($flag == 1) {
             $parts['corpus_id'] = $match_list[1];
             $parts['id'] = count($match_list) > 2 ? $match_list[2] : null;

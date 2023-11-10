@@ -34,7 +34,7 @@
 	    {% if person.item.mergeStatus == 'child' %}
 		<span class="input-group-text ms-2">zusammengesetzter Eintrag</span>
 	    {% endif %}
-	    {# show parent IDs in the merging process #}
+	    {# show parent IDs in the *merging process* #}
 	    {% if person.item.mergeParent|length > 0 %}
 		<span class="input-group-text ms-2">zusammengesetzt aus</span>
 		{% for parent_item in person.item.mergeParent %}
@@ -155,13 +155,17 @@
 	</div>
     </div>
 </div>
-{% if person.item.ancestor %}
-<div class="row">
-    <div class="col-12">
-	<span class="ms-1">zusammengesetzt aus: </span>{{ person.item.ancestor|map(a => a.concatIdInCorpusWithPrefix)|join('; ') }}
+{% if person.item.formAncestorString %}
+    {% set ancestor_string = person.item.formAncestorString %}
+    <div class="row">
+	<div class="col-12">
+	    <span class="ms-1">zusammengesetzt aus: </span>{{ ancestor_string }}
+	</div>
     </div>
-</div>
+{% else %}
+    {% set ancestor_string = "" %}
 {% endif %}
+{{ util.hiddenInput(base_id, base_input_name, ['item', 'formAncestorString'], ancestor_string) }}
 {# validation messages #}
 {% for error_obj in person.item.inputErrorSection('status') %}
     <div class="row">

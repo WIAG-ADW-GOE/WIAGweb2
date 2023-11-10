@@ -104,13 +104,13 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                    ->join('App\Entity\Person', 'p_name', 'WITH', 'p_name.id = inr.itemIdName');
         $joined_list[] = 'p_name';
 
-        // pr is required for sorting
+        // pr is required for sorting; we publish only persons with roles: use innerJoin
         // queries for bishops only consider Gatz-offices (query, sort, facet)
 
         if ($model->corpus == 'epc') {
-            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
+            $qb->innerJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
         } else {
-            $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+            $qb->innerJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
         }
         $joined_list[] = 'pr';
 

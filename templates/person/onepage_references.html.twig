@@ -1,0 +1,37 @@
+{# canon/onepage_references.html.twig #}
+<!DOCTYPE html>
+<html class="h-100">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Literatur{% endblock %}</title>
+        {# Run `composer require symfony/webpack-encore-bundle`
+        and uncomment the following Encore helpers to start using Symfony UX #}
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
+    </head>
+    <body class="d-flex flex-column h-100">
+	{% block body %}
+	    <div class="container-fluid mt-3">
+		<div class="row mx-2 col-12">
+		    {% if title %}
+			<h1>{{ title }}</h1>
+		    {% else %}
+			<h1>Literatur</h1>
+		    {% endif %}
+		</div>
+		<div class="row mx-2 col-12">
+		    {% for ref in reference_list %}
+			<div class ="mt-1">
+			    {{ ref.titleShort }} = {% if ref.gscitation %}{{ ref.gscitation }}{% else %}{{ ref.fullcitation }}{% endif %}
+			</div>
+		    {% endfor %}
+		</div>
+	    </div>
+	{% endblock %}
+    </body>
+</html>

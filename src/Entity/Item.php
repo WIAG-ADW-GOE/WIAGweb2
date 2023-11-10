@@ -256,6 +256,12 @@ class Item {
 
     /**
      * no DB-mapping
+     * hold IDs of mergeParents as a string
+     */
+    private $formAncestorString = null;
+
+    /**
+     * no DB-mapping
      * hold form input data
      */
     private $formIsEdited = false;
@@ -931,6 +937,30 @@ class Item {
         return $this->changedByUser;
     }
 
+    public function setFormAncestorString($value): self {
+        $this->formAncestorString = $value;
+        return $this;
+    }
+
+    public function getFormAncestorString() {
+
+        // item.ancestor is not touched in a normal editing step
+        if (!is_null($this->formAncestorString) and $this->formAncestorString != "") {
+            return $this->formAncestorString;
+        }
+
+        if (is_null($this->ancestor)) {
+            return null;
+        }
+
+        $parts = array();
+        foreach($this->ancestor as $ancestor) {
+            $parts[] = $ancestor->concatIdInCorpusWithPrefix();
+        }
+
+        return implode("; ", $parts);
+    }
+
     public function getMergeParentTxt() {
         if (is_null($this->mergeParent) || count($this->mergeParent) < 1) {
             return null;
@@ -1253,7 +1283,6 @@ class Item {
         $this->urlExternal = $merged_list;
 
     }
-
 
     public function mergeItemProperty(Item $candidate) {
         $this->mergeCollection('itemProperty', $candidate);

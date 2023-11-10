@@ -197,7 +197,6 @@ class EditPersonService {
         }
     }
 
-
     /**
      * copy (validated) data from $source to $target
      */
@@ -209,6 +208,7 @@ class EditPersonService {
             'commentDuplicate',
             'mergeStatus',
             'normdataEditedBy',
+            'formAncestorString',
         ];
 
         foreach ($field_list as $field) {
@@ -216,7 +216,7 @@ class EditPersonService {
             $set_fnc = 'set'.ucfirst($field);
             $target->getItem()->$set_fnc($source->getItem()->$get_fnc());
         }
-
+        // only relevant in the merging step
         foreach ($source->getItem()->getMergeParent() as $parent_id) {
             $target->getItem()->getMergeParent()->add($parent_id);
         }
@@ -442,7 +442,8 @@ class EditPersonService {
             'mergeStatus',
             'changedBy',
             'commentDuplicate',
-            'normdataEditedBy'
+            'normdataEditedBy',
+            'formAncestorString'
         ];
 
         UtilService::setByKeys($item, $data['item'], $key_list);

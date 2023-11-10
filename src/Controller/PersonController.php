@@ -132,6 +132,7 @@ class PersonController extends AbstractController {
                 'corpus' => $corpusId,
                 'count' => $count,
                 'personList' => $person_list,
+                'roleSortCritList' => ['dateSortKey', 'id'],
                 'offset' => $offset,
                 'pageSize' => self::PAGE_SIZE,
                 'pageTitle' => $corpus->getPageTitle(),
@@ -219,15 +220,6 @@ class PersonController extends AbstractController {
             $item = array_values($item_list)[0];
             $person = $item->getPerson();
             $person_role_list = $item->getPersonRole();
-            $crit_list = ['dateSortKey', 'id'];
-            foreach($person_role_list as $person_role) {
-                $iterator = $person_role->getRole()->getIterator();
-                // define ordering closure, using preferred comparison method/field
-                $iterator->uasort(function ($first, $second) use ($crit_list) {
-                    return UtilService::compare($first, $second, $crit_list);
-                });
-                $person_role->setRole($iterator);
-            }
         } else {
             $inr = $itemNameRoleRepository->findByItemIdName($person_id);
             $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
@@ -246,6 +238,7 @@ class PersonController extends AbstractController {
             'corpus' => $corpusId,
             'personName' => $person,
             'personRole' => $person_role_list,
+            'roleSortCritList' => ['dateSortKey', 'id'],
             'offset' => $offset,
             'hassuccessor' => $hassuccessor,
             'pageTitle' => $corpus->getPageTitle(),

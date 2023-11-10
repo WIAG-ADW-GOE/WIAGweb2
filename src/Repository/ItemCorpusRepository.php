@@ -147,7 +147,7 @@ class ItemCorpusRepository extends ServiceEntityRepository
         }
 
         if (!is_null($parts['id'])) {
-            $qb->andWhere('ic.idInCorpus = :id')
+            $qb->andWhere('ic.idInCorpus LIKE :id')
             ->setParameter('id', $parts['id']);
         }
 

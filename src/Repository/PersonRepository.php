@@ -75,7 +75,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->join('p.item', 'i');
 
         // pr is required for sorting
-        $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
+        $qb->leftJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
         $joined_list[] = 'pr';
 
         $corpusParam = explode(',', $model->corpus);
@@ -567,17 +567,6 @@ class PersonRepository extends ServiceEntityRepository {
 
         // restore order as in $id_list
         $person_list = UtilService::reorder($person_list, $id_list, "id");
-
-        // sort roles;
-        $crit_list = ['dateSortKey', 'id'];
-        foreach($person_list as $person_role) {
-            $iterator = $person_role->getRole()->getIterator();
-            // define ordering closure, using preferred comparison method/field
-            $iterator->uasort(function ($first, $second) use ($crit_list) {
-                return UtilService::compare($first, $second, $crit_list);
-            });
-            $person_role->setRole($iterator);
-        }
 
         return $person_list;
     }

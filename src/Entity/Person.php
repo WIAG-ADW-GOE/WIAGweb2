@@ -8,6 +8,7 @@ use App\Entity\PersonRole;
 use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;
 use App\Service\UtilService;
+
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -658,8 +659,13 @@ class Person {
     public function describeRole($nOffice = 3): ?string {
 
         $office_list = array();
-        foreach(array_slice($this->role->toArray(), 0, $nOffice) as $role) {
+        $loop_count = 0;
+        foreach($this->role as $role) {
             $office_list[] = $role->describe();
+            $loop_count += 1;
+            if ($loop_count >= $nOffice) {
+                break;
+            }
         }
 
         $description = null;
@@ -871,6 +877,80 @@ class Person {
         foreach($matches[0] as $see_also) {
             $this->seeAlso->add($see_also);
         }
+    }
+
+    /**
+     * return iterator for roles sorted by $crit_list
+     */
+    public function getRoleSortedIterator($crit_list) {
+        // it is possible to use an iterator here, but it has no advantages
+        if (is_null($this->role)) {
+            return null;
+        }
+        $iterator = $this->role->getIterator();
+        // define ordering closure, using preferred comparison method/field
+        $iterator->uasort(function ($first, $second) use ($crit_list) {
+            return UtilService::compare($first, $second, $crit_list);
+        });
+        return $iterator;
+    }
+
+    /**
+     * sort offices with $domstift_id first then by $crit_list elements
+     */
+    // static function sortByDomstift($list, $domstift_id) {
+    public function getRoleSortedIteratorByDomstift($domstift_id, $crit_list) {
+        // for PHP 8.0.0 and later sorting is stable, until then use second criterion
+        if (is_null($this->role)) {
+            return null;
+        }
+
+        if (is_null($domstift_id)) {
+            return $this->getRoleSortedIterator($crit_list);
+        }
+
+        $iterator = $this->role->getIterator();
+        // define ordering closure, using preferred comparison method/field
+        $iterator->uasort(function ($a, $b) use ($domstift_id, $crit_list) {
+
+            $a_inst = $a->getInstitution();
+            $a_val = $a_inst ? $a_inst->getId() : null;
+            $b_inst = $b->getInstitution();
+            $b_val = $b_inst ? $b_inst->getId() : null;
+
+            // sort null last
+            if (is_null($a_val) && !is_null($b_val)) {
+                return 1;
+            }
+
+            if (is_null($b_val) && !is_null($a_val)) {
+                return -1;
+            }
+
+            $result = 0;
+            if ($a_val == $domstift_id) {
+                if ($b_val == $domstift_id) {
+                    $result = 0;
+                    //
+                    $result = UtilService::compare($a, $b, $crit_list);
+                } else {
+                    $result = -1;
+                }
+            } elseif ($b_val == $domstift_id) {
+                $result = 1;
+            } else {
+                $result = 0;
+            }
+
+            if ($result == 0) {
+                $result = UtilService::compare($a, $b, $crit_list);
+            }
+
+            return $result;
+
+        });
+
+        return $iterator;
 
     }
 

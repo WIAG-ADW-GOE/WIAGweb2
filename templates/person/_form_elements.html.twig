@@ -36,28 +36,30 @@
 			},
 		    }) }}
 		    <ul class="list-group autocomplete-target"
+			       data-autocomplete-target="results"
+			       style="max-width: 14em;"></ul>
+		</div>
+	    {% endif %}
+	    {% if corpus == "epc" %}
+		{# diocese #}
+		<div class="me-2 mt-1"
+		     {{ stimulus_controller('autocomplete', {
+			 url: path('person_suggest', { 'field': 'diocese' }),
+		     }) }}>
+		    {{ form_label(form.diocese) }}
+		    {{ form_errors(form.diocese) }}
+		    {{ form_widget(form.diocese, {
+			attr: {
+			    'data-autocomplete-target': "input",
+			    'size': 15,
+			    'class': 'wiag-input',
+			},
+		    }) }}
+		    <ul class="list-group autocomplete-target"
 			data-autocomplete-target="results"
 			style="max-width: 14em;"></ul>
 		</div>
 	    {% endif %}
-	    {# diocese #}
-	    <div class="me-2 mt-1"
-		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest', { 'field': 'diocese' }),
-		 }) }}>
-		{{ form_label(form.diocese) }}
-		{{ form_errors(form.diocese) }}
-		{{ form_widget(form.diocese, {
-		    attr: {
-			'data-autocomplete-target': "input",
-			'size': 15,
-			'class': 'wiag-input',
-		    },
-		}) }}
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 14em;"></ul>
-	    </div>
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
