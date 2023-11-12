@@ -64,17 +64,16 @@ class OnePageController extends AbstractController {
         // is request related to a Domstift?
         $domstift = null;
         if (!is_null($model->domstift)) {
-            $cap_q = $institutionRepository->findByCorpusAndName('cap', $model->domstift);
-            if (count($cap_q) > 0) {
+            $cap_q = $institutionRepository->findByCorpusAndNameShort('cap', $model->domstift);
+            if (count($cap_q) == 1) {
                 $domstift = array_values($cap_q)[0];
             }
         }
         $facetDomstift = $model->facetDomstift;
-        if (is_null($domstift) and !is_null($facetDomstift) and count($facetDomstift) == 1) {
+        if (is_null($model->domstift) and !is_null($facetDomstift) and count($facetDomstift) > 0) {
             $fct_cap_list = array_column($facetDomstift, 'name');
-            $fct_cap_cand = array_values($fct_cap_list)[0];
-            $cap_q = $institutionRepository->findByCorpusAndName('cap', $fct_cap_cand);
-            if (count($cap_q) > 0) {
+            $cap_q = $institutionRepository->findByCorpusAndNameShort('cap', $fct_cap_list);
+            if (count($cap_q) == 1) {
                 $domstift = array_values($cap_q)[0];
             }
         }

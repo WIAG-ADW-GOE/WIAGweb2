@@ -51,13 +51,6 @@ class PersonFormType extends AbstractType
                     'placeholder' => 'Vor- oder Nachname',
                 ],
             ])
-            ->add('diocese', TextType::class, [
-                'label' => 'Erzbistum/Bistum',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'Erzbistum/Bistum',
-                ],
-            ])
             ->add('office', TextType::class, [
                 'label' => 'Amt',
                 'required' => false,
@@ -97,6 +90,16 @@ class PersonFormType extends AbstractType
             ->add('stateFctUrl', HiddenType::class, [
                  'mapped' => false,
             ]);
+
+        if ($model->corpus == 'epc') {
+            $builder->add('diocese', TextType::class, [
+                'label' => 'Erzbistum/Bistum',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Erzbistum/Bistum',
+                ],
+            ]);
+        }
 
         if ($model->corpus == 'can') {
             $builder

@@ -66,14 +66,20 @@ class InstitutionRepository extends ServiceEntityRepository
     /**
      * @return matching Domstifte
      */
-    public function findByCorpusAndName($corpus_id, $name) {
+    public function findByCorpusAndNameShort($corpus_id, $name) {
         $qb = $this->createQueryBuilder('i')
                    ->select('i')
                    ->andWhere("i.corpusId = :corpus_id")
-                   ->andWhere("i.name like :name")
-                   ->setParameter('name', '%'.$name.'%')
                    ->setParameter('corpus_id', $corpus_id)
                    ->addOrderBy('i.nameShort');
+
+        if (is_array($name)) {
+            $qb->andWhere("i.nameShort in (:name)")
+               ->setParameter('name', $name);
+        } else {
+            $qb->andWhere("i.nameShort LIKE :name OR i.name LIKE :name")
+               ->setParameter('name', '%'.$name.'%');
+        }
 
         $query = $qb->getQuery();
         return $query->getResult();
