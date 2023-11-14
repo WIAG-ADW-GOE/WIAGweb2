@@ -118,7 +118,8 @@ class DioceseController extends AbstractController {
 
     /**
      * return diocese data
-     *
+     * @Route("/data/dioc")
+     * @Route("/api/bistuemer")
      * @Route("/bistum/data", name="diocese_query_data")
      */
     public function queryData(Request $request,

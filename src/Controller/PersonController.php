@@ -246,10 +246,9 @@ class PersonController extends AbstractController {
 
     }
 
-
     /**
      * return bishop data (legacy route)
-     *
+     * @Route("/api/bischoefe")
      * @Route("/bischof/data")
      */
     public function queryBishopData(Request $request,
@@ -259,9 +258,10 @@ class PersonController extends AbstractController {
         return $this->queryData('epc', $request, $entityManager, $personService);
     }
 
+
     /**
-     * return canon data (legacy route)
-     *
+     * return canon data (legacy routes)
+     * @Route("/api/domherren")
      * @Route("/domherr/data")
      */
     public function queryCanonData(Request $request,
@@ -274,7 +274,7 @@ class PersonController extends AbstractController {
     /**
      * return person data
      *
-     * @Route("/person/data/{corpusId}", name="person_query_data")
+     * @Route("/data/{corpusId}", name="person_query_data")
      */
     public function queryData($corpusId,
                               Request $request,
