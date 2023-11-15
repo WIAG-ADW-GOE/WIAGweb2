@@ -414,10 +414,22 @@ class EditPersonService {
     public function mapAndValidatePerson($person, $data) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
 
+
         // item
         $item = $person->getItem();
         $item->setId($data['id']);
         $person->setId($data['id']);
+
+        // check mergeStatus
+        // It is possible that a form is visible in the merging process.
+        // Prevent a merged person from being edited.
+        if ($data['id'] > 0) {
+            $item_db = $itemRepository->find($data['id']);
+            if ($item_db->getMergeStatus() == 'parent' OR $item_db->getMergeStatus() == 'orphan') {
+                $msg = "Der Datensatz kann nicht verändert werden. Er wurde mit einem anderen zusammengeführt.";
+                $item->getInputError()->add(new InputError('status', $msg));
+            }
+        }
 
         $edit_status = trim($data['item']['editStatus']);
         if ($edit_status == "") {
