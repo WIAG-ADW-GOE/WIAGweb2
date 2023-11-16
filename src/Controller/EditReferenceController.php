@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Item;
-use App\Entity\ItemType;
 use App\Entity\ReferenceVolume;
 use App\Entity\InputError;
 use App\Entity\ItemReference;
@@ -339,7 +338,6 @@ class EditReferenceController extends AbstractController {
     public function newReference(Request $request) {
 
         $ref = new ReferenceVolume();
-        $ref->setItemTypeId(0); // obsolete
         $ref->setIsOnline(0);
         $ref->setFormIsExpanded(true);
 

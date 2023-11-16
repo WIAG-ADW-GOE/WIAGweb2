@@ -50,21 +50,6 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
     */
 
-
-    /**
-     * 2023-11-06 obsolete
-     */
-    // public function findByCombinedKey($itemTypeId, $referenceId) {
-    //     $qb = $this->createQueryBuilder('r')
-    //                ->andWhere('r.itemTypeId = :itemTypeId')
-    //                ->andWhere('r.referenceId = :referenceId')
-    //                ->setParameter('itemTypeId', $itemTypeId)
-    //                ->setParameter('referenceId', $referenceId);
-    //     $query = $qb->getQuery();
-
-    //     return $query->getOneOrNullResult();
-    // }
-
     /**
      * set reference volume for references in $person_list
      */
@@ -114,20 +99,6 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         return null;
 
     }
-
-    /**
-     * 2023-11-06 obsolete
-     */
-    // public function findByTitleShortAndType($title, $item_type_id) {
-    //     $qb = $this->createQueryBuilder('v')
-    //                ->select('v')
-    //                ->andWhere('v.titleShort LIKE :title')
-    //                ->andWhere('v.itemTypeId = :item_type_id')
-    //                ->setParameter('title', '%'.$title.'%')
-    //                ->setParameter('item_type_id', $item_type_id);
-    //     $query = $qb->getQuery();
-    //     return $query->getResult();
-    // }
 
     /**
      * find by $id_list, keep order of $id_list

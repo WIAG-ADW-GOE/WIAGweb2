@@ -16,7 +16,6 @@ use Doctrine\Common\Collections\Collection;
 class ReferenceVolume extends Model {
 
     const EDIT_FIELD_LIST = [
-        // 'itemTypeId', 2023-05-05 obsolete
         'authorEditor',
         'yearPublication',
         'isbn',
@@ -53,11 +52,6 @@ class ReferenceVolume extends Model {
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $comment;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $itemTypeId = 0; // 2023-11-06 obsolete
 
     /**
      * @ORM\Column(type="integer")
@@ -154,17 +148,6 @@ class ReferenceVolume extends Model {
     public function getComment(): ?string
     {
         return $this->comment;
-    }
-
-    public function getItemTypeId(): int
-    {
-        return $this->itemTypeId;
-    }
-
-    public function setItemTypeId($id): self
-    {
-        $this->itemTypeId = $id;
-        return $this;
     }
 
     public function getReferenceId(): int
