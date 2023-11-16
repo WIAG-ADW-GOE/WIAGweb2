@@ -50,9 +50,9 @@ class PersonController extends AbstractController {
     /**
      * display query form for bishops (legacy route)
      *
-     * @Route("/bischof")
+     * @Route("/bischoefe")
      */
-    public function query_bishop(Request $request,
+    public function queryBishop(Request $request,
                                  EntityManagerInterface $entityManager) {
         return $this->query('epc', $request, $entityManager);
     }
@@ -60,16 +60,16 @@ class PersonController extends AbstractController {
     /**
      * display query form for canons (legacy route)
      *
-     * @Route("/domherr")
+     * @Route("/domherren")
+     * @Route("/api/domherren")
      */
-    public function query_canon(Request $request,
-                                 EntityManagerInterface $entityManager) {
+    public function queryCanon(Request $request,
+                               EntityManagerInterface $entityManager) {
         return $this->query('can', $request, $entityManager);
     }
 
     /**
      * display query form for persons; handle query
-     *
      * @Route("/person/query/{corpusId}", name="person_query")
      */
     public function query($corpusId,
@@ -81,23 +81,26 @@ class PersonController extends AbstractController {
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
-
-        // we need to pass an instance of PersonFormModel, because facets depend on it's data
-        $model = new PersonFormModel;
-        $model->corpus = $corpusId;
-
         // call with empty $request?
         $flagInit = count($request->request->all()) == 0;
 
+        $model = PersonFormModel::newByArray($request->query->all());
+        $model->corpus = $corpusId;
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => $flagInit,
             'repository' => $itemNameRoleRepository,
         ]);
 
-        $offset = 0;
-
-        $form->handleRequest($request);
-        $model = $form->getData();
+        if ($request->isMethod('GET')) {
+            $offset = $request->query->get('offset');
+            $page_number = $request->query->get('pageNumber');
+        } else {
+            $form->handleRequest($request);
+            $model = $form->getData();
+            $offset = $request->request->get('offset');
+            $page_number = $request->request->get('pageNumber');
+        }
+        $model->corpus = $corpusId;
 
         if ($form->isSubmitted() && !$form->isValid()) {
             return $this->renderForm('person/query.html.twig', [
@@ -107,40 +110,32 @@ class PersonController extends AbstractController {
                 'pageTitle' => $corpus->getPageTitle(),
                 'msg' => null,
             ]);
-        } else {
-            $offset = $request->request->get('offset');
-            $page_number = $request->request->get('pageNumber');
-
-            $id_all = $itemNameRoleRepository->findPersonIds($model);
-            $count = count($id_all);
-
-            // set offset to page begin
-            $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
-
-            $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
-            $person_list = $personRepository->findList($id_list);
-
-            // set person->role to dreg-roles for the combination can, epc, dreg
-            // (relatively rare cases)
-            // if ($corpusId == 'can') {
-            //     $this->setListViewRole($person_list, $entityManager);
-            // }
-
-            $template_param_list = [
-                'menuItem' => 'collections',
-                'form' => $form,
-                'corpus' => $corpusId,
-                'count' => $count,
-                'personList' => $person_list,
-                'roleSortCritList' => ['dateSortKey', 'id'],
-                'offset' => $offset,
-                'pageSize' => self::PAGE_SIZE,
-                'pageTitle' => $corpus->getPageTitle(),
-            ];
-
-            return $this->renderForm('person/query_result.html.twig', $template_param_list);
         }
+
+        $id_all = $itemNameRoleRepository->findPersonIds($model);
+        $count = count($id_all);
+
+        // set offset to page begin
+        $offset = UtilService::offset($offset, $page_number, $count, self::PAGE_SIZE);
+
+        $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
+        $person_list = $personRepository->findList($id_list);
+
+        $template_param_list = [
+            'menuItem' => 'collections',
+            'form' => $form,
+            'corpus' => $corpusId,
+            'count' => $count,
+            'personList' => $person_list,
+            'roleSortCritList' => ['dateSortKey', 'id'],
+            'offset' => $offset,
+            'pageSize' => self::PAGE_SIZE,
+            'pageTitle' => $corpus->getPageTitle(),
+        ];
+
+        return $this->renderForm('person/query_result.html.twig', $template_param_list);
     }
+
 
     /**
      * 2023-09-29 obsolete? was relevant for can, epc, dreg
@@ -261,7 +256,6 @@ class PersonController extends AbstractController {
 
     /**
      * return canon data (legacy routes)
-     * @Route("/api/domherren")
      * @Route("/domherr/data")
      */
     public function queryCanonData(Request $request,
