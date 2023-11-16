@@ -17,11 +17,13 @@ class DioceseFormType extends AbstractType {
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
+            'name' => null
         ]);
 
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options) {
+        $name = $options['name'];
 
         $builder
             ->add('name', TextType::class, [

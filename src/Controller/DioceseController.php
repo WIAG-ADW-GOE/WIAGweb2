@@ -26,41 +26,38 @@ class DioceseController extends AbstractController {
 
 
     /**
-     *
-     * @Route("/bistum", name="diocese_query")
+     * @Route("/bistuemer")
+     * @Route("/api/bistuemer")
+     * @Route("/diocese/query", name="diocese_query")
      */
     public function diocese(Request $request, DioceseRepository $repository) {
 
-        $form = $this->createForm(DioceseFormType::class);
+        $name = $request->query->get('name');
+        $form = $this->createForm(DioceseFormType::class, [
+            'name' => $name,
+        ]);
 
-        $form->handlerequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
+        if ($request->isMethod('GET')) {
+            $offset = $request->query->get('offset');
+            $page_number = $request->query->get('pageNumber');
+        } else {
+            $form->handleRequest($request);
             $data = $form->getData();
-
             $name = $data['name'];
-
-            $count = $repository->countByName($name);
 
             $offset = $request->request->get('offset') ?? 0;
             $offset = floor($offset / self::PAGE_SIZE) * self::PAGE_SIZE;
 
-            $result = $repository->dioceseWithBishopricSeat($name, self::PAGE_SIZE, $offset);
-
-            return $this->render('diocese/query_result.html.twig', [
-                'menuItem' => 'collections',
-                'form' => $form->createView(),
-                'count' => $count,
-                'offset' => $offset,
-                'data' => $result,
-                'pageSize' => self::PAGE_SIZE,
-            ]);
-         }
+        }
 
         // show all dioceses as a default
-        $count = $repository->countByName(null);
+        if($form->isSubmitted() && !$form->isValid()) {
+            $name = null;
+        }
+
+        $count = $repository->countByName($name);
         $offset = 0;
-        $result = $repository->dioceseWithBishopricSeat(null, self::PAGE_SIZE, $offset);
+        $result = $repository->dioceseWithBishopricSeat($name, self::PAGE_SIZE, $offset);
 
         return $this->render('diocese/query_result.html.twig', [
             'menuItem' => 'collections',
@@ -70,8 +67,8 @@ class DioceseController extends AbstractController {
             'data' => $result,
             'pageSize' => self::PAGE_SIZE,
         ]);
-
     }
+
 
     /**
      * display details
@@ -118,9 +115,8 @@ class DioceseController extends AbstractController {
 
     /**
      * return diocese data
-     * @Route("/data/dioc")
-     * @Route("/api/bistuemer")
-     * @Route("/bistum/data", name="diocese_query_data")
+     * @Route("/bistum/data")
+     * @Route("/data/dioc", name="diocese_query_data")
      */
     public function queryData(Request $request,
                               DioceseRepository $repository,

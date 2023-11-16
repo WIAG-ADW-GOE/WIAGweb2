@@ -51,9 +51,10 @@ class PersonController extends AbstractController {
      * display query form for bishops (legacy route)
      *
      * @Route("/bischoefe")
+     * @Route("/api/bischoefe")
      */
     public function queryBishop(Request $request,
-                                 EntityManagerInterface $entityManager) {
+                                EntityManagerInterface $entityManager) {
         return $this->query('epc', $request, $entityManager);
     }
 
@@ -243,7 +244,6 @@ class PersonController extends AbstractController {
 
     /**
      * return bishop data (legacy route)
-     * @Route("/api/bischoefe")
      * @Route("/bischof/data")
      */
     public function queryBishopData(Request $request,
