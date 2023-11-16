@@ -124,7 +124,6 @@ class Diocese
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $itemTypeId;
 
     /**
      * no db mapping
@@ -352,18 +351,6 @@ class Diocese
         return implode("; ", $cLabel);
     }
 
-    public function getItemTypeId(): ?int
-    {
-        return $this->itemTypeId;
-    }
-
-    public function setItemTypeId(?int $itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
-
-        return $this;
-    }
-
     public function setReferenceCount($value): self {
         $this->referenceCount = $value;
         return $this;
@@ -373,9 +360,9 @@ class Diocese
         return $this->referenceCount;
     }
 
-    public function getCorpusId() {
-        return self::CORPUS_ID;
-    }
+    // public function getCorpusId() {
+    //     return self::CORPUS_ID;
+    // }
 
     /**
      * provide direct access

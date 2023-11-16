@@ -51,26 +51,6 @@ class Institution
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
-    private $dateBegin;
-
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
-    private $dateEnd;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $dateMin;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $dateMax;
-
-    /**
      * @ORM\Column(type="string", length=1023, nullable=true)
      */
     private $note;
@@ -80,21 +60,9 @@ class Institution
      */
     private $nameShort;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $itemTypeId;
-
-    /**
-     * @ORM\Column(type="string", length=31)
-     */
-    private $corpusId;
-
     public function __construct($user_id) {
         $this->institutionPlace = new ArrayCollection();
         $this->item = new Item($user_id);
-        // 2023-10-24 clean up;
-        $this->itemTypeId = 0;
     }
 
     public function getItem()
@@ -149,54 +117,6 @@ class Institution
         return $this;
     }
 
-    public function getDateBegin(): ?string
-    {
-        return $this->dateBegin;
-    }
-
-    public function setDateBegin(?string $dateBegin): self
-    {
-        $this->dateBegin = $dateBegin;
-
-        return $this;
-    }
-
-    public function getDateEnd(): ?string
-    {
-        return $this->dateEnd;
-    }
-
-    public function setDateEnd(?string $dateEnd): self
-    {
-        $this->dateEnd = $dateEnd;
-
-        return $this;
-    }
-
-    public function getDateMin(): ?int
-    {
-        return $this->dateMin;
-    }
-
-    public function setDateMin(?int $dateMin): self
-    {
-        $this->dateMin = $dateMin;
-
-        return $this;
-    }
-
-    public function getDateMax(): ?int
-    {
-        return $this->dateMax;
-    }
-
-    public function setDateMax(?int $dateMax): self
-    {
-        $this->dateMax = $dateMax;
-
-        return $this;
-    }
-
     public function getNote(): ?string
     {
         return $this->note;
@@ -221,32 +141,8 @@ class Institution
         return $this;
     }
 
-    public function getItemTypeId(): ?int
-    {
-        return $this->itemTypeId;
-    }
-
-    public function setItemTypeId(int $itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
-
-        return $this;
-    }
-
     public function getInstitutionPlace() {
         return $this->institutionPlace;
-    }
-
-    public function getCorpusId(): ?string
-    {
-        return $this->corpusId;
-    }
-
-    public function setCorpusId(string $corpusId): self
-    {
-        $this->corpusId = $corpusId;
-
-        return $this;
     }
 
 }

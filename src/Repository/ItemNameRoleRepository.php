@@ -127,12 +127,16 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         if ($model->corpus == 'can') {
             if ($model->domstift) { // restrict sorting to matches
                 $qb->join('App\Entity\Institution', 'domstift_sort',
-                          'WITH', "domstift_sort.id = pr.institutionId and domstift_sort.corpusId = 'cap'");
+                          'WITH', "domstift_sort.id = pr.institutionId")
+                   ->join('App\Entity\ItemCorpus', 'ic_domstift_sort',
+                           'WITH', "ic_domstift_sort.itemId = domstift_sort.id and ic_domstift_sort.corpusId = 'cap'");
             } else {
                 $qb->leftjoin('App\Entity\PersonRole', 'pr_domstift',
                           'WITH', 'pr_domstift.personId = inr.itemIdRole')
                    ->leftjoin('App\Entity\Institution', 'domstift_sort',
-                          'WITH', "domstift_sort.id = pr_domstift.institutionId and domstift_sort.corpusId = 'cap'");
+                          'WITH', "domstift_sort.id = pr_domstift.institutionId")
+                   ->leftjoin('App\Entity\ItemCorpus', 'ic_domstift_sort',
+                            'WITH', "ic_domstift_sort.itemId = domstift_sort.id and ic_domstift_sort.corpusId = 'cap'");
             }
             $qb->addSelect('min(domstift_sort.nameShort) as domstift_name');
         }

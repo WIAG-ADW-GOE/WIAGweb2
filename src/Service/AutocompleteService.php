@@ -100,7 +100,8 @@ class AutocompleteService extends ServiceEntityRepository {
         $repository = $this->getEntityManager()->getRepository(Institution::class);
         $qb = $repository->createQueryBuilder('inst')
                          ->select("DISTINCT inst.name AS suggestion")
-                         ->andWhere("inst.corpusId = 'cap'")
+                         ->join('\App\Entity\ItemCorpus', 'ic',
+                                'WITH', "ic.itemId = inst.id AND ic.corpusId = 'cap'")
                          ->andWhere('inst.name like :name')
                          ->setParameter('name', '%'.$queryParam.'%')
                          ->orderBy('inst.name');

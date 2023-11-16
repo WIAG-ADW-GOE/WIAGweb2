@@ -56,7 +56,8 @@ class InstitutionRepository extends ServiceEntityRepository
     public function findDomstifte() {
         $qb = $this->createQueryBuilder('i')
                    ->select('i.id AS id, i.nameShort AS name')
-                   ->andWhere("i.corpusId = 'cap'")
+                   ->join('\App\Entity\ItemCorpus', 'ic',
+                          'WITH', "ic.itemId = i.id and ic.corpusId = 'cap'")
                    ->addOrderBy('i.nameShort');
 
         $query = $qb->getQuery();
@@ -69,7 +70,8 @@ class InstitutionRepository extends ServiceEntityRepository
     public function findByCorpusAndNameShort($corpus_id, $name) {
         $qb = $this->createQueryBuilder('i')
                    ->select('i')
-                   ->andWhere("i.corpusId = :corpus_id")
+                   ->join('\App\Entity\ItemCorpus', 'ic',
+                          'WITH', "ic.itemId = i.id and ic.corpusId = :corpus_id")
                    ->setParameter('corpus_id', $corpus_id)
                    ->addOrderBy('i.nameShort');
 

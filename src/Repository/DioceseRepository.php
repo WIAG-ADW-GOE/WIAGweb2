@@ -124,50 +124,6 @@ class DioceseRepository extends ServiceEntityRepository
 
     }
 
-
-    /**
-     * 2022-10-07 obsolete see dioceseWithBishopricSeat
-     */
-    // public function dioceseWithBishopricSeatById_hide($id) {
-    //     $qb = $this->createQueryBuilder('d')
-    //                ->join('d.item', 'i')
-    //                ->leftJoin('d.bishopricSeat', 'bishopricSeat')
-    //                ->addSelect('i')
-    //                ->addSelect('bishopricSeat')
-    //                ->join('d.altLabels', 'altLabels')
-    //                ->andWhere('d.id = :id')
-    //                ->setParameter('id', $id);
-
-    //     $query = $qb->getQuery();
-
-    //     $diocese = $query->getOneOrNullResult();
-    //     // $result = $query->getResult();
-
-    //     if ($diocese) {
-    //         $this->addReferenceVolumes($diocese);
-    //     }
-
-    //     return $diocese;
-
-    // }
-
-    /**
-     * 2022-10-07 obsolete see dioceseWithBishopricSeat
-     */
-    // public function addReferenceVolumes($diocese) {
-    //     $em = $this->getEntityManager();
-    //     # add reference volumes (combined key)
-    //     $repository = $em->getRepository(ReferenceVolume::class);
-    //     foreach ($diocese->getItem()->getReference() as $reference) {
-    //         $itemTypeId = $reference->getItemTypeId();
-    //         $referenceId = $reference->getReferenceId();
-    //         $referenceVolume = $repository->findByCombinedKey($itemTypeId, $referenceId);
-    //         $reference->setReferenceVolume($referenceVolume);
-    //     }
-    //     return $diocese;
-    // }
-
-
     /**
      * AJAX
      */

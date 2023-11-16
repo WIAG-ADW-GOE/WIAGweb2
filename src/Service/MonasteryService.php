@@ -104,7 +104,6 @@ class MonasteryService {
             $this->entityManager->remove($ip);
         }
 
-
         $placeRepository = $this->entityManager->getRepository(Place::class);
         foreach ($data["locations"] as $data_location) {
             $ip_new = new InstitutionPlace();

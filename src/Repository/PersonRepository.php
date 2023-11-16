@@ -108,7 +108,7 @@ class PersonRepository extends ServiceEntityRepository {
 
         if ($model->monastery || $model->sortBy == "institution" ) { // restrict sorting to matches
             $qb->join('App\Entity\Institution', 'institution',
-                      'WITH', "institution.id = pr.institutionId and institution.corpusId in ('cap', 'mon')")
+                      'WITH', "institution.id = pr.institutionId")
                ->addSelect('min(institution.nameShort) as inst_name');
         }
 
@@ -227,7 +227,9 @@ class PersonRepository extends ServiceEntityRepository {
 
         if ($domstift) {
             $qb->join('App\Entity\Institution', 'domstift', 'WITH',
-                      "domstift.id = pr.institutionId and domstift.corpusId = 'cap'");
+                      "domstift.id = pr.institutionId")
+               ->join('App\Entity\ItemCorpus', 'ic_domstift', 'WITH',
+                      "ic_domstift.itemId = domstift.id AND ic_domstift.corpusId = 'cap'");
         }
 
         if ($reference) {

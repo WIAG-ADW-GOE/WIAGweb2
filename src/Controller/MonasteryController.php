@@ -85,7 +85,7 @@ class MonasteryController extends AbstractController {
                     $user_id = intval($this->getUser()->getId());
                     $monastery_new = new Institution($user_id);
                     $monastery_new->setIdGsn($gsn);
-                    $monastery_new->setCorpusId(Institution::CORPUS_ID);
+                    // $monastery_new->setCorpusId(Institution::CORPUS_ID); 2023-11-16
                     $service->update($monastery_new);
                     $entityManager->persist($monastery_new->getItem());
                     $entityManager->persist($monastery_new);
