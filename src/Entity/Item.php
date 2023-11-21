@@ -156,11 +156,6 @@ class Item {
     private $reference;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $itemTypeId;
-
-    /**
      * @ORM\Column(type="string", length=511, nullable=true)
      */
     private $comment;
@@ -324,9 +319,6 @@ class Item {
         $this->mergeParent = new ArrayCollection();
         $this->isNew = true;
         $this->ancestor = array();
-
-        // TODO 2023-10-05 clean up
-        $this->itemTypeId = 0;
         $this->createdBy = $user_wiag_id;
         $this->dateCreated = $now;
         $this->changedBy = $user_wiag_id;
@@ -429,7 +421,6 @@ class Item {
         return is_null($list) ? $list : implode($list, ", ");
     }
 
-
     /**
      * @return sorted list of item properties
      */
@@ -504,7 +495,6 @@ class Item {
         $dreg_id = Authority::ID['GSN'];
         return $this->getUrlExternalByAuthority($dreg_id);
     }
-
 
     /**
      *
@@ -582,18 +572,6 @@ class Item {
         });
 
         return $ref_list;
-    }
-
-    public function getItemTypeId(): ?int
-    {
-        return $this->itemTypeId;
-    }
-
-    public function setItemTypeId(int $itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
-
-        return $this;
     }
 
     public function getComment(): ?string

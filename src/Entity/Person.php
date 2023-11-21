@@ -150,11 +150,6 @@ class Person {
     private $numDateDeath;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $itemTypeId;
-
-    /**
      * data from alternative source (canon)
      */
     private ?Person $sibling = null;
@@ -185,7 +180,6 @@ class Person {
         $this->birthPlace = new ArrayCollection();
         $this->role = new ArrayCollection();
         $this->seeAlso = new ArrayCollection();
-        $this->itemTypeId = 0;
         $this->item = $item;
     }
 
@@ -450,18 +444,6 @@ class Person {
 
     public function getBirthplace() {
         return $this->birthplace;
-    }
-
-    public function getItemTypeId(): ?int
-    {
-        return $this->itemTypeId;
-    }
-
-    public function setItemTypeId(?int $itemTypeId): self
-    {
-        $this->itemTypeId = $itemTypeId;
-
-        return $this;
     }
 
     public function setFormGivennameVariants($variants): self {

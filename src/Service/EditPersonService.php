@@ -791,11 +791,9 @@ class EditPersonService {
         $institutionRepository = $this->entityManager->getRepository(Institution::class);
 
         $inst_type_id = intval($inst_type_id);
-
         $institution = null;
         $diocese = null;
         if ($inst_name != "") {
-            $role->setInstitutionTypeId($inst_type_id);
             if ($inst_type_id == 1) { // diocese
                 $role->setInstitution(null);
                 $role->setInstitutionName(null);

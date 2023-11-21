@@ -22,15 +22,15 @@ class NameLookup
      */
     private $personId;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $gnFn;
+    // /**
+    //  * @ORM\Column(type="string", length=255)
+    //  */
+    // private $gnFn;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $gnPrefixFn;
+    // /**
+    //  * @ORM\Column(type="string", length=255)
+    //  */
+    // private $gnPrefixFn;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -63,29 +63,29 @@ class NameLookup
     }
 
 
-    public function getGnFn(): ?string
-    {
-        return $this->gnFn;
-    }
+    // public function getGnFn(): ?string
+    // {
+    //     return $this->gnFn;
+    // }
 
-    public function setGnFn(?string $gnFn): self
-    {
-        $this->gnFn = $gnFn;
+    // public function setGnFn(?string $gnFn): self
+    // {
+    //     $this->gnFn = $gnFn;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function getGnPrefixFn(): ?string
-    {
-        return $this->gnPrefixFn;
-    }
+    // public function getGnPrefixFn(): ?string
+    // {
+    //     return $this->gnPrefixFn;
+    // }
 
-    public function setGnPrefixFn(?string $gnPrefixFn): self
-    {
-        $this->gnPrefixFn = $gnPrefixFn;
+    // public function setGnPrefixFn(?string $gnPrefixFn): self
+    // {
+    //     $this->gnPrefixFn = $gnPrefixFn;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function getNameVariant(): ?string
     {

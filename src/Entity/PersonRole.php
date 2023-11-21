@@ -82,12 +82,6 @@ class PersonRole
     private $dioceseName;
 
     /**
-     * 2023-10-05 obsolete?
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $institutionTypeId;
-
-    /**
      * @ORM\Column(type="string", length=31, nullable=true)
      */
     private $dateBegin;
@@ -381,13 +375,6 @@ class PersonRole
         } else {
             return null;
         }
-    }
-
-    public function setInstitutionTypeId(?int $institutionTypeId): self
-    {
-        $this->institutionTypeId = $institutionTypeId;
-
-        return $this;
     }
 
     public function getDisplayOrder(): ?int

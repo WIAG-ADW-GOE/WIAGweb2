@@ -640,7 +640,7 @@ class EditPersonController extends AbstractController {
 
     /**
      * AJAX 2023-10-10 not in use
-     * @Route("/edit/person/item-content/{itemTypeId}/{id}/{index}", name="edit_person_item_content")
+     * Route("/edit/person/item-content/{itemTypeId}/{id}/{index}", name="edit_person_item_content")
      */
     // public function _itemContent(Request $request,
     //                              int $itemTypeId,

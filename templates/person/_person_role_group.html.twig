@@ -7,7 +7,7 @@
 		    roles: person.getRoleSortedIterator(roleSortCritList)
 		}) }}
 		{% set references = null %}
-		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
+		{% if person.item.hasCorpus('dreg') or person.item.hasCorpus('dreg-can') %}
 		    {% set references = person.item.reference|filter(r => r.containsbio) %}
 		{% else %}
 		    {% set references = person.item.sortedreference('displayOrder') %}
@@ -20,9 +20,9 @@
 				{% if not ref.referencevolume %}
 				    <li>Band nicht gefunden</li>
 				{% else %}
-				    {% if person.item.source == "Bischof" %} {# bishops #}
+				    {% if person.item.hasCorpus("epc") %} {# bishops #}
 					<li>{{ ref.referencevolume.titleshort }}{% if ref.page %}, <span class="text-nowrap">S. {{ ref.page }}</span> {% endif %}</li>
-				    {% elseif person.item.source == "Domherr GS" or person.item.source == "Bischof GS" %} {# germania sacra #}
+				    {% elseif person.item.hasCorpus("dreg") or person.item.hasCorpus("dreg-can") %} {# germania sacra #}
 					    <li>{{ include('person/_person_biogram_link.html.twig', {
 						volume: ref.referencevolume,
 						pages: ref.splitpage
