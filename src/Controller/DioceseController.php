@@ -28,7 +28,7 @@ class DioceseController extends AbstractController {
     /**
      * @Route("/bistuemer")
      * @Route("/api/bistuemer")
-     * @Route("/diocese/query", name="diocese_query")
+     * @Route("/query/dioc", name="diocese_query")
      */
     public function diocese(Request $request, DioceseRepository $repository) {
 
@@ -73,7 +73,7 @@ class DioceseController extends AbstractController {
     /**
      * display details
      *
-     * @Route("/bistum/listenelement", name="diocese_list_detail")
+     * @Route("/listelement/dioc", name="diocese_list_detail")
      */
     public function dioceseListDetail(Request $request) {
 

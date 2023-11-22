@@ -56,6 +56,7 @@ class IdController extends AbstractController {
 
         // $format = $request->request->get('format') ?? 'html';
         $format = $request->query->get('format') ?? 'html';
+        $format = ucfirst(strtolower($format));
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
@@ -97,7 +98,7 @@ class IdController extends AbstractController {
         $person = $item->getPerson();
         $person_role_list = $item->getPersonRole();
 
-        if ($format == 'html') {
+        if ($format == 'Html') {
             return $this->render('person/person.html.twig', [
                 'personName' => $person,
                 'personRole' => $person_role_list,

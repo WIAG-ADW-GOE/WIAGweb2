@@ -71,7 +71,7 @@ class PersonController extends AbstractController {
 
     /**
      * display query form for persons; handle query
-     * @Route("/person/query/{corpusId}", name="person_query")
+     * @Route("/query/{corpusId}", name="person_query")
      */
     public function query($corpusId,
                           Request $request,
@@ -164,7 +164,7 @@ class PersonController extends AbstractController {
     /**
      * display details
      *
-     * @Route("/person/listenelement/{corpusId}", name="person_list_detail")
+     * @Route("/listelement/{corpusId}", name="person_list_detail")
      */
     public function personListDetail($corpusId,
                                      Request $request,
