@@ -257,7 +257,7 @@ class GsoController extends AbstractController {
         $personsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
         $institutionRepository = $entityManager->getRepository(Institution::class, 'default');
 
-        $domstift_list = $institutionRepository->findByCorpusId('cap');
+        $domstift_list = $institutionRepository->findDomstifte();
 
         $domstift_gsn_list = array();
         foreach($domstift_list as $domstift) {

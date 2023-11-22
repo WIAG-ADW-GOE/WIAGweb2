@@ -332,7 +332,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
            ->andWhere('pr_count.institutionId IN (:instId_list)')
-           ->setParameter('instId_list', array_column($domstift_list, 'id'));
+           ->setParameter('instId_list', UtilService::collectionColumn($domstift_list, 'id'));
 
 
         $qb->groupBy('pr_count.institutionId');
@@ -349,10 +349,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $result = array();
         // loop over $name_list to keep order
         foreach($domstift_list as $d_loop) {
-            $id = $d_loop['id'];
+            $id = $d_loop->getId();;
             if (array_key_exists($id, $count_simple_list)) {
                 $result[] = [
-                    'name' => $d_loop['name'],
+                    'name' => $d_loop->getNameShort(),
                     'n' => $count_simple_list[$id],
                 ];
             }

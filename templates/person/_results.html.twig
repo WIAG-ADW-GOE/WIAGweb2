@@ -38,7 +38,7 @@
 			{% endif %}
 		    </td>
 		    <td>{% for r in person.getRoleSortedIterator(roleSortCritList) %}
-			<div class="fs-6">{% if r.displayRoleName %}{{ r.displayRoleName }}{% endif %}{% if r.uncertain %}? {% endif %}
+			<div class="fs-6">{% if r.displayRoleName %}{{ r.displayRoleName }}{% endif %}
 			    {% if r.placename %}({{ r.placename }})
 			    {% elseif r.diocese %}({{ r.diocese.name }})
 			    {% elseif r.diocesename %}({{ r.diocesename }})

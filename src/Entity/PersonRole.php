@@ -262,11 +262,13 @@ class PersonRole
 
     public function getDisplayRoleName(): ?string {
         $role_txt = null;
-        $uncertain_txt = $this->uncertain > 0 ? " ?" : "";
         if (!is_null($this->role)) {
-            $role_txt = $this->role->getName().$uncertain_txt;
+            $role_txt = $this->role->getName();
         } elseif (!is_null($this->roleName) and trim($this->roleName) != "") {
-            $role_txt = $this->roleName.$uncertain_txt;
+            $role_txt = $this->roleName;
+        }
+        if ($this->uncertain > 0) {
+            $role_txt = $role_txt." ?";
         }
         return $role_txt;
     }
