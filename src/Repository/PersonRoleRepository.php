@@ -52,13 +52,12 @@ class PersonRoleRepository extends ServiceEntityRepository
     }
     */
 
-
     /**
      * find roles for `$personId`; set place names
      * 2022-07-20 obsolete?
      * @return PersonRole[]
      */
-    public function findRoleWithPlace($personId) {
+    public function findRoleWithPlace_legacy($personId) {
         $qb = $this->createQueryBuilder('r')
                    ->addSelect('r, ip.placeName')
                    ->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',

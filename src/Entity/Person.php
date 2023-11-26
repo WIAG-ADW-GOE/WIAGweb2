@@ -410,6 +410,9 @@ class Person {
         return $this->personGs;
     }
 
+    /**
+     * @return complete name
+     */
     public function getDisplayname() {
         $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
         $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
@@ -422,6 +425,9 @@ class Person {
         return $this->givenname.$prefixpart.$familypart.$agnomenpart;
     }
 
+    /**
+     * @return complete name; mark note with '()'
+     */
     public function getDisplaynameWithSeparators() {
         $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
         $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';

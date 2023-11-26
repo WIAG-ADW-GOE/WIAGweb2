@@ -157,6 +157,28 @@ class UtilService {
         return $list;
     }
 
+
+        /**
+     * use $field to reorder $list
+     *
+     * An index in $sorted may occur several times as a value in $list
+     */
+    static public function reorderArray($list, $sorted, $field = "id") {
+        // function to get the criterion
+        $idx_map = array_flip($sorted);
+
+        usort($list, function($a, $b) use ($idx_map, $field) {
+            $idx_a = $idx_map[$a[$field]];
+            $idx_b = $idx_map[$b[$field]];
+
+            $cmp_val =  $idx_a == $idx_b ? 0 : ($idx_a < $idx_b ? -1 : +1);
+            return $cmp_val;
+        });
+
+        return $list;
+    }
+
+
     /**
      * use $field to reorder $list
      *
@@ -737,9 +759,8 @@ class UtilService {
     }
 
 
-
     /**
-     * find first object in $list where the content of $field equals $value .
+     * find first match in $list where the content of $field equals $value .
      */
     static public function findFirst($list, $field, $value) {
         $getfnc = 'get'.ucfirst($field);
@@ -752,6 +773,37 @@ class UtilService {
         }
 
         return $match;
+    }
+
+    /**
+     * find first match in $list where the content of $field equals $value .
+     */
+    static public function findFirstArray($list, $field, $value) {
+        $match = null;
+        foreach ($list as $item) {
+            if ($item[$field] == $value) {
+                $match = $item;
+                break;
+            }
+        }
+
+        return $match;
+    }
+
+    /**
+     * find all matches in $list where the content of $field equals $value .
+     */
+    static public function findAllArray($list, $field, $key_list) {
+        $match_list = array();
+        foreach ($list as $item) {
+            foreach ($key_list as $key) {
+                if ($item[$field] == $key) {
+                    $match_list[] = $item;
+                }
+            }
+        }
+
+        return $match_list;
     }
 
     /**

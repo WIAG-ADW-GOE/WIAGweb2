@@ -62,14 +62,11 @@ class PersonService {
 
     private $router;
     private $entityManager;
-    private $utilService;
 
     public function __construct(UrlGeneratorInterface $router,
-                                EntityManagerInterface $entityManager,
-                                UtilService $utilService) {
+                                EntityManagerInterface $entityManager) {
         $this->entityManager = $entityManager;
         $this->router = $router;
-        $this->utilService = $utilService;
     }
 
     public function uriWiagId($id) {

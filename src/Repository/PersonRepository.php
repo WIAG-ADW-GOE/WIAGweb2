@@ -233,8 +233,8 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         if ($reference) {
-            $qb->leftjoin('i.reference', 'ref')
-               ->leftjoin('\App\Entity\ReferenceVolume', 'vol',
+            $qb->leftJoin('i.reference', 'ref')
+               ->leftJoin('\App\Entity\ReferenceVolume', 'vol',
                           'WITH', 'vol.referenceId = ref.referenceId')
                ->andWhere('vol.titleShort LIKE :q_ref')
                ->setParameter('q_ref', '%'.$reference.'%');
@@ -251,7 +251,7 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         if ($office) {
-            $qb->leftjoin('pr.role', 'role')
+            $qb->leftJoin('pr.role', 'role')
                ->andWhere('pr.roleName LIKE :q_office OR role.name LIKE :q_office')
                ->setParameter('q_office', '%'.$office.'%');
         }
@@ -393,12 +393,12 @@ class PersonRepository extends ServiceEntityRepository {
 
         $misc = $model->misc;
         if ($misc) {
-            $qb->leftjoin('p.role', 'pr_misc')
-               ->leftjoin('pr_misc.institution', 'inst_misc')
-               ->leftjoin('i.itemProperty', 'i_prop')
-               ->leftjoin('i_prop.type', 'i_prop_type')
-               ->leftjoin('pr_misc.roleProperty', 'r_prop')
-               ->leftjoin('r_prop.type', 'r_prop_type')
+            $qb->leftJoin('p.role', 'pr_misc')
+               ->leftJoin('pr_misc.institution', 'inst_misc')
+               ->leftJoin('i.itemProperty', 'i_prop')
+               ->leftJoin('i_prop.type', 'i_prop_type')
+               ->leftJoin('pr_misc.roleProperty', 'r_prop')
+               ->leftJoin('r_prop.type', 'r_prop_type')
                ->andWhere("(i.normdataEditedBy LIKE :misc)".
                           " OR (p.noteName LIKE :misc)".
                           " OR (p.notePerson LIKE :misc)".
@@ -520,20 +520,47 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
+     * @return person data as array
+     */
+    public function findSimpleList($id_list) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p, i, ic, inr, ip, bp, role, role_type, institution, urlext, ref')
+                   ->join('p.item', 'i') # avoid query in twig ...
+                   ->join('i.itemCorpus', 'ic')
+                   ->leftJoin('i.itemNameRole', 'inr')
+                   ->leftJoin('i.itemProperty', 'ip')
+                   ->leftJoin('i.urlExternal', 'urlext')
+                   ->leftJoin('i.reference', 'ref')
+                   ->leftJoin('p.birthplace', 'bp')
+                   ->leftJoin('p.role', 'role')
+                   ->leftJoin('role.role', 'role_type')
+                   ->leftJoin('role.institution', 'institution')
+                   ->andWhere('p.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $person_list = $query->getArrayResult();
+
+        $person_list = UtilService::reorderArray($person_list, $id_list, 'id');
+
+        return $person_list;
+    }
+
+    /**
      *
      */
     public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
         $qb = $this->createQueryBuilder('p')
                    ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
                    ->join('p.item', 'i') # avoid query in twig ...
-                   ->leftjoin('i.itemNameRole', 'inr')
-                   ->leftjoin('i.itemProperty', 'ip')
-                   ->leftjoin('i.urlExternal', 'urlext')
-                   ->leftjoin('i.reference', 'ref')
-                   ->leftjoin('p.birthplace', 'bp')
-                   ->leftjoin('p.role', 'role')
-                   ->leftjoin('role.role', 'role_type')
-                   ->leftjoin('role.institution', 'institution')
+                   ->leftJoin('i.itemNameRole', 'inr')
+                   ->leftJoin('i.itemProperty', 'ip')
+                   ->leftJoin('i.urlExternal', 'urlext')
+                   ->leftJoin('i.reference', 'ref')
+                   ->leftJoin('p.birthplace', 'bp')
+                   ->leftJoin('p.role', 'role')
+                   ->leftJoin('role.role', 'role_type')
+                   ->leftJoin('role.institution', 'institution')
                    ->andWhere('p.id in (:id_list)')
                    ->addOrderBy('role.dateSortKey')
                    ->addOrderBy('role.id')

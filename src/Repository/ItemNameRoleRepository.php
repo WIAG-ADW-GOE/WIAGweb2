@@ -555,4 +555,27 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * @return role data for persons in $id_list
+     *
+     * collect all roles via ItemNameRole
+     */
+    public function findSimpleRoleList($id_list) {
+
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('pr, r, institution, diocese')
+                   ->leftJoin('\App\Entity\PersonRole', 'pr',
+                              'WITH', 'pr.personId = inr.itemIdRole')
+                   ->leftJoin('pr.role', 'r')
+                   ->leftJoin('pr.institution', 'institution')
+                   ->leftJoin('pr.diocese', 'diocese')
+                   ->andWhere('inr.itemIdName in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        // be economical/careful with memory
+        return $query->getArrayResult();
+
+    }
+
 }

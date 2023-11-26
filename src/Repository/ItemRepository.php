@@ -508,7 +508,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select('i')
                    ->join('i.person', 'p')
                    ->join('i.itemNameRole', 'inr')
-                   ->join('inr.personRole', 'p_role')
+                   ->join('inr.personRolePerson', 'p_role')
                    ->andWhere('i.id in (:id_list)')
                    ->setParameter('id_list', $id_list);
 
@@ -519,7 +519,7 @@ class ItemRepository extends ServiceEntityRepository
         $item_role_list = [];
         foreach ($item_list as $item) {
             foreach ($item->getItemNameRole() as $inr) {
-                $item_role_list[] = $inr->getPersonRole()->getItem();
+                $item_role_list[] = $inr->getPersonRolePerson()->getItem();
             }
         }
 

@@ -27,7 +27,7 @@ class ItemNameRole
      * @ORM\OneToOne(targetEntity="Person")
      * @ORM\JoinColumn(name="item_id_role", referencedColumnName="id")
      */
-    private $personRole;
+    private $personRolePerson;
 
     /**
      * @ORM\Column(type="integer")
@@ -59,8 +59,8 @@ class ItemNameRole
         return $this;
     }
 
-    public function getPersonRole() {
-        return $this->personRole;
+    public function getPersonRolePerson() {
+        return $this->personRolePerson;
     }
 
     public function getItemIdName(): ?int

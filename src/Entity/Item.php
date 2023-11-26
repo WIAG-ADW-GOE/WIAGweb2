@@ -363,7 +363,7 @@ class Item {
 
         $person_role = [];
         foreach ($inr_list as $inr) {
-            $person_role[] = $inr->getPersonRole();
+            $person_role[] = $inr->getPersonRolePerson();
         }
 
         return $person_role;
