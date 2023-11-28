@@ -275,8 +275,6 @@ class PersonController extends AbstractController {
                               EntityManagerInterface $entityManager,
                               PersonService $personService) {
 
-
-
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);

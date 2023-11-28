@@ -21,16 +21,12 @@ class Item {
 
     // obsolete in WIAGweb3
     // redundant to table item_type (simpler, faster than a query)
-    const ITEM_TYPE_ID = [
+    const ITEM_TYPE_ID_LEGACY = [
         'Bistum'     => ['id' => 1],
         'Kloster'    => ['id' => 2],
         'Domstift'   => ['id' => 3],
-        'Bischof'    => [
-            'id' => 4,
-        ],
-        'Domherr'    => [
-            'id' => 5,
-        ],
+        'Bischof'    => ['id' => 4],
+        'Domherr'    => ['id' => 5],
         'Domherr GS' => ['id' => 6],
         'Amt'        => ['id' => 8],
         'Bischof GS' => ['id' => 9],
@@ -98,16 +94,6 @@ class Item {
             'name' => 'Bischof GS',
             'online_status' => 'online',
         ],
-    ];
-
-    // map authority name
-    const AUTHORITY_ID_LEGACY = [
-            "GND" => 1,
-            "Wikidata" => 2,
-            "Wikipedia" => 3,
-            "WIAG_ID" => 5,
-            "VIAF" => 4,
-            "GS" => 200,
     ];
 
     const JOIN_DELIM = "|";
