@@ -51,6 +51,8 @@ class DownloadController extends AbstractController {
      */
     public function csvPersonData(Request $request, $corpusId) {
 
+        ini_set('max_execution_time', 300);
+
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -75,11 +77,11 @@ class DownloadController extends AbstractController {
             if ($download_debug) {
                 $person_list = $personRepository->findSimpleList($id_all);
                 $role_list = $itemNameRoleRepository->findSimpleRoleList($id_all);
-                $person = $person_list[2];
+                $person = $person_list[1];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
-                $description_role_list = DownloadService::descriptionRoleList($role_list_single);
-                dd($role_list_single, $description_role_list);
+                $description = DownloadService::describe($person, $role_list_single);
+                dd($person, $role_list_single, $description);
             }
 
             $response = new StreamedResponse();

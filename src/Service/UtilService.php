@@ -796,8 +796,14 @@ class UtilService {
     static public function findAllArray($list, $field, $key_list) {
         $match_list = array();
         foreach ($list as $item) {
+            if (is_null($item)) {
+                continue;
+            }
             foreach ($key_list as $key) {
-                if ($item[$field] == $key) {
+                if (is_null($key)) {
+                    continue;
+                }
+                if (!is_null($item[$field]) and $item[$field] == $key) {
                     $match_list[] = $item;
                 }
             }
@@ -990,6 +996,13 @@ class UtilService {
             return null;
         }
 
+    }
+
+    static public function equalNotNull($a, $b) {
+        if (is_null($a) and is_null($b)) {
+            return false;
+        }
+        return $a == $b;
     }
 
 }

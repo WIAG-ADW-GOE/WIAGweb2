@@ -60,6 +60,9 @@ class DownloadService {
         ],
     ];
 
+    // number of roles used for the description field (FactGrid)
+    const N_ROLE_FOR_DESCRIPTION = 2;
+
     private $router;
     private $entityManager;
 
@@ -100,7 +103,7 @@ class DownloadService {
     /**
      * @return formatted person data
      */
-    static public function formatPersonData($person) {
+    static public function formatPersonData($person, $role_list) {
 
         $item = $person['item'];
         $itemCorpus = $item['itemCorpus'];
@@ -114,7 +117,7 @@ class DownloadService {
         $data['displayname'] = self::displayName($person);
         $data['date of birth'] = $person['dateBirth'];
         $data['date of death'] = $person['dateDeath'];
-        $data['description'] = "TODO Beschreibung";
+        $data['description'] = self::describe($person, $role_list);
         foreach (['GND', 'GSN', 'FactGrid', 'Wikidata', 'Wikipedia'] as $auth) {
             $auth_id = Authority::ID[$auth];
             $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
@@ -174,11 +177,56 @@ class DownloadService {
         return $given.$prefix.$family.$agnomen;
     }
 
+    /**
+     * @return basic information (date of birth, date of death, offices)
+     */
+    static public function describe($person, $role_list) {
+        $date_list = array();
+        if (!is_null($person['dateBirth']) and trim($person['dateBirth']) != "") {
+            $date_list[] = "* ".$person['dateBirth'];
+        }
+        if (!is_null($person['dateDeath']) and trim($person['dateDeath']) != "") {
+            $date_list[] = "+ ".$person['dateDeath'];
+        }
+
+        $date_txt = null;
+        if (count($date_list) > 0) {
+            $date_txt = implode(", ", $date_list);
+        } else {
+            $firstRoleDate = self::firstRoleDate($role_list);
+            if (!is_null($firstRoleDate)) {
+                $date_txt = '~ '.$firstRoleDate;
+            }
+        }
+
+        $description_list = array();
+        if ($date_txt) {
+            $description_list[] = $date_txt;
+        }
+        $role_description = self::describeRoleList($role_list);
+        if (!is_null($role_description)) {
+            $description_list[] = $role_description;
+        }
+
+        return implode(', ', $description_list);
+    }
+
+    static public function firstRoleDate($role_list) {
+        if (count($role_list) == 0) {
+            return null;
+        }
+        usort($role_list, function($a, $b) {
+            return UtilService::compare($a, $b, ['dateSortKey']);
+        });
+
+        $role_first = array_values($role_list)[0];
+        return !is_null($role_first['dateBegin']) ? $role_first['dateBegin'] : $role_first['dateEnd'];
+    }
 
     /**
      * @return a string with the most import offices
      */
-    static public function descriptionRoleList($role_list) {
+    static public function describeRoleList($role_list) {
         // hard code highest ranked office types(!?)
         $p_dioc = 'Leitungsamt Diözese';
         $p_cap = 'Leitungsamt Domstift';
@@ -194,33 +242,48 @@ class DownloadService {
 
         $role_list = self::uniquePersonRole($role_list);
 
-        return $role_list;
+        $n = 0;
+        $role_txt_list = array();
+        foreach ($role_list as $role_desc) {
+            // institution is more specific than diocese
+            $role_txt_list[] = self::describePersonRole($role_desc);
+            $n += 1;
+            if ($n == self::N_ROLE_FOR_DESCRIPTION) {
+                break;
+            }
+        }
+
+        return implode(", ", $role_txt_list);
     }
 
     static public function cmpPersonRole($a, $b, $p_dioc, $p_cap) {
-        $a_rg = $a['role']['roleGroup'];
-        $b_rg = $a['role']['roleGroup'];
+        if (!is_null($a['role']) and !is_null($b['role'])) {
+            $a_rg = $a['role']['roleGroup'];
+            $b_rg = $a['role']['roleGroup'];
 
-        if ($a_rg == $p_dioc and $b_rg != $p_dioc) {
-            return -1;
-        }
-        if ($a_rg != $p_dioc and $b_rg == $p_dioc) {
-            return 1;
-        }
-        if ($a_rg == $p_cap and $b_rg != $p_cap) {
-            return -1;
-        }
-        if ($a_rg != $p_cap and $b_rg == $p_cap) {
+            if ($a_rg == $p_dioc and $b_rg != $p_dioc) {
+                return -1;
+            }
+            if ($a_rg != $p_dioc and $b_rg == $p_dioc) {
                 return 1;
+            }
+            if ($a_rg == $p_cap and $b_rg != $p_cap) {
+                return -1;
+            }
+            if ($a_rg != $p_cap and $b_rg == $p_cap) {
+                return 1;
+            }
         }
-
-        if ($a['dateSortKey'] > $b['dateSortKey']) {
-            return -1;
-        }
-        if ($a['dateSortKey'] < $b['dateSortKey']) {
+        if (is_null($a['role']) and !is_null($b['role'])) {
             return 1;
         }
-        return 0;
+        if (is_null($b['role']) and !is_null($b['role'])) {
+            return -1;
+            }
+        // both are null or have the same roleGroup
+        // latest data first
+        return -1 * UtilService::compare($a, $b, ['dateSortKey']);
+
     }
 
     static public function uniquePersonRole($role_list) {
@@ -237,8 +300,8 @@ class DownloadService {
             }
             // the last three digits of dateSortKey are used to code approcimate date specifications
             if ($pr_last['roleId'] == $pr['roleId']
-                and ($pr_last['institutionId'] == $pr['institutionId']
-                     or $pr_last['dioceseId'] == $pr['dioceseId'])
+                and (UtilService::equalNotNull($pr_last['institutionId'], $pr['institutionId'])
+                     or UtilService::equalNotNull($pr_last['dioceseId'], $pr['dioceseId']))
                 and (abs($pr_last['dateSortKey'] - $pr['dateSortKey']) < 2000)) {
                 continue;
             }
@@ -246,7 +309,61 @@ class DownloadService {
             $pr_last = $pr;
         }
 
-        return $role_list;
+        return $role_list_unique;
     }
+
+    /**
+     * compose string containing basic information for $role
+     *
+     * compare PersonRole->describe()
+     */
+    static public function describePersonRole($person_role): string {
+
+        $name = null;
+        if (!is_null($person_role['role'])) {
+            $name = $person_role['role']['name'];
+        } else {
+            $name = $person_role['roleName'];
+        }
+
+        $inst_or_dioc = null;
+        if (!is_null($person_role['institution'])) {
+            $inst_or_dioc = $person_role['institution']['name'];
+        } elseif (!is_null($person_role['institutionName'])) {
+            $inst_or_dioc = $person_role['institutionName'];
+        } elseif (!is_null($person_role['diocese'])) {
+            $inst_or_dioc = $person_role['diocese']['name'];
+        } elseif (!is_null($person_role['dioceseName'])) {
+            $inst_or_dioc = $person_role['dioceseName'];
+        }
+
+        $date_info = null;
+        $dbc = $person_role['dateBegin'];
+        $date_begin = is_null($dbc) ? null : (strlen(trim($dbc)) == 0 ? null : $dbc);
+        $dec = $person_role['dateEnd'];
+        $date_end = is_null($dec) ? null : (strlen(trim($dec)) == 0 ? null : $dec);
+
+        if (!is_null($date_begin) and !is_null($date_end)) {
+            $date_info = $date_begin.'-'.$date_end;
+        } elseif (!is_null($date_begin)) {
+            $date_info = $date_begin;
+        } elseif (!is_null($date_end)) {
+            $date_info = 'bis '.$date_end;
+        }
+
+        $description = '';
+        if ($name) {
+            $description = $name;
+        }
+        if ($inst_or_dioc) {
+            $description = $description.' '.$inst_or_dioc;
+        }
+        if ($date_info) {
+            $description = $description.' '.$date_info;
+        }
+
+        return $description;
+    }
+
 
 }
