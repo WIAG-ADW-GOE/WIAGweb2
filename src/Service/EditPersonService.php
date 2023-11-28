@@ -1261,7 +1261,7 @@ class EditPersonService {
         $role_list_gso = $person_gso->getRole();
         $count_role = 0;
         foreach ($role_list_gso as $role_gso) {
-            if ($role_gso->isEmpty()) {
+            if ($role_gso->isEmpty() or $role_gso->isDeleted()) {
                 continue;
             }
 
