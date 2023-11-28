@@ -104,6 +104,9 @@ class DownloadController extends AbstractController {
         return new Response("Fehler: Das Formular konnte nicht ausgewertet werden");
     }
 
+    /**
+     * callback for streaming of person data
+     */
     private function yieldPersonData($id_list) {
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
@@ -135,5 +138,106 @@ class DownloadController extends AbstractController {
         }
         fclose($handle);
     }
+
+    /**
+     * @Route("/download/csv/person-role/{corpusId}", name="download-csv-person-role-data")
+     *
+     * @return streamed response for person role data
+     */
+    public function csvPersonRoleData(Request $request, $corpusId) {
+
+        ini_set('max_execution_time', 300);
+
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        // dev
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+
+        $model = PersonFormModel::newByArray($request->query->all());
+        $model->corpus = $corpusId;
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+        ]);
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+        $model->corpus = $corpusId;
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            // dev/debug
+            $download_debug = false;
+            if ($download_debug) {
+                $person_list = $personRepository->findSimpleList($id_all);
+                $role_list = $itemNameRoleRepository->findSimpleRoleList($id_all);
+                $person = $person_list[0];
+                $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
+                $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
+                foreach($role_list_single as $person_role) {
+                    $rec = DownloadService::formatPersonRoleData($person, $person_role);
+                    dump($rec);
+                }
+                dd($person, $role_list_single);
+            }
+
+            $response = new StreamedResponse();
+
+            $callback = array($this, 'yieldPersonRoleData');
+            $response->setCallback(function() use ($callback, $id_all) {
+                $callback($id_all);
+            });
+
+            $filename = "WIAG-".$corpusId."-roles.csv";
+
+            $response->headers->set('X-Accel-Buffering', 'no');
+            $response->headers->set('Content-Type', 'application/force-download');
+            $response->headers->set('Content-Disposition', 'attachment; filename='.$filename);
+
+            return $response;
+
+        }
+
+        return new Response("Fehler: Das Formular konnte nicht ausgewertet werden");
+    }
+
+    /**
+     * callback for streaming of person role data
+     */
+    private function yieldPersonRoleData($id_list) {
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+
+        $handle = fopen('php://output', 'r+');
+        $chunk_size = 200;
+        $chunk_pos = 0;
+        $count = count($id_list);
+        fputcsv($handle, DownloadService::formatPersonRoleDataHeader(), ";");
+        while ($chunk_pos < $count) {
+            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
+            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
+            $role_chunk_list = $itemNameRoleRepository->findSimpleRoleList($id_chunk);
+            $chunk_pos += $chunk_size;
+
+            foreach ($person_chunk_list as $person) {
+                $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
+                $role_list = UtilService::findAllArray($role_chunk_list, 'personId', $inr_role_list);
+                foreach ($role_list as $role) {
+                    $rec = DownloadService::formatPersonRoleData($person, $role);
+                }
+                fputcsv($handle, $rec, ";");
+            }
+            // avoid memory overflow
+            unset($person_list);
+            unset($role_list);
+
+            ob_flush();
+            flush();
+        }
+        fclose($handle);
+    }
+
+
 
 }

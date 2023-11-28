@@ -558,7 +558,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     /**
      * @return role data for persons in $id_list
      *
-     * collect all roles via ItemNameRole
+     * collect all roles for a person via ItemNameRole
      */
     public function findSimpleRoleList($id_list) {
 

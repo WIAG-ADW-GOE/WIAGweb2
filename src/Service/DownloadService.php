@@ -365,5 +365,54 @@ class DownloadService {
         return $description;
     }
 
+    /**
+     * @return header for formatted person data
+     */
+    static public function formatPersonRoleDataHeader() {
+        return [
+            'person_id',
+            'id',
+            'name',
+            'institution',
+            'diocese',
+            'date begin',
+            'date end',
+            'GND',
+            'GSN',
+            'FactGrid'
+        ];
+    }
+
+    /**
+     * @return formatted person role data
+     */
+    static public function formatPersonRoleData($person, $role) {
+
+        $item = $person['item'];
+        $itemCorpus = $item['itemCorpus'];
+        $urlExternal = $item['urlExternal'];
+
+        $data = array();
+        $data['person_id'] = self::idPublic($person['item']['itemCorpus']);
+        $data['id'] = $role['id'];
+        $data['name'] = !is_null($role['role']) ? $role['role']['name'] : $role['roleName'];
+        $data['institution'] = !is_null($role['institution']) ? $role['institution']['name'] : $role['institutionName'];
+        $diocese = $role['diocese'];
+        if (!is_null($diocese)) {
+            $data['diocese'] = $diocese['dioceseStatus'].' '.$diocese['name'];
+        } else {
+            $data['diocese'] = $role['dioceseName'];
+        }
+        $data['date begin'] = $role['dateBegin'];
+        $data['date end'] = $role['dateEnd'];
+        foreach (['GND', 'GSN', 'FactGrid'] as $auth) {
+            $auth_id = Authority::ID[$auth];
+            $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
+            $data[$auth] = is_null($uext) ? null : $uext['value'];
+        }
+
+
+        return $data;
+    }
 
 }
