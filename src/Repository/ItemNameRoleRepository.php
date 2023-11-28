@@ -488,7 +488,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $id = $p_loop->getId();
                 $inr = new ItemNameRole($id, $id);
                 $inr->setItem($item);
-                $inr->setPersonRole($p_loop);
+                $inr->setPersonRolePerson($p_loop);
                 $entityManager->persist($inr);
                 $id_primary_list[] = $id;
                 $n += 1;
@@ -502,7 +502,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                     if (($item_id != $id) and $is_dreg) {
                         $inr = new ItemNameRole($id, $item_id);
                         $inr->setItem($item);
-                        $inr->setPersonRole($personRepository->find($item_id));
+                        $inr->setPersonRolePerson($personRepository->find($item_id));
                         $entityManager->persist($inr);
                         $n += 1;
                         $id_secondary_list[] = $item_id;
@@ -523,7 +523,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                 $id_dreg = $p_loop->getId();
                 $inr = new ItemNameRole($id_dreg, $id_dreg);
                 $inr->setItem($item);
-                $inr->setPersonRole($p_loop);
+                $inr->setPersonRolePerson($p_loop);
                 $entityManager->persist($inr);
 
                 $n += 1;

@@ -54,8 +54,8 @@ class ItemNameRole
         return $this;
     }
 
-    public function setPersonRole($person) {
-        $this->personRole = $person;
+    public function setPersonRolePerson($person) {
+        $this->personRolePerson = $person;
         return $this;
     }
 

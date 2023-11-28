@@ -21,26 +21,26 @@ class Item {
 
     // obsolete in WIAGweb3
     // redundant to table item_type (simpler, faster than a query)
-    const ITEM_TYPE_ID_LEGACY = [
-        'Bistum'     => ['id' => 1],
-        'Kloster'    => ['id' => 2],
-        'Domstift'   => ['id' => 3],
-        'Bischof'    => ['id' => 4],
-        'Domherr'    => ['id' => 5],
-        'Domherr GS' => ['id' => 6],
-        'Amt'        => ['id' => 8],
-        'Bischof GS' => ['id' => 9],
-        'Priester Utrecht' => ['id' => 10],
-    ];
+    // const ITEM_TYPE_ID_LEGACY = [
+    //     'Bistum'     => ['id' => 1],
+    //     'Kloster'    => ['id' => 2],
+    //     'Domstift'   => ['id' => 3],
+    //     'Bischof'    => ['id' => 4],
+    //     'Domherr'    => ['id' => 5],
+    //     'Domherr GS' => ['id' => 6],
+    //     'Amt'        => ['id' => 8],
+    //     'Bischof GS' => ['id' => 9],
+    //     'Priester Utrecht' => ['id' => 10],
+    // ];
 
-    // obsolete in WIAGweb3
-    const ITEM_TYPE_WIAG_PERSON_LIST = [
-        self::ITEM_TYPE_ID['Bischof']['id'],
-        self::ITEM_TYPE_ID['Domherr']['id'],
-        self::ITEM_TYPE_ID['Bischof GS']['id'],
-        self::ITEM_TYPE_ID['Domherr GS']['id'],
-        self::ITEM_TYPE_ID['Priester Utrecht']['id'],
-    ];
+    // // obsolete in WIAGweb3
+    // const ITEM_TYPE_WIAG_PERSON_LIST = [
+    //     self::ITEM_TYPE_ID['Bischof']['id'],
+    //     self::ITEM_TYPE_ID['Domherr']['id'],
+    //     self::ITEM_TYPE_ID['Bischof GS']['id'],
+    //     self::ITEM_TYPE_ID['Domherr GS']['id'],
+    //     self::ITEM_TYPE_ID['Priester Utrecht']['id'],
+    // ];
 
     // 2023-08-11 obsolete in WIAGweb3
     const ITEM_TYPE = [
