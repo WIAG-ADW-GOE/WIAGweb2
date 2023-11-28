@@ -40,7 +40,7 @@
                                 <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'dreg-can'}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
                                 <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'can'}) }} name="onepage_references_others" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
                             {% endif %}
-                            {% if is_granted('ROLE_CANON_ONEPAGE') %}
+                            {% if is_granted('ROLE_CANON_ONEPAGE') and false %} {# 2023-11-25 hide for the moment #}
                                 {{ include('person/_dropdown_download.html.twig') }}
                             {% endif %}
                         {% endif %}
