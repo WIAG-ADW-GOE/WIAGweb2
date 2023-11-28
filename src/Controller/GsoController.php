@@ -285,7 +285,7 @@ class GsoController extends AbstractController {
             $item_id = $person_target->getItem()->getId();
             $gso_person_id = $meta_data_list[$item_id]['gso_person_id'];
             $person_gso_list = $gsoPersonsRepository->findList([$gso_person_id]);
-            $person_gso = $person_gso_list[0];
+            $person_gso = array_values($person_gso_list)[0];
 
             // update GSN, do not flush
             $gsn_old = $person_target->getItem()->getGsn();
