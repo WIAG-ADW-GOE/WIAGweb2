@@ -225,8 +225,8 @@ class DownloadController extends AbstractController {
                 $role_list = UtilService::findAllArray($role_chunk_list, 'personId', $inr_role_list);
                 foreach ($role_list as $role) {
                     $rec = DownloadService::formatPersonRoleData($person, $role);
+                    fputcsv($handle, $rec, ";");
                 }
-                fputcsv($handle, $rec, ";");
             }
             // avoid memory overflow
             unset($person_list);
