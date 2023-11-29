@@ -1,0 +1,1019 @@
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'   width='1200' height='1230' viewBox='0 0 1200 1230' >
+  <script type='text/ecmascript'>
+  <![CDATA[
+  function hghl(el) { for ( var i in el ){ var elem = document.getElementById(el[i]); if ( elem != null ) elem.setAttribute('class','highlight');  }  }
+  function uhghl(el) { for ( var i in el ){ var elem = document.getElementById(el[i]); if ( elem != null ) elem.setAttribute('class','unhighlight'); }  } 
+  ]]>
+  </script> 
+
+<style type='text/css'>
+  text                { fill:#1c1d1f; font-weight:normal;stroke:#2a2b2c;stroke-width:.1px; font-family: Segoe UI, 'Segoe UI', Dialog; font-size:13.0px; }
+  a text:hover        { font-weight:500; }
+  text.highlight      { font-weight:500; }
+  text.white          { fill:#ffffff; }
+  text.colType        { fill:#b3b3b3; }
+  text.relName        { fill:#9c9a9a; stroke-width:0; }
+  text.legendTitle    { fill:#2b3b64; font-weight:500; }
+  text.legendSubTitle { fill:#616161; font-size:12px; }
+  path, circle        { stroke:#939391; stroke-width:1.65; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .filled             { fill:#939391; }
+  path.virtual        { stroke:#6e377e; }
+  path.logo           { fill:#fbeac0;fill-opacity:1;stroke-width:0.3;stroke:#222222; }
+  path.dotted         { stroke-dasharray:3,3; }
+  path.unhighlight    { stroke-width:5; opacity:0; pointer-events:all; }
+  path.highlight      { stroke-width:3; stroke:#a19f9b; opacity:0.8; pointer-events:all; }
+  path.line           { stroke-width:10; stroke-linecap:round; stroke-linejoin:round; }
+  rect.entity         { fill:#ffffff; stroke-width:0; shape-rendering:crispEdges;  filter:url(#shadow); }
+  line.delim          { stroke-width:1px; shape-rendering:crispEdges; }
+  line.topLine        { stroke-width:2.5px; shape-rendering:crispEdges; }
+  text.callout        { fill:#201a10; font-family: Segoe UI, 'Segoe UI', Dialog; font-size:13.0px; }
+  rect.callout        { fill:url(#calloutGradient); stroke-width:1px; stroke:#b0b0b0; }
+  rect.shape          { stroke:#bebdbd; stroke-width:0.5; }
+  text.grp            { fill:#b1b1b1; }
+  rect.grp            { stroke:#919171; stroke-width:3; opacity:0.34; }
+  path.bgPattern      { fill:none;stroke-width:0.6;stroke:#e5e9ee; }
+  path.eval           { fill:#ececec;fill-opacity:1;stroke-width:0.6;stroke:#dddddd; }
+  rect.palpable       { fill:#fffbe5; }
+</style>
+<defs>
+  <pattern id="layoutBgA" width="60" height="34.64" patternUnits="userSpaceOnUse">
+    <rect x="0" y="0"  width="60" height="34.64" fill="#f2f2f4" />
+  </pattern>
+  <pattern id='layoutBgEval'  width='300' height='300' x='0' y='0' patternUnits="userSpaceOnUse">
+    <path class='eval' d='m 62.011835,91.267143 c 3.536475,3.175214 2.262669,8.705999 -1.637711,11.015197 -3.594697,5.8423 -6.34682,-2.892623 -9.715478,-4.653898 -5.609222,-2.838926 2.050802,-6.680123 4.77004,-8.319046 2.334696,-0.724067 4.935143,0.312302 6.583149,1.957747 z m -2.720492,2.538595 c -2.698397,-3.517732 -9.282815,1.269287 -3.69635,3.568637 2.765331,5.605665 7.052809,-0.56184 3.69635,-3.568637 z' />
+    <path class='eval' d='m 72.25864,84.624638 c 4.108046,3.143003 -0.737059,6.895259 -1.994918,8.323564 -3.586718,5.561143 -6.495079,-4.197379 -10.07759,-5.582178 -4.443422,-1.088878 1.349298,-7.249213 2.503526,-2.503449 2.464639,4.517161 2.304019,-3.70697 6.291113,-1.995914 1.280083,0.137865 2.410691,0.864819 3.277869,1.757977 z m -2.646109,2.323242 c -4.797162,-3.078383 -2.810517,6.305507 0.515161,1.990646 0.296432,-0.688582 0.01209,-1.493412 -0.515161,-1.990646 z' />
+    <path class='eval' d='m 78.230641,79.436735 c 4.142121,3.027466 -2.020102,10.435276 -3.450543,5.477315 3.306312,-5.248112 -9.186019,-2.220094 -5.805994,-8.77679 -0.544141,-3.93011 6.797826,-2.102227 3.386015,0.245477 -0.181085,2.915838 4.637371,1.019311 5.870522,3.053982 z' />
+    <path class='eval' d='m 82.744502,72.597397 c -4.901605,1.926521 1.146497,6.285555 2.559694,2.225783 6.21817,3.539297 -6.640186,8.416664 -7.590325,1.997457 -2.24365,-2.914883 4.026676,-10.148618 5.030631,-4.22324 z' />
+    <path class='eval' d='m 90.727458,64.259158 c 1.583987,1.690029 3.321317,3.2696 4.81267,5.026353 -2.535706,6.849794 -6.445583,-5.918773 -8.388458,-0.167017 0.782768,2.03426 5.877405,3.752079 2.670979,5.711199 -3.315119,1.519161 -5.782422,-5.157931 -8.858893,-6.780537 -4.229842,-1.139816 1.510134,-7.074128 2.586227,-2.385939 3.141198,5.495193 1.840537,-5.598295 7.177489,-1.404062 z' />
+    <path class='eval' d='m 99.622027,58.374253 c 1.493293,1.9548 -6.281936,7.024659 -0.885258,4.740447 0.386238,-4.434477 6.131941,-1.133173 2.175851,1.618005 -4.421491,6.12739 -13.666659,-3.151506 -7.058299,-7.136537 1.785129,-1.119329 4.348209,-0.743179 5.767706,0.778085 z m -2.900824,1.89746 c -3.608188,-2.208543 -2.280489,5.00803 -0.12563,0.329531 z' />
+    <path class='eval' d='m 115.18023,50.570441 c -1.61703,5.201678 -4.6204,-0.364502 -7.01598,-1.749619 -4.40977,2.122562 4.89641,4.913939 1.89606,7.018157 -2.48061,3.877635 -4.11404,-4.060614 -7.01192,-2.6391 -1.76318,3.107252 7.28394,6.252304 0.87346,7.876177 -1.74515,-2.956649 -9.055498,-5.610518 -3.950378,-8.66062 1.696478,1.897023 1.770418,-5.43503 5.347308,-3.072411 -0.44014,-5.474701 6.11995,-4.950882 7.7846,-0.815355 0.69076,0.682329 1.39587,1.351469 2.07685,2.042771 z' />
+    <path class='eval' d='m 120.54891,39.417125 c 2.50681,1.334124 4.80466,4.941837 0.75044,5.297362 -0.46414,1.89865 -5.25369,5.602652 -8.01742,1.815475 -3.87345,-2.809139 -0.0676,-7.603869 2.3036,-8.133924 1.6795,-3.853018 3.16703,-1.199465 4.96338,1.021087 z m -2.2464,2.175828 c -4.8049,-2.992167 -3.08987,6.380358 0.42374,2.036159 0.33052,-0.677508 0.12099,-1.525836 -0.42374,-2.036159 z' />
+    <path class='eval' d='m 128.50836,24.06821 c -5.10403,3.035506 3.20535,6.383175 5.05938,9.450276 -0.91853,2.95886 -4.06493,3.650723 -5.34691,0.265618 -2.25715,-2.089033 -4.65672,-6.948595 -7.07024,-2.584686 -4.71758,-3.764394 3.81217,-5.812054 5.12382,-9.226328 0.75738,0.677487 1.38637,1.498638 2.23389,2.095175 z' />
+    <path class='eval' d='m 137.14366,22.299812 c -3.09615,2.259885 0.71537,4.412454 1.99042,6.435866 -3.08975,5.080354 -5.91384,-2.98648 -8.92144,-4.094939 1.44369,-3.219573 3.3497,-1.335928 4.27156,-4.41058 0.97822,-0.894325 1.75044,1.871047 2.65946,2.069653 z' />
+    <path class='eval' d='m 136.85093,14.890174 c 2.31562,5.283511 -7.17975,1.771993 -1.29675,-0.475107 l 0.7108,0.08973 z m 4.867,5.317354 c 2.56912,1.439678 4.26517,4.725219 0.30678,5.233637 -1.56592,-3.098864 -9.51683,-5.749448 -3.64502,-8.633714 1.17746,0.325095 2.15375,2.591149 3.33824,3.400077 z' />
+    <path class='eval' d='m 149.95578,11.976423 c 2.50679,1.334142 4.80455,4.94192 0.75041,5.297394 -0.4641,1.898604 -5.25368,5.602645 -8.0174,1.81545 -3.87347,-2.80918 -0.0676,-7.603844 2.30366,-8.133968 1.67949,-3.8530525 3.16695,-1.1993573 4.96333,1.021124 z m -2.24641,2.175828 c -4.80489,-2.992177 -3.08986,6.380343 0.42374,2.036167 0.33055,-0.677518 0.121,-1.52585 -0.42374,-2.036167 z' />
+    <path class='eval' d='m 153.26135,7.538431 c 2.60497,1.5799548 6.03999,5.944272 1.08117,6.050232 -2.53319,-3.231828 -7.20316,-6.4304525 -8.84748,-9.4582682 1.89121,-2.8664883 3.78452,-2.247699 5.38514,0.8929426 0.78017,0.8503859 1.57195,1.6911437 2.38118,2.5150667 z' />
+  </pattern>
+  <!-- https://norbat.de/svg-pattern-3d-webmuster/ -->
+  <radialGradient id='calloutGradient' cx='25%' cy='20%' r='80%' fx='10%' fy='10%'>
+    <stop offset='0%' stop-color='#fefdf7aa' />
+    <stop offset='100%' stop-color='#fcf9e7aa' />
+  </radialGradient>
+  <filter id="shadow">
+    <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#707070" flood-opacity="0.6" />
+  </filter>
+  <!--
+  <filter id='shadow2' width='120%' height='120%'>
+    <feOffset result='offOut' in='SourceGraphic' dx='0' dy='0' />
+    <feColorMatrix result='matrixOut' in='offOut'
+                   values='0.5 0 0 0 0 0 0.5 0 0 0 0 0 0.5 0 0 0 0 0 0.5 0' />
+    <feGaussianBlur result='blurOut' in='matrixOut' stdDeviation='3' />
+    <feBlend in='SourceGraphic' in2='blurOut' />
+  </filter>
+  -->
+  <filter id='fkShadow' height='130%'>
+    <feGaussianBlur in='SourceAlpha' stdDeviation='1.5'/> <!-- stdDeviation is how much to blur -->
+    <feOffset dx='1.2' dy='1.2' result='offsetblur'/> <!-- how much to offset -->
+    <feMerge>
+      <feMergeNode/> <!-- this contains the offset blurred image -->
+      <feMergeNode in='SourceGraphic'/> <!-- this contains the element that the filter is applied to -->
+    </feMerge>
+  </filter>
+  <radialGradient id='legendGradient' cx='5%' cy='5%' r='100%' >
+    <stop offset='0%' stop-color='#fdfeff' stop-opacity='1'/>
+    <stop offset='100%' stop-color='#e1eafa' stop-opacity='1' />
+  </radialGradient>
+  <symbol id='calloutArrowDown' >
+    <path d='M 0,0 L 8,12 L 16,0 z' style='fill:#f8f6d1;stroke:none; filter: url(#shadow);' />
+    <path d='M 0,0 L 8,12 L 16,0' style='stroke:#bebdbd; stroke-width:0.5;' />
+  </symbol>
+  <symbol id='calloutArrowUp' >
+    <path d='M 0,16 L 8,4 L 16,16 z' style='fill:#ffffff; stroke:none; filter: url(#shadow);' />
+    <path d='M 0,16 L 8,4 L 16,16' style='stroke:#bebdbd; stroke-width:0.5;' />
+  </symbol>
+  <symbol id='pk' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <path style='fill:#f0d938;stroke:#906b25;stroke-width:0.6;stroke-linecap:round;stroke-linejoin:round;'
+            d='M 9.3678877,3.5695485 C 9.1030218,3.2729386 9.0796382,2.7628519 9.3396185,2.4517097 9.5449651,2.1956495 9.9040386,2.0980533 10.199638,2.2169415 10.533525,2.3415459 10.775153,2.706942 10.750675,3.0842709 10.737029,3.3980003 10.541153,3.699122 10.258248,3.8066067 9.966649,3.9250429 9.6169668,3.8418805 9.4008073,3.6062324 9.3894892,3.5943518 9.3785264,3.582104 9.3678886,3.5695487 z M 11.226617,6.9916004 C 11.888137,6.3548946 12.293488,5.4172188 12.311087,4.442353 12.378144,2.7379364 11.248678,1.0541269 9.7322318,0.44767357 8.3887112,-0.1280313 6.7865012,0.26822889 5.8918395,1.4007929 5.080823,2.3839145 4.9336815,3.8452096 5.3635544,5.101615 L 4.3670905,5.315913 C 4.0664984,5.3682645 4.0967703,5.6316724 4.2574957,5.8208829 L 4.9124,6.5655244 4.1543436,7.2512357 3.2136002,7.2163506 3.1674775,8.5586827 2.0406832,8.5086512 1.5965306,8.9299953 1.5471661,10.179833 0.75616674,10.195223 0.2112857,10.758575 0.15354288,11.735988 0.07199052,12.765553 c 0.36440953,0.238225 0.79006967,0.195492 1.44938278,-0.02675 L 6.3033562,8.1282037 6.8217102,8.6765688 C 6.9985465,8.8799427 7.3003699,8.7497574 7.358381,8.5016252 L 7.4938877,7.5084164 c 0.8537488,0.3985387 1.8303125,0.4711541 2.6851793,0.1427713 0.393927,-0.1407258 0.746858,-0.3701772 1.04755,-0.6595873 z'/>
+      <path d='M 6.8014948,6.3102123 0.15369063,13.024481 0.21560535,12.141962 6.0062342,6.2683782 z'
+            style='fill:#ffe5a5;fill-opacity:1;stroke:#906b25;stroke-width:0.06912433;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:3.00300009'/>
+    </g>
+  </symbol>
+  <symbol id='idx1' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <rect width='4' height='4' x='7' y='1' style='fill:#ffff3f;stroke:#b48333;stroke-width:0.6;' ry='0.83'/>
+      <rect width='4' height='4' x='1' y='7' style='fill:#ffff3f;stroke:#b48333;stroke-width:0.6;' ry='0.832'/>
+      <rect width='4' height='4' x='7' y='7' style='fill:#ffff3f;stroke:#b48333;stroke-width:0.6;' ry='0.832'/>
+    </g>
+  </symbol>
+  <symbol id='idx2' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <rect width='4' height='3' x='6' y='1' style='fill:#7fc8e9;stroke:#2f6f8c;stroke-width:0.6;' ry='0.83'/>
+      <rect width='7' height='3' x='3' y='6' style='fill:#7fc8e9;stroke:#2f6f8c;stroke-width:0.6;' ry='0.832'/>
+    </g>
+  </symbol>
+  <symbol id='unq' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <rect style='fill:none;stroke:#7e4d31;stroke-width:0.71934468;stroke-linecap:round;stroke-linejoin:round;'
+            width='2.29' height='8.43' x='7.48' y='-0.76' ry='1.14' transform='matrix(0.701,0.713,-0.727,0.685,0,0)' />
+      <path style='fill:white;stroke:#858585;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='m 26.04,8.64 a 4.13,4.13 0 1 1 -8.26,0 4.13,4.13 0 1 1 8.26,0 z'
+            transform='matrix(1.025,0,0,0.987,-14.690,-3.862)' />
+      <text x='5.4' y='7.2' style='font-size:7px;fill:#655c59;'>U</text>
+    </g>
+  </symbol>
+  <symbol id='idx' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <rect style='fill:none;stroke:#7e4d31;stroke-width:0.71934468;stroke-linecap:round;stroke-linejoin:round;'
+            width='2.29' height='8.43' x='7.48' y='-0.76' ry='1.14' transform='matrix(0.701,0.713,-0.727,0.685,0,0)' />
+      <path style='fill:white;stroke:#858585;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='m 26.04,8.64 a 4.13,4.13 0 1 1 -8.26,0 4.13,4.13 0 1 1 8.26,0 z'
+            transform='matrix(1.025,0,0,0.987,-14.690,-3.862)' />
+    </g>
+  </symbol>
+  <symbol id='fk' width="13" height="13">
+    <g transform='scale(0.87)'>
+      <path style='fill:#6a88cd;stroke:#5a72a8;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='M 12.48,0.33 7.07,0.89 9.067,2.974 0.329,11.731 1.073,12.597 9.811,3.841 11.77,5.78 z' />
+    </g>
+  </symbol>
+  <symbol id='ref' width="13" height="13">
+    <g transform='scale(0.87)'>
+      <path style='fill:#f0d938;stroke:#906b25;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='M 0.10,12.70 5.31,12.15 3.40,10.06 11.82,1.32 11.11,0.45 2.68,9.19 0.80,7.24 z'/>
+    </g>
+  </symbol>
+  <symbol id='flag0' width="13" height="13">
+    <g transform='scale(0.92)'>
+      <path style='fill:#b7d0f6;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='M 0.12,12.67 0.16,7.22 C 2.59,7.22 4.13,8.78 9.22,4.22 5.68,4.98 2.53,4.50 0.09,1.80 z'/>
+    </g>
+  </symbol>
+  <symbol id='flag1' width="13" height="13">
+    <g transform='scale(0.92)'>
+      <path style='fill:#f4a393;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='M 0.12,12.67 0.16,7.22 C 2.59,7.22 4.13,8.78 9.22,4.22 5.68,4.98 2.53,4.50 0.09,1.80 z'/>
+    </g>
+  </symbol>
+  <symbol id='flag2' width="13" height="13">
+    <g transform='scale(0.92)'>
+      <path style='fill:#77ec8b;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+            d='M 0.12,12.67 0.16,7.22 C 2.59,7.22 4.13,8.78 9.22,4.22 5.68,4.98 2.53,4.50 0.09,1.80 z'/>
+    </g>
+  </symbol>
+  <symbol id='nn' width="3" height="3">
+    <path style='stroke:#9b3e50;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+          d='M 0,0 3,3 M 0,3 3,0 z'/>
+  </symbol>
+  <symbol id='virtual' width="13" height="13">
+    <circle cx='6' cy='6.5' r='5.5' fill='#a3dda3' stroke='#4c6a4c' stroke-width='0.5'/>
+    <path style='stroke:#ffffff;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;'
+          d='M 3,4 6,10 9,4'/>
+  </symbol>
+  <symbol id='view' width="13" height="13">
+    <g transform='scale(0.99)'>
+      <line x1='12' y1='6' x2='19' y2='0' stroke='black' stroke-width='0.5' />
+      <line x1='0' y1='6' x2='7' y2='0' stroke='black' stroke-width='0.5' />
+      <circle cx='3' cy='6' r='3' fill='#f9ebbc' stroke='black' stroke-width='0.5'/>
+      <circle cx='10' cy='6' r='3' fill='#f9ebbc' stroke='black' stroke-width='0.5'/>
+    </g>
+  </symbol>
+  <symbol id='logo' width="100" height="100">
+    <path style='stroke:none;fill:#5d5d5d' d='M2.41,6.80 17.39,0.35 26.83,7.21 28.32,24.45 12.62,29.77 1.74,23.96'/>
+    <path style='stroke:none;fill:#efefef' d='M 2.21, 6.45  9.36, 3.49  9.42,11.63  2.04,14.42'/>
+    <path style='stroke:none;fill:#efefef' d='M10.23, 3.14 17.39, 0.17 17.68, 8.59 10.29,11.28'/>
+    <path style='stroke:none;fill:#d2d2d2' d='M17.44, 0.17 21.59, 3.55 22.36,11.43 17.76,8.63'/>
+    <path style='stroke:none;fill:#d2d2d2' d='M22.67, 4.33 26.98, 7.06 27.65,14.77 23.20,11.77'/>
+    <path style='stroke:none;fill:#efefef' d='M1.89,15.58  9.39,12.65  9.48,21.14  1.57,24.10'/>
+    <path style='stroke:none;fill:#17afde' d='M10.38,12.36 17.70, 9.51 18.11,18.37 10.32 20.96'/>
+    <path style='stroke:none;fill:#1389ad' d='M17.73, 9.59 22.41,12.47 22.82,21.14 18.05,18.34'/>
+    <path style='stroke:none;fill:#d2d2d2' d='M23.26,12.94 27.62,15.70 28.42,24.54 23.69,21.60'/>
+    <path style='stroke:none;fill:#828282' d='M1.57,24.19  9.45,21.22 14.30,24.40  6.80,26.80'/>
+    <path style='stroke:none;fill:#0c485c' d='M10.47,20.90 18.11,18.32 22.82,21.19 15.20,23.81'/>
+    <path style='stroke:none;fill:#828282' d='M23.69,21.63 28.32,24.65 20.87,27.07 15.84,24.30'/>
+    <path style='stroke:none;fill:#828282' d='M14.94,24.68 19.80,27.41 12.59,29.97  7.73,27.21'/>
+  </symbol>
+
+</defs>
+
+<defs>  <marker id='ZeroMore' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <circle cx='2.00' cy='4.00' r='2.00' style='stroke-width:1;' />
+    <path d='M 8.00,0.00 L 4.00,4.00 L 8.00,8.00' style='stroke-width:1;'/>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+  </marker>
+  <marker id='ZeroOne' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+    <circle cx='2.00' cy='4.00' r='2.00' style='stroke-width:1;' />
+    <path d='M 4.00,0.00 L 4.00, 8.00 z' style='stroke-width:1;'/>
+  </marker>
+  <marker id='OneMore' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+    <path d='M 4.00,0.00 L 4.00, 8.00 z' style='stroke-width:1;'/>
+    <path d='M 8.00,0.00 L 4.00,4.00 L 8.00,8.00' style='stroke-width:1;'/>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+  </marker>
+  <marker id='One' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+    <path d='M 4.00,0.00 L 4.00, 8.00 z' style='stroke-width:1;'/>
+  </marker>
+  <marker id='Range' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <path d='M 0.00,4.00 L 8.00,4.00 z' style='stroke-width:1;'/>
+  </marker>
+  <marker id='Arrow' viewBox='0 0 8.00 8.00' refX='4.00' refY='4.00' markerWidth='8.00' markerHeight='8.00' orient='auto-start-reverse'>
+    <path d='M 4.000,2.000 L 8.000,4.000 L 4.000,6.000 z' style='stroke-width:1;' class='filled'/>
+  </marker>
+  <linearGradient id='tbg_3986C1' x1='0%' y1='0%' x2='0%' y2='100%' >
+     <stop offset='0%' stop-color='#FEFEFF' /> 
+     <stop offset='75%' stop-color='#DFEFFD' /> 
+     <stop offset='100%' stop-color='#BAE0FE' /> 
+  </linearGradient>
+  <linearGradient id='tbg_C1D8EE' x1='0%' y1='0%' x2='0%' y2='100%' >
+     <stop offset='0%' stop-color='#FEFEFF' /> 
+     <stop offset='75%' stop-color='#DFEEFD' /> 
+     <stop offset='100%' stop-color='#BADCFE' /> 
+  </linearGradient>
+</defs>
+
+<!-- == Shape Colors == -->
+<!-- == Desktop == -->
+<rect x='1' y='1' width='1198' height='1228' rx='8' ry='8' style='fill:url(#layoutBgA); stroke:#ccc; stroke-width:.7px; cursor:move;' />
+
+<!-- == Legend == -->
+<g transform='translate(10,10)'>
+  <rect x='10' y='10' width='310' height='70' rx='6' ry='6' style='fill:url(#legendGradient);filter:url(#shadow);'/> 
+  <use id='logo' x='20' y='40' xlink:href='#logo'><title>DbSchema Database Designer </title></use>  <text x='20' y='30' class='legendTitle' >Main Layout</text> 
+  <text x='57' y='47' class='legendSubTitle'><tspan>Comments as mouse-over tips, zoom and pan.<title>Read column and table comments by hovering the columns and tables.
+Zoom with CTRL+whell mouse button, pan by dragging the diagram with the right-mouse button</title></tspan></text> 
+  <a xlink:href='https%3A%2F%2Fdbschema.com'><text x='57' y='61' class='legendSubTitle'><tspan>by DbSchema.com - Wise Coders<title>DbSchema is an universal database designer.
+DbSchema has a free Community Edition.</title></tspan></text></a> 
+</g>
+
+<g transform='translate(0,110)'>
+<!-- == Fk 'corpus_fk_corpus_item_corpus' == -->
+<path id='corpus_fk_corpus_item_corpus'  onmouseover="hghl(['corpus_fk_corpus_item_corpus','wiag3.corpus.corpus_id','wiag3.item_corpus.corpus_id'])" onmouseout="uhghl(['corpus_fk_corpus_item_corpus','wiag3.corpus.corpus_id','wiag3.item_corpus.corpus_id'])" transform='translate(8,0)' class='unhighlight' d='M 496,64L 416,64' >
+	<title>&#x1F517;  Foreign Key fk_corpus_item_corpus
+corpus ref item_corpus ( corpus_id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='dotted virtual'  d='M 496,64L 416,64' ><title>&#x1F517;  Foreign Key fk_corpus_item_corpus
+corpus ref item_corpus ( corpus_id )</title></path>
+<text x='451' y='59' transform='rotate(0 451,59)' class='relName'>corpus&#95;id</text>
+<!-- == Fk 'diocese_fk_diocese_item' == -->
+<path id='diocese_fk_diocese_item'  onmouseover="hghl(['diocese_fk_diocese_item','wiag3.diocese.id','wiag3.item.id'])" onmouseout="uhghl(['diocese_fk_diocese_item','wiag3.diocese.id','wiag3.item.id'])" transform='translate(8,0)' class='unhighlight' d='M 80,672L 80,368' >
+	<title>&#x1F517;  Foreign Key fk_diocese_item
+diocese ref item ( id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroOne)' marker-end='url(#Arrow)'  class='virtual'  d='M 80,672L 80,368' ><title>&#x1F517;  Foreign Key fk_diocese_item
+diocese ref item ( id )</title></path>
+<text x='83' y='670' transform='rotate(270 83,670)' class='relName'>id</text>
+<!-- == Fk 'diocese_fk_diocese_place' == -->
+<path id='diocese_fk_diocese_place'  onmouseover="hghl(['diocese_fk_diocese_place','wiag3.diocese.bishopric_seat_id','wiag3.place.id'])" onmouseout="uhghl(['diocese_fk_diocese_place','wiag3.diocese.bishopric_seat_id','wiag3.place.id'])" transform='translate(8,0)' class='unhighlight' d='M 240,704L 672,704' >
+	<title>&#x1F517;  Foreign Key fk_diocese_place
+diocese ref place ( bishopric_seat_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='dotted virtual'  d='M 240,704L 672,704' ><title>&#x1F517;  Foreign Key fk_diocese_place
+diocese ref place ( bishopric_seat_id -&gt; id )</title></path>
+<text x='249' y='699' transform='rotate(0 249,699)' class='relName'>bishopric&#95;seat&#95;id</text>
+<!-- == Fk 'item_fk_item_item_corpus' == -->
+<path id='item_fk_item_item_corpus'  onmouseover="hghl(['item_fk_item_item_corpus','wiag3.item.id','wiag3.item_corpus.item_id'])" onmouseout="uhghl(['item_fk_item_item_corpus','wiag3.item.id','wiag3.item_corpus.item_id'])" transform='translate(8,0)' class='unhighlight' d='M 208,64L 288,64' >
+	<title>&#x1F517;  Foreign Key fk_item_item_corpus
+item ref item_corpus ( id -&gt; item_id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroOne)' marker-end='url(#Arrow)'  class='virtual'  d='M 208,64L 288,64' ><title>&#x1F517;  Foreign Key fk_item_item_corpus
+item ref item_corpus ( id -&gt; item_id )</title></path>
+<text x='217' y='59' transform='rotate(0 217,59)' class='relName'>id</text>
+<!-- == Fk 'item_reference_fk_item_reference_item' == -->
+<path id='item_reference_fk_item_reference_item'  onmouseover="hghl(['item_reference_fk_item_reference_item','wiag3.item_reference.id','wiag3.item.id'])" onmouseout="uhghl(['item_reference_fk_item_reference_item','wiag3.item_reference.id','wiag3.item.id'])" transform='translate(8,0)' class='unhighlight' d='M 464,320L 208,320' >
+	<title>&#x1F517;  Foreign Key fk_item_reference_item
+item_reference ref item ( id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroOne)' marker-end='url(#Arrow)'  class='virtual'  d='M 464,320L 208,320' ><title>&#x1F517;  Foreign Key fk_item_reference_item
+item_reference ref item ( id )</title></path>
+<text x='463' y='315' transform='rotate(0 463,315)' class='relName'>id</text>
+<!-- == Fk 'item_reference_fk_item_reference_reference_volume' == -->
+<path id='item_reference_fk_item_reference_reference_volume'  onmouseover="hghl(['item_reference_fk_item_reference_reference_volume','wiag3.item_reference.reference_id','wiag3.reference_volume.id'])" onmouseout="uhghl(['item_reference_fk_item_reference_reference_volume','wiag3.item_reference.reference_id','wiag3.reference_volume.id'])" transform='translate(8,0)' class='unhighlight' d='M 608,336L 752,336' >
+	<title>&#x1F517;  Foreign Key fk_item_reference_reference_volume
+item_reference ref reference_volume ( reference_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 608,336L 752,336' ><title>&#x1F517;  Foreign Key fk_item_reference_reference_volume
+item_reference ref reference_volume ( reference_id -&gt; id )</title></path>
+<text x='617' y='331' transform='rotate(0 617,331)' class='relName'>reference&#95;id</text>
+<!-- == Fk 'ref_id_external_fk_ref_id_external_authority' == -->
+<path id='ref_id_external_fk_ref_id_external_authority'  onmouseover="hghl(['ref_id_external_fk_ref_id_external_authority','wiag3.ref_id_external.authority_id','wiag3.authority.id'])" onmouseout="uhghl(['ref_id_external_fk_ref_id_external_authority','wiag3.ref_id_external.authority_id','wiag3.authority.id'])" transform='translate(8,0)' class='unhighlight' d='M 1056,544L 1056,664Q 1056,672 1048,672L 1040,672' >
+	<title>&#x1F517;  Foreign Key fk_ref_id_external_authority
+ref_id_external ref authority ( authority_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 1056,544L 1056,664Q 1056,672 1048,672L 1040,672' ><title>&#x1F517;  Foreign Key fk_ref_id_external_authority
+ref_id_external ref authority ( authority_id -&gt; id )</title></path>
+<text x='1068' y='545' transform='rotate(90 1068,545)' class='relName'>authority&#95;id</text>
+<!-- == Fk 'ref_id_external_fk_ref_id_external_reference_volume' == -->
+<path id='ref_id_external_fk_ref_id_external_reference_volume'  onmouseover="hghl(['ref_id_external_fk_ref_id_external_reference_volume','wiag3.ref_id_external.reference_id','wiag3.reference_volume.id'])" onmouseout="uhghl(['ref_id_external_fk_ref_id_external_reference_volume','wiag3.ref_id_external.reference_id','wiag3.reference_volume.id'])" transform='translate(8,0)' class='unhighlight' d='M 1024,400L 912,400' >
+	<title>&#x1F517;  Foreign Key fk_ref_id_external_reference_volume
+ref_id_external ref reference_volume ( reference_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='dotted virtual'  d='M 1024,400L 912,400' ><title>&#x1F517;  Foreign Key fk_ref_id_external_reference_volume
+ref_id_external ref reference_volume ( reference_id -&gt; id )</title></path>
+<text x='964' y='395' transform='rotate(0 964,395)' class='relName'>reference&#95;id</text>
+<!-- == Fk 'skos_label_fk_skos_label_diocese' == -->
+<path id='skos_label_fk_skos_label_diocese'  onmouseover="hghl(['skos_label_fk_skos_label_diocese','wiag3.skos_label.concept_id','wiag3.diocese.id'])" onmouseout="uhghl(['skos_label_fk_skos_label_diocese','wiag3.skos_label.concept_id','wiag3.diocese.id'])" transform='translate(8,0)' class='unhighlight' d='M 320,800L 240,800' >
+	<title>&#x1F517;  Foreign Key fk_skos_label_diocese
+skos_label ref diocese ( concept_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 320,800L 240,800' ><title>&#x1F517;  Foreign Key fk_skos_label_diocese
+skos_label ref diocese ( concept_id -&gt; id )</title></path>
+<text x='267' y='795' transform='rotate(0 267,795)' class='relName'>concept&#95;id</text>
+<!-- == Fk 'skos_label_fk_skos_label_skos_scheme' == -->
+<path id='skos_label_fk_skos_label_skos_scheme'  onmouseover="hghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_label.skos_scheme_id','wiag3.skos_scheme.id'])" onmouseout="uhghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_label.skos_scheme_id','wiag3.skos_scheme.id'])" transform='translate(8,0)' class='unhighlight' d='M 464,816L 528,816' >
+	<title>&#x1F517;  Foreign Key fk_skos_label_skos_scheme
+skos_label ref skos_scheme ( skos_scheme_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 464,816L 528,816' ><title>&#x1F517;  Foreign Key fk_skos_label_skos_scheme
+skos_label ref skos_scheme ( skos_scheme_id -&gt; id )</title></path>
+<text x='473' y='811' transform='rotate(0 473,811)' class='relName'>skos&#95;scheme&#95;id</text>
+<!-- == Fk 'skos_label_fk_skos_label_lang' == -->
+<path id='skos_label_fk_skos_label_lang'  onmouseover="hghl(['skos_label_fk_skos_label_lang','wiag3.skos_label.lang','wiag3.lang.iso_key'])" onmouseout="uhghl(['skos_label_fk_skos_label_lang','wiag3.skos_label.lang','wiag3.lang.iso_key'])" transform='translate(8,0)' class='unhighlight' d='M 464,912L 528,912' >
+	<title>&#x1F517;  Foreign Key fk_skos_label_lang
+skos_label ref lang ( lang -&gt; iso_key )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='dotted virtual'  d='M 464,912L 528,912' ><title>&#x1F517;  Foreign Key fk_skos_label_lang
+skos_label ref lang ( lang -&gt; iso_key )</title></path>
+<text x='473' y='907' transform='rotate(0 473,907)' class='relName'>lang</text>
+<!-- == Fk 'url_external_fk_url_external_item' == -->
+<path id='url_external_fk_url_external_item'  onmouseover="hghl(['url_external_fk_url_external_item','wiag3.url_external.item_id','wiag3.item.id'])" onmouseout="uhghl(['url_external_fk_url_external_item','wiag3.url_external.item_id','wiag3.item.id'])" transform='translate(8,0)' class='unhighlight' d='M 352,528L 200,528Q 192,528 192,520L 192,368' >
+	<title>&#x1F517;  Foreign Key fk_url_external_item
+url_external ref item ( item_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 352,528L 200,528Q 192,528 192,520L 192,368' ><title>&#x1F517;  Foreign Key fk_url_external_item
+url_external ref item ( item_id -&gt; id )</title></path>
+<text x='320' y='523' transform='rotate(0 320,523)' class='relName'>item&#95;id</text>
+<!-- == Fk 'url_external_fk_url_external_authority' == -->
+<path id='url_external_fk_url_external_authority'  onmouseover="hghl(['url_external_fk_url_external_authority','wiag3.url_external.authority_id','wiag3.authority.id'])" onmouseout="uhghl(['url_external_fk_url_external_authority','wiag3.url_external.authority_id','wiag3.authority.id'])" transform='translate(8,0)' class='unhighlight' d='M 480,656L 864,656' >
+	<title>&#x1F517;  Foreign Key fk_url_external_authority
+url_external ref authority ( authority_id -&gt; id )</title>
+</path>
+<path transform='translate(8,0)' marker-start='url(#ZeroMore)' marker-end='url(#Arrow)'  class='virtual'  d='M 480,656L 864,656' ><title>&#x1F517;  Foreign Key fk_url_external_authority
+url_external ref authority ( authority_id -&gt; id )</title></path>
+<text x='489' y='651' transform='rotate(0 489,651)' class='relName'>authority&#95;id</text>
+<!-- == Table 'authority' == -->
+<rect id='depict_wiag3&#46;authority' class='entity' style='stroke:#769BB9' x='880' y='648' width='160' height='176' />
+<rect x='880' y='648' width='160' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='880' y1='648' x2='1040' y2='648'/>
+<a xlink:href='#wiag3.authority'><text x='931' y='667' >authority</text><title>Table wiag3.authority
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      standardising institution</title></a>
+  <use id='nn' x='882' y='685' xlink:href='#nn'/><use id='pk' x='882' y='684' xlink:href='#pk'><title>&#x1F511;  Pk pk_authority ( id ) </title></use><a xlink:href='#wiag3.authority_id'><text id='wiag3&#46;authority&#46;id' x='899' y='695' onmouseover="hghl(['place_id_external_fk_place_id_external_authority','wiag3.place_id_external.authority_id','ref_id_external_fk_ref_id_external_authority','wiag3.ref_id_external.authority_id','url_external_fk_url_external_authority','wiag3.url_external.authority_id'])" onmouseout="uhghl(['place_id_external_fk_place_id_external_authority','wiag3.place_id_external.authority_id','ref_id_external_fk_ref_id_external_authority','wiag3.ref_id_external.authority_id','url_external_fk_url_external_authority','wiag3.url_external.authority_id'])">id</text><title>&#10697;  id
+     * int
+ &#8601; place_id_external( id )
+ &#8601; ref_id_external( id )
+ &#8601; url_external( id )</title></a>
+<a xlink:href='#wiag3.authority.id'><use id='ref' x='1028' y='684' xlink:href='#ref'/><title>&#x1F517;  Referred by place_id_external ( authority_id -&gt; id ) 
+Referred by ref_id_external ( authority_id -&gt; id ) 
+Referred by url_external ( authority_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.authority_comment'><text id='wiag3&#46;authority&#46;comment' x='899' y='711'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='1037' y='708' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_url'><text id='wiag3&#46;authority&#46;url' x='899' y='727'>url</text><title>&#10697;  url
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      institution home page</title></a>
+<text x='1037' y='724' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_url_formatter'><text id='wiag3&#46;authority&#46;url&#95;formatter' x='899' y='743'>url&#95;formatter</text><title>&#10697;  url_formatter
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      concatenate url_formatter and id_external.value to build a valid URL</title></a>
+<text x='1037' y='740' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_url_type'><text id='wiag3&#46;authority&#46;url&#95;type' x='899' y='759'>url&#95;type</text><title>&#10697;  url_type
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      type/class of the authority, e.g. &apos;Normdaten&apos;, &apos;Onlinearchivalien&apos;</title></a>
+<text x='1037' y='756' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_url_name_formatter'><text id='wiag3&#46;authority&#46;url&#95;name&#95;formatter' x='899' y='775'>url&#95;name&#95;formatter</text><title>&#10697;  url_name_formatter
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      concatenate the url_name_formatter and id_external.value to display the url</title></a>
+<text x='1037' y='772' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_url_value_example'><text id='wiag3&#46;authority&#46;url&#95;value&#95;example' x='899' y='791'>url&#95;value&#95;example</text><title>&#10697;  url_value_example
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      example for a valid URL</title></a>
+<text x='1037' y='788' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.authority_display_order'><text id='wiag3&#46;authority&#46;display&#95;order' x='899' y='807'>display&#95;order</text><title>&#10697;  display_order
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      sort order, e.g. for external IDs of a person</title></a>
+<text x='1037' y='804' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'corpus' == -->
+<rect id='depict_wiag3&#46;corpus' class='entity' style='stroke:#769BB9' x='512' y='40' width='144' height='224' />
+<rect x='512' y='40' width='144' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='512' y1='40' x2='656' y2='40'/>
+<a xlink:href='#wiag3.corpus'><text x='561' y='59' >corpus</text><title>Table wiag3.corpus
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      collection of data sources</title></a>
+  <use id='nn' x='514' y='77' xlink:href='#nn'/><use id='pk' x='514' y='76' xlink:href='#pk'><title>&#x1F511;  Pk pk_corpus ( id ) </title></use><a xlink:href='#wiag3.corpus_id'><text id='wiag3&#46;corpus&#46;id' x='531' y='87'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='653' y='84' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='514' y='93' xlink:href='#nn'/><a xlink:href='#wiag3.corpus_name'><text id='wiag3&#46;corpus&#46;name' x='531' y='103'>name</text><title>&#10697;  name
+     * varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name/label</title></a>
+<text x='653' y='100' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_note'><text id='wiag3&#46;corpus&#46;note' x='531' y='119'>note</text><title>&#10697;  note
+     varchar(511)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      explanatory note</title></a>
+<text x='653' y='116' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_comment'><text id='wiag3&#46;corpus&#46;comment' x='531' y='135'>comment</text><title>&#10697;  comment
+     varchar(511)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='653' y='132' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_id_public_mask'><text id='wiag3&#46;corpus&#46;id&#95;public&#95;mask' x='531' y='151'>id&#95;public&#95;mask</text><title>&#10697;  id_public_mask
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      mask of the public ID (if applicable); use # as a placeholder for a digit</title></a>
+<text x='653' y='148' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_corpus_id'><text id='wiag3&#46;corpus&#46;corpus&#95;id' x='531' y='167' onmouseover="hghl(['corpus_fk_corpus_item_corpus','wiag3.item_corpus.corpus_id'])" onmouseout="uhghl(['corpus_fk_corpus_item_corpus','wiag3.item_corpus.corpus_id'])">corpus&#95;id</text><title>&#10697;  corpus_id
+     varchar(31)
+ &#8599; corpus( corpus_id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ID used for relations</title></a>
+<a xlink:href='#wiag3.corpus.corpus_id'><use id='fk' x='644' y='156' xlink:href='#fk'/><title>&#x1F517;  References item_corpus ( corpus_id ) </title></a>
+  <a xlink:href='#wiag3.corpus_page_title'><text id='wiag3&#46;corpus&#46;page&#95;title' x='531' y='183'>page&#95;title</text><title>&#10697;  page_title
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      page title, if the corpus corresponds to a queryable topic in the application</title></a>
+<text x='653' y='180' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_online_status'><text id='wiag3&#46;corpus&#46;online&#95;status' x='531' y='199'>online&#95;status</text><title>&#10697;  online_status
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      elements of the corpus are online if they have this status value</title></a>
+<text x='653' y='196' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_default_status'><text id='wiag3&#46;corpus&#46;default&#95;status' x='531' y='215'>default&#95;status</text><title>&#10697;  default_status
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      default status, if a new element is created</title></a>
+<text x='653' y='212' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_edit_form'><text id='wiag3&#46;corpus&#46;edit&#95;form' x='531' y='231'>edit&#95;form</text><title>&#10697;  edit_form
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name or type of the edit form within the application (technical)</title></a>
+<text x='653' y='228' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.corpus_edit_choice_order'><text id='wiag3&#46;corpus&#46;edit&#95;choice&#95;order' x='531' y='247'>edit&#95;choice&#95;order</text><title>&#10697;  edit_choice_order
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      sort order in the edit form in the application (technical)</title></a>
+<text x='653' y='244' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'diocese' == -->
+<rect id='depict_wiag3&#46;diocese' class='entity' style='stroke:#769BB9' x='64' y='680' width='176' height='272' />
+<rect x='64' y='680' width='176' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='64' y1='680' x2='240' y2='680'/>
+<a xlink:href='#wiag3.diocese'><text x='127' y='699' >diocese</text><title>Table wiag3.diocese
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      diocese</title></a>
+  <use id='nn' x='66' y='717' xlink:href='#nn'/><use id='pk' x='66' y='716' xlink:href='#pk'><title>&#x1F511;  Pk pk_diocese ( id ) </title></use><a xlink:href='#wiag3.diocese_id'><text id='wiag3&#46;diocese&#46;id' x='83' y='727' onmouseover="hghl(['diocese_fk_diocese_item','wiag3.item.id','person_role_fk_person_role_diocese','wiag3.person_role.diocese_id','skos_label_fk_skos_label_diocese','wiag3.skos_label.concept_id'])" onmouseout="uhghl(['diocese_fk_diocese_item','wiag3.item.id','person_role_fk_person_role_diocese','wiag3.person_role.diocese_id','skos_label_fk_skos_label_diocese','wiag3.skos_label.concept_id'])">id</text><title>&#10697;  id
+     * int
+ &#8599; diocese( id )
+ &#8601; person_role( id )
+ &#8601; skos_label( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      internal and foreign key item.id</title></a>
+<a xlink:href='#wiag3.diocese.id'><use id='fk' x='228' y='716' xlink:href='#fk'/><title>&#x1F517;  References item ( id ) 
+Referred by person_role ( diocese_id -&gt; id ) 
+Referred by skos_label ( concept_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.diocese_comment'><text id='wiag3&#46;diocese&#46;comment' x='83' y='743'>comment</text><title>&#10697;  comment
+     varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='237' y='740' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_name'><text id='wiag3&#46;diocese&#46;name' x='83' y='759'>name</text><title>&#10697;  name
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name, e.g. &apos;Bamberg&apos;</title></a>
+<text x='237' y='756' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_note'><text id='wiag3&#46;diocese&#46;note' x='83' y='775'>note</text><title>&#10697;  note
+     varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      additional information (visible to the user)</title></a>
+<text x='237' y='772' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_ecclesiastical_province'><text id='wiag3&#46;diocese&#46;ecclesiastical&#95;province' x='83' y='791'>ecclesiastical&#95;province</text><title>&#10697;  ecclesiastical_province
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      Kirchenprovinz</title></a>
+<text x='237' y='788' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_diocese_status'><text id='wiag3&#46;diocese&#46;diocese&#95;status' x='83' y='807'>diocese&#95;status</text><title>&#10697;  diocese_status
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      e.g.: &quot;Bistum&quot;, &quot;Erzbistum&quot;</title></a>
+<text x='237' y='804' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_shapefile'><text id='wiag3&#46;diocese&#46;shapefile' x='83' y='823'>shapefile</text><title>&#10697;  shapefile
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      not in use</title></a>
+<text x='237' y='820' text-anchor='end' class='colType'>t</text>  <use id='idx' x='66' y='828' xlink:href='#idx'><title>&#x1F50D;  bishopric_seat_index ( bishopric_seat_id ) </title></use><a xlink:href='#wiag3.diocese_bishopric_seat_id'><text id='wiag3&#46;diocese&#46;bishopric&#95;seat&#95;id' x='83' y='839' onmouseover="hghl(['diocese_fk_diocese_place','wiag3.place.id'])" onmouseout="uhghl(['diocese_fk_diocese_place','wiag3.place.id'])">bishopric&#95;seat&#95;id</text><title>&#10697;  bishopric_seat_id
+     int
+ &#8599; diocese( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key to place.id for the bishopric seat</title></a>
+<a xlink:href='#wiag3.diocese.bishopric_seat_id'><use id='fk' x='228' y='828' xlink:href='#fk'/><title>&#x1F517;  References place ( bishopric_seat_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.diocese_note_bishopric_seat'><text id='wiag3&#46;diocese&#46;note&#95;bishopric&#95;seat' x='83' y='855'>note&#95;bishopric&#95;seat</text><title>&#10697;  note_bishopric_seat
+     varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      note about the bishopric seat</title></a>
+<text x='237' y='852' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_date_of_founding'><text id='wiag3&#46;diocese&#46;date&#95;of&#95;founding' x='83' y='871'>date&#95;of&#95;founding</text><title>&#10697;  date_of_founding
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      date of founding</title></a>
+<text x='237' y='868' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_date_of_dissolution'><text id='wiag3&#46;diocese&#46;date&#95;of&#95;dissolution' x='83' y='887'>date&#95;of&#95;dissolution</text><title>&#10697;  date_of_dissolution
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      date of dissolution (Aufhebung)</title></a>
+<text x='237' y='884' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_note_authority_file'><text id='wiag3&#46;diocese&#46;note&#95;authority&#95;file' x='83' y='903'>note&#95;authority&#95;file</text><title>&#10697;  note_authority_file
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      note about external IDs</title></a>
+<text x='237' y='900' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.diocese_is_altes_reich'><text id='wiag3&#46;diocese&#46;is&#95;altes&#95;reich' x='83' y='919'>is&#95;altes&#95;reich</text><title>&#10697;  is_altes_reich
+     tinyint
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      1 if diocese belongs to Altes Reich</title></a>
+<text x='237' y='916' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.diocese_is_diocese_gs'><text id='wiag3&#46;diocese&#46;is&#95;diocese&#95;gs' x='83' y='935'>is&#95;diocese&#95;gs</text><title>&#10697;  is_diocese_gs
+     tinyint
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      1 if diocese is of special interest for Germania Sacra</title></a>
+<text x='237' y='932' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'item' == -->
+<rect id='depict_wiag3&#46;item' class='entity' style='stroke:#769BB9' x='48' y='40' width='160' height='320' />
+<rect x='48' y='40' width='160' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='48' y1='40' x2='208' y2='40'/>
+<a xlink:href='#wiag3.item'><text x='112' y='59' >item</text><title>Table wiag3.item
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial meta data</title></a>
+  <use id='nn' x='50' y='77' xlink:href='#nn'/><use id='pk' x='50' y='76' xlink:href='#pk'><title>&#x1F511;  Pk pk_item ( id ) </title></use><a xlink:href='#wiag3.item_id'><text id='wiag3&#46;item&#46;id' x='67' y='87' onmouseover="hghl(['item_fk_item_item_corpus','wiag3.item_corpus.item_id','diocese_fk_diocese_item','wiag3.diocese.id','item_name_role_fk_item_name_role_item','wiag3.item_name_role.item_id_name','item_name_role_fk_item_name_role_item_0','wiag3.item_name_role.item_id_role','item_property_fk_item_property_item','wiag3.item_property.item_id','item_reference_fk_item_reference_item','wiag3.item_reference.id','person_fk_person_item','wiag3.person.id','role_fk_role_item','wiag3.role.id','url_external_fk_url_external_item','wiag3.url_external.item_id'])" onmouseout="uhghl(['item_fk_item_item_corpus','wiag3.item_corpus.item_id','diocese_fk_diocese_item','wiag3.diocese.id','item_name_role_fk_item_name_role_item','wiag3.item_name_role.item_id_name','item_name_role_fk_item_name_role_item_0','wiag3.item_name_role.item_id_role','item_property_fk_item_property_item','wiag3.item_property.item_id','item_reference_fk_item_reference_item','wiag3.item_reference.id','person_fk_person_item','wiag3.person.id','role_fk_role_item','wiag3.role.id','url_external_fk_url_external_item','wiag3.url_external.item_id'])">id</text><title>&#10697;  id
+     * int
+ &#8599; item( item_id )
+ &#8601; diocese( id )
+ &#8601; item_name_role( id )
+ &#8601; item_name_role( id )
+ &#8601; item_property( id )
+ &#8601; item_reference( id )
+ &#8601; person( id )
+ &#8601; role( id )
+ &#8601; url_external( id )</title></a>
+<a xlink:href='#wiag3.item.id'><use id='fk' x='196' y='76' xlink:href='#fk'/><title>&#x1F517;  References item_corpus ( id -&gt; item_id ) 
+Referred by diocese ( id ) 
+Referred by item_name_role ( item_id_name -&gt; id ) 
+Referred by item_name_role ( item_id_role -&gt; id ) 
+Referred by item_property ( item_id -&gt; id ) 
+Referred by item_reference ( id ) 
+Referred by person ( id ) 
+Referred by role ( id ) 
+Referred by url_external ( item_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.item_comment'><text id='wiag3&#46;item&#46;comment' x='67' y='103'>comment</text><title>&#10697;  comment
+     varchar(511)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial notes</title></a>
+<text x='205' y='100' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.item_item_in_source'><text id='wiag3&#46;item&#46;item&#95;in&#95;source' x='67' y='119'>item&#95;in&#95;source</text><title>&#10697;  item_in_source
+     varchar(2047)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      data as found in a text source</title></a>
+<text x='205' y='116' text-anchor='end' class='colType'>t</text>  <use id='idx' x='50' y='124' xlink:href='#idx'><title>&#x1F50D;  idx_item_public ( id_public ) </title></use><a xlink:href='#wiag3.item_id_public'><text id='wiag3&#46;item&#46;id&#95;public' x='67' y='135'>id&#95;public</text><title>&#10697;  id_public
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      public id, &quot;Normdatum&quot;</title></a>
+<text x='205' y='132' text-anchor='end' class='colType'>t</text>  <use id='idx' x='50' y='140' xlink:href='#idx'><title>&#x1F50D;  idx_item_merged_into_id ( merged_into_id ) </title></use><a xlink:href='#wiag3.item_merged_into_id'><text id='wiag3&#46;item&#46;merged&#95;into&#95;id' x='67' y='151'>merged&#95;into&#95;id</text><title>&#10697;  merged_into_id
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      reference to item that contains this item</title></a>
+<text x='205' y='148' text-anchor='end' class='colType'>&#35;</text>  <use id='idx' x='50' y='156' xlink:href='#idx'><title>&#x1F50D;  edit_status ( edit_status ) </title></use><a xlink:href='#wiag3.item_edit_status'><text id='wiag3&#46;item&#46;edit&#95;status' x='67' y='167'>edit&#95;status</text><title>&#10697;  edit_status
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      edit status/publication status</title></a>
+<text x='205' y='164' text-anchor='end' class='colType'>t</text>  <use id='nn' x='50' y='173' xlink:href='#nn'/><a xlink:href='#wiag3.item_created_by'><text id='wiag3&#46;item&#46;created&#95;by' x='67' y='183'>created&#95;by</text><title>&#10697;  created_by
+     * int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editor by id</title></a>
+<text x='205' y='180' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='50' y='189' xlink:href='#nn'/><a xlink:href='#wiag3.item_date_created'><text id='wiag3&#46;item&#46;date&#95;created' x='67' y='199'>date&#95;created</text><title>&#10697;  date_created
+     * datetime
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      creation date</title></a>
+<text x='205' y='196' text-anchor='end' class='colType'>d</text>  <use id='nn' x='50' y='205' xlink:href='#nn'/><a xlink:href='#wiag3.item_changed_by'><text id='wiag3&#46;item&#46;changed&#95;by' x='67' y='215'>changed&#95;by</text><title>&#10697;  changed_by
+     * int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editor by id</title></a>
+<text x='205' y='212' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='50' y='221' xlink:href='#nn'/><a xlink:href='#wiag3.item_date_changed'><text id='wiag3&#46;item&#46;date&#95;changed' x='67' y='231'>date&#95;changed</text><title>&#10697;  date_changed
+     * datetime
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      date of last modification</title></a>
+<text x='205' y='228' text-anchor='end' class='colType'>d</text>  <a xlink:href='#wiag3.item_is_deleted'><text id='wiag3&#46;item&#46;is&#95;deleted' x='67' y='247'>is&#95;deleted</text><title>&#10697;  is_deleted
+     tinyint default &apos;0&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      flag for deleted items</title></a>
+<text x='205' y='244' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.item_normdata_edited_by'><text id='wiag3&#46;item&#46;normdata&#95;edited&#95;by' x='67' y='263'>normdata&#95;edited&#95;by</text><title>&#10697;  normdata_edited_by
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      reference to user/editor</title></a>
+<text x='205' y='260' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.item_lang'><text id='wiag3&#46;item&#46;lang' x='67' y='279'>lang</text><title>&#10697;  lang
+     varchar(31) default &apos;de&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      language code for this item</title></a>
+<text x='205' y='276' text-anchor='end' class='colType'>t</text>  <use id='idx' x='50' y='284' xlink:href='#idx'><title>&#x1F50D;  idx_item_source ( id_in_source ) </title></use><a xlink:href='#wiag3.item_id_in_source'><text id='wiag3&#46;item&#46;id&#95;in&#95;source' x='67' y='295'>id&#95;in&#95;source</text><title>&#10697;  id_in_source
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      technical ID in data source; unique relative to item_type_id</title></a>
+<text x='205' y='292' text-anchor='end' class='colType'>t</text>  <use id='idx' x='50' y='300' xlink:href='#idx'><title>&#x1F50D;  idx_item_online ( is_online ) </title></use><a xlink:href='#wiag3.item_is_online'><text id='wiag3&#46;item&#46;is&#95;online' x='67' y='311'>is&#95;online</text><title>&#10697;  is_online
+     tinyint default &apos;0&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      1 if item is online</title></a>
+<text x='205' y='308' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.item_comment_duplicate'><text id='wiag3&#46;item&#46;comment&#95;duplicate' x='67' y='327'>comment&#95;duplicate</text><title>&#10697;  comment_duplicate
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note about possible duplicates</title></a>
+<text x='205' y='324' text-anchor='end' class='colType'>t</text>  <use id='nn' x='50' y='333' xlink:href='#nn'/><use id='idx' x='50' y='332' xlink:href='#idx'><title>&#x1F50D;  merge_status ( merge_status ) </title></use><a xlink:href='#wiag3.item_merge_status'><text id='wiag3&#46;item&#46;merge&#95;status' x='67' y='343'>merge&#95;status</text><title>&#10697;  merge_status
+     * varchar(31) default &apos;original&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      one of: &apos;child&apos; (default), &apos;child&apos; (merged from other data records), &apos;parent&apos; (merged into another data record, not accessible), &apos;orphan&apos;, (merged and split up again, not accessible)</title></a>
+<text x='205' y='340' text-anchor='end' class='colType'>t</text>
+<!-- == Table 'item_corpus' == -->
+<rect id='depict_wiag3&#46;item&#95;corpus' class='entity' style='stroke:#7698B9' x='304' y='40' width='112' height='128' />
+<rect x='304' y='40' width='112' height='28' style='stroke-width:0; fill:#F1F5FA'/>
+<line class='topLine' style='stroke:#175898;' stroke-linecap='round' x1='304' y1='40' x2='416' y2='40'/>
+<a xlink:href='#wiag3.item_corpus'><text x='322' y='59' >item&#95;corpus</text><title>Table wiag3.item_corpus
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      assign items to corpora</title></a>
+  <use id='nn' x='306' y='77' xlink:href='#nn'/><use id='pk' x='306' y='76' xlink:href='#pk'><title>&#x1F511;  Pk pk_item_corpus ( id ) </title></use><a xlink:href='#wiag3.item_corpus_id'><text id='wiag3&#46;item&#95;corpus&#46;id' x='323' y='87'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='413' y='84' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='306' y='93' xlink:href='#nn'/><use id='idx' x='306' y='92' xlink:href='#idx'><title>&#x1F50D;  idx_ic_item ( item_id ) </title></use><a xlink:href='#wiag3.item_corpus_item_id'><text id='wiag3&#46;item&#95;corpus&#46;item&#95;id' x='323' y='103' onmouseover="hghl(['item_fk_item_item_corpus','wiag3.item.id'])" onmouseout="uhghl(['item_fk_item_item_corpus','wiag3.item.id'])">item&#95;id</text><title>&#10697;  item_id
+     * int
+ &#8601; item( item_id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key item.id</title></a>
+<a xlink:href='#wiag3.item_corpus.item_id'><use id='ref' x='404' y='92' xlink:href='#ref'/><title>&#x1F517;  Referred by item ( id -&gt; item_id ) </title></a>
+  <use id='nn' x='306' y='109' xlink:href='#nn'/><use id='idx' x='306' y='108' xlink:href='#idx'><title>&#x1F50D;  idx_ic_corpus ( corpus_id ) </title></use><a xlink:href='#wiag3.item_corpus_corpus_id'><text id='wiag3&#46;item&#95;corpus&#46;corpus&#95;id' x='323' y='119' onmouseover="hghl(['corpus_fk_corpus_item_corpus','wiag3.corpus.corpus_id'])" onmouseout="uhghl(['corpus_fk_corpus_item_corpus','wiag3.corpus.corpus_id'])">corpus&#95;id</text><title>&#10697;  corpus_id
+     * varchar(31)
+ &#8601; corpus( corpus_id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      corpus ID, short character string, e.g. &apos;can&apos; for an element of Domherren Datenbank.</title></a>
+<a xlink:href='#wiag3.item_corpus.corpus_id'><use id='ref' x='404' y='108' xlink:href='#ref'/><title>&#x1F517;  Referred by corpus ( corpus_id ) </title></a>
+  <use id='idx' x='306' y='124' xlink:href='#idx'><title>&#x1F50D;  id_ic_public ( id_public ) </title></use><a xlink:href='#wiag3.item_corpus_id_public'><text id='wiag3&#46;item&#95;corpus&#46;id&#95;public' x='323' y='135'>id&#95;public</text><title>&#10697;  id_public
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      permanent public ID</title></a>
+<text x='413' y='132' text-anchor='end' class='colType'>t</text>  <use id='nn' x='306' y='141' xlink:href='#nn'/><use id='idx' x='306' y='140' xlink:href='#idx'><title>&#x1F50D;  idx_ic_id_in_corpus ( id_in_corpus ) </title></use><a xlink:href='#wiag3.item_corpus_id_in_corpus'><text id='wiag3&#46;item&#95;corpus&#46;id&#95;in&#95;corpus' x='323' y='151'>id&#95;in&#95;corpus</text><title>&#10697;  id_in_corpus
+     * varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      internal corpus specific ID, e.g. &apos;can-34049&apos;</title></a>
+<text x='413' y='148' text-anchor='end' class='colType'>t</text>
+<!-- == Table 'item_reference' == -->
+<rect id='depict_wiag3&#46;item&#95;reference' class='entity' style='stroke:#769BB9' x='480' y='312' width='128' height='160' />
+<rect x='480' y='312' width='128' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='480' y1='312' x2='608' y2='312'/>
+<a xlink:href='#wiag3.item_reference'><text x='498' y='331' >item&#95;reference</text><title>Table wiag3.item_reference
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      link item to reference volumen n-m</title></a>
+  <use id='nn' x='482' y='349' xlink:href='#nn'/><use id='pk' x='482' y='348' xlink:href='#pk'><title>&#x1F511;  Pk pk_item_reference ( id ) </title></use><a xlink:href='#wiag3.item_reference_id'><text id='wiag3&#46;item&#95;reference&#46;id' x='499' y='359' onmouseover="hghl(['item_reference_fk_item_reference_item','wiag3.item.id'])" onmouseout="uhghl(['item_reference_fk_item_reference_item','wiag3.item.id'])">id</text><title>&#10697;  id
+     * int
+ &#8599; item_reference( id )</title></a>
+<a xlink:href='#wiag3.item_reference.id'><use id='fk' x='596' y='348' xlink:href='#fk'/><title>&#x1F517;  References item ( id ) </title></a>
+  <a xlink:href='#wiag3.item_reference_note'><text id='wiag3&#46;item&#95;reference&#46;note' x='499' y='375'>note</text><title>&#10697;  note
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='605' y='372' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.item_reference_page'><text id='wiag3&#46;item&#95;reference&#46;page' x='499' y='391'>page</text><title>&#10697;  page
+     varchar(511)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      page</title></a>
+<text x='605' y='388' text-anchor='end' class='colType'>t</text>  <use id='nn' x='482' y='397' xlink:href='#nn'/><use id='idx' x='482' y='396' xlink:href='#idx'><title>&#x1F50D;  idx_ir_ref ( reference_id ) </title></use><a xlink:href='#wiag3.item_reference_reference_id'><text id='wiag3&#46;item&#95;reference&#46;reference&#95;id' x='499' y='407' onmouseover="hghl(['item_reference_fk_item_reference_reference_volume','wiag3.reference_volume.id'])" onmouseout="uhghl(['item_reference_fk_item_reference_reference_volume','wiag3.reference_volume.id'])">reference&#95;id</text><title>&#10697;  reference_id
+     * int
+ &#8599; item_reference( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key reference_volume.reference_id</title></a>
+<a xlink:href='#wiag3.item_reference.reference_id'><use id='fk' x='596' y='396' xlink:href='#fk'/><title>&#x1F517;  References reference_volume ( reference_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.item_reference_id_in_reference'><text id='wiag3&#46;item&#95;reference&#46;id&#95;in&#95;reference' x='499' y='423'>id&#95;in&#95;reference</text><title>&#10697;  id_in_reference
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      specific identifier for the person/object in the reference volume</title></a>
+<text x='605' y='420' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.item_reference_is_preferred'><text id='wiag3&#46;item&#95;reference&#46;is&#95;preferred' x='499' y='439'>is&#95;preferred</text><title>&#10697;  is_preferred
+     tinyint default &apos;0&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      not in use</title></a>
+<text x='605' y='436' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='482' y='445' xlink:href='#nn'/><use id='idx' x='482' y='444' xlink:href='#idx'><title>&#x1F50D;  idx_ir_item ( item_id ) </title></use><a xlink:href='#wiag3.item_reference_item_id'><text id='wiag3&#46;item&#95;reference&#46;item&#95;id' x='499' y='455'>item&#95;id</text><title>&#10697;  item_id
+     * int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ID in on of the item tables, e.g. person or diocese</title></a>
+<text x='605' y='452' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'lang' == -->
+<rect id='depict_wiag3&#46;lang' class='entity' style='stroke:#769BB9' x='544' y='904' width='96' height='112' />
+<rect x='544' y='904' width='96' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='544' y1='904' x2='640' y2='904'/>
+<a xlink:href='#wiag3.lang'><text x='576' y='923' >lang</text><title>Table wiag3.lang
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      human languages</title></a>
+  <use id='nn' x='546' y='941' xlink:href='#nn'/><use id='pk' x='546' y='940' xlink:href='#pk'><title>&#x1F511;  Pk pk_lang ( id ) </title></use><a xlink:href='#wiag3.lang_id'><text id='wiag3&#46;lang&#46;id' x='563' y='951'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='637' y='948' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='546' y='957' xlink:href='#nn'/><a xlink:href='#wiag3.lang_name'><text id='wiag3&#46;lang&#46;name' x='563' y='967'>name</text><title>&#10697;  name
+     * varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      language name in German, e.g. &apos;Englisch&apos;</title></a>
+<text x='637' y='964' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.lang_name_iso'><text id='wiag3&#46;lang&#46;name&#95;iso' x='563' y='983'>name&#95;iso</text><title>&#10697;  name_iso
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ISO language name mostly in Englisch</title></a>
+<text x='637' y='980' text-anchor='end' class='colType'>t</text>  <use id='nn' x='546' y='989' xlink:href='#nn'/><a xlink:href='#wiag3.lang_iso_key'><text id='wiag3&#46;lang&#46;iso&#95;key' x='563' y='999' onmouseover="hghl(['skos_label_fk_skos_label_lang','wiag3.skos_label.lang'])" onmouseout="uhghl(['skos_label_fk_skos_label_lang','wiag3.skos_label.lang'])">iso&#95;key</text><title>&#10697;  iso_key
+     * varchar(31)
+ &#8601; skos_label( iso_key )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      2-character code according to ISO 639-1</title></a>
+<a xlink:href='#wiag3.lang.iso_key'><use id='ref' x='628' y='988' xlink:href='#ref'/><title>&#x1F517;  Referred by skos_label ( lang -&gt; iso_key ) </title></a>
+
+<!-- == Table 'place' == -->
+<rect id='depict_wiag3&#46;place' class='entity' style='stroke:#769BB9' x='688' y='696' width='144' height='368' />
+<rect x='688' y='696' width='144' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='688' y1='696' x2='832' y2='696'/>
+<a xlink:href='#wiag3.place'><text x='741' y='715' >place</text><title>Table wiag3.place
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      place, geographical location</title></a>
+  <use id='nn' x='690' y='733' xlink:href='#nn'/><use id='pk' x='690' y='732' xlink:href='#pk'><title>&#x1F511;  Pk pk_place ( id ) </title></use><a xlink:href='#wiag3.place_id'><text id='wiag3&#46;place&#46;id' x='707' y='743' onmouseover="hghl(['place_fk_place_place_id_external','wiag3.place_id_external.place_id','place_fk_place_institution_place','wiag3.institution_place.place_id','place_fk_place_place_label','wiag3.place_label.place_id','diocese_fk_diocese_place','wiag3.diocese.bishopric_seat_id'])" onmouseout="uhghl(['place_fk_place_place_id_external','wiag3.place_id_external.place_id','place_fk_place_institution_place','wiag3.institution_place.place_id','place_fk_place_place_label','wiag3.place_label.place_id','diocese_fk_diocese_place','wiag3.diocese.bishopric_seat_id'])">id</text><title>&#10697;  id
+     * int
+ &#8599; place( place_id )
+ &#8599; place( place_id )
+ &#8599; place( place_id )
+ &#8601; diocese( id )</title></a>
+<a xlink:href='#wiag3.place.id'><use id='fk' x='820' y='732' xlink:href='#fk'/><title>&#x1F517;  References place_id_external ( id -&gt; place_id ) 
+References institution_place ( id -&gt; place_id ) 
+References place_label ( id -&gt; place_id ) 
+Referred by diocese ( bishopric_seat_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.place_comment'><text id='wiag3&#46;place&#46;comment' x='707' y='759'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='829' y='756' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_country_id'><text id='wiag3&#46;place&#46;country&#95;id' x='707' y='775'>country&#95;id</text><title>&#10697;  country_id
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key country.id</title></a>
+<text x='829' y='772' text-anchor='end' class='colType'>&#35;</text>  <use id='idx' x='690' y='780' xlink:href='#idx'><title>&#x1F50D;  idx_place_name ( name ) </title></use><a xlink:href='#wiag3.place_name'><text id='wiag3&#46;place&#46;name' x='707' y='791'>name</text><title>&#10697;  name
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name in the home language, e.g. Göttingen</title></a>
+<text x='829' y='788' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_ascii_name'><text id='wiag3&#46;place&#46;ascii&#95;name' x='707' y='807'>ascii&#95;name</text><title>&#10697;  ascii_name
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name with ASCII character set, e.g. Goettingen</title></a>
+<text x='829' y='804' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_latitude'><text id='wiag3&#46;place&#46;latitude' x='707' y='823'>latitude</text><title>&#10697;  latitude
+     decimal(11,8)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      decima degrees (wgs84)</title></a>
+<text x='829' y='820' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_longitude'><text id='wiag3&#46;place&#46;longitude' x='707' y='839'>longitude</text><title>&#10697;  longitude
+     decimal(11,8)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      decimal degrees (wgs84)</title></a>
+<text x='829' y='836' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_feature_class'><text id='wiag3&#46;place&#46;feature&#95;class' x='707' y='855'>feature&#95;class</text><title>&#10697;  feature_class
+     varchar(15)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      GeoName feature class, e.g. &apos;P&apos;, &apos;S&apos;</title></a>
+<text x='829' y='852' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_feature_code'><text id='wiag3&#46;place&#46;feature&#95;code' x='707' y='871'>feature&#95;code</text><title>&#10697;  feature_code
+     varchar(15)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      GeoNames feature code, e.g. PPL (populated place)</title></a>
+<text x='829' y='868' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_country_code'><text id='wiag3&#46;place&#46;country&#95;code' x='707' y='887'>country&#95;code</text><title>&#10697;  country_code
+     char(2)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ISO-3166 2-letter country code, 2 characters</title></a>
+<text x='829' y='884' text-anchor='end' class='colType'>c</text>  <a xlink:href='#wiag3.place_cc2'><text id='wiag3&#46;place&#46;cc2' x='707' y='903'>cc2</text><title>&#10697;  cc2
+     varchar(15)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      country code for some places along a border</title></a>
+<text x='829' y='900' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_admin1_code'><text id='wiag3&#46;place&#46;admin1&#95;code' x='707' y='919'>admin1&#95;code</text><title>&#10697;  admin1_code
+     varchar(15)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      reference to an entry in country_level_1 (GeoNames admin1CodesASCII.txt)</title></a>
+<text x='829' y='916' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_population'><text id='wiag3&#46;place&#46;population' x='707' y='935'>population</text><title>&#10697;  population
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      not in use</title></a>
+<text x='829' y='932' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_elevation'><text id='wiag3&#46;place&#46;elevation' x='707' y='951'>elevation</text><title>&#10697;  elevation
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      elevation above see level in meters</title></a>
+<text x='829' y='948' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_dem'><text id='wiag3&#46;place&#46;dem' x='707' y='967'>dem</text><title>&#10697;  dem
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      digital elevation model, srtm3 or gtopo30, average elevation of 3&apos;&apos;x3&apos;&apos; (ca 90mx90m) or 30&apos;&apos;x30&apos;&apos; (ca 900mx900m) area in meters</title></a>
+<text x='829' y='964' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_timezone'><text id='wiag3&#46;place&#46;timezone' x='707' y='983'>timezone</text><title>&#10697;  timezone
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      e.g. Europe/Berlin</title></a>
+<text x='829' y='980' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.place_modification_date'><text id='wiag3&#46;place&#46;modification&#95;date' x='707' y='999'>modification&#95;date</text><title>&#10697;  modification_date
+     date
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      date of last modification in GeoNames</title></a>
+<text x='829' y='996' text-anchor='end' class='colType'>d</text>  <use id='idx' x='690' y='1004' xlink:href='#idx'><title>&#x1F50D;  idx_p_gn ( geonames_id ) </title></use><a xlink:href='#wiag3.place_geonames_id'><text id='wiag3&#46;place&#46;geonames&#95;id' x='707' y='1015'>geonames&#95;id</text><title>&#10697;  geonames_id
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ID GeoNames geographical database</title></a>
+<text x='829' y='1012' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.place_place_type_id'><text id='wiag3&#46;place&#46;place&#95;type&#95;id' x='707' y='1031' onmouseover="hghl(['place_fk_place_place_type','wiag3.place_type.id'])" onmouseout="uhghl(['place_fk_place_place_type','wiag3.place_type.id'])">place&#95;type&#95;id</text><title>&#10697;  place_type_id
+     int
+ &#8599; place( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key place_type.id</title></a>
+<a xlink:href='#wiag3.place.place_type_id'><use id='fk' x='820' y='1020' xlink:href='#fk'/><title>&#x1F517;  References place_type ( place_type_id -&gt; id ) </title></a>
+  <use id='nn' x='690' y='1037' xlink:href='#nn'/><a xlink:href='#wiag3.place_id_in_source'><text id='wiag3&#46;place&#46;id&#95;in&#95;source' x='707' y='1047'>id&#95;in&#95;source</text><title>&#10697;  id_in_source
+     * varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      identifier in the external source, e.g. GeoNames ID</title></a>
+<text x='829' y='1044' text-anchor='end' class='colType'>t</text>
+<!-- == Table 'ref_id_external' == -->
+<rect id='depict_wiag3&#46;ref&#95;id&#95;external' class='entity' style='stroke:#769BB9' x='1040' y='392' width='112' height='144' />
+<rect x='1040' y='392' width='112' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='1040' y1='392' x2='1152' y2='392'/>
+<a xlink:href='#wiag3.ref_id_external'><text x='1051' y='411' >ref&#95;id&#95;external</text><title>Table wiag3.ref_id_external
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      link reference volume to standardising institution
+      external IDs for references</title></a>
+  <use id='nn' x='1042' y='429' xlink:href='#nn'/><use id='pk' x='1042' y='428' xlink:href='#pk'><title>&#x1F511;  Pk pk_ref_id_external ( id ) </title></use><a xlink:href='#wiag3.ref_id_external_id'><text id='wiag3&#46;ref&#95;id&#95;external&#46;id' x='1059' y='439'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='1149' y='436' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.ref_id_external_comment'><text id='wiag3&#46;ref&#95;id&#95;external&#46;comment' x='1059' y='455'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='1149' y='452' text-anchor='end' class='colType'>t</text>  <use id='idx' x='1042' y='460' xlink:href='#idx'><title>&#x1F50D;  idx_rext_refid ( reference_id ) </title></use><a xlink:href='#wiag3.ref_id_external_reference_id'><text id='wiag3&#46;ref&#95;id&#95;external&#46;reference&#95;id' x='1059' y='471' onmouseover="hghl(['ref_id_external_fk_ref_id_external_reference_volume','wiag3.reference_volume.id'])" onmouseout="uhghl(['ref_id_external_fk_ref_id_external_reference_volume','wiag3.reference_volume.id'])">reference&#95;id</text><title>&#10697;  reference_id
+     int
+ &#8599; ref_id_external( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key reference_volume.reference_id</title></a>
+<a xlink:href='#wiag3.ref_id_external.reference_id'><use id='fk' x='1140' y='460' xlink:href='#fk'/><title>&#x1F517;  References reference_volume ( reference_id -&gt; id ) </title></a>
+  <use id='nn' x='1042' y='477' xlink:href='#nn'/><use id='idx' x='1042' y='476' xlink:href='#idx'><title>&#x1F50D;  idx_rie_auth ( authority_id ) </title></use><a xlink:href='#wiag3.ref_id_external_authority_id'><text id='wiag3&#46;ref&#95;id&#95;external&#46;authority&#95;id' x='1059' y='487' onmouseover="hghl(['ref_id_external_fk_ref_id_external_authority','wiag3.authority.id'])" onmouseout="uhghl(['ref_id_external_fk_ref_id_external_authority','wiag3.authority.id'])">authority&#95;id</text><title>&#10697;  authority_id
+     * int
+ &#8599; ref_id_external( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key authority.id</title></a>
+<a xlink:href='#wiag3.ref_id_external.authority_id'><use id='fk' x='1140' y='476' xlink:href='#fk'/><title>&#x1F517;  References authority ( authority_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.ref_id_external_value'><text id='wiag3&#46;ref&#95;id&#95;external&#46;value' x='1059' y='503'>value</text><title>&#10697;  value
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      identifier as provided by the standardising institution</title></a>
+<text x='1149' y='500' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.ref_id_external_note'><text id='wiag3&#46;ref&#95;id&#95;external&#46;note' x='1059' y='519'>note</text><title>&#10697;  note
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      additional information</title></a>
+<text x='1149' y='516' text-anchor='end' class='colType'>t</text>
+<!-- == Table 'reference_volume' == -->
+<rect id='depict_wiag3&#46;reference&#95;volume' class='entity' style='stroke:#769BB9' x='768' y='216' width='144' height='336' />
+<rect x='768' y='216' width='144' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='768' y1='216' x2='912' y2='216'/>
+<a xlink:href='#wiag3.reference_volume'><text x='786' y='235' >reference&#95;volume</text><title>Table wiag3.reference_volume
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      literature</title></a>
+  <use id='nn' x='770' y='253' xlink:href='#nn'/><use id='pk' x='770' y='252' xlink:href='#pk'><title>&#x1F511;  Pk pk_reference_volume ( id ) </title></use><a xlink:href='#wiag3.reference_volume_id'><text id='wiag3&#46;reference&#95;volume&#46;id' x='787' y='263' onmouseover="hghl(['item_reference_fk_item_reference_reference_volume','wiag3.item_reference.reference_id','ref_id_external_fk_ref_id_external_reference_volume','wiag3.ref_id_external.reference_id'])" onmouseout="uhghl(['item_reference_fk_item_reference_reference_volume','wiag3.item_reference.reference_id','ref_id_external_fk_ref_id_external_reference_volume','wiag3.ref_id_external.reference_id'])">id</text><title>&#10697;  id
+     * int
+ &#8601; item_reference( id )
+ &#8601; ref_id_external( id )</title></a>
+<a xlink:href='#wiag3.reference_volume.id'><use id='ref' x='900' y='252' xlink:href='#ref'/><title>&#x1F517;  Referred by item_reference ( reference_id -&gt; id ) 
+Referred by ref_id_external ( reference_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.reference_volume_comment'><text id='wiag3&#46;reference&#95;volume&#46;comment' x='787' y='279'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='909' y='276' text-anchor='end' class='colType'>t</text>  <use id='nn' x='770' y='285' xlink:href='#nn'/><a xlink:href='#wiag3.reference_volume_full_citation'><text id='wiag3&#46;reference&#95;volume&#46;full&#95;citation' x='787' y='295'>full&#95;citation</text><title>&#10697;  full_citation
+     * varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      full citation</title></a>
+<text x='909' y='292' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_title_short'><text id='wiag3&#46;reference&#95;volume&#46;title&#95;short' x='787' y='311'>title&#95;short</text><title>&#10697;  title_short
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      short version of the title</title></a>
+<text x='909' y='308' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_author_editor'><text id='wiag3&#46;reference&#95;volume&#46;author&#95;editor' x='787' y='327'>author&#95;editor</text><title>&#10697;  author_editor
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      authors and/or editors</title></a>
+<text x='909' y='324' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_note'><text id='wiag3&#46;reference&#95;volume&#46;note' x='787' y='343'>note</text><title>&#10697;  note
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      additional information</title></a>
+<text x='909' y='340' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_ri_opac_id'><text id='wiag3&#46;reference&#95;volume&#46;ri&#95;opac&#95;id' x='787' y='359'>ri&#95;opac&#95;id</text><title>&#10697;  ri_opac_id
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      ID in the db of Regesta Imperii</title></a>
+<text x='909' y='356' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_isbn'><text id='wiag3&#46;reference&#95;volume&#46;isbn' x='787' y='375'>isbn</text><title>&#10697;  isbn
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      International Standard Book Number</title></a>
+<text x='909' y='372' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_year_publication'><text id='wiag3&#46;reference&#95;volume&#46;year&#95;publication' x='787' y='391'>year&#95;publication</text><title>&#10697;  year_publication
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      year of publication</title></a>
+<text x='909' y='388' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_display_order'><text id='wiag3&#46;reference&#95;volume&#46;display&#95;order' x='787' y='407'>display&#95;order</text><title>&#10697;  display_order
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      determine layout or display order</title></a>
+<text x='909' y='404' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.reference_volume_gs_volume_nr'><text id='wiag3&#46;reference&#95;volume&#46;gs&#95;volume&#95;nr' x='787' y='423'>gs&#95;volume&#95;nr</text><title>&#10697;  gs_volume_nr
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      Germania Sacra volume number</title></a>
+<text x='909' y='420' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_gs_display_order'><text id='wiag3&#46;reference&#95;volume&#46;gs&#95;display&#95;order' x='787' y='439'>gs&#95;display&#95;order</text><title>&#10697;  gs_display_order
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      Germania Sacra volumes only: sort order</title></a>
+<text x='909' y='436' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.reference_volume_gs_doi'><text id='wiag3&#46;reference&#95;volume&#46;gs&#95;doi' x='787' y='455'>gs&#95;doi</text><title>&#10697;  gs_doi
+     varchar(31)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      Germania Sacra volumes only: digital object ID</title></a>
+<text x='909' y='452' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_gs_url'><text id='wiag3&#46;reference&#95;volume&#46;gs&#95;url' x='787' y='471'>gs&#95;url</text><title>&#10697;  gs_url
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      Germania Sacra volumes only: URl</title></a>
+<text x='909' y='468' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_online_resource'><text id='wiag3&#46;reference&#95;volume&#46;online&#95;resource' x='787' y='487'>online&#95;resource</text><title>&#10697;  online_resource
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      URL for online accessible entries</title></a>
+<text x='909' y='484' text-anchor='end' class='colType'>t</text>  <use id='nn' x='770' y='493' xlink:href='#nn'/><use id='idx' x='770' y='492' xlink:href='#idx'><title>&#x1F50D;  idx_ref_id ( reference_id ) </title></use><a xlink:href='#wiag3.reference_volume_reference_id'><text id='wiag3&#46;reference&#95;volume&#46;reference&#95;id' x='787' y='503'>reference&#95;id</text><title>&#10697;  reference_id
+     * int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      internal ID (independent from field id which is global)</title></a>
+<text x='909' y='500' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.reference_volume_gs_citation'><text id='wiag3&#46;reference&#95;volume&#46;gs&#95;citation' x='787' y='519'>gs&#95;citation</text><title>&#10697;  gs_citation
+     varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      citation in the Germania Sacra format</title></a>
+<text x='909' y='516' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.reference_volume_is_online'><text id='wiag3&#46;reference&#95;volume&#46;is&#95;online' x='787' y='535'>is&#95;online</text><title>&#10697;  is_online
+     tinyint default &apos;0&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      1 if entry is online</title></a>
+<text x='909' y='532' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'skos_label' == -->
+<rect id='depict_wiag3&#46;skos&#95;label' class='entity' style='stroke:#769BB9' x='336' y='792' width='128' height='176' />
+<rect x='336' y='792' width='128' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='336' y1='792' x2='464' y2='792'/>
+<a xlink:href='#wiag3.skos_label'><text x='368' y='811' >skos&#95;label</text><title>Table wiag3.skos_label
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      alternative labels; or labels in other languages</title></a>
+  <use id='nn' x='338' y='829' xlink:href='#nn'/><use id='pk' x='338' y='828' xlink:href='#pk'><title>&#x1F511;  Pk pk_skos_label ( id ) </title></use><a xlink:href='#wiag3.skos_label_id'><text id='wiag3&#46;skos&#95;label&#46;id' x='355' y='839'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='461' y='836' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.skos_label_comment'><text id='wiag3&#46;skos&#95;label&#46;comment' x='355' y='855'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='461' y='852' text-anchor='end' class='colType'>t</text>  <use id='nn' x='338' y='861' xlink:href='#nn'/><use id='idx' x='338' y='860' xlink:href='#idx'><title>&#x1F50D;  scheme_concept ( concept_id, skos_scheme_id ) </title></use><a xlink:href='#wiag3.skos_label_skos_scheme_id'><text id='wiag3&#46;skos&#95;label&#46;skos&#95;scheme&#95;id' x='355' y='871' onmouseover="hghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_scheme.id'])" onmouseout="uhghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_scheme.id'])">skos&#95;scheme&#95;id</text><title>&#10697;  skos_scheme_id
+     * int
+ &#8599; skos_label( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key skos_scheme.id</title></a>
+<a xlink:href='#wiag3.skos_label.skos_scheme_id'><use id='fk' x='452' y='860' xlink:href='#fk'/><title>&#x1F517;  References skos_scheme ( skos_scheme_id -&gt; id ) </title></a>
+  <use id='nn' x='338' y='877' xlink:href='#nn'/><use id='idx' x='338' y='876' xlink:href='#idx'><title>&#x1F50D;  scheme_concept ( concept_id, skos_scheme_id ) </title></use><a xlink:href='#wiag3.skos_label_concept_id'><text id='wiag3&#46;skos&#95;label&#46;concept&#95;id' x='355' y='887' onmouseover="hghl(['skos_label_fk_skos_label_diocese','wiag3.diocese.id'])" onmouseout="uhghl(['skos_label_fk_skos_label_diocese','wiag3.diocese.id'])">concept&#95;id</text><title>&#10697;  concept_id
+     * int
+ &#8599; skos_label( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key, e.g. diocese.id</title></a>
+<a xlink:href='#wiag3.skos_label.concept_id'><use id='fk' x='452' y='876' xlink:href='#fk'/><title>&#x1F517;  References diocese ( concept_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.skos_label_label'><text id='wiag3&#46;skos&#95;label&#46;label' x='355' y='903'>label</text><title>&#10697;  label
+     varchar(127)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      label</title></a>
+<text x='461' y='900' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.skos_label_is_preferred'><text id='wiag3&#46;skos&#95;label&#46;is&#95;preferred' x='355' y='919'>is&#95;preferred</text><title>&#10697;  is_preferred
+     tinyint default &apos;0&apos;
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      1 if label is the preferred label</title></a>
+<text x='461' y='916' text-anchor='end' class='colType'>&#35;</text>  <a xlink:href='#wiag3.skos_label_lang'><text id='wiag3&#46;skos&#95;label&#46;lang' x='355' y='935' onmouseover="hghl(['skos_label_fk_skos_label_lang','wiag3.lang.iso_key'])" onmouseout="uhghl(['skos_label_fk_skos_label_lang','wiag3.lang.iso_key'])">lang</text><title>&#10697;  lang
+     varchar(31)
+ &#8599; skos_label( iso_key )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      2-character code according to ISO 639-1</title></a>
+<a xlink:href='#wiag3.skos_label.lang'><use id='fk' x='452' y='924' xlink:href='#fk'/><title>&#x1F517;  References lang ( lang -&gt; iso_key ) </title></a>
+  <a xlink:href='#wiag3.skos_label_display_order'><text id='wiag3&#46;skos&#95;label&#46;display&#95;order' x='355' y='951'>display&#95;order</text><title>&#10697;  display_order
+     int
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      sort order</title></a>
+<text x='461' y='948' text-anchor='end' class='colType'>&#35;</text>
+<!-- == Table 'skos_scheme' == -->
+<rect id='depict_wiag3&#46;skos&#95;scheme' class='entity' style='stroke:#769BB9' x='544' y='776' width='96' height='96' />
+<rect x='544' y='776' width='96' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='544' y1='776' x2='640' y2='776'/>
+<a xlink:href='#wiag3.skos_scheme'><text x='551' y='795' >skos&#95;scheme</text><title>Table wiag3.skos_scheme
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      skos scheme, subject area</title></a>
+  <use id='nn' x='546' y='813' xlink:href='#nn'/><use id='pk' x='546' y='812' xlink:href='#pk'><title>&#x1F511;  Pk pk_skos_scheme ( id ) </title></use><a xlink:href='#wiag3.skos_scheme_id'><text id='wiag3&#46;skos&#95;scheme&#46;id' x='563' y='823' onmouseover="hghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_label.skos_scheme_id'])" onmouseout="uhghl(['skos_label_fk_skos_label_skos_scheme','wiag3.skos_label.skos_scheme_id'])">id</text><title>&#10697;  id
+     * int
+ &#8601; skos_label( id )</title></a>
+<a xlink:href='#wiag3.skos_scheme.id'><use id='ref' x='628' y='812' xlink:href='#ref'/><title>&#x1F517;  Referred by skos_label ( skos_scheme_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.skos_scheme_name'><text id='wiag3&#46;skos&#95;scheme&#46;name' x='563' y='839'>name</text><title>&#10697;  name
+     varchar(63)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      name of the scheme, e.g. &apos;Orden&apos;</title></a>
+<text x='637' y='836' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.skos_scheme_comment'><text id='wiag3&#46;skos&#95;scheme&#46;comment' x='563' y='855'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='637' y='852' text-anchor='end' class='colType'>t</text>
+<!-- == Table 'url_external' == -->
+<rect id='depict_wiag3&#46;url&#95;external' class='entity' style='stroke:#769BB9' x='368' y='520' width='112' height='144' />
+<rect x='368' y='520' width='112' height='28' style='stroke-width:0; fill:#F1F6FA'/>
+<line class='topLine' style='stroke:#176098;' stroke-linecap='round' x1='368' y1='520' x2='480' y2='520'/>
+<a xlink:href='#wiag3.url_external'><text x='387' y='539' >url&#95;external</text><title>Table wiag3.url_external
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      link item to standardising institution</title></a>
+  <use id='nn' x='370' y='557' xlink:href='#nn'/><use id='pk' x='370' y='556' xlink:href='#pk'><title>&#x1F511;  Pk pk_url_external ( id ) </title></use><a xlink:href='#wiag3.url_external_id'><text id='wiag3&#46;url&#95;external&#46;id' x='387' y='567'>id</text><title>&#10697;  id
+     * int</title></a>
+<text x='477' y='564' text-anchor='end' class='colType'>&#35;</text>  <use id='nn' x='370' y='573' xlink:href='#nn'/><use id='idx' x='370' y='572' xlink:href='#idx'><title>&#x1F50D;  idx_ue_item ( item_id ) </title></use><a xlink:href='#wiag3.url_external_item_id'><text id='wiag3&#46;url&#95;external&#46;item&#95;id' x='387' y='583' onmouseover="hghl(['url_external_fk_url_external_item','wiag3.item.id'])" onmouseout="uhghl(['url_external_fk_url_external_item','wiag3.item.id'])">item&#95;id</text><title>&#10697;  item_id
+     * int
+ &#8599; url_external( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key item.id</title></a>
+<a xlink:href='#wiag3.url_external.item_id'><use id='fk' x='468' y='572' xlink:href='#fk'/><title>&#x1F517;  References item ( item_id -&gt; id ) </title></a>
+  <a xlink:href='#wiag3.url_external_note'><text id='wiag3&#46;url&#95;external&#46;note' x='387' y='599'>note</text><title>&#10697;  note
+     varchar(1023)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      additional information</title></a>
+<text x='477' y='596' text-anchor='end' class='colType'>t</text>  <use id='nn' x='370' y='605' xlink:href='#nn'/><use id='idx' x='370' y='604' xlink:href='#idx'><title>&#x1F50D;  idx_ue_auth ( authority_id ) </title></use><a xlink:href='#wiag3.url_external_authority_id'><text id='wiag3&#46;url&#95;external&#46;authority&#95;id' x='387' y='615' onmouseover="hghl(['url_external_fk_url_external_authority','wiag3.authority.id'])" onmouseout="uhghl(['url_external_fk_url_external_authority','wiag3.authority.id'])">authority&#95;id</text><title>&#10697;  authority_id
+     * int
+ &#8599; url_external( id )
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      foreign key authority.id</title></a>
+<a xlink:href='#wiag3.url_external.authority_id'><use id='fk' x='468' y='604' xlink:href='#fk'/><title>&#x1F517;  References authority ( authority_id -&gt; id ) </title></a>
+  <use id='nn' x='370' y='621' xlink:href='#nn'/><use id='idx' x='370' y='620' xlink:href='#idx'><title>&#x1F50D;  value ( value ) </title></use><a xlink:href='#wiag3.url_external_value'><text id='wiag3&#46;url&#95;external&#46;value' x='387' y='631'>value</text><title>&#10697;  value
+     * varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      URL or specific part of the URL to be combined with authority.url_formatter</title></a>
+<text x='477' y='628' text-anchor='end' class='colType'>t</text>  <a xlink:href='#wiag3.url_external_comment'><text id='wiag3&#46;url&#95;external&#46;comment' x='387' y='647'>comment</text><title>&#10697;  comment
+     varchar(255)
+ ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+      editorial note</title></a>
+<text x='477' y='644' text-anchor='end' class='colType'>t</text>
+</g></svg>
