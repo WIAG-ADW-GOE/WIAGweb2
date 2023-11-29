@@ -274,11 +274,14 @@ class AutocompleteService extends ServiceEntityRepository {
                          ->select("DISTINCT n.nameVariant AS suggestion")
                          ->join('App\Entity\NameLookup', 'n', 'WITH', 'n.personId = i.id')
                          ->join('i.itemCorpus', 'c')
+                         ->leftJoin('i.itemNameRole', 'inr')
+                         ->leftJoin('App\Entity\itemCorpus', 'cs',
+                                    'WITH', 'cs.itemId = inr.itemIdRole')
                          ->andWhere('i.isDeleted = 0')
                          ->andWhere("i.mergeStatus in ('child', 'original')");
 
         if (!is_null($corpus_id_list)) {
-            $qb->andWhere('c.corpusId in (:cil)')
+            $qb->andWhere('c.corpusId in (:cil) OR cs.corpusId in (:cil)')
                ->setParameter('cil', $corpus_id_list);
         }
 
