@@ -6,6 +6,7 @@ use App\Entity\ItemNameRole;
 use App\Entity\Item;
 use App\Entity\ItemCorpus;
 use App\Entity\ItemReference;
+use App\Entity\ReferenceVolume;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\Institution;
@@ -577,5 +578,52 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         return $query->getArrayResult();
 
     }
+
+    /**
+     * @return reference data for persons in $id_list
+     *
+     * collect all references for a person via ItemNameRole
+     */
+    public function findSimpleReferenceList($id_list) {
+        // map person_id to reference volumes
+        // find item_reference list
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('ir')
+                   ->join('\App\Entity\ItemReference', 'ir',
+                          'WITH', 'ir.itemId = inr.itemIdRole')
+                   ->andWhere('inr.itemIdName in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $ir_list = $query->getArrayResult();
+
+        $ref_id_list = array_unique(array_column($ir_list, 'referenceId'));
+
+        $ref_vol_list = $this->getEntityManager()
+                             ->getRepository(ReferenceVolume::class)
+                             ->findSimpleList($ref_id_list);
+
+        foreach ($ir_list as $key => $ir) {
+            $reference_id = $ir['referenceId'];
+            $volume = array_filter($ref_vol_list, function($r) use ($reference_id) {
+                return $r['referenceId'] == $reference_id;
+            });
+            if (count($volume) > 0) {
+                $ir_list[$key]['volume'] = array_values($volume)[0];
+            } else {
+                $ir_list[$key]['volume'] = [
+                    'referenceId' => $reference_id,
+                    'fullCitation' => "Band nicht gefunden",
+                    'yearPublication' => null,
+                ];
+            }
+        }
+
+        // be economical/careful with memory
+        unset($ref_vol_list);
+        return $ir_list;
+
+    }
+
 
 }

@@ -366,7 +366,7 @@ class DownloadService {
     }
 
     /**
-     * @return header for formatted person data
+     * @return header for formatted person role data
      */
     static public function formatPersonRoleDataHeader() {
         return [
@@ -411,6 +411,93 @@ class DownloadService {
             $data[$auth] = is_null($uext) ? null : $uext['value'];
         }
 
+
+        return $data;
+    }
+
+    /**
+     * @return header for formatted person reference data
+     */
+    static public function formatPersonReferenceHeader() {
+        return [
+            'person_id',
+            'citation',
+            'year of publication',
+            'page/ID',
+            'GND',
+            'GSN',
+            'FactGrid'
+        ];
+    }
+
+    /**
+     * @return formatted person role data
+     */
+    static public function formatPersonReference($person, $ref) {
+
+        $item = $person['item'];
+        $itemCorpus = $item['itemCorpus'];
+        $urlExternal = $item['urlExternal'];
+
+        $data = array();
+        $data['person_id'] = self::idPublic($person['item']['itemCorpus']);
+        $data['citation'] = $ref['volume']['fullCitation'];
+        $data['year of publication'] = $ref['volume']['yearPublication'];
+        $page = $ref['page'];
+        if (!is_null($page) and strlen(trim($page)) > 0) {
+            $page = str_replace("<b>", "", $page);
+            $page = str_replace("</b>", "", $page);
+        } else {
+            $page = $ref['idInReference'];
+        }
+        $data['page'] = $page;
+        foreach (['GND', 'GSN', 'FactGrid'] as $auth) {
+            $auth_id = Authority::ID[$auth];
+            $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
+            $data[$auth] = is_null($uext) ? null : $uext['value'];
+        }
+
+
+        return $data;
+    }
+
+    /**
+     * @return header for formatted person reference data
+     */
+    static public function formatPersonUrlExternalHeader() {
+        return [
+            'person_id',
+            'authority',
+            'base URL',
+            'external ID',
+            'GND',
+            'GSN',
+            'FactGrid'
+        ];
+    }
+
+    /**
+     * @return formatted data for external IDs
+     */
+    static public function formatPersonUrlExternal($person, $uext) {
+
+        $item = $person['item'];
+        $itemCorpus = $item['itemCorpus'];
+
+
+        $data = array();
+        $data['person_id'] = self::idPublic($person['item']['itemCorpus']);
+        $data['authority'] = $uext['authority']['urlNameFormatter'];
+        $data['base URL'] = $uext['authority']['urlFormatter'];
+        $data['external ID'] = $uext['value'];
+
+        // additional IDs repeated for each $uext
+        $urlExternal = $item['urlExternal'];
+        foreach (['GND', 'GSN', 'FactGrid'] as $auth) {
+            $auth_id = Authority::ID[$auth];
+            $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
+            $data[$auth] = is_null($uext) ? null : $uext['value'];
+        }
 
         return $data;
     }

@@ -101,6 +101,19 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return volumes as array by list of reference_id
+     */
+    public function findSimpleList($ref_id_list) {
+        $qb = $this->createQueryBuilder('r')
+                   ->select('r')
+                   ->andWhere ('r.referenceId in (:ril)')
+                   ->setParameter('ril', $ref_id_list);
+
+        $query = $qb->getQuery();
+        return $query->getArrayResult();
+    }
+
+    /**
      * find by $id_list, keep order of $id_list
      */
     public function findList($id_list) {

@@ -526,12 +526,13 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findSimpleList($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, ic, inr, ip, bp, role, role_type, institution, urlext, ref')
+                   ->select('p, i, ic, inr, ip, bp, role, role_type, institution, urlext, auth, ref')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->join('i.itemCorpus', 'ic')
                    ->leftJoin('i.itemNameRole', 'inr')
                    ->leftJoin('i.itemProperty', 'ip')
                    ->leftJoin('i.urlExternal', 'urlext')
+                   ->leftJoin('urlext.authority', 'auth')
                    ->leftJoin('i.reference', 'ref')
                    ->leftJoin('p.birthplace', 'bp')
                    ->leftJoin('p.role', 'role')

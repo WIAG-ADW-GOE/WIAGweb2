@@ -1,6 +1,6 @@
 <div class="dropdown ms-2">
     <button class="btn btn-secondary btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Export</button>
-    <ul class="dropdown-menu">
+    <ul class="dropdown-menu" style="min-width: 14rem">
 	<li><button type="submit"
 		    form="{{ form.vars.id }}"
 		    formaction="{{ path('download-csv-person-data', { 'corpusId': corpus }) }}"
@@ -9,5 +9,13 @@
 		    form="{{ form.vars.id }}"
 		    formaction="{{ path('download-csv-person-role-data', { 'corpusId': corpus }) }}"
 		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Amtsdaten</button></li>
+	<li><button type="submit"
+		    form="{{ form.vars.id }}"
+		    formaction="{{ path('download-csv-person-reference', { 'corpusId': corpus }) }}"
+		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Literatur Personen</button></li>
+	<li><button type="submit"
+		    form="{{ form.vars.id }}"
+		    formaction="{{ path('download-csv-person-url-external', { 'corpusId': corpus }) }}"
+		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Externe IDs</button></li>
     </ul>
 </div>

@@ -9,6 +9,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
+use App\Entity\ItemReference;
 use App\Form\PersonFormType;
 use App\Form\Model\PersonFormModel;
 
@@ -81,7 +82,7 @@ class DownloadController extends AbstractController {
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
                 $description = DownloadService::describe($person, $role_list_single);
-                dd($person, $role_list_single, $description);
+                // dd($person, $role_list_single, $description);
             }
 
             $response = new StreamedResponse();
@@ -129,12 +130,15 @@ class DownloadController extends AbstractController {
 
                 fputcsv($handle, $rec, ";");
             }
-            // avoid memory overflow
-            unset($person_list);
-            unset($role_list);
 
             ob_flush();
             flush();
+            // avoid memory overflow
+            unset($inr_role_list);
+            unset($role_list);
+            unset($person_chunk_list);
+            unset($role_chunk_list);
+
         }
         fclose($handle);
     }
@@ -177,9 +181,8 @@ class DownloadController extends AbstractController {
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
                 foreach($role_list_single as $person_role) {
                     $rec = DownloadService::formatPersonRoleData($person, $person_role);
-                    dump($rec);
                 }
-                dd($person, $role_list_single);
+                // dd($person, $role_list_single);
             }
 
             $response = new StreamedResponse();
@@ -228,16 +231,203 @@ class DownloadController extends AbstractController {
                     fputcsv($handle, $rec, ";");
                 }
             }
-            // avoid memory overflow
-            unset($person_list);
-            unset($role_list);
 
             ob_flush();
             flush();
+            // avoid memory overflow
+            unset($inr_role_list);
+            unset($role_list);
+            unset($person_chunk_list);
+            unset($role_chunk_list);
+        }
+        fclose($handle);
+    }
+
+    /**
+     * @Route("/download/csv/person-reference/{corpusId}", name="download-csv-person-reference")
+     *
+     * @return streamed response for person reference data
+     */
+    public function csvPersonReference(Request $request, $corpusId) {
+
+        ini_set('max_execution_time', 300);
+
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        // dev
+        // $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $model = PersonFormModel::newByArray($request->query->all());
+        $model->corpus = $corpusId;
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+        ]);
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+        $model->corpus = $corpusId;
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            // dev/debug
+            $download_debug = false;
+            if ($download_debug) {
+                $person_list = $personRepository->findSimpleList($id_all);
+                $vol_list = $itemNameRoleRepository->findSimpleReferenceList($id_all);
+                $person = $person_list[1];
+                $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
+                $vol_list_single = UtilService::findAllArray($vol_list, 'itemId', $inr_role_list);
+                // dd($person, $vol_list_single);
+            }
+
+            $response = new StreamedResponse();
+
+            $callback = array($this, 'yieldPersonReference');
+            $response->setCallback(function() use ($callback, $id_all) {
+                $callback($id_all);
+            });
+
+            $filename = "WIAG-".$corpusId."-references.csv";
+
+            $response->headers->set('X-Accel-Buffering', 'no');
+            $response->headers->set('Content-Type', 'application/force-download');
+            $response->headers->set('Content-Disposition', 'attachment; filename='.$filename);
+
+            return $response;
+
+        }
+
+        return new Response("Fehler: Das Formular konnte nicht ausgewertet werden");
+    }
+
+    /**
+     * Callback for streaming of person references
+     */
+    private function yieldPersonReference($id_list) {
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+
+        $handle = fopen('php://output', 'r+');
+        $chunk_size = 200;
+        $chunk_pos = 0;
+        $count = count($id_list);
+        fputcsv($handle, DownloadService::formatPersonReferenceHeader(), ";");
+        while ($chunk_pos < $count) {
+            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
+            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
+            $ref_chunk_list = $itemNameRoleRepository->findSimpleReferenceList($id_chunk);
+            $chunk_pos += $chunk_size;
+
+            foreach ($person_chunk_list as $person) {
+                $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
+                $ref_list = UtilService::findAllArray($ref_chunk_list, 'itemId', $inr_role_list);
+                foreach ($ref_list as $ref) {
+                    $rec = DownloadService::formatPersonReference($person, $ref);
+                    fputcsv($handle, $rec, ";");
+                }
+            }
+
+            ob_flush();
+            flush();
+            // avoid memory overflow
+            unset($inr_role_list);
+            unset($ref_list);
+            unset($person_chunk_list);
+            unset($ref_chunk_list);
         }
         fclose($handle);
     }
 
 
+    /**
+     * @Route("/download/csv/person-url-external/{corpusId}", name="download-csv-person-url-external")
+     *
+     * @return streamed response for person reference data
+     */
+    public function csvPersonUrlExternal(Request $request, $corpusId) {
+
+        ini_set('max_execution_time', 300);
+
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        // dev
+        // $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $model = PersonFormModel::newByArray($request->query->all());
+        $model->corpus = $corpusId;
+        $form = $this->createForm(PersonFormType::class, $model, [
+            'forceFacets' => false,
+            'repository' => $itemNameRoleRepository,
+        ]);
+
+        $form->handleRequest($request);
+        $model = $form->getData();
+        $model->corpus = $corpusId;
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            // dev/debug
+            $download_debug = false;
+            if ($download_debug) {
+                $person_list = $personRepository->findSimpleList($id_all);
+                $person = $person_list[7];
+                $uext_list = $person['item']['urlExternal'];
+                // dd(s$person, $uext_list);
+            }
+
+            $response = new StreamedResponse();
+
+            $callback = array($this, 'yieldPersonUrlExternal');
+            $response->setCallback(function() use ($callback, $id_all) {
+                $callback($id_all);
+            });
+
+            $filename = "WIAG-".$corpusId."-external-ids.csv";
+
+            $response->headers->set('X-Accel-Buffering', 'no');
+            $response->headers->set('Content-Type', 'application/force-download');
+            $response->headers->set('Content-Disposition', 'attachment; filename='.$filename);
+
+            return $response;
+
+        }
+
+        return new Response("Fehler: Das Formular konnte nicht ausgewertet werden");
+    }
+
+    /**
+     * Callback for streaming of person references
+     */
+    private function yieldPersonUrlExternal($id_list) {
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+
+        $handle = fopen('php://output', 'r+');
+        $chunk_size = 200;
+        $chunk_pos = 0;
+        $count = count($id_list);
+        fputcsv($handle, DownloadService::formatPersonUrlExternalHeader(), ";");
+        while ($chunk_pos < $count) {
+            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
+            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
+            $chunk_pos += $chunk_size;
+
+            foreach ($person_chunk_list as $person) {
+                foreach ($person['item']['urlExternal'] as $uext) {
+                    $rec = DownloadService::formatPersonUrlExternal($person, $uext);
+                    fputcsv($handle, $rec, ";");
+                }
+            }
+            ob_flush();
+            flush();
+
+            // avoid memory overflow
+            unset($person_chunk_list);
+        }
+        fclose($handle);
+    }
 
 }

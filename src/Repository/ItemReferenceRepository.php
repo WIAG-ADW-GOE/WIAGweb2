@@ -50,6 +50,21 @@ class ItemReferenceRepository extends ServiceEntityRepository
     */
 
     /**
+     * @return reference for items in $id_list as array
+     */
+    public function findSimpleList($item_id_list) {
+        $qb = $this->createQueryBuilder('ref')
+                   ->join('App\Entity\ReferenceVolume', 'vol', 'WITH', 'ref.referenceId = vol.referenceId')
+                   ->select('ref, vol')
+                   ->andWhere('ref.itemId in (:item_id_list)')
+                   ->setParameter('item_id_list', $item_id_list);
+
+        $query = $qb->getQuery();
+        return $query->getArrayResult();
+    }
+
+
+    /**
      *
      */
     public function findVolumeByItemIdList($item_id_list) {
