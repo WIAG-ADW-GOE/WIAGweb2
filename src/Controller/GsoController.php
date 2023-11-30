@@ -313,7 +313,7 @@ class GsoController extends AbstractController {
 
         $person_insert_list = array();
 
-        $domstift_list = $institutionRepository->findByCorpusId('cap');
+        $domstift_list = $institutionRepository->findDomstifte();
         $id_cap_list = UtilService::collectionColumn($domstift_list, 'id');
         $next_num_id_public = $itemCorpusRepository->findMaxNumIdPublic('dreg-can') + 1;
 
