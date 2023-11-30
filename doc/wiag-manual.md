@@ -71,7 +71,7 @@ Das Feld **Jahr** prüft auf Personen, deren Amtsausübung oder Lebensspanne das
 angegebene Jahr umfasst. Toleranzwert ist 1. Siehe `ItemRepository::MARGIN_YEAR` und
 `CanonLookupRepository::MARGIN_YEAR`.
 
-Das Feld **Nummer** prüft auf Personen, deren WIAG-ID die angegebene Nummer/ID
+Das Feld **Nummer** prüft auf Personen, deren WIAG ID die angegebene Nummer/ID
 enthält. Es werden auch Einträge gefunden, wenn eine externe ID (GND,
 Digitales Personenregister der Germania Sacra, Wikidata, VIAF)
 die angegeben Nummer/ID enthält oder mit ihr übereinstimmt.
@@ -319,6 +319,79 @@ Elemente aus schema.org sind im Folgenden mit `schema:` gekennzeichnet.
   URI in der Klosterdatenbank im Falle eines Domstiftes oder Klosters
 - `item_corpus.id_public` -- `schmem:url`  
   URI in WIAG im Falle eines Bistums
+
+### Datenpakete
+
+Alle Datenpakete lassen sich aus der Listenansicht eines Abfrageergebnisses
+erzeugen über die Schaltflächen „CSV“, „RDF-XML“, „JSON“, „JSON-LD“ und „Export“,
+wobei letztere nur sichbar ist, wenn man sich in der Anwendung angemeldet hat.
+Der Umfang des Datenpakets entspricht dem Ergebnis der aktuellen Abfrage. Die Ausgabe
+der Datenpakete ist wegen des Ressourcenverbrauchs auf dem Server auf eine
+Trefferliste von maximal 6000 beschränkt. Diese Beschränkung gilt nicht für Ausgaben
+über die Schaltfläche „Export“, da hier die Daten gestreamt werden.
+
+Der Datenbestand für die Bischöfe (etwa 5000 Einträge) kann komplett ausgegeben
+werden. Die Domherren können jeweils für jedes der 34 Domstifte komplett ausgegeben
+werden.
+
+Das CSV-Format wird in zwei Varianten bereitgestellt. In der ersten Variante
+(Schaltfläche „CSV“) entspricht jedem Element/Feld eines Datensatzes eine Spalte in der
+CSV-Datei. 1-n-Beziehungen werden in eine Sequenz von Spalten aufgelöst, wobei
+der Spaltenname die Listenposition enthält. Die Zählung beginnt mit 0.
+Beispiel: „offices.9.dateBegin“
+enthält das Start-Datum des 10. Amtseintrages, „offices.9.references.0.citation“
+enthält die bibliographischen Angaben des ersten Literaturverweises für
+die 10. Amtsperiode. Dieses Format führt zu einer großen Zahl von Spalten.
+
+Das zweite Format (Schaltfläche „Export“) unterteilt die Daten und bildet die ersten Ebenen der relationalen
+Beziehungen ab. Die Daten sind so für eine manuelle Sichtung und Weiterverarbeitung
+leichter zugänglich.
+Die Daten sind unterteilt in
+
+- Personendaten: WIAG ID, Namen, Beschreibung, allgemeine biographische Daten, Normdaten
+- Amtsdaten: WIAG ID, Amtsdaten, Normdaten
+- Literatur Personen: WIAG ID, Literaturverweise bezogen auf die Person, Normdaten
+- Externe IDs: WIAG ID, sämtliche externe IDs, Normdaten
+
+Die WIAG ID dient dazu, die Daten in aufnehmenden Systemen wieder zuzuordnen. Für
+allfällige Abgleiche werden jeweils Normdaten (GND, Wikidata, FactGrid)
+mit ausgegeben.
+
+Der Aufbau der Ausgabedateien in den übrigen Formaten ist beschrieben in der Dokumentation zum
+[Application Programming Interface](./doc/wiag-api-manual.md).
+
+### Import in FactGrid
+
+Das Gothaer [FactGrid](https://database.factgrid.de/wiki/Main_Page) ist eine
+[Wikibase](https://www.wikimedia.de/projects/wikibase/)-Instanz, die sich speziell
+Projekten der „Digital Humanities“ als breite
+Plattform anbietet. Benutzer können Datenbank-Objekte
+anlegen und mit beliebigen Aussagen ihres Forschungsinteresses ausstatten, die sie
+dann auswerten und unterschiedlich visualisieren.
+Wikibase ist die Software, die auch [Wikidata](https://www.wikidata.org) nutzt.
+FactGrid will historischer Forschung einen eigenen Freiraum zur Verfügung stellen und
+technisch in der Lage sein, mit der GND und mit Wikidata laufend Daten
+auszutauschen — Daten, die aus dem FactGrid heraus international als Forschungsdaten
+zitierbar werden. Seit dem 5. November 2022 ist das FactGrid — als global agierende
+Plattform — offizielles Repositorium im Spektrum der deutschen Nationalen
+Forschungsinfrastruktur, [NFDI4Memory](https://4memory.de/).
+Im FactGrid werden Informationen angelehnt an RDF als Einzelaussagen, Statements,
+abgelegt. Jedes Statement bezieht sich auf ein Objekt, beispielsweise auf eine
+Person. Für den Import in das FactGrid müssen die Objekte über ihre ID in FactGrid
+identifiziert werden.
+
+Beim Import aus WIAG wird ein Objekt
+(Person, Institution, Amt, etc.) zusammen mit grundlegende Daten,
+wie Name, Beschreibung, WIAG-ID und Normdaten eingetragen. Vor allen weiteren
+Importschritten wird zunächst aus dem FactGrid die FactGrid ID ausgelesen und wiederum
+in WIAG aufgenommen, damit die IDs den Objekten zugeordnet und für den Import
+angegeben werden können.
+Technisch werden die Informationen aus WIAG als CSV-Datei (Export-Format) ausgelesen
+und mit einem externen Skript in ein Format für das WikiData-Tool
+[QuickStatements](https://www.wikidata.org/wiki/Help:QuickStatements)
+umgewandelt. So lassen sich die einzelnen Schritte besser kontrollieren und
+weiterentwickeln im Vergleich zu einem vollautomatischen Import über die
+Webanwendung.
 
 ## Redaktion
 
