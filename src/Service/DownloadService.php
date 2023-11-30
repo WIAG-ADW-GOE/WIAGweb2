@@ -89,13 +89,13 @@ class DownloadService {
             'prefix',
             'familyname',
             'displayname',
-            'date of birth',
-            'date of death',
+            'date_of_birth',
+            'date_of_death',
             'description',
-            'GND ID',
+            'GND_ID',
             'GSN',
-            'FactGrid ID',
-            'Wikidata ID',
+            'FactGrid_ID',
+            'Wikidata_ID',
             'Wikipedia'
         ];
     }
