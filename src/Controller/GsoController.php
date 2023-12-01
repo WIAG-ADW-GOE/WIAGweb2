@@ -284,6 +284,8 @@ class GsoController extends AbstractController {
         foreach($person_update_list as $person_target) {
             $item_id = $person_target->getItem()->getId();
             $gso_person_id = $meta_data_list[$item_id]['gso_person_id'];
+            // do not drop entries without offices here; it is possible that they
+            // have been deleted in Digitales Personenregister.
             $person_gso_list = $gsoPersonsRepository->findList([$gso_person_id]);
             $person_gso = array_values($person_gso_list)[0];
 
@@ -318,7 +320,15 @@ class GsoController extends AbstractController {
         $next_num_id_public = $itemCorpusRepository->findMaxNumIdPublic('dreg-can') + 1;
 
         $n_insert = 0;
+        $gsn_insert_list = array();
         foreach($gso_insert_list as $person_gso) {
+            $gso_current_gsn = $person_gso->getItem()->getCurrentGsn();
+            // do not insert the same GSN twice
+            if (in_array($gso_current_gsn, $gsn_insert_list)) {
+                continue;
+            } else {
+                $gsn_insert_list[] = $gso_current_gsn;
+            }
             $item = new Item($current_user_id);
             $entityManager->persist($item);
             $person = new Person($item);
@@ -328,7 +338,7 @@ class GsoController extends AbstractController {
             $person_id = $person->getItem()->getId();
             $person = $personRepository->findOneById($person_id);
             // set GSN in an extra step;
-            $this->editPersonService->setGsn($item, $person_gso->getItem()->getCurrentGsn());
+            $this->editPersonService->setGsn($item, $gso_current_gsn);
             $this->editPersonService->updateFromGso($person, $person_gso, $current_user_id);
 
             // entries in item_corpus
@@ -429,7 +439,9 @@ class GsoController extends AbstractController {
         $niw_pid_list = array_column($niw_gso_meta_list, 'person_id');
         $new_pid_list = array_unique(array_merge($cap_pid_list, $niw_pid_list));
 
-        $person_new_list = $gsoPersonsRepository->findList($new_pid_list);
+        $gso_with_deleted = false;
+        $gso_only_with_offices = true;
+        $person_new_list = $gsoPersonsRepository->findList($new_pid_list, $gso_with_deleted, $gso_only_with_offices);
         // $person_new_list is usually smaller than $new_pid_list,
         // because entries without offices are dropped.
 
