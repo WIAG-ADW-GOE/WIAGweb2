@@ -88,7 +88,7 @@ class PersonsRepository extends EntityRepository
     /**
      *
      */
-    public function findList($id_list, $with_deleted = false) {
+    public function findList($id_list, $with_deleted = false, $only_with_offices = false) {
         $qb = $this->createQueryBuilder('p')
                    ->select('p, i, role, ref, vol, gsn')
                    ->join('p.item', 'i') # avoid query in twig ...
@@ -103,6 +103,9 @@ class PersonsRepository extends EntityRepository
 
         if (!$with_deleted) {
             $qb->andWhere('i.deleted = 0');
+        }
+
+        if ($only_with_offices) {
             $qb->andWhere('role.deleted = 0');
         }
 
