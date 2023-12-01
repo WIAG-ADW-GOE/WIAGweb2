@@ -885,13 +885,13 @@ class EditPersonController extends AbstractController {
 
         // see person_edit/_merge_list.html.twig
         // - an item may have IDs for more than one corpus
-        $iic_second_list = explode(",", $request->query->get('selected'));
-
+        $iic_second_text = $request->query->get('selected');
+        $iic_second_list = explode(",", $iic_second_text);
         // find merge candidate
         $second = null;
         foreach ($iic_second_list as $iic) {
             $item_id_q = $itemCorpusRepository->findItemIdByCorpusAndId($iic);
-            if (!is_null($item_id_q)) {
+            if (!is_null($item_id_q) and count($item_id_q) > 0) {
                 $item_id = array_values(array_column($item_id_q, 'itemId'))[0];
                 $second = $itemRepository->find($item_id);
                 break;
@@ -900,7 +900,7 @@ class EditPersonController extends AbstractController {
 
         $id_list = array($form_data['id']);
         if (is_null($second)) {
-            $msg = "Zu {$id_in_corpus_second} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
+            $msg = "Zu {$iic_second_text} (angegegeben im Feld 'identisch mit') wurde keine Person gefunden.";
             $q_person = $personRepository->findList($id_list);
             $person = $q_person[0];
             $person->getItem()->getInputError()->add(new InputError("status", $msg));
