@@ -13,7 +13,7 @@ Mit den umfangreichen Datensammlungen der Akademieprojekte
 [Germania Sacra](https://adw-goe.de/forschung/forschungsprojekte-akademienprogramm/germania-sacra/)
 besteht eine zentrale Wissensbasis für die Mittelalter- und Frühneuzeitforschung.
 
-## Datenabfrage HTML
+## Datenabfrage
 
 WIAG gliedert sich nach Themen, bzw. nach Corpora.
 In der Abfrage spiegelt sich diese Gliederung wider in den Menüeinträgen unter dem
@@ -205,6 +205,165 @@ Beispiele:
 - „Domherren-Datenbank“: <https://wiag-vocab.adw-goe.de/person/query/can?year=1530>
 - „Bistümer Gatz“: <https://wiag-vocab.adw-goe.de/diocese/query?name=Basel>
 
+### API
+
+Die Dokumentation umfasst auch eine [Beschreibung des API](./wiag-api-manual) zur
+Ausgabe von WIAG-Daten in strukturierten Formaten.
+
+## Redaktion
+
+### Formularaufbau
+
+Die Redaktionsseiten machen die zu bearbeitenden Datensätze ähnlich wie die
+Abfrageseiten über ein Formular und eine Listenausgabe zugänglich. Die Suchmaske ist
+erweitert um weitere Eingabefelder, wie z.B. **Referenz**, und um Felder zu
+redaktionellen Metadaten, z.B. zum Datum der letzten Änderung. In diesem Feld ist es möglich,
+auch Datumsbereiche anzugeben.
+
+Das Feld **Nummer** kann dazu genutzt werden, Personen über die ID innerhalb des
+Corpus zu finden, z.B. „can-26302“. Es können auch alle Einträge für ein Corpus
+gefiltert werden, indem man nur die Kennung für das Corpus, also zum Beispiel „epc“
+oder „can“ angibt.
+
+PHP beschränkt die Zahl der Eingabevariablen auf 1000. Daher werden die Eingabemasken
+für die einzelnen Datensätze bei Bedarf via AJAX nachgeladen. Die Zahl der
+gleichzeitig an den Server übermittelten Variablen bleibt so begrenzt. Die
+Eingabmasken werden nicht über das Symfony-Formular-Modul erzeugt, sondern direkt in
+den Templates aufgebaut. Die Eingabmasken sind erweiterbar, da eine Person eine
+theoretisch beliebig große Anzahl von Ämtern, externen Identifiern oder Referenzen
+haben kann. Die entsprechende Funktionalität ist mithilfe von
+[Stimulus](https://stimulus.hotwired.dev/) umgesetzt; entsprechende Teilformulare
+werden vom Server nachgeladen.
+
+Das Redaktionsmodul umfasst Eingabemasken für
+
+- Literatur/Referenzen,
+- Institutionen für Normdaten/Externe Ressourcen,
+- Attribute: frei vergebbare Attribute zu Personen oder zu Amtsangaben,
+- Ämter,
+- Klöster: hier wird ein Abfrage für aktuelle Daten aus der Klosterdatenbank
+  angestoßen,
+- Bistümer,
+- Personen des Themenfelds „Bischof“,
+- Personen des Themenfelds „Domherr“.
+
+### Corpus-Zuordnung
+
+Wenn eine Person neu aufgenommen wird, wird sie einem Corpus zugeordnet und es werden
+die entsprechenden IDs erzeugt. Neue IDs entstehen auch, wenn eine Person einem neuen
+Corpus zugeordnet wird und dabei die bestehende Zuordnung aufgehoben wird. Dabei
+geht die Verbindung zur ehemaligen ID verloren. Der Schritt kann also in dieser
+Hinsicht nicht über die Redaktionsoberfläche rückgängig gemacht werden!
+
+### Zusammenführen von Datensätzen
+
+Es kommt vor, dass für eine Person zwei oder mehr Einträge in WIAG aufgenommen
+werden. Dann können die Inhalte in einem einzigen Eintrag zusammengeführt werden. In
+jedem Schritt können nur jeweils zwei Einträge verarbeitet werden. Das Zusammenführen
+wird aus dem Redaktionsformular eines der betroffenen Einträge heraus
+angestoßen. Die öffentlich sichtbare ID dieses Datensatzes wird die öffentlich
+sichtbare ID des Ergebnis-Datensatzes. Die öffentlich sichtbare ID des zweiten
+beteiligten Datensatzes kann aber weiterhin genutzt werden, um den Ergebnisdatensatz
+aufzurufen.
+
+Die Inhalte der Namensfelder und der externen Normdaten werden in dem
+ zusammengeführten Datensatz kombiniert, d.h. durch das Pipe-Zeichen '|' getrennt
+ hintereinander geschrieben, es sei denn der Inhalt der Ausgangs-Datensätze ist
+ identisch. Vor dem Speichern müssen die unterschiedlichen Varianten in diesen
+ Feldern bereinigt und das Pipe-Zeichen '|' gelöscht werden. Andernfalls weist die Anwendung
+ auf verbleibene Pipe-Zeichen '|' hin und speichert die Inhalte nicht. Im Fall von
+ Feldern, die wiederholt werden können, wie Ämter oder Attribute werden die
+ entsprechenen Listen erweitert.
+
+### Daten aus dem Digitalen Personenregister
+
+Datensätze aus dem Digitalen Personenregister können nur im Digitalen
+Personenregister selbst, also nicht in WIAG, bearbeitet werden.
+Damit die Amtsdaten aus dem Digitalen Personenregister effizient
+in die Suche miteinbezogen werden können, werden sie für die relevanten Datensätze in
+WIAG übernommen. Die Datenübernahme wird manuell im Redaktionsmenü aufgerufen.
+
+Aktualisierung: Der Import prüft für alle bestehenden Datensätze in WIAG, ob der
+entsprechende Datensatz im Digitalen Personenregister ein jüngeres Änderungsdatum
+hat.
+In diesem Fall werden die Daten in WIAG auf den aktuellen Stand gebracht.
+Auf der Seite des Digitalen Personenregisters werden nur Datensätze betrachtet,
+die online (Feld `items.status`) sind.
+Datensätze, die im Digitalen Personenregister nicht mehr existieren, werden vor dem
+Import-Schritt aufgelistet. Bei der Aktualisierung
+werden veraltete GSN durch die aktuelle GSN, wie sie im Digitalen Personenregister
+vorgefunden wird, ersetzt.
+
+Neu zu übernehmende Einträge: Aus dem Digitalen Personenregister werden alle
+Datensätze gesammelt, die ein Amt in einem der 34 WIAG-Domstifte haben. Von dieser Liste
+werden alle Personen abgezogen, die schon in WIAG sind. Zusätzlich werden alle
+Verweis auf eine GSN in WIAG gesammelt, für die es noch keinen Personeneintrag in
+WIAG gibt. Dabei werden alle Statuswerte auf WIAG-Seite mit einbezogen.
+In der Liste der GSN wird geprüft, ob
+eine der GSN veraltet ist. In diesem Fall wird sie im verweisenden Datensatz
+durch die aktuelle GSN ersetzt. Beim Import werden Datensätze aussortiert, für die
+keine Amtsdaten im Digitalen Personenregister vorliegen.
+
+Die in WIAG aufgenommenen Datensätze erhalten die Corpus-ID „dreg-can“ (siehe
+`item_corpus.corpus_id`). Die ID in der Quelle (`gsdatenbank.items.id`) wird in das
+Feld `item_corpus.id_in_source` eingetragen.
+
+## Basisdaten
+
+### Verwendungsnachweis
+
+Basisdaten, wie Literatur, Institutionen für Normdaten/Externe Ressourcen und
+Attributtypen werden von Pesonen und Institutionen referenziert. In den jeweiligen
+Redaktionsmasken ist für jeden Eintrag angegeben, wieviele solcher Verweise es gibt.
+Dies soll verhindern, dass ein Eintrag gelöscht wird, solange auf ihn verwiesen
+wird.
+In der Anwendung wird vorausgesetzt, entsprechende Verweise gültig sind. Andernfall tritt
+ein Systemfehler auf, der von der Anwendung nicht abgefangen wird.
+
+### Orte
+
+Für Orte gibt es keine Eingabemaske in der Anwendung. Aus [GeoNames](geonames.org)
+wurden Ortsdaten für folgende Länder eingelesen: Östereich, Belgien, Kroatien,
+Tschechien, Dänemark, Estland, Frankreich, Deutschland, Italien, Lettland,
+Liechtenstein, Litauen, Luxembourg, den Niederlanden, Polen, Slovenien und der
+Schweiz importiert.
+Einzelne weitere Orte können in die Datenbank über eine Anwendung wie phpMyAdmin oder
+über ein Skript eingefügt werden, wobei die Parameter für den jeweils vorliegenden
+Fall anzupassen sind.
+
+``` sql
+INSERT INTO place
+    SET name = 'Győr',
+    geonames_id = 3052009,
+    id_in_source = '3052009',
+    country_id = 348,
+    country_code = 'HU'
+    place_type_id = 1,
+    latitude = 47.68333,
+    longitude = 17.63512;
+```
+
+Aus der Tabelle `place` wird der von die von der Datenbank vergebene ID
+ausgelesen. In diesem Fall '974851'. Sie wird gebraucht, um Namensvarianten in die
+Tabelle `place_label` aufzunehmen.
+
+``` sql
+INSERT INTO place_label
+    SET geonames_id = 3052009,
+    label = 'Győr',
+    lang = 'hu',
+    place_id = 974851,
+    is_preferred = 1,
+    is_geonames_name = 1;
+INSERT INTO place_label
+    SET geonames_id = 3052009,
+    label = 'Raab',
+    lang = 'de',
+    place_id = 974851,
+    is_preferred = 0,
+    is_geonames_name = 0;
+```
+
 ## Serialisierung
 
 Beim Aufbau ihrer Datensammlungen hat die Germania Sacra Aspekte für eine
@@ -378,7 +537,8 @@ Forschungsinfrastruktur, [NFDI4Memory](https://4memory.de/).
 Im FactGrid werden Informationen angelehnt an RDF als Einzelaussagen, Statements,
 abgelegt. Jedes Statement bezieht sich auf ein Objekt, beispielsweise auf eine
 Person. Für den Import in das FactGrid müssen die Objekte über ihre ID in FactGrid
-identifiziert werden.
+identifiziert werden, sofern es sich nicht aum Objekte handelt, die neu in FactGrid
+angelegt werden.
 
 Beim Import aus WIAG wird ein Objekt
 (Person, Institution, Amt, etc.) zusammen mit grundlegende Daten,
@@ -393,185 +553,29 @@ umgewandelt. So lassen sich die einzelnen Schritte besser kontrollieren und
 weiterentwickeln im Vergleich zu einem vollautomatischen Import über die
 Webanwendung.
 
-## Redaktion
+#### Zuordnung von Properties
 
-### Formularaufbau
+Im FactGrid ist eine 
+[Übersicht über die Properties](https://database.factgrid.de/wiki/FactGrid:Directory_of_Properties)
+abrufbar.
 
-Die Redaktionsseiten machen die zu bearbeitenden Datensätze ähnlich wie die
-Abfrageseiten über ein Formular und eine Listenausgabe zugänglich. Die Suchmaske ist
-erweitert um weitere Eingabefelder, wie z.B. **Referenz**, und um Felder zu
-redaktionellen Metadaten, z.B. zum Datum der letzten Änderung. In diesem Feld ist es möglich,
-auch Datumsbereiche anzugeben.
+Die Daten aus WIAG werden wie folgt zugeordnet.
 
-Das Feld **Nummer** kann dazu genutzt werden, Personen über die ID innerhalb des
-Corpus zu finden, z.B. „can-26302“. Es können auch alle Einträge für ein Corpus
-gefiltert werden, indem man nur die Kennung für das Corpus, also zum Beispiel „epc“
-oder „can“ angibt.
+- `person.givenname`, `person.prefixname`, `person.familyname` -- Label  
+  Die Elemente aus WIAG werden zu einer einzigen Zeichenkette zusammengefügt und als
+  Label in deutscher Sprache gekennzeichnet: `Lde`
+- `person.date_birth`, `person.date_death`, `person_role.*` -- Description  
+  Die Lebensdaten, sowie Art, Institution und Zeitraum der wichtigsten beiden Ämter
+  werden zu einem Beschreibungstext zusammengefügt. Für die Ämter liegt in Wiag eine
+  Einteilung in Ämtergruppen vor. Für die Beschreibung werden die Ämter folgender
+  Gruppen priorisiert: „Oberstes Leitungsamt Diözese“, „Leitungsamt Domstift“. Das
+  zweite Sortierkriterium ist die Amtszeit: zuletzt ausgeübte Ämter werden erscheinen
+  zuerst.
 
-PHP beschränkt die Zahl der Eingabevariablen auf 1000. Daher werden die Eingabemasken
-für die einzelnen Datensätze bei Bedarf via AJAX nachgeladen. Die Zahl der
-gleichzeitig an den Server übermittelten Variablen bleibt so begrenzt. Die
-Eingabmasken werden nicht über das Symfony-Formular-Modul erzeugt, sondern direkt in
-den Templates aufgebaut. Die Eingabmasken sind erweiterbar, da eine Person eine
-theoretisch beliebig große Anzahl von Ämtern, externen Identifiern oder Referenzen
-haben kann. Die entsprechende Funktionalität ist mithilfe von
-[Stimulus](https://stimulus.hotwired.dev/) umgesetzt; entsprechende Teilformulare
-werden vom Server nachgeladen.
+#### neue Objekte in FactGrid anlegen
 
-Das Redaktionsmodul umfasst Eingabemasken für
-
-- Literatur/Referenzen,
-- Institutionen für Normdaten/Externe Ressourcen,
-- Attribute: frei vergebbare Attribute zu Personen oder zu Amtsangaben,
-- Ämter,
-- Klöster: hier wird ein Abfrage für aktuelle Daten aus der Klosterdatenbank
-  angestoßen,
-- Bistümer,
-- Personen des Themenfelds „Bischof“,
-- Personen des Themenfelds „Domherr“.
-
-### Corpus-Zuordnung
-
-Wenn eine Person neu aufgenommen wird, wird sie einem Corpus zugeordnet und es werden
-die entsprechenden IDs erzeugt. Neue IDs entstehen auch, wenn eine Person einem neuen
-Corpus zugeordnet wird und dabei die bestehende Zuordnung aufgehoben wird. Dabei
-geht die Verbindung zur ehemaligen ID verloren. Der Schritt kann also in dieser
-Hinsicht nicht über die Redaktionsoberfläche rückgängig gemacht werden!
-
-### Zusammenführen von Datensätzen
-
-Es kommt vor, dass für eine Person zwei oder mehr Einträge in WIAG aufgenommen
-werden. Dann können die Inhalte in einem einzigen Eintrag zusammengeführt werden. In
-jedem Schritt können nur jeweils zwei Einträge verarbeitet werden. Das Zusammenführen
-wird aus dem Redaktionsformular eines der betroffenen Einträge heraus
-angestoßen. Die öffentlich sichtbare ID dieses Datensatzes wird die öffentlich
-sichtbare ID des Ergebnis-Datensatzes. Die öffentlich sichtbare ID des zweiten
-beteiligten Datensatzes kann aber weiterhin genutzt werden, um den Ergebnisdatensatz
-aufzurufen.
-
-Die Inhalte der Namensfelder und der externen Normdaten werden in dem
- zusammengeführten Datensatz kombiniert, d.h. durch das Pipe-Zeichen '|' getrennt
- hintereinander geschrieben, es sei denn der Inhalt der Ausgangs-Datensätze ist
- identisch. Vor dem Speichern müssen die unterschiedlichen Varianten in diesen
- Feldern bereinigt und das Pipe-Zeichen '|' gelöscht werden. Andernfalls weist die Anwendung
- auf verbleibene Pipe-Zeichen '|' hin und speichert die Inhalte nicht. Im Fall von
- Feldern, die wiederholt werden können, wie Ämter oder Attribute werden die
- entsprechenen Listen erweitert.
-
-### Daten aus dem Digitalen Personenregister
-
-Datensätze aus dem Digitalen Personenregister können nur im Digitalen
-Personenregister selbst, also nicht in WIAG, bearbeitet werden.
-Damit die Amtsdaten aus dem Digitalen Personenregister effizient
-in die Suche miteinbezogen werden können, werden sie für die relevanten Datensätze in
-WIAG übernommen. Die Datenübernahme wird manuell im Redaktionsmenü aufgerufen.
-
-Aktualisierung: Der Import prüft für alle bestehenden Datensätze in WIAG, ob der
-entsprechende Datensatz im Digitalen Personenregister ein jüngeres Änderungsdatum
-hat.
-In diesem Fall werden die Daten in WIAG auf den aktuellen Stand gebracht.
-Auf der Seite des Digitalen Personenregisters werden nur Datensätze betrachtet,
-die online (Feld `items.status`) sind.
-Datensätze, die im Digitalen Personenregister nicht mehr existieren, werden vor dem
-Import-Schritt aufgelistet. Bei der Aktualisierung
-werden veraltete GSN durch die aktuelle GSN, wie sie im Digitalen Personenregister
-vorgefunden wird, ersetzt.
-
-Neu zu übernehmende Einträge: Aus dem Digitalen Personenregister werden alle
-Datensätze gesammelt, die ein Amt in einem der 34 WIAG-Domstifte haben. Von dieser Liste
-werden alle Personen abgezogen, die schon in WIAG sind. Zusätzlich werden alle
-Verweis auf eine GSN in WIAG gesammelt, für die es noch keinen Personeneintrag in
-WIAG gibt. Dabei werden alle Statuswerte auf WIAG-Seite mit einbezogen.
-In der Liste der GSN wird geprüft, ob
-eine der GSN veraltet ist. In diesem Fall wird sie im verweisenden Datensatz
-durch die aktuelle GSN ersetzt. Beim Import werden Datensätze aussortiert, für die
-keine Amtsdaten im Digitalen Personenregister vorliegen.
-
-Die in WIAG aufgenommenen Datensätze erhalten die Corpus-ID „dreg-can“ (siehe
-`item_corpus.corpus_id`). Die ID in der Quelle (`gsdatenbank.items.id`) wird in das
-Feld `item_corpus.id_in_source` eingetragen.
-
-## Basisdaten
-
-### Verwendungsnachweis
-
-Basisdaten, wie Literatur, Institutionen für Normdaten/Externe Ressourcen und
-Attributtypen werden von Pesonen und Institutionen referenziert. In den jeweiligen
-Redaktionsmasken ist für jeden Eintrag angegeben, wieviele solcher Verweise es gibt.
-Dies soll verhindern, dass ein Eintrag gelöscht wird, solange auf ihn verwiesen
-wird.
-In der Anwendung wird vorausgesetzt, entsprechende Verweise gültig sind. Andernfall tritt
-ein Systemfehler auf, der von der Anwendung nicht abgefangen wird.
-
-### Orte
-
-Für Orte gibt es keine Eingabemaske in der Anwendung. Aus [GeoNames](geonames.org)
-wurden Ortsdaten für folgende Länder eingelesen: Östereich, Belgien, Kroatien,
-Tschechien, Dänemark, Estland, Frankreich, Deutschland, Italien, Lettland,
-Liechtenstein, Litauen, Luxembourg, den Niederlanden, Polen, Slovenien und der
-Schweiz importiert.
-Einzelne weitere Orte können in die Datenbank über eine Anwendung wie phpMyAdmin oder
-über ein Skript eingefügt werden, wobei die Parameter für den jeweils vorliegenden
-Fall anzupassen sind.
-
-``` sql
-INSERT INTO place
-    SET name = 'Győr',
-    geonames_id = 3052009,
-    id_in_source = '3052009',
-    country_id = 348,
-    country_code = 'HU'
-    place_type_id = 1,
-    latitude = 47.68333,
-    longitude = 17.63512;
-```
-
-Aus der Tabelle `place` wird der von die von der Datenbank vergebene ID
-ausgelesen. In diesem Fall '974851'. Sie wird gebraucht, um Namensvarianten in die
-Tabelle `place_label` aufzunehmen.
-
-``` sql
-INSERT INTO place_label
-    SET geonames_id = 3052009,
-    label = 'Győr',
-    lang = 'hu',
-    place_id = 974851,
-    is_preferred = 1,
-    is_geonames_name = 1;
-INSERT INTO place_label
-    SET geonames_id = 3052009,
-    label = 'Raab',
-    lang = 'de',
-    place_id = 974851,
-    is_preferred = 0,
-    is_geonames_name = 0;
-```
-
-## API
-
-### Strukturierte Daten
-
-Die Daten zu Personen und Bistümern können in verschiedenen Formaten auch über ein
-API (Application Programming Interface) abgerufen werden. Die URL lauten
-
-- `https://wiag-vocab.adw-goe.de/bischof/data?` + `Parameter-Liste`
-- `https://wiag-vocab.adw-goe.de/domherr/data?` + `Parameter-Liste`
-- `https://wiag-vocab.adw-goe.de/bistum/data?` + `Parameter-Liste`
-
-`Parameter-Liste: Parameter-Zuordnung(&Parameter-Zuordnung)`
-`Parameter-Zuordnung: parameter=wert`
-
-Beispiel: [https://wiag-vocab.adw-goe.de/domherr/data?name=Hohen&domstift=Bamberg](https://wiag-vocab.adw-goe.de/domherr/data?name=Hohen&domstift=Bamberg)
-
-Folgende Ausgabeformate werden unterstützt: CSV, JSON, RDF-XML, JSON-LD. Das Format
-wird über den Parameter `format` angegeben. Ohne eine Angabe zu diesem Parameter wird
-JSON ausgeliefert.
-
-Die Paramter entsprechen dabei den Eingabefeldern der Suchmaske in der Abfrage:
-
-- „Bischöfe Gatz“: name, diocese, office, year, someid,
-- „Domherren-Datenbank“: name, domstift, office, year, someid,
-- „Bistümer Gatz“: name.
+Personen: Der Import von neuen Personen in FactGrid basiert auf der CSV-Datei, die über
+die Schaltfläche „Export/CSV Personendaten“ heruntergeladen wird.
 
 ## Entwickler-Dokumentation
 
