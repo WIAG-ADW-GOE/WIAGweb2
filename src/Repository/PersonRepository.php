@@ -210,8 +210,10 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         if (!in_array('c', $joined_list)) {
-            $qb->join('App\Entity\ItemCorpus', 'c',
-                      'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in (:corpus)")
+            $qb->join('App\Entity\ItemNameRole', 'inr_c',
+                      'WITH', 'inr_c.itemIdName = inr.itemIdName')
+               ->join('App\Entity\ItemCorpus', 'c',
+                      'WITH', "c.itemId = inr_c.itemIdRole AND c.corpusId in (:corpus)")
                ->setParameter('corpus', $corpusParam);
             $joined_list[] = 'c';
         }
@@ -308,7 +310,7 @@ class PersonRepository extends ServiceEntityRepository {
             // search also for name in 'Digitales Personenregister' (?)
             if ($corpus == 'epc' or $corpus == 'can') {
                 $qb->join('App\Entity\NameLookup', 'name_lookup',
-                          'WITH', 'name_lookup.personId = inr.itemIdRole OR name_lookup.personId = inr.itemIdName');
+                          'WITH', 'name_lookup.personId = inr.itemIdRole');
             } else {
                 $qb->join('App\Entity\NameLookup', 'name_lookup', 'WITH', 'name_lookup.personId = p.id');
             }
@@ -368,7 +370,7 @@ class PersonRepository extends ServiceEntityRepository {
                     $q_id_list = array_unique(array_merge(...$id_list_list));
                     if (!$model->isEdit) {
                         //
-                        $qb->andWhere("inr.itemIdName in (:q_id_list) OR inr.itemIdRole in (:q_id_list)")
+                        $qb->andWhere("inr.itemIdRole in (:q_id_list)")
                            ->setParameter('q_id_list', $q_id_list);
                     } else {
                         $qb->andWhere("p.id in (:q_id_list)")
