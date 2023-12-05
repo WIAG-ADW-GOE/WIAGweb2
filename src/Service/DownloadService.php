@@ -91,7 +91,8 @@ class DownloadService {
             'displayname',
             'date_of_birth',
             'date_of_death',
-            'description',
+            'biographical_dates',
+            'summary_offices',
             'GND_ID',
             'GSN',
             'FactGrid_ID',
@@ -117,7 +118,8 @@ class DownloadService {
         $data['displayname'] = self::displayName($person);
         $data['date of birth'] = $person['dateBirth'];
         $data['date of death'] = $person['dateDeath'];
-        $data['description'] = self::describe($person, $role_list);
+        $data['biographical_dates'] = self::biographicalDates($person, $role_list);
+        $data['summary_offices'] = self::describeRoleList($role_list);
         foreach (['GND', 'GSN', 'FactGrid', 'Wikidata', 'Wikipedia'] as $auth) {
             $auth_id = Authority::ID[$auth];
             $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
@@ -177,10 +179,7 @@ class DownloadService {
         return $given.$prefix.$family.$agnomen;
     }
 
-    /**
-     * @return basic information (date of birth, date of death, offices)
-     */
-    static public function describe($person, $role_list) {
+    static public function biographicalDates($person, $role_list) {
         $date_list = array();
         if (!is_null($person['dateBirth']) and trim($person['dateBirth']) != "") {
             $date_list[] = "* ".$person['dateBirth'];
@@ -199,17 +198,9 @@ class DownloadService {
             }
         }
 
-        $description_list = array();
-        if ($date_txt) {
-            $description_list[] = $date_txt;
-        }
-        $role_description = self::describeRoleList($role_list);
-        if (!is_null($role_description)) {
-            $description_list[] = $role_description;
-        }
-
-        return implode(', ', $description_list);
+        return $date_txt;
     }
+
 
     static public function firstRoleDate($role_list) {
         if (count($role_list) == 0) {
@@ -228,16 +219,15 @@ class DownloadService {
      */
     static public function describeRoleList($role_list) {
         // hard code highest ranked office types(!?)
-        $p_dioc = 'Leitungsamt Diözese';
-        $p_cap = 'Leitungsamt Domstift';
+        $role_group_rank_list = ["Oberstes Leitungsamt Diözese", "Leitungsamt Domstift"];
 
         if (count($role_list) < 1) {
             return "";
         }
 
         // sort by priority and time (youngest first)
-        usort($role_list, function($a, $b) use ($p_dioc, $p_cap) {
-            return self::cmpPersonRole($a, $b, $p_dioc, $p_cap);
+        usort($role_list, function($a, $b) use ($role_group_rank_list) {
+            return self::cmpPersonRole($a, $b, $role_group_rank_list);
         });
 
         $role_list = self::uniquePersonRole($role_list);
@@ -256,28 +246,32 @@ class DownloadService {
         return implode(", ", $role_txt_list);
     }
 
-    static public function cmpPersonRole($a, $b, $p_dioc, $p_cap) {
+    static public function cmpPersonRole($a, $b, $role_group_rank_list) {
         if (!is_null($a['role']) and !is_null($b['role'])) {
             $a_rg = $a['role']['roleGroup'];
             $b_rg = $a['role']['roleGroup'];
 
-            if ($a_rg == $p_dioc and $b_rg != $p_dioc) {
-                return -1;
+            $cmp = 0;
+            foreach ($role_group_rank_list as $rg) {
+                if ($a_rg == $rg and $b_rg != $rg) {
+                    $cmp = -1;
+                    break;
+                }
+                if ($a_rg != $rg and $b_rg == $rg) {
+                    $cmp = 1;
+                    break;
+                }
             }
-            if ($a_rg != $p_dioc and $b_rg == $p_dioc) {
-                return 1;
+
+            if ($cmp != 0) {
+                return $cmp;
             }
-            if ($a_rg == $p_cap and $b_rg != $p_cap) {
-                return -1;
-            }
-            if ($a_rg != $p_cap and $b_rg == $p_cap) {
-                return 1;
-            }
+
         }
         if (is_null($a['role']) and !is_null($b['role'])) {
             return 1;
         }
-        if (is_null($b['role']) and !is_null($b['role'])) {
+        if (is_null($b['role']) and !is_null($a['role'])) {
             return -1;
             }
         // both are null or have the same roleGroup

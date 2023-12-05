@@ -121,7 +121,7 @@ class PersonFormModel {
         // list only elements that are relevant in a regular query (not edit)
         $keys = ['name', 'diocese', 'domstift', 'place', 'office', 'year', 'someid'];
         foreach($keys as $key) {
-            $value = $value && is_null($this->$key);
+            $value = $value && (is_null($this->$key) or trim($key) == "");
         }
 
         return $value;
