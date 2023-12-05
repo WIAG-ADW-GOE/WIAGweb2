@@ -182,7 +182,7 @@ class PersonService {
 
         $pj['givenName'] = $person->getGivenname();
 
-        $pj = array_merge($pj, $person->getItem()->arrayItemProperty());
+        // $pj = array_merge($pj, $person->getItem()->arrayItemProperty());
 
         $fv = $person->getPrefixName();
         if ($fv) $pj['prefix'] = $fv;
@@ -218,6 +218,19 @@ class PersonService {
 
         $fv = $person->getReligiousOrder();
         if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
+
+        // item properties
+        $nd = array();
+
+        $item_property = $person->getItem()->getItemProperty();
+        foreach ($item_property as $ip_loop) {
+            $prop_type = $ip_loop->getType()->getName();
+            $nd[$prop_type] = $ip_loop->getValue();
+        }
+
+        if (count($nd) > 0) {
+            $pj['biographicalNotes'] = $nd;
+        }
 
         // external identifiers
         $nd = array();
