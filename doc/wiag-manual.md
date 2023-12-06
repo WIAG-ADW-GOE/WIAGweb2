@@ -551,23 +551,43 @@ Im FactGrid ist eine
 [Übersicht über die Properties](https://database.factgrid.de/wiki/FactGrid:Directory_of_Properties)
 abrufbar.
 
-Die Daten aus WIAG werden wie folgt zugeordnet.
+Die Daten der Bischöfe nach Gatz, der Domherren aus der Domherren-Datenbank oder aus
+dem Digitalen Personenregister werden wie folgt zugeordnet.
 
-- `person.givenname`, `person.prefixname`, `person.familyname` -- Label  
-  Die Elemente aus WIAG werden zu einer einzigen Zeichenkette zusammengefügt und als
-  Label in deutscher Sprache gekennzeichnet: `Lde`
-- `person.date_birth`, `person.date_death`, `person_role.*` -- Description  
-  Die Lebensdaten, sowie Art, Institution und Zeitraum der wichtigsten beiden Ämter
-  werden zu einem Beschreibungstext zusammengefügt. Für die Ämter liegt in Wiag eine
-  Einteilung in Ämtergruppen vor. Für die Beschreibung werden die Ämter folgender
-  Gruppen priorisiert: „Oberstes Leitungsamt Diözese“, „Leitungsamt Domstift“. Das
-  zweite Sortierkriterium ist die Amtszeit: zuletzt ausgeübte Ämter werden erscheinen
-  zuerst.
+- `person.givenname`, `person.prefixname`, `person.familyname` -- Label: Lde, Len, 
+  Lfr, Les (FactGrid-Kennungen)  
+  Die Elemente der Quelle werden zu einer Zeichenkette zusammengefügt und als
+  Label gekennzeichnet, jeweils für die Sprachen Deutsch, Englisch, Französisch und
+  Spanisch.
+- `person.date_birth`, `person.date_death`, `person_role.*` -- Description: Dde, Den,
+  Dfr, Des  
+  Das Geburts- und das Sterbedatum werden zu einer Zeichenkette zusammengefügt und 
+  als Beschreibungstext gekennzeichnet. 
+  So kann ein menschlicher Nutzer die Person schnell zeitlich
+  einordnen. Falls Geburts- und Sterbedatum nicht vorliegen, wird ein erstes Datum aus
+  den Amtszeiten angegeben.
+  Für die Beschreibung in Deutsch werden zusätzlich bis zu zwei Amtsangaben mit in
+  den Text aufgenommen. Die Ämter folgender Gruppen werden priorisiert:
+  „Oberstes Leitungsamt Diözese“, „Leitungsamt Domstift“.
+  Das zweite Sortierkriterium ist die Amtszeit, wobei zuletzt ausgeübte Ämter
+  priorisiert werden. Die Ämter aus dem Digitalen Personenregister werden nur dann
+  berücksichtigt, wenn sie das Digitale Personenregister die einzige Quelle für die
+  Person ist.
 
-#### neue Objekte in FactGrid anlegen
+Folgende Properties haben für alle Personen den gleichen Wert:
 
-Personen: Der Import von neuen Personen in FactGrid basiert auf der CSV-Datei, die über
-die Schaltfläche „Export/CSV Personendaten“ heruntergeladen wird.
+- P2: Ist ein(e) -- Q7: Mensch
+- P131: Forschungsprojekte, die zu diesem Datensatz beitrugen -- Q153178: Germania Sacra im FactGrid
+- P154: Geschlecht -- Q18: Männliches Geschlecht
+
+Weiter werden folgende Identifier übertragen:
+
+- `item.id` (identisch mit `person.id`) -- P601: WIAG ID 
+- `url_external.value` für verschiedene Werte von `url_external.authority_id`
+  - P76: GND ID
+  - P472: Personendatenbank Germania Sacra ID
+  - Swikidatawiki: Wikidata ID
+  - Sdewiki: Eintrag in der deutschen Wikipedia
 
 ## Entwickler-Dokumentation
 
