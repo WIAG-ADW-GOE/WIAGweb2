@@ -126,14 +126,6 @@ innerhalb von WIAG. Die Amtseinträge von anderen Ämtern verweisen häufig auf
 Domstifte oder Klöster aus der [Klosterdatenbank der Germania
 Sacra](https://klosterdatenbank.adw-goe.de/liste).
 
-#### Sortierung von Amtsangaben
-
-Die Listenansicht ist das Ergebnis einer Suchanfrage. Sie wird auch beim Einstieg in
-ein Thema/in einen Corpus angezeigt. Hier erscheinen die Ämter aus der Sammlung der
-Bischöfe nach Gatz oder aus der Domherren-Datenbank neben dem Namen einer Person. Die
-Amtsangaben sind
-In der Listenansicht, die beim Einstieg in ein Thema/in einen Corpus gezeigt wird oder als Ergebnis einer Suche
-
 ### Inhalte aus mehreren Quellen
 
 Es gibt Personen, die in mehreren Quellen beschrieben sind. Die relevanten
@@ -201,9 +193,9 @@ Die Paramter entsprechen dabei den Eingabefeldern der Suchmaske in der Abfrage:
 
 Beispiele:
 
-- „Bischöfe Gatz“: <https://wiag-vocab.adw-goe.de/person/query/epc?office=Administrator>
-- „Domherren-Datenbank“: <https://wiag-vocab.adw-goe.de/person/query/can?year=1530>
-- „Bistümer Gatz“: <https://wiag-vocab.adw-goe.de/diocese/query?name=Basel>
+- „Bischöfe Gatz“: <https://wiag-vocab.adw-goe.de/query/epc?office=Administrator>
+- „Domherren-Datenbank“: <https://wiag-vocab.adw-goe.de/query/can?year=1530>
+- „Bistümer Gatz“: <https://wiag-vocab.adw-goe.de/query/dioc?name=Basel>
 
 ### API
 
