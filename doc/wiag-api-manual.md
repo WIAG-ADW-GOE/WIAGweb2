@@ -3,7 +3,31 @@
 Das Application Programming Interface (API) für WIAG ermöglicht die automatisierte
 Abfrage von Daten aus dem WIAG Datenbestand:
 
-Die Daten werden in einem der folgenden Formate ausgeliefert: CSV, [JSON](https://www.json.org/json-de.html), [JSON-LD](https://json-ld.org/), [RDF-XML](https://www.w3.org/TR/rdf-syntax-grammar/)
+## Übersicht
+
+Die URLs haben folgenden Aufbau:
+
+- `https://wiag-vocab.adw-goe.de/bischof/data?` + `Parameter-Liste`
+- `https://wiag-vocab.adw-goe.de/domherr/data?` + `Parameter-Liste`
+- `https://wiag-vocab.adw-goe.de/bistum/data?` + `Parameter-Liste`
+
+`Parameter-Liste: Parameter-Zuordnung(&Parameter-Zuordnung)`
+`Parameter-Zuordnung: parameter=wert`
+
+Beispiel: [https://wiag-vocab.adw-goe.de/domherr/data?name=Hohen&domstift=Bamberg](https://wiag-vocab.adw-goe.de/domherr/data?name=Hohen&domstift=Bamberg)
+
+Folgende Ausgabeformate werden unterstützt:
+CSV, [JSON](https://www.json.org/json-de.html),
+[JSON-LD](https://json-ld.org/),
+[RDF-XML](https://www.w3.org/TR/rdf-syntax-grammar/).
+Das Format wird über den Parameter `format` angegeben. Ohne eine Angabe zu diesem Parameter wird
+JSON ausgeliefert.
+
+Die weiteren Paramter entsprechen dabei den Eingabefeldern der Suchmaske in der Abfrage:
+
+- „Bischöfe Gatz“: name, diocese, office, year, someid,
+- „Domherren-Datenbank“: name, domstift, office, year, someid,
+- „Bistümer Gatz“: name.
 
 ## Bischöfe
 
