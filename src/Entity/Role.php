@@ -22,8 +22,6 @@ class Role
         'gender',
         'lang',
         'genericTerm',
-        'roleGroup',
-        'roleGroupEn',
         'gsRegId',
         'note',
         'definition',
@@ -35,6 +33,12 @@ class Role
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $item;
+
+    /**
+     * @ORM\OneToOne(targetEntity="RoleGroup")
+     * @ORM\JoinColumn(name="role_group_id", referencedColumnName="id")
+     */
+    private $roleGroup;
 
     /**
      * @ORM\Id
@@ -79,19 +83,14 @@ class Role
     private $definition;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
-    private $roleGroup;
-
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
-    private $roleGroupEn;
-
-    /**
      * @ORM\Column(type="string", length=31, nullable=true)
      */
     private $gender;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $roleGroupId;
 
     /**
      * @ORM\Column(type="string", length=31)
@@ -209,29 +208,29 @@ class Role
         return $this;
     }
 
-    public function getRoleGroup(): ?string
+    public function getRoleGroupId()
+    {
+        return $this->roleGroupId;
+    }
+
+    public function setRoleGroupId(?string $roleGroupId): self
+    {
+        $this->roleGroupId = $roleGroupId;
+
+        return $this;
+    }
+
+    public function getRoleGroup()
     {
         return $this->roleGroup;
     }
 
-    public function setRoleGroup(?string $roleGroup): self
+    public function setRoleGroup($roleGroup)
     {
         $this->roleGroup = $roleGroup;
-
         return $this;
     }
 
-    public function getRoleGroupEn(): ?string
-    {
-        return $this->roleGroupEn;
-    }
-
-    public function setRoleGroupEn(?string $roleGroup): self
-    {
-        $this->roleGroupEn = $roleGroup;
-
-        return $this;
-    }
 
     public function getGender(): ?string
     {

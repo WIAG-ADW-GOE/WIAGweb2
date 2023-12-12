@@ -60,44 +60,8 @@
 			formaction="{{ path('edit_role_delete', {'q_id': role.item.id ?? 0 }) }}"
 			class="d-none"></button>
 		<button type="BUTTON"
-			      class="btn btn-sm btn-danger"
-			      data-action="submit-confirm#confirm">Eintrag löschen</button>
-	    </div>
-	</div>
-	<div class="input-group input-group-sm mb-1">
-	    <span class="input-group-text" style="min-width: 5rem">Gruppe</span>
-	    <div class="w-20"
-			{{ stimulus_controller('autocomplete', {
-			    url: path('role_suggest', { field: 'roleGroup' }),
-			}) }}>
-		<input type="text" id="{{ base_id }}_roleGroup"
-		       name="{{ base_input_name}}[roleGroup]"
-		       class="form-control form-control-sm wiag-input"
-		       style="min-width: 20rem; max-width: 30rem;"
-		       value="{{ role.roleGroup }}"
-		       spellcheck="false"
-		       aria-label="Gruppe"
-		       data-autocomplete-target="input">
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 30rem;"></ul>
-	    </div>
-	    <span class="input-group-text" style="min-width: 5rem">Gruppe (englisch)</span>
-	    <div class="w-20"
-			{{ stimulus_controller('autocomplete', {
-			    url: path('role_suggest', { field: 'roleGroupEn' }),
-			}) }}>
-		<input type="text" id="{{ base_id }}_roleGroupEn"
-		       name="{{ base_input_name}}[roleGroupEn]"
-		       class="form-control form-control-sm wiag-input"
-		       style="min-width: 20rem; max-width: 30rem;"
-		       value="{{ role.roleGroupEn }}"
-		       spellcheck="false"
-		       aria-label="Gruppe (englisch)"
-		       data-autocomplete-target="input">
-		<ul class="list-group autocomplete-target"
-		    data-autocomplete-target="results"
-		    style="max-width: 30rem;"></ul>
+			class="btn btn-sm btn-danger"
+			data-action="submit-confirm#confirm">Eintrag löschen</button>
 	    </div>
 	</div>
 	<div class="input-group input-group-sm mb-1">
@@ -117,6 +81,24 @@
 		   value="{{ role.gsRegId }}"
 		   spellcheck="false"
 		   aria-label="GS Reg Id">
+	    <span class="input-group-text" style="min-width: 5rem">Gruppe</span>
+	    <select class="form-select"
+		    id="{{ base_id }}_roleGroup"
+		    name="{{ base_input_name}}[roleGroup]">
+
+		{% if role.roleGroup %}
+		    <option value="0"> -- keine -- </option>
+		{% else %}
+		    <option value="0" selected> -- keine -- </option>
+		{% endif %}
+		{% for roleGroup in roleGroupList %}
+		    {% if role.roleGroup and role.roleGroup.id == roleGroup.id %}
+			<option value="{{ roleGroup.id }}" selected>{{ roleGroup.name }}</option>
+		    {% else %}
+			<option value="{{ roleGroup.id }}">{{ roleGroup.name }}</option>
+		    {% endif %}
+		{% endfor %}
+	    </select>
  	</div>
 	<div class="input-group input-group-sm mb-1">
 	    <span class="input-group-text" style="min-width: 8rem">Bemerkung</span>

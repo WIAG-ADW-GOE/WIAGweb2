@@ -564,12 +564,13 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     public function findSimpleRoleList($person_id_list) {
 
         $qb = $this->createQueryBuilder('inr')
-                   ->select('pr, r, institution, diocese')
+                   ->select('pr, r, rg, institution, diocese')
                    ->leftJoin('\App\Entity\PersonRole', 'pr',
                               'WITH', 'pr.personId = inr.itemIdRole')
                    ->leftJoin('pr.role', 'r')
                    ->leftJoin('pr.institution', 'institution')
                    ->leftJoin('pr.diocese', 'diocese')
+                   ->leftJoin('r.roleGroup', 'rg')
                    ->andWhere('inr.itemIdName in (:id_list)')
                    ->setParameter('id_list', $person_id_list);
 

@@ -57,6 +57,7 @@ class DownloadController extends AbstractController {
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
+        $personRoleRepository = $this->entityManager->getRepository(PersonRole::class);
 
 
         $model = PersonFormModel::newByArray($request->query->all());
@@ -77,7 +78,7 @@ class DownloadController extends AbstractController {
             $download_debug = false;
             if ($download_debug) {
                 $person_list = $personRepository->findSimpleList($id_all);
-                $role_list = $itemNameRoleRepository->findSimpleRoleList($id_all);
+                $role_list = $personRoleRepository->findSimpleRoleList($id_all);
                 $person = $person_list[3];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);

@@ -94,6 +94,7 @@ class DownloadService {
             'date_of_death',
             'biographical_dates',
             'summary_offices',
+            'carrer_factgrid_id',
             'carrer',
             'carrer_en',
             'GND_ID',
@@ -129,22 +130,28 @@ class DownloadService {
         $prio_role_list = self::prioRoleList($role_list);
         $data['summary_offices'] = self::describeRoleList($prio_role_list);
         $prio_role_group = null;
-        $prio_role_group_en = null;
 
         if (count($prio_role_list) > 0) {
             $prr = array_values($prio_role_list)[0]['role'];
             if (!is_null($prr)) {
                 $prio_role_group = $prr['roleGroup'];
-                $prio_role_group_en = $prr['roleGroupEn'];
             }
         }
-        $data['carrer'] = $prio_role_group;
-        $data['carrer_en'] = $prio_role_group_en;
+
+        if (!is_null($prio_role_group)) {
+            $data['carrer_factgrid_id'] = $prio_role_group['factgridId'];
+            $data['carrer'] = $prio_role_group['name'];
+            $data['carrer_en'] = $prio_role_group['nameEn'];
+        } else {
+            $data['carrer_factgrid_id'] = null;
+            $data['carrer'] = null;
+            $data['carrer_en'] = null;
+        }
 
         foreach (['GND', 'GSN', 'FactGrid', 'Wikidata', 'Wikipedia'] as $auth) {
             $auth_id = Authority::ID[$auth];
             $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
-            $data[$auth] = is_null($uext) ? null : $uext['value'];
+            $data[$auth] = is_null($uext) ? null : urldecode($uext['value']);
         }
 
         return $data;
@@ -253,7 +260,12 @@ class DownloadService {
      */
     static public function prioRoleList($role_list) {
         // hard code highest ranked office types(!?)
-        $role_group_rank_list = ["Oberstes Leitungsamt Diözese", "Leitungsamt Domstift"];
+        $role_group_rank_list = [
+            "Oberstes Leitungsamt Diözese",
+            "Leitungsamt Domstift",
+            "Leitungsamt Kloster",
+            "Amt Domstift",
+        ];
 
         if (count($role_list) < 1) {
             return "";
@@ -284,8 +296,14 @@ class DownloadService {
 
     static public function cmpPersonRole($a, $b, $role_group_rank_list) {
         if (!is_null($a['role']) and !is_null($b['role'])) {
-            $a_rg = $a['role']['roleGroup'];
-            $b_rg = $a['role']['roleGroup'];
+            $a_rg = null;
+            $b_rg = null;
+            if (!is_null($a['role']['roleGroup'])) {
+                $a_rg = $a['role']['roleGroup']['name'];
+            }
+            if (!is_null($b['role']['roleGroup'])) {
+                $b_rg = $b['role']['roleGroup']['name'];
+            }
 
             $cmp = 0;
             foreach ($role_group_rank_list as $rg) {
@@ -405,6 +423,7 @@ class DownloadService {
             'name',
             'role_group',
             'role_group_en',
+            'role_group_fq_id',
             'institution',
             'diocese',
             'date begin',
@@ -428,8 +447,14 @@ class DownloadService {
         $data['person_id'] = self::idPublic($person['item']['itemCorpus']);
         $data['id'] = $role['id'];
         $data['name'] = !is_null($role['role']) ? $role['role']['name'] : $role['roleName'];
-        $data['role_group'] = !is_null($role['role']) ? $role['role']['roleGroup'] : null;
-        $data['role_group_en'] = !is_null($role['role']) ? $role['role']['roleGroupEn'] : null;
+        $data['role_group'] = null;
+        $data['role_group_en'] = null;
+        $data['role_group_fq_id'] = null;
+        if (!is_null($role['role']) and !is_null($role['role']['roleGroup'])) {
+            $data['role_group'] = $role['role']['roleGroup']['name'];
+            $data['role_group_en'] = $role['role']['roleGroup']['nameEn'];
+            $data['role_group_fq_id'] = $role['role']['roleGroup']['factgridId'];
+        }
         $data['institution'] = !is_null($role['institution']) ? $role['institution']['name'] : $role['institutionName'];
         $diocese = $role['diocese'];
         if (!is_null($diocese)) {

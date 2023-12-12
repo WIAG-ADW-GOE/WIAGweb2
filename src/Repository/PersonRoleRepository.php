@@ -59,10 +59,11 @@ class PersonRoleRepository extends ServiceEntityRepository
     public function findSimpleRoleList($person_id_list) {
 
         $qb = $this->createQueryBuilder('pr')
-                   ->select('pr, r, institution, diocese')
+                   ->select('pr, r, rg, institution, diocese')
                    ->leftJoin('pr.role', 'r')
                    ->leftJoin('pr.institution', 'institution')
                    ->leftJoin('pr.diocese', 'diocese')
+                   ->leftJoin('r.roleGroup', 'rg')
                    ->andWhere('pr.personId in (:id_list)')
                    ->setParameter('id_list', $person_id_list);
 

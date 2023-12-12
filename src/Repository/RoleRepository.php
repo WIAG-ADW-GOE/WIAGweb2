@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Role;
+use App\Entity\RoleGroup;
 
 use App\Service\UtilService;
 
@@ -68,20 +69,6 @@ class RoleRepository extends ServiceEntityRepository
         return $result;
     }
 
-    /**
-     * @return roleGroupList
-     */
-    public function roleGroupList() {
-        $qb = $this->createQueryBuilder('r')
-                   ->select('DISTINCT r.roleGroup')
-                   ->andWhere('r.roleGroup IS NOT NULL')
-                   ->addOrderBy('r.roleGroup', 'ASC');
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        return $result;
-    }
-
     public function findByModel($model) {
         $qb = $this->createQueryBuilder('r')
                    ->select('r', 'i')
@@ -90,7 +77,8 @@ class RoleRepository extends ServiceEntityRepository
                    ->addOrderBy('r.name');
 
         if ($model['roleGroup'] != '') {
-            $qb->andWhere('r.roleGroup = :roleGroup')
+            $qb->join('r.roleGroup', 'rg')
+               ->andWhere('rg.name = :roleGroup')
                ->setParameter('roleGroup', $model['roleGroup']);
         }
 
@@ -151,9 +139,12 @@ class RoleRepository extends ServiceEntityRepository
      * @return list of role names for autocompletion
      */
     public function suggestRoleGroup($q_param) {
-        $qb = $this->createQueryBuilder('r')
-                   ->select('DISTINCT r.roleGroup AS suggestion')
-                   ->andWhere('r.roleGroup like :q_param')
+        $roleGroupRepository = $this->getEntitymanager(RoleGroup::class);
+
+
+        $qb = $roleGroupRepository->createQueryBuilder('rg')
+                   ->select('DISTINCT rg.name AS suggestion')
+                   ->andWhere('rg.name like :q_param')
                    ->setParameter('q_param', '%'.$q_param.'%');
 
         $query = $qb->getQuery();
@@ -164,9 +155,12 @@ class RoleRepository extends ServiceEntityRepository
      * @return list of role names for autocompletion
      */
     public function suggestRoleGroupEn($q_param) {
-        $qb = $this->createQueryBuilder('r')
-                   ->select('DISTINCT r.roleGroupEn AS suggestion')
-                   ->andWhere('r.roleGroupEn like :q_param')
+        $roleGroupRepository = $this->getEntitymanager(RoleGroup::class);
+
+
+        $qb = $roleGroupRepository->createQueryBuilder('rg')
+                   ->select('DISTINCT rg.name_en AS suggestion')
+                   ->andWhere('rg.name_en like :q_param')
                    ->setParameter('q_param', '%'.$q_param.'%');
 
         $query = $qb->getQuery();

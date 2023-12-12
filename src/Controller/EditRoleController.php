@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ItemCorpus;
 use App\Entity\ItemType;
 use App\Entity\Role;
+use App\Entity\RoleGroup;
 use App\Entity\PersonRole;
 use App\Entity\UrlExternal;
 use App\Entity\Authority;
@@ -56,10 +57,11 @@ class EditRoleController extends AbstractController {
                           EntityManagerInterface $entityManager): Response {
 
         $roleRepository = $entityManager->getRepository(Role::class);
+        $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
 
         $group_choice_list = ['- alle -' => ''];
-        $group_list = $roleRepository->roleGroupList();
-        $group_list = array_column($group_list, 'roleGroup');
+        $group_list = $roleGroupRepository->findAll();
+        $group_list = UtilService::collectionColumn($group_list, 'name');
         $group_list = array_combine($group_list, $group_list);
         $group_choice_list = array_merge($group_choice_list, $group_list);
 
@@ -145,6 +147,7 @@ class EditRoleController extends AbstractController {
                          EntityManagerInterface $entityManager) {
 
         $roleRepository = $entityManager->getRepository(Role::class);
+        $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
         $personRoleRepository = $entityManager->getRepository(PersonRole::class);
         $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
@@ -205,6 +208,15 @@ class EditRoleController extends AbstractController {
 
                 EditService::mapUrlExternal($item, $data['urlext'], $entityManager);
 
+                // roleGroup
+                if (array_key_exists('roleGroup', $data) and $data['roleGroup'] > 0) {
+                    $role->setRoleGroupId($data['roleGroup']);
+                    $role->setRoleGroup($roleGroupRepository->find($data['roleGroup']));
+                } else {
+                    $role->setRoleGroupId(null);
+                    $role->setRoleGroup(null);
+                }
+
                 // validate input
                 $gs_reg_id = intval($role->getGsRegId());
                 if (strlen($role->getGsRegId()) > 0 and $gs_reg_id == 0) {
@@ -260,11 +272,10 @@ class EditRoleController extends AbstractController {
 
         $template = 'edit_role/_list.html.twig';
 
-        $debug = $request->request->get('formType');
-
         return $this->render($template, [
             'editFormId' => $edit_form_id,
             'roleList' => $role_list,
+            'roleGroupList' => $roleGroupRepository->findAll(),
         ]);
 
     }
@@ -350,6 +361,7 @@ class EditRoleController extends AbstractController {
                           EntityManagerInterface $entityManager): Response {
 
         $roleRepository = $entityManager->getRepository(Role::class);
+        $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
         $userWiagRepository = $entityManager->getRepository(UserWiag::class);
 
         $role = $roleRepository->find($id);
@@ -365,6 +377,7 @@ class EditRoleController extends AbstractController {
 
         return $this->render('edit_role/_input_content.html.twig', [
             'role' => $role,
+            'roleGroupList' => $roleGroupRepository->findAll(),
             'editFormId' => $edit_form_id,
             'itemIndex' => $index,
             'base_id' => $edit_form_id.'_'.$index,
@@ -380,6 +393,7 @@ class EditRoleController extends AbstractController {
      */
     public function newRole(Request $request,
                             EntityManagerInterface $entityManager) {
+        $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
 
         $current_user_id = $this->getUser()->getId();
         $obj = new Role($current_user_id);
@@ -391,6 +405,7 @@ class EditRoleController extends AbstractController {
 
         return $this->render('edit_role/_item.html.twig', [
             'editFormId' => $request->query->get('edit_form_id'),
+            'roleGroupList' => $roleGroupRepository->findAll(),
             'current_idx' => $request->query->get('current_idx'),
             'role' => $obj,
         ]);
