@@ -23,6 +23,7 @@ class Role
         'lang',
         'genericTerm',
         'roleGroup',
+        'roleGroupEn',
         'gsRegId',
         'note',
         'definition',
@@ -81,6 +82,11 @@ class Role
      * @ORM\Column(type="string", length=63, nullable=true)
      */
     private $roleGroup;
+
+    /**
+     * @ORM\Column(type="string", length=63, nullable=true)
+     */
+    private $roleGroupEn;
 
     /**
      * @ORM\Column(type="string", length=31, nullable=true)
@@ -211,6 +217,18 @@ class Role
     public function setRoleGroup(?string $roleGroup): self
     {
         $this->roleGroup = $roleGroup;
+
+        return $this;
+    }
+
+    public function getRoleGroupEn(): ?string
+    {
+        return $this->roleGroupEn;
+    }
+
+    public function setRoleGroupEn(?string $roleGroup): self
+    {
+        $this->roleGroupEn = $roleGroup;
 
         return $this;
     }

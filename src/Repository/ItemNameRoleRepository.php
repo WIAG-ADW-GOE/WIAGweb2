@@ -561,7 +561,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
      *
      * collect all roles for a person via ItemNameRole
      */
-    public function findSimpleRoleList($id_list) {
+    public function findSimpleRoleList($person_id_list) {
 
         $qb = $this->createQueryBuilder('inr')
                    ->select('pr, r, institution, diocese')
@@ -571,7 +571,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                    ->leftJoin('pr.institution', 'institution')
                    ->leftJoin('pr.diocese', 'diocese')
                    ->andWhere('inr.itemIdName in (:id_list)')
-                   ->setParameter('id_list', $id_list);
+                   ->setParameter('id_list', $person_id_list);
 
         $query = $qb->getQuery();
         // be economical/careful with memory

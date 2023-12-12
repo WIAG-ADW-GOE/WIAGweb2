@@ -112,7 +112,7 @@ class DownloadController extends AbstractController {
      */
     private function yieldPersonData($id_list) {
         $personRepository = $this->entityManager->getRepository(Person::class);
-        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        $personRoleRepository = $this->entityManager->getRepository(PersonRole::class);
 
         $handle = fopen('php://output', 'r+');
         $chunk_size = 200;
@@ -122,7 +122,7 @@ class DownloadController extends AbstractController {
         while ($chunk_pos < $count) {
             $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
             $person_chunk_list = $personRepository->findSimpleList($id_chunk);
-            $role_chunk_list = $itemNameRoleRepository->findSimpleRoleList($id_chunk);
+            $role_chunk_list = $personRoleRepository->findSimpleRoleList($id_chunk);
             $chunk_pos += $chunk_size;
 
             foreach ($person_chunk_list as $person) {

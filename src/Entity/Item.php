@@ -607,6 +607,29 @@ class Item {
     }
 
     /**
+     * @return first corpus in $corpus_id_prio_list
+     */
+    public function getFirstCorpusId($corpus_id_prio_list): ?string
+    {
+        if (is_null($this->itemCorpus)) {
+            return null;
+        }
+
+        $corpus_id_match = null;
+        foreach ($corpus_id_prio_list as $corpus_id) {
+            foreach($this->itemCorpus as $ic) {
+                if ($ic->getCorpusId() == $corpus_id) {
+                    $corpus_id_match = $corpus_id;
+                    break;
+                }
+            }
+        }
+
+        return $corpus_id_match;
+    }
+
+
+    /**
      * @return main corpus ID (epc > can)
      */
     public function getIdInCorpusMain(): ?string

@@ -85,6 +85,7 @@ class DownloadService {
     static public function formatPersonDataHeader() {
         return [
             'id',
+            'corpus',
             'givenname',
             'prefix',
             'familyname',
@@ -93,6 +94,8 @@ class DownloadService {
             'date_of_death',
             'biographical_dates',
             'summary_offices',
+            'carrer',
+            'carrer_en',
             'GND_ID',
             'GSN',
             'FactGrid_ID',
@@ -110,8 +113,11 @@ class DownloadService {
         $itemCorpus = $item['itemCorpus'];
         $urlExternal = $item['urlExternal'];
 
+        $corpus_id_prio_list = ['epc', 'can', 'dreg-can', 'dreg'];
+
         $data = array();
         $data['id'] = self::idPublic($person['item']['itemCorpus']);
+        $data['corpus'] = self::firstCorpusId($person['item'], $corpus_id_prio_list);
         $data['givenname'] = $person['givenname'];
         $data['prefix'] = $person['prefixname'];
         $data['familyname'] = $person['familyname'];
@@ -119,7 +125,22 @@ class DownloadService {
         $data['date of birth'] = $person['dateBirth'];
         $data['date of death'] = $person['dateDeath'];
         $data['biographical_dates'] = self::biographicalDates($person, $role_list);
-        $data['summary_offices'] = self::describeRoleList($role_list);
+
+        $prio_role_list = self::prioRoleList($role_list);
+        $data['summary_offices'] = self::describeRoleList($prio_role_list);
+        $prio_role_group = null;
+        $prio_role_group_en = null;
+
+        if (count($prio_role_list) > 0) {
+            $prr = array_values($prio_role_list)[0]['role'];
+            if (!is_null($prr)) {
+                $prio_role_group = $prr['roleGroup'];
+                $prio_role_group_en = $prr['roleGroupEn'];
+            }
+        }
+        $data['carrer'] = $prio_role_group;
+        $data['carrer_en'] = $prio_role_group_en;
+
         foreach (['GND', 'GSN', 'FactGrid', 'Wikidata', 'Wikipedia'] as $auth) {
             $auth_id = Authority::ID[$auth];
             $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
@@ -127,6 +148,19 @@ class DownloadService {
         }
 
         return $data;
+    }
+
+    static public function firstCorpusId($item, $corpus_id_prio_list) {
+        $corpus_id_match = null;
+        foreach ($corpus_id_prio_list as $corpus_id) {
+            foreach($item['itemCorpus'] as $ic) {
+                if ($ic['corpusId'] == $corpus_id) {
+                    $corpus_id_match = $corpus_id;
+                    break;
+                }
+            }
+        }
+        return $corpus_id_match;
     }
 
     /**
@@ -217,7 +251,7 @@ class DownloadService {
     /**
      * @return a string with the most import offices
      */
-    static public function describeRoleList($role_list) {
+    static public function prioRoleList($role_list) {
         // hard code highest ranked office types(!?)
         $role_group_rank_list = ["Oberstes Leitungsamt Diözese", "Leitungsamt Domstift"];
 
@@ -230,8 +264,10 @@ class DownloadService {
             return self::cmpPersonRole($a, $b, $role_group_rank_list);
         });
 
-        $role_list = self::uniquePersonRole($role_list);
+        return self::uniquePersonRole($role_list);
+    }
 
+    static public function describeRoleList($role_list) {
         $n = 0;
         $role_txt_list = array();
         foreach ($role_list as $role_desc) {
@@ -367,6 +403,8 @@ class DownloadService {
             'person_id',
             'id',
             'name',
+            'role_group',
+            'role_group_en',
             'institution',
             'diocese',
             'date begin',
@@ -390,6 +428,8 @@ class DownloadService {
         $data['person_id'] = self::idPublic($person['item']['itemCorpus']);
         $data['id'] = $role['id'];
         $data['name'] = !is_null($role['role']) ? $role['role']['name'] : $role['roleName'];
+        $data['role_group'] = !is_null($role['role']) ? $role['role']['roleGroup'] : null;
+        $data['role_group_en'] = !is_null($role['role']) ? $role['role']['roleGroupEn'] : null;
         $data['institution'] = !is_null($role['institution']) ? $role['institution']['name'] : $role['institutionName'];
         $diocese = $role['diocese'];
         if (!is_null($diocese)) {

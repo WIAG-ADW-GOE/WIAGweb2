@@ -53,6 +53,26 @@ class PersonRoleRepository extends ServiceEntityRepository
     */
 
     /**
+     * @return role data for persons in $id_list
+     *
+     */
+    public function findSimpleRoleList($person_id_list) {
+
+        $qb = $this->createQueryBuilder('pr')
+                   ->select('pr, r, institution, diocese')
+                   ->leftJoin('pr.role', 'r')
+                   ->leftJoin('pr.institution', 'institution')
+                   ->leftJoin('pr.diocese', 'diocese')
+                   ->andWhere('pr.personId in (:id_list)')
+                   ->setParameter('id_list', $person_id_list);
+
+        $query = $qb->getQuery();
+        // be economical/careful with memory
+        return $query->getArrayResult();
+    }
+
+
+    /**
      * find roles for `$personId`; set place names
      * 2022-07-20 obsolete?
      * @return PersonRole[]
