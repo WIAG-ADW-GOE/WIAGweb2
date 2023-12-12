@@ -509,7 +509,7 @@ allfällige Abgleiche werden jeweils Normdaten (GND, Wikidata, FactGrid)
 mit ausgegeben.
 
 Der Aufbau der Ausgabedateien in den übrigen Formaten ist beschrieben in der Dokumentation zum
-[Application Programming Interface](./doc/wiag-api-manual.md).
+[Application Programming Interface](./wiag-api-manual.md).
 
 ### Import in FactGrid
 
