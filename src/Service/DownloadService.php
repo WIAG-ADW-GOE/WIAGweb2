@@ -163,10 +163,11 @@ class DownloadService {
             foreach($item['itemCorpus'] as $ic) {
                 if ($ic['corpusId'] == $corpus_id) {
                     $corpus_id_match = $corpus_id;
-                    break;
+                    break 2;
                 }
             }
         }
+
         return $corpus_id_match;
     }
 
@@ -182,6 +183,7 @@ class DownloadService {
                     return $id_public_cand;
                 }
             }
+
         }
 
         return $id_public_cand;
