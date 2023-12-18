@@ -335,7 +335,7 @@ class PersonController extends AbstractController {
                 $inr_flat = UtilService::flatten($inr, 'itemIdName', ['itemIdName', 'itemIdRole']);
             }
 
-            // find all sources (persons with roles) for the elements of $canon_personName
+            // find all sources (persons with roles)
             foreach($id_list as $person_id) {
 
                 if ($list_version_flag) {
