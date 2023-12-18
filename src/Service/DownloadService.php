@@ -428,8 +428,9 @@ class DownloadService {
             'role_group_fq_id',
             'institution',
             'diocese',
-            'date begin',
-            'date end',
+            'date_begin',
+            'date_end',
+            'date_sort_key',
             'GND',
             'GSN',
             'FactGrid'
@@ -464,8 +465,14 @@ class DownloadService {
         } else {
             $data['diocese'] = $role['dioceseName'];
         }
-        $data['date begin'] = $role['dateBegin'];
-        $data['date end'] = $role['dateEnd'];
+
+        $date_val = is_null($role['dateBegin')) ? null : trim($role['dateBegin']);
+        $date_val = (is_null($date_val) or $date_vall == "") ? null : $date_val;
+        $data['date_begin'] = $date_val;
+        $date_val = is_null($role['dateEnd')) ? null : trim($role['dateEnd']);
+        $date_val = (is_null($date_val) or $date_vall == "") ? null : $date_val;
+        $data['date_end'] = $date_val;
+        $data['date_sort_key'] = $role['dateSortKey'];
         foreach (['GND', 'GSN', 'FactGrid'] as $auth) {
             $auth_id = Authority::ID[$auth];
             $uext = UtilService::findFirstArray($urlExternal, 'authorityId', $auth_id);
