@@ -94,9 +94,6 @@ class DownloadService {
             'date_of_death',
             'biographical_dates',
             'summary_offices',
-            'career_factgrid_id',
-            'career',
-            'career_en',
             'GND_ID',
             'GSN',
             'FactGrid_ID',
@@ -130,23 +127,6 @@ class DownloadService {
         $prio_role_list = self::prioRoleList($role_list);
         $data['summary_offices'] = self::describeRoleList($prio_role_list);
         $prio_role_group = null;
-
-        if (count($prio_role_list) > 0) {
-            $prr = array_values($prio_role_list)[0]['role'];
-            if (!is_null($prr)) {
-                $prio_role_group = $prr['roleGroup'];
-            }
-        }
-
-        if (!is_null($prio_role_group)) {
-            $data['carrer_factgrid_id'] = $prio_role_group['factgridId'];
-            $data['carrer'] = $prio_role_group['name'];
-            $data['carrer_en'] = $prio_role_group['nameEn'];
-        } else {
-            $data['carrer_factgrid_id'] = null;
-            $data['carrer'] = null;
-            $data['carrer_en'] = null;
-        }
 
         foreach (['GND', 'GSN', 'FactGrid', 'Wikidata', 'Wikipedia'] as $auth) {
             $auth_id = Authority::ID[$auth];
@@ -263,10 +243,10 @@ class DownloadService {
     static public function prioRoleList($role_list) {
         // hard code highest ranked office types(!?)
         $role_group_rank_list = [
-            "Oberstes Leitungsamt Diözese",
-            "Leitungsamt Domstift",
-            "Leitungsamt Kloster",
-            "Amt Domstift",
+            "Q648236", # Leiter (Erz-)diözese (Altes Reich)
+            "Q648232", # Domdignitär Altes Reich
+            "Q648226", # Domkleriker Altes Reich
+            "Q648233", # Klosterangehöriger mit Leitungsamt
         ];
 
         if (count($role_list) < 1) {
@@ -301,10 +281,10 @@ class DownloadService {
             $a_rg = null;
             $b_rg = null;
             if (!is_null($a['role']['roleGroup'])) {
-                $a_rg = $a['role']['roleGroup']['name'];
+                $a_rg = $a['role']['roleGroup']['factgridId'];
             }
             if (!is_null($b['role']['roleGroup'])) {
-                $b_rg = $b['role']['roleGroup']['name'];
+                $b_rg = $b['role']['roleGroup']['factgridId'];
             }
 
             $cmp = 0;
