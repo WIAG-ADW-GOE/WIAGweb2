@@ -158,6 +158,31 @@ eigenen Abschnitt.
 Beispiel: Heinrich Graf von Henneberg, `WIAG-Pers-EPISCGatz-05067-001`, oder Albert von Hoya,
 `WIAG-Pers-EPISCGatz-05438-001`.
 
+### chronologische Listen
+
+Es lassen sich größere Listen, z.B. mit allen Domherren eines Domstiftes, auf einer
+einzigen HTML-Seite ausgeben. Dazu dient die Schaltfläche „Liste chron.“ in der
+Listenansicht der Abfrage. Die einzelnen Elemente sind mit zusätzlichen
+Layout-Spezifikationen ausgezeichnet für eine Umwandlung in ein WORD-Dokument. Die
+Daten können als Datei gespeichert werden und dann mittels
+[Pandoc](https://pandoc.org/index.html) in ein WORD-Dokument umgewandelt werden (oder
+in ein anderes Format, das Pandoc unterstützt). Pandoc ermöglicht es, das Layout in
+WORD einmalig festzulegen und jedesmal wieder mit einer aktuellen Ausgabe zu
+verknüpfen.
+
+Der Pandoc-Aufruf lautet:
+
+     pandoc -f html -t docx --reference-doc=<Vorlage.docx> -o <Ausgabe-Datei.docx> <Quell-Datei.htm>
+
+Die Datei Vorlagen-Datei `Vorlage.docx` wird im gleichem Verzeichnis gesucht, wie die
+Quell-Datei. In der Vorlagen-Datei sind die Absatz-Formate festgelegt, die in das neu
+zu erstellende Dokument `Ausgabe-Datei.docx` übernommen werden.
+
+Das HTML-Attribut für die Zuweisung von Absatz-Formaten ist `custom-style`. Siehe auch die
+[Pandoc-Dokumentation](https://pandoc.org/MANUAL.html#custom-styles). Innerhalb von
+WIAG ist für die Ausgabe das Template `templates/person/onepage_result.html.twig`
+verantwortlich. Dort werden folgende Absatzformate verwendet: „WiagId“, „AkadTitel“, „Bemerkung“, „Aemter“, „Compact“.
+
 ### HTML-Ausgabe über parametrisierte URLs
 
 Die Parameter für eine gefilterte Augabe in HTML können neben der Eingabe in das
