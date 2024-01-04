@@ -16,12 +16,7 @@
 			birthplace: person.birthplace
 		    }) }}
 		{% endif %}
-		{% set references = null %}
-		{% if person.item.source == "Domherr GS" or person.item.source == "Bischof GS"%}
-		    {% set references = person.item.reference|filter(r => r.containsbio) %}
-		{% else %}
-		    {% set references = person.item.reference %}
-		{% endif %}
+		{% set references = person.item.reference %}
 		{% set transscription = person.item.iteminsource %}
 		{% if transscription %}
 			<dt class="col-sm-3">Transskript</dt>

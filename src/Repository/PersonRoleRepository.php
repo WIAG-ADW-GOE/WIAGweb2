@@ -56,7 +56,7 @@ class PersonRoleRepository extends ServiceEntityRepository
      * @return role data for persons in $id_list
      *
      */
-    public function findSimpleRoleList($person_id_list) {
+    public function findArray($person_id_list) {
 
         $qb = $this->createQueryBuilder('pr')
                    ->select('pr, r, rg, institution, diocese')

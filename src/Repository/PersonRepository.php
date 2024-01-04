@@ -469,7 +469,7 @@ class PersonRepository extends ServiceEntityRepository {
      *
      * return array of dioceses related to a person's role (used for facet)
      */
-    public function countBishopDiocese($model) {
+    public function countBishopDiocese_legacy($model) {
         $corpus = $model->corpus;
 
         $qb = $this->createQueryBuilder('p')
@@ -526,20 +526,19 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * @return person data as array
      */
-    public function findSimpleList($id_list) {
+    public function findArray($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, ic, inr, ip, bp, role, role_type, institution, urlext, auth, ref')
+                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->join('i.itemCorpus', 'ic')
                    ->leftJoin('i.itemNameRole', 'inr')
                    ->leftJoin('i.itemProperty', 'ip')
+                   ->leftJoin('ip.type', 'ipt')
                    ->leftJoin('i.urlExternal', 'urlext')
                    ->leftJoin('urlext.authority', 'auth')
                    ->leftJoin('i.reference', 'ref')
-                   ->leftJoin('p.birthplace', 'bp')
-                   ->leftJoin('p.role', 'role')
-                   ->leftJoin('role.role', 'role_type')
-                   ->leftJoin('role.institution', 'institution')
+                   ->leftJoin('p.givennameVariants', 'gnv')
+                   ->leftJoin('p.familynameVariants', 'fnv')
                    ->andWhere('p.id in (:id_list)')
                    ->setParameter('id_list', $id_list);
 

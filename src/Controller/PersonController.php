@@ -9,6 +9,7 @@ use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
+use App\Entity\ReferenceVolume;
 
 use App\Form\PersonFormType;
 use App\Form\Model\PersonFormModel;
@@ -38,7 +39,7 @@ class PersonController extends AbstractController {
     /** number of suggestions in autocomplete list */
     const HINT_SIZE = 8;
     /** max size of data response */
-    const DATA_MAX_SIZE = 6000;
+    const DATA_MAX_SIZE = 60000;
 
 
     private $autocomplete = null;
@@ -277,6 +278,8 @@ class PersonController extends AbstractController {
 
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
+        $personRoleRepository = $entityManager->getRepository(PersonRole::class);
+        $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
@@ -316,23 +319,59 @@ class PersonController extends AbstractController {
             return $personService->createResponse($format, $error_node_list);
         }
 
+        $volume_list = $referenceVolumeRepository->findArray();
+
         $chunk_offset = 0;
-        $chunk_size = 50;
+        $chunk_size = 200;
         // split up in chunks
-        $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
+        $count = count($id_all);
         $node_list = array();
+        while ($chunk_offset < $count) {
+            $id_chunk = array_slice($id_all, $chunk_offset, $chunk_size);
+            $chunk_offset += $chunk_size;
+
+            $person_chunk = $personRepository->findArray($id_chunk);
+            // list of persons with role data
+            $person_role_chunk = $itemNameRoleRepository->findPersonRoleArray($id_chunk);
+            PersonService::setVolume($person_role_chunk, $volume_list);
+
+            // fill $node_list
+            foreach($person_chunk as $person) {
+                    $inr = $person['item']['itemNameRole'];
+                    $item_id_role_list = array_column($inr, 'itemIdRole');
+                    $person_role_list = UtilService::findAllArray($person_role_chunk, 'id', $item_id_role_list);
+                    $node_list[] = $personService->personData($format, $person, $person_role_list);
+            }
+
+
+            // avoid memory overflow
+            unset($inr_role_list);
+            unset($role_list);
+            unset($person_chunk);
+            unset($role_chunk);
+
+        }
+
+        return $personService->createResponse($format, $node_list);
+
+        return $this->render("base.html.twig");
+
+
         while (count($id_list) > 0) {
 
+            $ante_12_20 = false;
+            if ($ante_12_20) {
             $list_version_flag = true; // more efficient
             if ($list_version_flag) {
                 $inr = $itemNameRoleRepository->findList($id_list);
-                $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
+                // 12-20 $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
+                $p_id_list = array_column($inr, 'itemIdRole');
                 // persons with all data
                 $person_list_all = $personRepository->findList(array_unique($p_id_list));
 
                 // map $persons_role_list
                 $person_list_all = UtilService::mapByField($person_list_all, 'id');
-                $inr_flat = UtilService::flatten($inr, 'itemIdName', ['itemIdName', 'itemIdRole']);
+                $inr_flat = UtilService::flattenArray($inr, 'itemIdName', ['itemIdName', 'itemIdRole']);
             }
 
             // find all sources (persons with roles)
@@ -362,6 +401,27 @@ class PersonController extends AbstractController {
                 $node_list[] = $node;
 
             }
+            } else { // end of version before 2023-12-20
+                $person_chunk = $personRepository->findArray($id_list);
+                $person_role_chunk = $itemNameRoleRepository->findPersonRoleArray($id_list);
+
+                $person_role_id_list = array_column($person_role_chunk, 'id');
+                $person_role_chunk_idx = array_combine($person_role_id_list, $person_role_chunk);
+
+                foreach($person_chunk as $person) {
+                    $inr = $person['item']['itemNameRole'];
+                    $pri_list = array_column($inr, 'itemIdRole');
+                    $role_list = UtilService::findAllArray($person_role_chunk, 'id', $pri_list);
+                    $node_list[] = $personService->personData($format, $person, $role_list);
+                }
+
+            }
+            // avoid memory overflow
+            unset($person_role_chunk_idx);
+            unset($person_role_chunk);
+            unset($person_chunk);
+            unset($inr);
+
             $chunk_offset += $chunk_size;
             $id_list = array_slice($id_all, $chunk_offset, $chunk_size);
         }
@@ -370,6 +430,8 @@ class PersonController extends AbstractController {
         if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
+
+        return $this->render("base.html.twig");
 
         return $personService->createResponse($format, $node_list);
 

@@ -758,6 +758,21 @@ class UtilService {
         return $flattend;
     }
 
+    /**
+     * flatten objects in $list by $field_list
+     */
+    static public function flattenArray($list, $key, $field_list) {
+        $flattend = array();
+        foreach ($list as $item) {
+            foreach ($field_list as $field) {
+                // $flattend[$item->$getkey()][$item->$getfnc()] = $item->$getfnc();
+                $flattend[$item[$key]][$field] = $item[$field];
+            }
+        }
+
+        return $flattend;
+    }
+
 
     /**
      * find first match in $list where the content of $field equals $value .

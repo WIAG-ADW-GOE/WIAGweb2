@@ -84,7 +84,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                    ->setParameter('item_id_name_list', $item_id_name_list);
 
         $query = $qb->getQuery();
-        return $query->getResult();
+        return $query->getArrayResult();
     }
 
 
@@ -307,7 +307,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $qb->groupBy('pr_count.dioceseName');
 
         $query = $qb->getQuery();
-        $result = $query->getResult();
+        $result = $query->getArrayResult();
         return $result;
     }
 
@@ -339,7 +339,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $qb->groupBy('pr_count.institutionId');
 
         $query = $qb->getQuery();
-        $count_list = $query->getResult();
+        $count_list = $query->getArrayResult();
 
         // add names to the list of domstifte
 
@@ -389,7 +389,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $qb->groupBy('role_count.name');
 
         $query = $qb->getQuery();
-        $result = $query->getResult();
+        $result = $query->getArrayResult();
         return $result;
     }
 
@@ -423,7 +423,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $qb->groupBy('ip_count.placeName');
 
         $query = $qb->getQuery();
-        $result = $query->getResult();
+        $result = $query->getArrayResult();
         return $result;
     }
 
@@ -449,7 +449,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $qb->groupBy('auth.urlNameFormatter');
 
         $query = $qb->getQuery();
-        $result = $query->getResult();
+        $result = $query->getArrayResult();
         return $result;
     }
 
@@ -561,7 +561,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
      *
      * collect roles for a person via ItemNameRole; consider only one source
      */
-    public function findSimpleRoleList($person_id_list) {
+    public function findRoleArray($person_id_list) {
 
         $qb = $this->createQueryBuilder('inr')
                    ->select('pr, r, rg, institution, diocese')
@@ -579,6 +579,32 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         return $query->getArrayResult();
 
     }
+
+    /**
+     * @return persons in $id_list with role data
+     *
+     */
+    public function findPersonRoleArray($person_id_list) {
+
+        $qb = $this->createQueryBuilder('inr')
+                   ->select('p, i, ref, pr, r, institution, diocese')
+                   ->leftJoin('\App\Entity\Person', 'p',
+                              'WITH', 'p.id = inr.itemIdRole')
+                   ->innerJoin('p.item', 'i')
+                   ->leftJoin('i.reference', 'ref')
+                   ->leftJoin('p.role', 'pr')
+                   ->leftJoin('pr.role', 'r')
+                   ->leftJoin('pr.institution', 'institution')
+                   ->leftJoin('pr.diocese', 'diocese')
+                   ->andWhere('inr.itemIdName in (:id_list)')
+                   ->setParameter('id_list', $person_id_list);
+
+        $query = $qb->getQuery();
+        // be economical/careful with memory
+        return $query->getArrayResult();
+
+    }
+
 
     /**
      * @return reference data for persons in $id_list

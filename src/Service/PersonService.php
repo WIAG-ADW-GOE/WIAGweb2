@@ -21,6 +21,7 @@ use App\Entity\NameLookup;
 use App\Entity\InputError;
 
 use App\Service\UtilService;
+use App\Service\DownloadService;
 
 use Symfony\Component\HttpFoundation\Response;
 
@@ -154,7 +155,8 @@ class PersonService {
         switch ($format) {
         case 'Json':
         case 'Csv':
-            return $this->personDataPlain($person, $personRole);
+            // 2023-12-21 first array based version
+            return $this->personArrayDataPlain($person, $personRole);
             break;
         case 'Jsonld':
             return $this->personJSONLinkedData($person, $personRole);
@@ -285,6 +287,194 @@ class PersonService {
         return $pj;
 
     }
+
+    /**
+     * personArrayDataPlain
+     *
+     * build data array for `person` with office data in `personRole`
+     */
+    public function personArrayDataPlain($person, $personRole) {
+        $pj = array();
+
+        $pj['wiagId'] = DownloadService::idPublic($person['item']['itemCorpus']);
+
+        $copy_list = [
+            'givenname' => 'givenname',
+            'prefixname' => 'prefix',
+            'familyname' => 'familyname',
+            'noteName' => 'noteName',
+            'dateBirth' => 'dateOfBirth',
+            'dateDeath' => 'dateOfDeath',
+        ];
+
+        foreach ($copy_list as $key => $field) {
+            $fv = $person[$key];
+            if (!is_null($fv) and trim($fv) != "" ) {
+                $pj[$field] = trim($fv);
+            }
+        }
+
+        // item properties
+        $nd = array();
+
+        $item_property = $person['item']['itemProperty'];
+        foreach ($item_property as $ip_loop) {
+            $prop_type = $ip_loop['type']['name'];
+            $nd[$prop_type] = $ip_loop['value'];
+        }
+
+        if (count($nd) > 0) {
+            $pj['biographicalNotes'] = $nd;
+        }
+
+
+        // external identifiers
+        $nd = array();
+
+        $url_external = $person['item']['urlExternal'];
+        foreach ($url_external as $uext_loop) {
+            $auth = $uext_loop['authority'];
+            $nd[$auth['urlNameFormatter']] = self::makeUrl($uext_loop);
+        }
+
+        if ($nd) {
+            $pj['identifier'] = $nd;
+        }
+
+        // roles (offices)
+        $nd = array();
+        foreach ($personRole as $p_loop) {
+            $role_list = $p_loop['role'];
+            $ref_list = $p_loop['item']['reference'];
+            foreach ($role_list as $role) {
+                $fv = $this->roleArrayData($role, $ref_list);
+                if (!is_null($fv) and count($fv) > 0) {
+                    $nd[] = $fv;
+                }
+            }
+        }
+
+        if ($nd) {
+            $pj['offices'] = $nd;
+        }
+
+        return $pj;
+
+        // ### version before 2023-12-20
+
+        $pj = array();
+
+        $pj['wiagId'] = DownloadService::idPublic($person['item']['itemCorpus']);
+
+        $fv = $person->getFamilyname();
+        if ($fv) $pj['familyName'] = $fv;
+
+        $pj['givenName'] = $person->getGivenname();
+
+        // $pj = array_merge($pj, $person->getItem()->arrayItemProperty());
+
+        $fv = $person->getPrefixName();
+        if ($fv) $pj['prefix'] = $fv;
+
+        $fv = $person->getFamilynameVariants();
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
+
+        if ($fnvs) $pj['familyNameVariant'] = implode(', ', $fnvs);
+
+        $fv = $person->getGivennameVariants();
+
+        $fnvs = array();
+        foreach ($fv as $fvi) {
+            $fnvs[] = $fvi->getName();
+        }
+
+        if ($fnvs) $pj['givenNameVariant'] = implode(', ', $fnvs);
+
+        $fv = $person->getNoteName();
+        if($fv) $pj['noteName'] = $fv;
+
+        $fv = $person->getNotePerson();
+        if($fv) $pj['notePerson'] = $fv;
+
+        $fv = $person->getDateBirth();
+        if($fv) $pj['dateOfBirth'] = $fv;
+
+        $fv = $person->getDateDeath();
+        if($fv) $pj['dateOfDeath'] = $fv;
+
+        $fv = $person->getReligiousOrder();
+        if($fv) $pj['religiousOrder'] = $fv->getAbbreviation();
+
+        // item properties
+        $nd = array();
+
+        $item_property = $person->getItem()->getItemProperty();
+        foreach ($item_property as $ip_loop) {
+            $prop_type = $ip_loop->getType()->getName();
+            $nd[$prop_type] = $ip_loop->getValue();
+        }
+
+        if (count($nd) > 0) {
+            $pj['biographicalNotes'] = $nd;
+        }
+
+        // external identifiers
+        $nd = array();
+
+        $url_external = $person->getItem()->getUrlExternal();
+        foreach ($url_external as $uext_loop) {
+            $auth = $uext_loop->getAuthority();
+            $nd[$auth->getUrlNameFormatter()] = $uext_loop->getUrl();
+        }
+
+        if ($nd) {
+            $pj['identifier'] = $nd;
+        }
+
+        // roles (offices)
+        $nd = array();
+        foreach ($personRole as $person_loop) {
+            $role_list = $person_loop->getRole();
+            $ref_list = $person_loop->getItem()->getReference();
+            foreach ($role_list as $role) {
+                $fv = $this->roleData($role, $ref_list);
+                if ($fv) $nd[] = $fv;
+            }
+        }
+
+        if ($nd) {
+            # references are part of the role node
+            $pj['offices'] = $nd;
+        } else {
+            $ref_list = $person->getItem()->getReference();
+            if ($ref_list) {
+                $pj['references'] = $this->referenceData($ref_list);
+            }
+        }
+
+
+        // birthplace
+        $nd = array();
+        foreach ($person->getBirthPlace() as $bp) {
+            $bpd['name'] = $bp->getPlaceName();
+            $urlwhg = $bp->getUrlWhg();
+            if ($urlwhg) {
+                $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
+            }
+            $nd[] = $bpd;
+        }
+
+        if ($nd) {
+            $pj['birthplaces'] = $nd;
+        }
+
+        return $pj;
+
+    }
+
 
     public function personLinkedData($person, $personRole) {
         $pld = array();
@@ -908,6 +1098,49 @@ class PersonService {
     }
 
     /**
+     * map array $role to an output array
+     */
+    public function roleArrayData($role, $ref_list) {
+        $pj = array();
+
+        $fv = $role['role'];
+        if ($fv) {
+            $pj['title'] = $fv['name'];
+        } else {
+            $fv = $role['roleName'];
+            if ($fv) { $pj['title'] = $fv; }
+        }
+
+        $fv = null;
+        $diocese = $role['diocese'];
+        if ($diocese) {
+            $fv = $diocese['dioceseStatus'].' '.$diocese['name'];
+        } else {
+            $fv = $role['dioceseName'];
+        }
+        if ($fv) { $pj['diocese'] = $fv; }
+
+        $fv = $role['dateBegin'];
+        if ($fv) { $pj['dateBegin'] = $fv; }
+
+        $fv = $role['dateEnd'];
+        if ($fv) { $pj['dateEnd'] = $fv; }
+
+        $fv = $role['institution'];
+        if ($fv) { $pj['institution'] = $fv['name']; }
+
+        $reference_nodes = $this->referenceArrayData($ref_list);
+        # $reference_nodes = null;
+        if ($reference_nodes) {
+             $pj['references'] = $reference_nodes;
+        }
+
+        return $pj;
+
+    }
+
+
+    /**
      * collect reference data
      * @return list of reference nodes
      */
@@ -950,6 +1183,50 @@ class PersonService {
     }
 
     /**
+     * collect reference data
+     * @return list of reference nodes
+     */
+    public function referenceArrayData($ref_list) {
+        $nd = array();
+
+        foreach ($ref_list as $ref) {
+            $rd = array();
+            $cce = array();
+            // citation
+            $vol = $ref['referenceVolume'];
+
+            if ($vol) {
+                $cce = [$vol['fullCitation']];
+
+                // TODO see pagePlain
+                $ce = $ref['page'];
+                if ($ce) {
+                    $cce[] = "S. ".$ce;
+                }
+                $ce = $ref['idInReference'];
+                if ($ce) {
+                    $cce[] = "ID/Nr. ".$ce;
+                }
+                $rd['citation'] = implode(', ', $cce);
+                // authorOrEditor, RiOpac, shortTitle
+                $rd['authorOrEditor'] = $vol['authorEditor'];
+                $fvi = $vol['riOpacId'];
+                if ($fvi) {
+                    $rd['RiOpac'] = $fvi;
+                }
+                $fvi = $vol['titleShort'];
+                if ($fvi) {
+                    $rd['shortTitle'] = $fvi;
+                }
+            }
+            $nd[] = $rd;
+        }
+
+        return $nd;
+    }
+
+
+    /**
      * @return a text version for a set of elements in `properties`
      */
     public function itemPropertyText($properties, string $key): ?string {
@@ -969,6 +1246,37 @@ class PersonService {
 
         return null;
 
+    }
+
+    /**
+     * set volume for all references in $person_list
+     */
+    static public function setVolume(&$person_list, $volume_list) {
+        // make volumes accessible via referenceId
+        $reference_id_list = array_column($volume_list, 'referenceId');
+        $volume_list_idx = array_combine($reference_id_list, $volume_list);
+
+
+        foreach ($person_list as &$person) {
+            foreach ($person['item']['reference'] as &$ref) {
+                $ref['referenceVolume'] = $volume_list_idx[$ref['referenceId']];
+            }
+        }
+
+        return count($person_list);
+
+    }
+
+    /**
+     *
+     */
+    static public function makeUrl($uext) {
+        // check if the complete URL is stored in `value`.
+        if (str_starts_with($uext['value'], "http")) {
+            return $uext['value'];
+        } else {
+            return $uext['authority']['urlFormatter'].$uext['value'];
+        }
     }
 
 }

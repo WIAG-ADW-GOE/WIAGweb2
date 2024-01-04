@@ -77,8 +77,8 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
-                $person_list = $personRepository->findSimpleList($id_all);
-                $role_list = $personRoleRepository->findSimpleRoleList($id_all);
+                $person_list = $personRepository->findArray($id_all);
+                $role_list = $personRoleRepository->findRoleArray($id_all);
                 $person = $person_list[3];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
@@ -101,6 +101,8 @@ class DownloadController extends AbstractController {
             $response->headers->set('Content-Type', 'application/force-download');
             $response->headers->set('Content-Disposition', 'attachment; filename='.$filename);
 
+            // return $this->render("base.html.twig");
+
             return $response;
 
         }
@@ -117,18 +119,19 @@ class DownloadController extends AbstractController {
 
         $handle = fopen('php://output', 'r+');
         $chunk_size = 200;
-        $chunk_pos = 0;
+        $chunk_offset = 0;
         $count = count($id_list);
         fputcsv($handle, DownloadService::formatPersonDataHeader(), ";");
-        while ($chunk_pos < $count) {
-            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
-            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
-            $role_chunk_list = $personRoleRepository->findSimpleRoleList($id_chunk);
-            $chunk_pos += $chunk_size;
+        while ($chunk_offset < $count) {
+            $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
+            $chunk_offset += $chunk_size;
+            $person_chunk = $personRepository->findArray($id_chunk);
+            $role_chunk = $personRoleRepository->findArray($id_chunk);
 
-            foreach ($person_chunk_list as $person) {
+
+            foreach ($person_chunk as $person) {
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
-                $role_list = UtilService::findAllArray($role_chunk_list, 'personId', $inr_role_list);
+                $role_list = UtilService::findAllArray($role_chunk, 'personId', $inr_role_list);
                 $rec = DownloadService::formatPersonData($person, $role_list);
 
                 fputcsv($handle, $rec, ";");
@@ -139,8 +142,8 @@ class DownloadController extends AbstractController {
             // avoid memory overflow
             unset($inr_role_list);
             unset($role_list);
-            unset($person_chunk_list);
-            unset($role_chunk_list);
+            unset($person_chunk);
+            unset($role_chunk);
 
         }
         fclose($handle);
@@ -177,8 +180,8 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
-                $person_list = $personRepository->findSimpleList($id_all);
-                $role_list = $itemNameRoleRepository->findSimpleRoleList($id_all);
+                $person_list = $personRepository->findArray($id_all);
+                $role_list = $itemNameRoleRepository->findPersonRoleArray($id_all);
                 $person = $person_list[0];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
@@ -217,18 +220,18 @@ class DownloadController extends AbstractController {
 
         $handle = fopen('php://output', 'r+');
         $chunk_size = 200;
-        $chunk_pos = 0;
+        $chunk_offset = 0;
         $count = count($id_list);
         fputcsv($handle, DownloadService::formatPersonRoleDataHeader(), ";");
-        while ($chunk_pos < $count) {
-            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
-            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
-            $role_chunk_list = $itemNameRoleRepository->findSimpleRoleList($id_chunk);
-            $chunk_pos += $chunk_size;
+        while ($chunk_offset < $count) {
+            $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
+            $person_chunk = $personRepository->findArray($id_chunk);
+            $role_chunk = $itemNameRoleRepository->findRoleArray($id_chunk);
+            $chunk_offset += $chunk_size;
 
-            foreach ($person_chunk_list as $person) {
+            foreach ($person_chunk as $person) {
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
-                $role_list = UtilService::findAllArray($role_chunk_list, 'personId', $inr_role_list);
+                $role_list = UtilService::findAllArray($role_chunk, 'personId', $inr_role_list);
                 foreach ($role_list as $role) {
                     $rec = DownloadService::formatPersonRoleData($person, $role);
                     fputcsv($handle, $rec, ";");
@@ -240,8 +243,8 @@ class DownloadController extends AbstractController {
             // avoid memory overflow
             unset($inr_role_list);
             unset($role_list);
-            unset($person_chunk_list);
-            unset($role_chunk_list);
+            unset($person_chunk);
+            unset($role_chunk);
         }
         fclose($handle);
     }
@@ -314,18 +317,18 @@ class DownloadController extends AbstractController {
 
         $handle = fopen('php://output', 'r+');
         $chunk_size = 200;
-        $chunk_pos = 0;
+        $chunk_offset = 0;
         $count = count($id_list);
         fputcsv($handle, DownloadService::formatPersonReferenceHeader(), ";");
-        while ($chunk_pos < $count) {
-            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
-            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
-            $ref_chunk_list = $itemNameRoleRepository->findSimpleReferenceList($id_chunk);
-            $chunk_pos += $chunk_size;
+        while ($chunk_offset < $count) {
+            $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
+            $person_chunk = $personRepository->findSimpleList($id_chunk);
+            $ref_chunk = $itemNameRoleRepository->findSimpleReferenceList($id_chunk);
+            $chunk_offset += $chunk_size;
 
-            foreach ($person_chunk_list as $person) {
+            foreach ($person_chunk as $person) {
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
-                $ref_list = UtilService::findAllArray($ref_chunk_list, 'itemId', $inr_role_list);
+                $ref_list = UtilService::findAllArray($ref_chunk, 'itemId', $inr_role_list);
                 foreach ($ref_list as $ref) {
                     $rec = DownloadService::formatPersonReference($person, $ref);
                     fputcsv($handle, $rec, ";");
@@ -337,8 +340,8 @@ class DownloadController extends AbstractController {
             // avoid memory overflow
             unset($inr_role_list);
             unset($ref_list);
-            unset($person_chunk_list);
-            unset($ref_chunk_list);
+            unset($person_chunk);
+            unset($ref_chunk);
         }
         fclose($handle);
     }
@@ -410,15 +413,15 @@ class DownloadController extends AbstractController {
 
         $handle = fopen('php://output', 'r+');
         $chunk_size = 200;
-        $chunk_pos = 0;
+        $chunk_offset = 0;
         $count = count($id_list);
         fputcsv($handle, DownloadService::formatPersonUrlExternalHeader(), ";");
-        while ($chunk_pos < $count) {
-            $id_chunk = array_slice($id_list, $chunk_pos, $chunk_size);
-            $person_chunk_list = $personRepository->findSimpleList($id_chunk);
-            $chunk_pos += $chunk_size;
+        while ($chunk_offset < $count) {
+            $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
+            $person_chunk = $personRepository->findSimpleList($id_chunk);
+            $chunk_offset += $chunk_size;
 
-            foreach ($person_chunk_list as $person) {
+            foreach ($person_chunk as $person) {
                 foreach ($person['item']['urlExternal'] as $uext) {
                     $rec = DownloadService::formatPersonUrlExternal($person, $uext);
                     fputcsv($handle, $rec, ";");
@@ -428,7 +431,7 @@ class DownloadController extends AbstractController {
             flush();
 
             // avoid memory overflow
-            unset($person_chunk_list);
+            unset($person_chunk);
         }
         fclose($handle);
     }
