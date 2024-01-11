@@ -394,9 +394,7 @@ class AutocompleteService extends ServiceEntityRepository {
      */
     public function suggestPriestUtName($name, $hintSize) {
         $qb = $this->createQueryBuilder('i')
-                   ->select("DISTINCT CASE WHEN n.nameVariant IS NOT NULL ".
-                            "THEN n.nameVariant ELSE n.gnFn END ".
-                            "AS suggestion")
+                   ->select("DISTINCT n.nameVariant AS suggestion")
                    ->join('\App\Entity\NameLookup', 'n', 'WITH', 'i.id = n.personId')
                    ->join('i.itemCorpus', 'corpus')
                    ->andWhere("corpus.corpusId = 'utp'");

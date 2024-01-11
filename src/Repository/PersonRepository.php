@@ -528,7 +528,7 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findArray($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv')
+                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv, monord')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->join('i.itemCorpus', 'ic')
                    ->leftJoin('i.itemNameRole', 'inr')
@@ -539,6 +539,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->leftJoin('i.reference', 'ref')
                    ->leftJoin('p.givennameVariants', 'gnv')
                    ->leftJoin('p.familynameVariants', 'fnv')
+                   ->leftJoin('p.religiousOrder', 'monord')
                    ->andWhere('p.id in (:id_list)')
                    ->setParameter('id_list', $id_list);
 
@@ -798,7 +799,7 @@ class PersonRepository extends ServiceEntityRepository {
             $qb->join('\App\Entity\NameLookup', 'nlu', 'WITH', 'p.id = nlu.personId');
             $q_list = UtilService::nameQueryComponents($name);
             foreach($q_list as $key => $q_name) {
-                $qb->andWhere('nlu.gnPrefixFn LIKE :q_name_'.$key)
+                $qb->andWhere('nlu.nameVariant LIKE :q_name_'.$key)
                    ->setParameter('q_name_'.$key, '%'.trim($q_name).'%');
             }
         }

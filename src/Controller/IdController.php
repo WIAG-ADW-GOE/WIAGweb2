@@ -11,6 +11,7 @@ use App\Entity\CanonLookup;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
+use App\Entity\ReferenceVolume;
 
 use App\Repository\PersonRepository;
 
@@ -91,6 +92,9 @@ class IdController extends AbstractController {
     public function person($id, $corpus, $format) {
 
         $itemRepository = $this->entityManager->getRepository(Item::class);
+        $personRepository = $this->entityManager->getRepository(Person::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        $referenceVolumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
         // collect office data in an array of Items
         $item_list = $itemRepository->findItemNameRole([$id]);
@@ -110,9 +114,22 @@ class IdController extends AbstractController {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
                 throw $this->createNotFoundException('Unbekanntes Format: '.$format);
             }
+            // compare PersonController
+            $volume_list = $referenceVolumeRepository->findArray();
+            $id_chunk = array($id);
+            $person_chunk = $personRepository->findArray($id_chunk);
+            // list of persons with role data
+            $person_role_chunk = $itemNameRoleRepository->findPersonRoleArray($id_chunk);
+            PersonService::setVolume($person_role_chunk, $volume_list);
 
-            // build data array
-            $node_list = [$this->personService->personData($format, $person, $person_role_list)];
+            $node_list = array();
+            // fill $node_list
+            foreach($person_chunk as $person) {
+                $inr = $person['item']['itemNameRole'];
+                $item_id_role_list = array_column($inr, 'itemIdRole');
+                $person_role_list = UtilService::findAllArray($person_role_chunk, 'id', $item_id_role_list);
+                $node_list[] = $this->personService->personData($format, $person, $person_role_list);
+            }
 
             return $this->personService->createResponse($format, $node_list);
         }

@@ -587,7 +587,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     public function findPersonRoleArray($person_id_list) {
 
         $qb = $this->createQueryBuilder('inr')
-                   ->select('p, i, ref, pr, r, institution, diocese')
+                   ->select('p, i, ref, pr, r, institution, diocese, dioc_item, dioc_item_corpus')
                    ->leftJoin('\App\Entity\Person', 'p',
                               'WITH', 'p.id = inr.itemIdRole')
                    ->innerJoin('p.item', 'i')
@@ -596,6 +596,8 @@ class ItemNameRoleRepository extends ServiceEntityRepository
                    ->leftJoin('pr.role', 'r')
                    ->leftJoin('pr.institution', 'institution')
                    ->leftJoin('pr.diocese', 'diocese')
+                   ->leftJoin('diocese.item', 'dioc_item')
+                   ->leftJoin('dioc_item.itemCorpus', 'dioc_item_corpus')
                    ->andWhere('inr.itemIdName in (:id_list)')
                    ->setParameter('id_list', $person_id_list);
 
