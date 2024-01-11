@@ -1,58 +1,55 @@
 <div class="table-responsive">
     <table class="table">
-	<thead class="thead-light">
-	    <tr>
-		<th scope="col">Name</th>
-		<th scope="col">Weihe/Ämter</th>
-		<th scope="col">Geburtsort</th>
-	    </tr>
-	</thead>
-	<tbody>
-	    {% for person in personList %}
-		{% set patronym_prop = person.item.itemPropertyValue('Patronym') %}
-		{# there is usually only one patronym #}
-		{% set patronym = patronym_prop ? patronym_prop[0].value : '' %}
-		{% set personname %}{{ [person.givenname, patronym, person.prefixname, person.familyname]|join(' ') }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}
-		{% set prop = person.item.arrayitemproperty %}
-		{% set propkeys = prop|keys %}
-		<tr>
-		    <td><button
-			    type="submit"
-			    form="{{ form.vars.id }}"
-			    formaction="{{ path('priest_ut_list_detail') }}"
-			    class="btn btn-link p-0 text-sm-start"
-			    name="offset"
-			    value="{{ offset + loop.index0 }}">{{ personname }}</button>
-			{% if not person.datebirth and not person.datedeath %}
-			{% elseif person.datebirth and not person.datedeath %}
-			    <p class="ms-3">* {{ person.datebirth }}</p>
-			{% elseif not person.datebirth and person.datedeath %}
-			    <p class="ms-3">&dagger; {{ person.datedeath }}</p>
-			{% else %}
-			    <p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
-			{% endif %}
-		    </td>
-		    <td>
-			{% if prop and 'ordination_priest' in propkeys %}
-			    <small>{{ prop.ordination_priest[0].value }}{% if 'ordination_priest_place' in propkeys %} ({{ prop.ordination_priest_place[0].value }}) {% endif %}{% if prop['ordination_priest'][0].date is defined %} {{ prop['ordination_priest'][0].date|date("d.m.Y") }} {% endif %}
-			    </small><br/>
-			{% endif %}
-			{% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
-			<small>{% if r.rolename %}{{ r.rolename }}{% endif %}
-			    {% if r.placename %}({{ r.placename }}) {% endif %}
-			    {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
-			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
-			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
-			</small><br/>{% endfor %}
-		    </td>
-		    <td>
-			{% if person.birthplace %}
-			    {% set n_birthplace=person.birthplace|length %}
-			    {% if n_birthplace > 0 %}{{ person.birthplace|first.placename }}{% if n_birthplace > 1 %} &hellip;{% endif %}{% endif %}
-			{% endif %}
-		    </td>
-		</tr>
-	    {% endfor %}
-	</tbody>
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Weihe/Ämter</th>
+                <th scope="col">Geburtsort</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in personList %}
+                {% set patronym_prop = person.item.itemPropertyValue('Patronym') %}
+                {# there is usually only one patronym #}
+                {% set patronym = patronym_prop ? patronym_prop[0].value : '' %}
+                {% set personname %}{{ [person.givenname, patronym, person.prefixname, person.familyname]|join(' ') }}{% if person.religiousorder %}<span class="text-reset text-decoration-none"> {{ person.religiousorder.abbreviation }}</span>{% endif %}{% endset %}
+                <tr>
+                    <td><button
+                            type="submit"
+                            form="{{ form.vars.id }}"
+                            formaction="{{ path('priest_ut_list_detail') }}"
+                            class="btn btn-link p-0 text-sm-start"
+                            name="offset"
+                            value="{{ offset + loop.index0 }}">{{ personname }}</button>
+                        {% if not person.datebirth and not person.datedeath %}
+                        {% elseif person.datebirth and not person.datedeath %}
+                            <p class="ms-3">* {{ person.datebirth }}</p>
+                        {% elseif not person.datebirth and person.datedeath %}
+                            <p class="ms-3">&dagger; {{ person.datedeath }}</p>
+                        {% else %}
+                            <p class="ms-3">* {{ person.datebirth }} <span class="ms-2">&dagger; {{ person.datedeath }}</span></p>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for prop in person.item.itemProperty|filter(k => k.type.id == '11') %}
+                            <small>{{ prop.value }}{{ prop.placeValue ? ' ('~prop.placeValue~') ' : '' }}{{ prop.dateValue ? prop.dateValue|date("d.m.Y") }}</small><br/>
+                        {% endfor %}
+                        {% for r in person.role|sort((a, b) => a.numdatebegin <=> b.numdatebegin) %}
+                        <small>{% if r.rolename %}{{ r.rolename }}{% endif %}
+                            {% if r.placename %}({{ r.placename }}) {% endif %}
+                            {% if r.datebegin and not r.dateend %}{{ r.datebegin }}
+                            {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
+                            {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
+                        </small><br/>{% endfor %}
+                    </td>
+                    <td>
+                        {% if person.birthplace %}
+                            {% set n_birthplace=person.birthplace|length %}
+                            {% if n_birthplace > 0 %}{{ person.birthplace|first.placename }}{% if n_birthplace > 1 %} &hellip;{% endif %}{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </div> {# table-responsive #}

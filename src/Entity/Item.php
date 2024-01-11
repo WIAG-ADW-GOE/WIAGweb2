@@ -1073,8 +1073,12 @@ class Item {
      */
     public function arrayItemPropertyWithName() {
         $itemPropByName = array();
-        // prepare list
+        // prepare list and order by the type's display order
         foreach ($this->itemProperty as $ip) {
+            $ip->setDisplayOrder($ip->getType()->getDisplayOrder());
+        }
+        $property_list = UtilService::sortByFieldList($this->itemProperty->toArray(), ['displayOrder']);
+        foreach ($property_list as $ip) {
             $key = $ip->getType()->getName();
             $entry['name'] = $ip->getType()->getName();
             $entry['value'] = array();

@@ -69,6 +69,9 @@ class ItemProperty {
      */
     private $placeValue;
 
+    // same as type->diplayOrder
+    private $displayOrder = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -172,5 +175,15 @@ class ItemProperty {
 
         return $this;
     }
+
+    public function setDisplayOrder($display_order) {
+        $this->displayOrder = $display_order;
+        return $this;
+    }
+
+    public function getDisplayOrder() {
+        return $this->displayOrder;
+    }
+
 
 }

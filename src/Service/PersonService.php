@@ -158,7 +158,6 @@ class PersonService {
         switch ($format) {
         case 'Json':
         case 'Csv':
-            // 2023-12-21 first array based version
             return $this->personDataPlain($person, $personRole);
             break;
         case 'Jsonld':
@@ -420,7 +419,7 @@ class PersonService {
 
 
     /**
-     * 2024-01-04 obsolete?!
+     * 2024-01-14 obsolete?!
      */
     public function personObjLinkedData($person, $personRole) {
         $pld = array();
@@ -672,15 +671,15 @@ class PersonService {
             ]
         ];
 
-        $personId = $person->getItem()->getIdPublic();
+        $personId = DownloadService::idPublic($person['item']['itemCorpus']);
 
-        $fn = $person->getFamilyname();
+        $fn = $person['familyname'];
         $fndt = RDFService::xmlStringData($fn);
 
-        $gn = $person->getGivenname();
+        $gn = $person['givenname'];
         $gndt = RDFService::xmlStringData($gn);
 
-        $prefixname = $person->getPrefixname();
+        $prefixname = $person['prefixname'];
         $prefixdt = RDFService::xmlStringData($prefixname);
 
         $aname = array_filter([$gn, $prefixname, $fn],
@@ -695,7 +694,7 @@ class PersonService {
 
         $pld[$gfx.'preferredNameEntityForThePerson'] = RDFService::blankNode(array($pfeftp));
 
-        $gnvs = $person->getGivennameVariants();
+        $gnvs = $person['givennameVariants'];
 
         $vneftps = array();
         /* one or more variants for the given name */
@@ -711,7 +710,7 @@ class PersonService {
             }
         }
 
-        $fnvs = $person->getFamilynameVariants();
+        $fnvs = $person['familynameVariants'];
         if($fnvs) {
             foreach($fnvs as $fnvi) {
                 $vneftp = [];
@@ -743,18 +742,45 @@ class PersonService {
 
         // additional information
         $bhi = array();
-        $flag_names = false;
-        $flag_properties = true;
-        $fv = $person->commentLine($flag_names, $flag_properties);
+        // $flag_names = false;
+        // $flag_properties = true;
+        // $fv = $person->commentLine($flag_names, $flag_properties);
+        // if($fv) {
+        //     $bhi[] = $fv;
+        // }
+
+        // $fv = $person->getItem()->arrayItemProperty();
+        // if ($fv) {
+        //     $ipt = $this->itemPropertyText($fv, 'ordination_priest');
+        //     if ($ipt) {
+        //         $bhi[] = $ipt;
+        //     }
+        // }
+
+                $fv = $person['academicTitle'];
         if($fv) {
             $bhi[] = $fv;
         }
 
-        $fv = $person->getItem()->arrayItemProperty();
-        if ($fv) {
-            $ipt = $this->itemPropertyText($fv, 'ordination_priest');
-            if ($ipt) {
-                $bhi[] = $ipt;
+        $fv = $person['noteName'];
+        if($fv) {
+            $bhi[] = $fv;
+        }
+
+        $prop_list = $person['item']['itemProperty'];
+        foreach($prop_list as $prop) {
+            if ($prop['propertyTypeId'] == self::ORDINATION_ID) {
+                $ord_text = 'Weihe zum '.$prop['value'];
+                $fv = $prop['dateValue'];
+                if (!is_null($fv)) {
+                    // $date_value = date('d.m.Y', $fv);
+                    $ord_text = $ord_text.' am '.$fv;
+                }
+                $fv = $prop['placeValue'];
+                if (!is_null($fv)) {
+                    $ord_text = $text.' in '.$fv;
+                }
+                $bhi[] = $ord_text;
             }
         }
 
@@ -763,35 +789,13 @@ class PersonService {
             $pld[$gfx.'biographicalOrHistoricalInformation'] = $bhi_string;
         }
 
-        $fv = $person->getDateBirth();
+        $fv = $person['dateBirth'];
         if($fv) $pld[$gfx.'dateOfBirth'] = RDFService::xmlStringData($fv);
 
-        $fv = $person->getDateDeath();
+        $fv = $person['dateDeath'];
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
-
-        // 2023-03-24
-        // neue Version siehe unten
-        // $fv = $person->getItem()->getUrlExternalByAuthorityId(Authority::ID['GND']);
-        // if($fv) $pld[$gfx.'gndIdentifier'] = RDFService::xmlStringData($fv);
-
-
-        // $exids = array();
-
-        // foreach ($person->getItem()->getUrlExternal() as $id) {
-        //     $exids[] = [
-        //         '@rdf:resource' => $id->getAuthority()->getUrlFormatter().$id->getValue(),
-        //     ];
-        // }
-
-        // if(count($exids) > 0) {
-        //     $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
-        // }
-
-        // $fv = $person->getItem()->getUriExtByAuthId(Authority::ID['Wikipedia']);
-        // if($fv) {
-        //     $pld[$foaffx.'page'] = $fv;
-        // }
+        // 2024-01-11 16:00 ###
 
         // external IDs/URLs
         $exids = array();

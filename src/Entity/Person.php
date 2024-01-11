@@ -150,11 +150,6 @@ class Person {
     private $numDateDeath;
 
     /**
-     * data from alternative source (canon)
-     */
-    private ?Person $sibling = null;
-
-    /**
      * no DB-mapping
      * hold form input data
      */
@@ -495,53 +490,6 @@ class Person {
         return $a.'/'.$b;
     }
 
-    /**
-     * combine names, dates, ... from different sources
-     */
-    public function combine($field) {
-        $getfnc = 'get'.ucfirst($field);
-
-        if (is_null($this->sibling)) {
-            return $this->$getfnc();
-        }
-        return $this->concatData($this->$getfnc(), $this->sibling->$getfnc());
-    }
-
-    /**
-     * combine complete item property list
-     */
-    public function combinePropertyList() {
-        $a_prop_list = $this->item->arrayItemPropertyWithName();
-        $b_prop_list = array();
-        if ($this->sibling) {
-            $b_prop_list = $this->sibling->getItem()->arrayItemPropertyWithName();
-        }
-
-        $key_list = array_merge(array_keys($a_prop_list), array_keys($b_prop_list));
-        $key_list = array_unique($key_list);
-
-        $prop_list = array();
-        foreach($key_list as $key) {
-            $a_value = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['value'] : null;
-            $b_value = array_key_exists($key, $b_prop_list) ? $b_prop_list[$key]['value'] : null;
-
-            $entry['value'] = $this->concatData($a_value, $b_value);
-            $name = array_key_exists($key, $a_prop_list) ? $a_prop_list[$key]['name'] : $b_prop_list[$key]['name'];
-            $entry['name'] = $name;
-            $prop_list[$key] = $entry;
-        }
-
-        return $prop_list;
-    }
-
-    public function getSibling(): ?Person {
-        return $this->sibling;
-    }
-
-    public function setSibling($sibling): self {
-        $this->sibling = $sibling;
-        return $this;
-    }
 
     public function getSeeAlso() {
         return $this->seeAlso;
@@ -552,7 +500,6 @@ class Person {
      */
     public function commentLine($flag_names = true, $flag_properties) {
 
-        $academic_title = $this->combine('academicTitle');
 
         $str_gn_variants = null;
         $str_fn_variants = null;
@@ -569,15 +516,6 @@ class Person {
                 $fn_variants[] = $fn->getName();
             }
 
-            if (!is_null($this->sibling)) {
-                foreach ($this->sibling->getGivennameVariants() as $gn) {
-                    $gn_variants[] = $gn->getName();
-                }
-                foreach ($this->sibling->getFamilynameVariants() as $fn) {
-                    $fn_variants[] = $fn->getName();
-                }
-
-            }
             $gn_variants = array_unique($gn_variants);
             $fn_variants = array_unique($fn_variants);
 
@@ -586,14 +524,14 @@ class Person {
         }
 
         $elt_cands = [
-            $academic_title,
+            $this->academicTitle,
             $str_gn_variants,
             $str_fn_variants,
-            $this->combine('notePerson'),
+            $this->notePerson
         ];
 
         if ($flag_properties) {
-            $property_list = $this->combinePropertyList();
+            $property_list = $this->item->arrayItemPropertyWithName();
             foreach ($property_list as $prop) {
                 $elt_cands[] = $prop['name'].': '.$prop['value'];
             }
@@ -617,7 +555,7 @@ class Person {
     public function concatProperties() {
 
         $elt_cands = array();
-        $property_list = $this->combinePropertyList();
+        $property_list = $this->item->arrayItemPropertyWithName();
         foreach ($property_list as $prop) {
             $elt_cands[] = $prop['name'].': '.$prop['value'];
         }

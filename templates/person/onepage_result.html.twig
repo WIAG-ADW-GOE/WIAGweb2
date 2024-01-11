@@ -50,12 +50,12 @@
 			{# name #}
 			<h3>{{ person.displayname|protectOrdinal|raw }}{% if dobdod %}, {{ dobdod|raw }}{% endif %}</h3>
 			{# <div>{{ dump(person.item.concatIdInCorpusWithPrefix, person.item.getIdPublic) }}</div> #}
-			{% set academic_title=person.combine('academicTitle') %}
+			{% set academic_title=person.academicTitle %}
 			{% if academic_title %}
 			    <div custom-style="AkadTitel">{{ academic_title }}</div>
 			{% endif %}
 			{# comments #}
-			{% set note_person = person.combine('notePerson') %}
+			{% set note_person = person.notePerson %}
 			{% if note_person %}
 			    <div custom-style="Bemerkung">{{ note_person|protectOrdinal|raw }}</div>
 			{% endif %}

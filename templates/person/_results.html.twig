@@ -8,9 +8,9 @@
 	</thead>
 	<tbody>
 	    {% for person in personList %}
-		{% set displayname = person.combine('displaynameWithSeparators') %}
-		{% set datebirth = person.combine('datebirth') %}
-		{% set datedeath = person.combine('datedeath') %}
+		{% set displayname = person.displaynameWithSeparators %}
+		{% set datebirth = person.datebirth %}
+		{% set datedeath = person.datedeath %}
 		{% macro single_btn(offset, content, form) %}
 		    <button
 			type="submit"
