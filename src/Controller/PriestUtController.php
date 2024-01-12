@@ -6,8 +6,7 @@ use App\Entity\ItemReference;
 use App\Entity\Person;
 use App\Entity\Authority;
 use App\Entity\PlaceIdExternal;
-use App\Repository\PersonRepository;
-use App\Repository\ItemRepository;
+use App\Entity\ReferenceVolume;
 use App\Form\PriestUtFormType;
 use App\Form\Model\PriestUtFormModel;
 use App\Entity\Role;
@@ -186,22 +185,29 @@ class PriestUtController extends AbstractController {
             throw $this->createNotFoundException('Unbekanntes Format: '.$format);
         }
 
-
         $personRepository = $entityManager->getRepository(Person::class);
         $itemReferenceRepository = $entityManager->getRepository(ItemReference::class);
 
+        $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
+        $volume_list = $referenceVolumeRepository->findArray();
+
         $id_all = $personRepository->priestUtIds($model);
-        $person_list = $personRepository->findList($id_all);
+        $person_list = $personRepository->findArrayWithRole($id_all);
+        PersonService::setVolume($person_list, $volume_list);
 
         $node_list = array();
         foreach($person_list as $person) {
-            $birthplace = $person->getBirthplace();
-            if ($birthplace) {
-                $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
-                foreach ($birthplace as $bp) {
-                    $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
-                }
+            if (array_key_exists('birthplace', $person)) {
+                $birthplace = $person['birthplace'];
             }
+            // TODO 2024-01-12
+            // if ($birthplace) {
+            //     $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
+            //     foreach ($birthplace as $bp) {
+            //         $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
+            //     }
+            // }
+            $id = $person['id'];
 
             $node = $personService->personData($format, $person, [$person]);
             $node_list[] = $node;
@@ -219,7 +225,6 @@ class PriestUtController extends AbstractController {
      * @Route("/priest-utrecht-suggest/{field}", name="priest_ut_suggest")
      */
     public function autocomplete(Request $request,
-                                 ItemRepository $repository,
                                  String $field) {
         $name = $request->query->get('q');
         $fnName = 'suggestPriestUt'.ucfirst($field);

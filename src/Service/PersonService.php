@@ -358,7 +358,6 @@ class PersonService {
             $pj['biographicalNotes'] = $nd;
         }
 
-
         // external identifiers
         $nd = array();
 
@@ -387,31 +386,30 @@ class PersonService {
 
         if ($nd) {
             $pj['offices'] = $nd;
-        }
-
-        // birthplace
-
-
-
-        return $pj;
-
-        // ### version before 2023-12-20
-        // TODO 2024-01-04
-
-        // birthplace
-        $nd = array();
-        foreach ($person->getBirthPlace() as $bp) {
-            $bpd['name'] = $bp->getPlaceName();
-            $urlwhg = $bp->getUrlWhg();
-            if ($urlwhg) {
-                $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
+        } else { // set references, if roles are missing
+            $reference_nodes = $this->referenceArrayData($ref_list);
+            # $reference_nodes = null;
+            if ($reference_nodes) {
+                $pj['references'] = $reference_nodes;
             }
-            $nd[] = $bpd;
+
         }
 
-        if ($nd) {
-            $pj['birthplaces'] = $nd;
-        }
+        // birthplace
+        // TODO 2024-01-04
+        // $nd = array();
+        // foreach ($person->getBirthPlace() as $bp) {
+        //     $bpd['name'] = $bp->getPlaceName();
+        //     $urlwhg = $bp->getUrlWhg();
+        //     if ($urlwhg) {
+        //         $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
+        //     }
+        //     $nd[] = $bpd;
+        // }
+
+        // if ($nd) {
+        //     $pj['birthplaces'] = $nd;
+        // }
 
         return $pj;
 
@@ -701,7 +699,7 @@ class PersonService {
         if($gnvs) {
             foreach($gnvs as $gnvi) {
                 $vneftp = [];
-                $vneftp[$gfx.'forename'] = RDFService::xmlStringData(trim($gnvi->getName()));
+                $vneftp[$gfx.'forename'] = RDFService::xmlStringData(trim($gnvi['name']));
                 if($prefixname)
                     $vneftp[$gfx.'prefix'] = $prefixdt;
                 if($fn)
@@ -715,9 +713,10 @@ class PersonService {
             foreach($fnvs as $fnvi) {
                 $vneftp = [];
                 $vneftp[$gfx.'forename'] = $gndt;
-                if($prefixname)
+                if($prefixname) {
                     $vneftp[$gfx.'prefix'] = $prefixdt;
-                $vneftp[$gfx.'surname'] = RDFService::xmlStringData($fnvi->getName());
+                }
+                $vneftp[$gfx.'surname'] = RDFService::xmlStringData(trim($fnvi['name']));
                 $vneftps[] = $vneftp;
             }
         }
@@ -726,10 +725,11 @@ class PersonService {
             foreach($fnvs as $fnvi) {
                 foreach($gnvs as $gnvi) {
                     $vneftp = [];
-                    $vneftp[$gfx.'forename'] = RDFService::xmlStringData($gnvi->getName());
-                    if($prefixname)
+                    $vneftp[$gfx.'forename'] = RDFService::xmlStringData(trim($gnvi['name']));
+                    if($prefixname) {
                         $vneftp[$gfx.'prefix'] = $prefixdt;
-                    $vneftp[$gfx.'surname'] = RDFService::xmlStringData($fnvi->getName());
+                    }
+                    $vneftp[$gfx.'surname'] = RDFService::xmlStringData($fnvi['name']);
                     $vneftps[] = $vneftp;
                 }
             }
@@ -757,12 +757,17 @@ class PersonService {
         //     }
         // }
 
-                $fv = $person['academicTitle'];
+        $fv = $person['academicTitle'];
         if($fv) {
             $bhi[] = $fv;
         }
 
         $fv = $person['noteName'];
+        if($fv) {
+            $bhi[] = $fv;
+        }
+
+        $fv = $person['notePerson'];
         if($fv) {
             $bhi[] = $fv;
         }
@@ -774,11 +779,11 @@ class PersonService {
                 $fv = $prop['dateValue'];
                 if (!is_null($fv)) {
                     // $date_value = date('d.m.Y', $fv);
-                    $ord_text = $ord_text.' am '.$fv;
+                    $ord_text = $ord_text.' am '.$fv->format('d.m.Y');
                 }
                 $fv = $prop['placeValue'];
                 if (!is_null($fv)) {
-                    $ord_text = $text.' in '.$fv;
+                    $ord_text = $ord_text.' in '.$fv;
                 }
                 $bhi[] = $ord_text;
             }
@@ -795,19 +800,19 @@ class PersonService {
         $fv = $person['dateDeath'];
         if($fv) $pld[$gfx.'dateOfDeath'] = RDFService::xmlStringData($fv);
 
-        // 2024-01-11 16:00 ###
 
         // external IDs/URLs
+
         $exids = array();
         $wikipedia = null;
         $gnd = null;
-        foreach ($person->getItem()->getUrlExternal() as $id) {
-            $url_complete = $id->getAuthority()->getUrlFormatter().$id->getValue();
-            $auth_name_formatter = $id->getAuthority()->getUrlNameFormatter();
-            if ($auth_name_formatter == 'Wikipedia-Artikel') {
+        foreach ($person['item']['urlExternal'] as $id) {
+            $auth = $id['authority'];
+            $url_complete = $auth['urlFormatter'].$id['value'];
+            if ($auth['id'] == Authority::ID['Wikipedia']) {
                 $wikipedia = $url_complete;
-            } elseif ($auth_name_formatter == 'Gemeinsame Normdatei (GND) ID') {
-                $gnd = $id->getValue();
+            } elseif ($auth['id'] == Authority::ID['GND']) {
+                $gnd = $id['value'];
             }
             else {
                 $exids[] = [
@@ -826,25 +831,25 @@ class PersonService {
             $pld[$owlfx.'sameAs'] = count($exids) > 1 ? $exids : $exids[0];
         }
 
-
         // birthplace
-        $nd = array();
-        foreach ($person->getBirthPlace() as $bp) {
-            $urlwhg = $bp->getUrlWhg();
-            if ($urlwhg) {
-                $nd[] = ['@rdf:resource' => $urlwhg];
-            } else {
-                $nd[] = RDFService::xmlStringData($bp->getPlaceName());
-            }
-        }
+        // TODO 2024-01-12
+        // $nd = array();
+        // foreach ($person->getBirthPlace() as $bp) {
+        //     $urlwhg = $bp->getUrlWhg();
+        //     if ($urlwhg) {
+        //         $nd[] = ['@rdf:resource' => $urlwhg];
+        //     } else {
+        //         $nd[] = RDFService::xmlStringData($bp->getPlaceName());
+        //     }
+        // }
 
-        if ($nd) {
-            if (count($nd) == 1) {
-                $pld[$scafx.'birthPlace'] = $nd[0];
-            } else {
-                $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
-            }
-        }
+        // if ($nd) {
+        //     if (count($nd) == 1) {
+        //         $pld[$scafx.'birthPlace'] = $nd[0];
+        //     } else {
+        //         $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
+        //     }
+        // }
 
         $descName = [
             '@rdf:about' => $this->uriWiagId($personId),
@@ -852,13 +857,14 @@ class PersonService {
         ];
 
 
-        // offices
+        // roles (offices)
+
         $descOffices = array();
         foreach ($personRole as $person_loop) {
-            $role_list = $person_loop->getRole();
-            $ref_list = $person_loop->getItem()->getReference();
+            $role_list = $person_loop['role'];
+            $ref_list = $person_loop['item']['reference'];
 
-            foreach($role_list as $oc) {
+            foreach($role_list as $role) {
                 $roleNodeId = uniqid('role');
                 $descOffices[] = [
                     '@rdf:about' => $this->uriWiagId($personId),
@@ -868,13 +874,13 @@ class PersonService {
                         ]
                     ]
                 ];
-                $descOffices[] = $this->roleNode($oc, $roleNodeId, $ref_list);
+                $descOffices[] = $this->roleNode($role, $roleNodeId, $ref_list);
             }
         }
 
         // add reference(s) in case there are no offices
         if (count($descOffices) == 0) {
-            $ref_list = $person->getItem()->getReference();
+            $ref_list = $person['item']['reference'];
             if ($ref_list) {
                 // references
                 $nd = $this->referenceCitation($ref_list);
@@ -903,32 +909,41 @@ class PersonService {
             '@rdf:resource' => RDFService::NAMESP_SCHEMA.'Role'
         ];
 
-        $ocld[$scafx.'roleName'] = RDFService::xmlStringData($office->getRoleName());
+        $fv = $office['role'];
+        $name = null;
+        if ($fv) {
+            $name = $fv['name'];
+        } else {
+            $name = $office['roleName'];
+        }
 
-        $fv = $office->getDateBegin();
+        $ocld[$scafx.'roleName'] = RDFService::xmlStringData($name);
+
+        $fv = $office['dateBegin'];
         if($fv) $ocld[$scafx.'startDate'] = RDFService::xmlStringData($fv);
 
-        $fv = $office->getDateEnd();
+        $fv = $office['dateEnd'];
         if($fv) $ocld[$scafx.'endDate'] = RDFService::xmlStringData($fv);
 
         // monastery or diocese
         $inst_name = null;
         $inst_url = null;
-        $fv = $office->getInstitution();
+        $fv = $office['institution'];
         if ($fv) {
-            $inst_name = $fv->getName();
-            $inst_url = self::URL_KLOSTERDATENBANK.$fv->getIdGsn();
+            $inst_name = $fv['name'];
+            $inst_url = self::URL_KLOSTERDATENBANK.$fv['idGsn'];
         } else {
-            $fv = $office->getInstitutionName();
+            $fv = $office['institutionName'];
             if ($fv) {
                 $inst_name = $fv;
             } else {
-                $fv = $office->getDiocese();
+                $fv = $office['diocese'];
                 if($fv) {
-                    $inst_name = $fv->getDioceseStatus().' '.$fv->getName();
-                    $inst_url = $this->uriWiagId($fv->getItem()->getIdPublic());
+                    $inst_name = $fv['dioceseStatus'].' '.$fv['name'];
+                    $wiag_id = DownloadService::idPublic($fv['item']['itemCorpus']);
+                    $inst_url = $this->uriWiagId($wiag_id);
                 } else {
-                    $fv = $office->getDioceseName();
+                    $fv = $office['dioceseName'];
                     if ($fv) {
                         $inst_name = $fv;
                     }
@@ -1127,6 +1142,11 @@ class PersonService {
             $bhi[] = $fv;
         }
 
+        $fv = $person['notePerson'];
+        if($fv) {
+             $bhi[] = $fv;
+        }
+
         $prop_list = $person['item']['itemProperty'];
         foreach($prop_list as $prop) {
             if ($prop['propertyTypeId'] == self::ORDINATION_ID) {
@@ -1134,11 +1154,11 @@ class PersonService {
                 $fv = $prop['dateValue'];
                 if (!is_null($fv)) {
                     // $date_value = date('d.m.Y', $fv);
-                    $ord_text = $ord_text.' am '.$fv;
+                    $ord_text = $ord_text.' am '.$fv->format('d.m.Y');
                 }
                 $fv = $prop['placeValue'];
                 if (!is_null($fv)) {
-                    $ord_text = $text.' in '.$fv;
+                    $ord_text = $ord_text.' in '.$fv;
                 }
                 $bhi[] = $ord_text;
             }
@@ -1212,7 +1232,7 @@ class PersonService {
         if ($nd) {
             $pld[$scafx.'hasOccupation'] = $nd;
         } else { # add reference(s) in case there are no offices
-            $ref_list = $person->getItem()->getReference();
+            $ref_list = $person['item']['reference'];
             if ($ref_list) {
                 // references
                 $nd = self::referenceCitation($ref_list);
@@ -1532,7 +1552,6 @@ class PersonService {
                 $fv = $office['diocese'];
                 if($fv) {
                     $inst_name = $fv['dioceseStatus'].' '.$fv['name'];
-                    // before 2024-01-04 $inst_url = $this->uriWiagId($fv->getItem()->getIdPublic());
                     $wiag_id = DownloadService::idPublic($fv['item']['itemCorpus']);
                     $inst_url = $this->uriWiagId($wiag_id);
                 } else {

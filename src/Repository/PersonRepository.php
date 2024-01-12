@@ -552,6 +552,39 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
+     * @return person data as array
+     */
+    public function findArrayWithRole($id_list) {
+        $qb = $this->createQueryBuilder('p')
+                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv, monord, pr, role, diocese, institution')
+                   ->join('p.item', 'i') # avoid query in twig ...
+                   ->join('i.itemCorpus', 'ic')
+                   ->leftJoin('i.itemNameRole', 'inr')
+                   ->leftJoin('i.itemProperty', 'ip')
+                   ->leftJoin('ip.type', 'ipt')
+                   ->leftJoin('i.urlExternal', 'urlext')
+                   ->leftJoin('urlext.authority', 'auth')
+                   ->leftJoin('i.reference', 'ref')
+                   ->leftJoin('p.givennameVariants', 'gnv')
+                   ->leftJoin('p.familynameVariants', 'fnv')
+                   ->leftJoin('p.religiousOrder', 'monord')
+                   ->leftJoin('p.role', 'pr')
+                   ->leftJoin('pr.role', 'role')
+                   ->leftJoin('pr.institution', 'institution')
+                   ->leftJoin('pr.diocese', 'diocese')
+                   ->andWhere('p.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $person_list = $query->getArrayResult();
+
+        $person_list = UtilService::reorderArray($person_list, $id_list, 'id');
+
+        return $person_list;
+    }
+
+
+    /**
      *
      */
     public function findList($id_list, $with_deleted = false, $with_ancestors = false) {

@@ -305,18 +305,17 @@ class PersonController extends AbstractController {
         $model->isDeleted = 0; # 2023-10-12 obsolete?
         $id_all = $itemNameRoleRepository->findPersonIds($model);
 
-        $data_max_size = self::DATA_MAX_SIZE;
-        if (count($id_all) >= $data_max_size) {
-            $msg = "Das Maximum von $data_max_size für die Zahl der Datensätze bei der Ausgabe strukturierter Daten ist überschritten. Schränken Sie die Auswahl ein.";
-            return $this->queryError($corpusId, $msg, $entityManager);
-        }
-
-        if (count($id_all) >= $data_max_size) {
-            $error_node_list['error'] = [
+        if (count($id_all) >= self::DATA_MAX_SIZE) {
+            if ($request->isMethod('POST')) {
+                $msg = "Das Maximum von $data_max_size für die Zahl der Datensätze bei der Ausgabe strukturierter Daten ist überschritten. Schränken Sie die Auswahl ein.";
+                return $this->queryError($corpusId, $msg, $entityManager);
+            } else {
+                $error_node_list['error'] = [
                 'message' => "Query result is larger than the upper limmit",
                 'limit' => $data_max_size,
-            ];
-            return $personService->createResponse($format, $error_node_list);
+                ];
+                return $personService->createResponse($format, $error_node_list);
+            }
         }
 
         $volume_list = $referenceVolumeRepository->findArray();
