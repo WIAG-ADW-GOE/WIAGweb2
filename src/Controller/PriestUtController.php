@@ -191,24 +191,28 @@ class PriestUtController extends AbstractController {
         $referenceVolumeRepository = $entityManager->getRepository(ReferenceVolume::class);
         $volume_list = $referenceVolumeRepository->findArray();
 
+
         $id_all = $personRepository->priestUtIds($model);
         $person_list = $personRepository->findArrayWithRole($id_all);
         PersonService::setVolume($person_list, $volume_list);
 
-        $node_list = array();
-        foreach($person_list as $person) {
-            if (array_key_exists('birthplace', $person)) {
-                $birthplace = $person['birthplace'];
-            }
-            // TODO 2024-01-12
-            // if ($birthplace) {
-            //     $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
-            //     foreach ($birthplace as $bp) {
-            //         $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
-            //     }
-            // }
-            $id = $person['id'];
+        // get all external IDs for places
+        $placeIdExternalRepository = $entityManager->getRepository(PlaceIdExternal::class);
+        $place_id_ext_list = $placeIdExternalRepository->findMappedArray();
 
+        $node_list = array();
+        foreach($person_list as &$person) {
+            if (array_key_exists('birthplace', $person)) {
+                foreach($person['birthplace'] as &$birthplace) {
+                    $bp_id = $birthplace['placeId'];
+                    if ($bp_id) {
+                        $id_ext = $place_id_ext_list[$bp_id];
+                        $birthplace['url'] = str_replace('{id}', $id_ext['value'], $id_ext['format']);
+                    } else {
+                        $birthplace['url'] = null;
+                    }
+                }
+            }
             $node = $personService->personData($format, $person, [$person]);
             $node_list[] = $node;
         }

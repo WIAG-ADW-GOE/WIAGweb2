@@ -203,12 +203,10 @@ class IdController extends AbstractController {
 
     public function priestOfUtrecht($id, $format) {
         $personRepository = $this->entityManager->getRepository(Person::class);
-
-        // old version 2022-10-07
-        // $person = $personRepository->findWithOffice($id);
-        // $this->entityManager->getRepository(ItemReference::class)->setReferenceVolume([$person]);
+        $referenceVolumeRepository = $this->entityManager->getRepository(referenceVolume::class);
 
         $person_list = $personRepository->findList([$id]);
+
         if (!is_null($person_list) && count($person_list) > 0) {
             $person = $person_list[0];
         } else {
@@ -216,6 +214,7 @@ class IdController extends AbstractController {
             $person = null;
         }
 
+        $format = ucfirst(strtolower($format));
 
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
@@ -225,7 +224,7 @@ class IdController extends AbstractController {
             }
         }
 
-        if ($format == 'html') {
+        if ($format == 'Html') {
 
             return $this->render('priest_ut/person.html.twig', [
                 'person' => $person,
@@ -236,10 +235,37 @@ class IdController extends AbstractController {
             }
 
             // build data array
+            $person_list = $personRepository->findArrayWithRole([$id]);
+
+            // set reference volumes
+            $volume_list = $referenceVolumeRepository->findArray();
+            PersonService::setVolume($person_list, $volume_list);
+
+            // get all external IDs for places
+            $placeIdExternalRepository = $this->entityManager->getRepository(PlaceIdExternal::class);
+            $place_id_ext_list = $placeIdExternalRepository->findMappedArray();
+
+            if (!is_null($person_list) && count($person_list) > 0) {
+                $person = $person_list[0];
+                if (array_key_exists('birthplace', $person)) {
+                    foreach($person['birthplace'] as &$birthplace) {
+                        $bp_id = $birthplace['placeId'];
+                        if ($bp_id) {
+                            $id_ext = $place_id_ext_list[$bp_id];
+                            $birthplace['url'] = str_replace('{id}', $id_ext['value'], $id_ext['format']);
+                        } else {
+                        $birthplace['url'] = null;
+                        }
+                    }
+                }
+            } else {
+                throw $this->createNotFoundException('Priester nicht gefunden');
+                $person = null;
+            }
+
             $node_list = [$this->personService->personData($format, $person, [$person])];
 
             return $this->personService->createResponse($format, $node_list);
-
         }
 
     }

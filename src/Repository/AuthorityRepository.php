@@ -162,5 +162,22 @@ class AuthorityRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * @return array indexed by ID
+     */
+    public function findMappedArray($id_list) {
+        $qb = $this->createQueryBuilder('a')
+                   ->andWhere('a.id in (:id_list)')
+                   ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        $list = $query->getArrayResult();
+
+        $idx_list = array_column($list, 'id');
+        $list_idx = array_combine($idx_list, $list);
+
+        return $list_idx;
+    }
+
 
 }

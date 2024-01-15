@@ -396,20 +396,20 @@ class PersonService {
         }
 
         // birthplace
-        // TODO 2024-01-04
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $bpd['name'] = $bp->getPlaceName();
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
-        //     }
-        //     $nd[] = $bpd;
-        // }
-
-        // if ($nd) {
-        //     $pj['birthplaces'] = $nd;
-        // }
+         $nd = array();
+         if (array_key_exists('birthplace', $person)) {
+             foreach ($person['birthplace'] as $bp) {
+                 $bpd['name'] = $bp['placeName'];
+                 $url = $bp['url'];
+                 if ($url) {
+                     $bpd['URL_WordHistoricalGazetteer'] = $url;
+                 }
+                 $nd[] = $bpd;
+             }
+         }
+        if ($nd) {
+             $pj['birthplaces'] = $nd;
+        }
 
         return $pj;
 
@@ -832,24 +832,25 @@ class PersonService {
         }
 
         // birthplace
-        // TODO 2024-01-12
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $nd[] = ['@rdf:resource' => $urlwhg];
-        //     } else {
-        //         $nd[] = RDFService::xmlStringData($bp->getPlaceName());
-        //     }
-        // }
+        $nd = array();
+        if (array_key_exists('birthplace', $person)) {
+            foreach ($person['birthplace'] as $bp) {
+                $url = $bp['url'];
+                if ($url) {
+                    $nd[] = ['@rdf:resource' => $url];
+                } else {
+                    $nd[] = RDFService::xmlStringData($bp['placeName']);
+                }
+            }
+        }
 
-        // if ($nd) {
-        //     if (count($nd) == 1) {
-        //         $pld[$scafx.'birthPlace'] = $nd[0];
-        //     } else {
-        //         $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
-        //     }
-        // }
+        if ($nd) {
+            if (count($nd) == 1) {
+                $pld[$scafx.'birthPlace'] = $nd[0];
+            } else {
+                $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
+            }
+        }
 
         $descName = [
             '@rdf:about' => $this->uriWiagId($personId),
@@ -1173,22 +1174,23 @@ class PersonService {
         if($fv) $pld[$scafx.'deathDate'] = $fv;
 
         // birthplace
-        // TODO 2024-01-04
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $bpd = array();
-        //     $bpd[$scafx.'name'] = $bp->getPlaceName();
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $bpd[$scafx.'sameAs'] = $urlwhg;
-        //     }
-        //     $nd[] = $bpd;
-        // }
+        $nd = array();
+        if (array_key_exists('birthplace', $person)) {
+            foreach ($person['birthplace'] as $bp) {
+                $bpd = array();
+                $bpd[$scafx.'name'] = $bp['placeName'];
+                $url = $bp['url'];
+                if ($url) {
+                    $bpd[$scafx.'sameAs'] = $url;
+                }
+                $nd[] = $bpd;
+            }
+        }
 
-        // if ($nd) {
-        //     $fv = count($nd) > 1 ? $nd : $nd[0];
-        //     $pld[$scafx.'birthPlace'] = $fv;
-        // }
+        if ($nd) {
+            $fv = count($nd) > 1 ? $nd : $nd[0];
+            $pld[$scafx.'birthPlace'] = $fv;
+        }
 
         // external IDs/URLs
         $exids = array();
