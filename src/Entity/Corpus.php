@@ -13,6 +13,11 @@ class Corpus
 
     const EDIT_LIST = ['can', 'epc'];
 
+    const CORPUS_PRETTY = [
+        'epc' => 'Bischöfe',
+        'can' => 'Domherren',
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

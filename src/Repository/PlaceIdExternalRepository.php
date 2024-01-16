@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\PlaceIdExternal;
+use App\Entity\Authority;
+
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -97,4 +99,32 @@ class PlaceIdExternalRepository extends ServiceEntityRepository
 
         return $url;
     }
+
+    /**
+     * @return array indexed by place ID
+     */
+    public function findMappedArray() {
+        $qb = $this->createQueryBuilder('bp');
+
+        $query = $qb->getQuery();
+        $list = $query->getArrayResult();
+
+        $idx_list = array_column($list, 'placeId');
+        $list_idx = array_combine($idx_list, $list);
+
+        $auth_id_list = array_unique(array_column($list, 'authorityId'));
+
+        $auth_list = $this->getEntityManager()
+                          ->getRepository(Authority::class)
+                          ->findMappedArray($auth_id_list);
+
+        foreach ($list_idx as &$id_ext) {
+            $auth_id = $id_ext['authorityId'];
+            $id_ext['format'] = $auth_list[$auth_id]['urlFormatter'];
+        }
+
+        return $list_idx;
+
+    }
+
 }

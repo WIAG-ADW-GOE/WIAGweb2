@@ -95,7 +95,7 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".$corpusId.".csv";
+            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Lebensdaten.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -198,7 +198,7 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".$corpusId."-roles.csv";
+            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Ämter.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -280,7 +280,7 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
-                $person_list = $personRepository->findSimpleList($id_all);
+                $person_list = $personRepository->findArray($id_all);
                 $vol_list = $itemNameRoleRepository->findSimpleReferenceList($id_all);
                 $person = $person_list[1];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
@@ -295,7 +295,7 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".$corpusId."-references.csv";
+            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Literatur.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -322,7 +322,7 @@ class DownloadController extends AbstractController {
         fputcsv($handle, DownloadService::formatPersonReferenceHeader(), ";");
         while ($chunk_offset < $count) {
             $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
-            $person_chunk = $personRepository->findSimpleList($id_chunk);
+            $person_chunk = $personRepository->findArray($id_chunk);
             $ref_chunk = $itemNameRoleRepository->findSimpleReferenceList($id_chunk);
             $chunk_offset += $chunk_size;
 
@@ -378,7 +378,7 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
-                $person_list = $personRepository->findSimpleList($id_all);
+                $person_list = $personRepository->findArray($id_all);
                 $person = $person_list[7];
                 $uext_list = $person['item']['urlExternal'];
                 // dd(s$person, $uext_list);
@@ -391,7 +391,7 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".$corpusId."-external-ids.csv";
+            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-externe-IDs.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -418,7 +418,7 @@ class DownloadController extends AbstractController {
         fputcsv($handle, DownloadService::formatPersonUrlExternalHeader(), ";");
         while ($chunk_offset < $count) {
             $id_chunk = array_slice($id_list, $chunk_offset, $chunk_size);
-            $person_chunk = $personRepository->findSimpleList($id_chunk);
+            $person_chunk = $personRepository->findArray($id_chunk);
             $chunk_offset += $chunk_size;
 
             foreach ($person_chunk as $person) {

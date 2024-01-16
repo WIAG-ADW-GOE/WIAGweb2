@@ -630,7 +630,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         $ref_vol_list = $this->getEntityManager()
                              ->getRepository(ReferenceVolume::class)
-                             ->findSimpleList($ref_id_list);
+                             ->findArray($ref_id_list);
 
         foreach ($ir_list as $key => $ir) {
             $reference_id = $ir['referenceId'];

@@ -80,47 +80,47 @@ class PersonService {
         return $uriId;
     }
 
-    public function createResponse($format, $node_list) {
+    public function createResponse($format, $node_list, $filename) {
         $fcn = 'createResponse'.$format;
-        return $this->$fcn($node_list);
+        return $this->$fcn($node_list, $filename);
     }
 
-    public function createResponseJson($node_list) {
+    public function createResponseJson($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
         $data = $serializer->serialize(['persons' => $node_list], 'json');
 
         $response = new Response();
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".json");
         $response->headers->set('Content-Type', self::CONTENT_TYPE['json']);
-
         $response->setContent($data);
         return $response;
 
     }
 
-    public function createResponseCsv($node_list) {
+    public function createResponseCsv($node_list, $filename_in) {
         # see https://symfony.com/doc/current/components/serializer.html#the-csvencoder
         $csvEncoder = new CsvEncoder();
         $csvOptions = ['csv_delimiter' => "\t"];
 
         if(count($node_list) == 1) {
-            $filename = $node_list[0]['wiagId'].'.csv';
+            $filename = $node_list[0]['wiagId'];
         } else {
-            $filename = "WIAG-Persons.csv";
+            $filename = $filename_in;
         }
 
         $data = $csvEncoder->encode($node_list, 'csv', $csvOptions);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['csv']);
-        $response->headers->set('Content-Disposition', "filename=".$filename);
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".csv");
 
         $response->setContent($data);
         return $response;
     }
 
-    public function createResponseRdf($node_list) {
+    public function createResponseRdf($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
         $serializer = new Serializer([], array(new XMLEncoder()));
 
@@ -131,12 +131,12 @@ class PersonService {
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
-
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".xml");
         $response->setContent($data);
         return $response;
     }
 
-    public function createResponseJsonld($node_list) {
+    public function createResponseJsonld($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
@@ -145,7 +145,7 @@ class PersonService {
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['jsonld']);
-
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".json");
         $response->setContent($data);
         return $response;
 
@@ -396,20 +396,20 @@ class PersonService {
         }
 
         // birthplace
-        // TODO 2024-01-04
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $bpd['name'] = $bp->getPlaceName();
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $bpd['URL_WordHistoricalGazetteer'] = $urlwhg;
-        //     }
-        //     $nd[] = $bpd;
-        // }
-
-        // if ($nd) {
-        //     $pj['birthplaces'] = $nd;
-        // }
+         $nd = array();
+         if (array_key_exists('birthplace', $person)) {
+             foreach ($person['birthplace'] as $bp) {
+                 $bpd['name'] = $bp['placeName'];
+                 $url = $bp['url'];
+                 if ($url) {
+                     $bpd['URL_WordHistoricalGazetteer'] = $url;
+                 }
+                 $nd[] = $bpd;
+             }
+         }
+        if ($nd) {
+             $pj['birthplaces'] = $nd;
+        }
 
         return $pj;
 
@@ -832,24 +832,25 @@ class PersonService {
         }
 
         // birthplace
-        // TODO 2024-01-12
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $nd[] = ['@rdf:resource' => $urlwhg];
-        //     } else {
-        //         $nd[] = RDFService::xmlStringData($bp->getPlaceName());
-        //     }
-        // }
+        $nd = array();
+        if (array_key_exists('birthplace', $person)) {
+            foreach ($person['birthplace'] as $bp) {
+                $url = $bp['url'];
+                if ($url) {
+                    $nd[] = ['@rdf:resource' => $url];
+                } else {
+                    $nd[] = RDFService::xmlStringData($bp['placeName']);
+                }
+            }
+        }
 
-        // if ($nd) {
-        //     if (count($nd) == 1) {
-        //         $pld[$scafx.'birthPlace'] = $nd[0];
-        //     } else {
-        //         $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
-        //     }
-        // }
+        if ($nd) {
+            if (count($nd) == 1) {
+                $pld[$scafx.'birthPlace'] = $nd[0];
+            } else {
+                $pld[$scafx.'birthPlace'] = RDFService::list("rdf:Bag", $nd);
+            }
+        }
 
         $descName = [
             '@rdf:about' => $this->uriWiagId($personId),
@@ -1173,22 +1174,23 @@ class PersonService {
         if($fv) $pld[$scafx.'deathDate'] = $fv;
 
         // birthplace
-        // TODO 2024-01-04
-        // $nd = array();
-        // foreach ($person->getBirthPlace() as $bp) {
-        //     $bpd = array();
-        //     $bpd[$scafx.'name'] = $bp->getPlaceName();
-        //     $urlwhg = $bp->getUrlWhg();
-        //     if ($urlwhg) {
-        //         $bpd[$scafx.'sameAs'] = $urlwhg;
-        //     }
-        //     $nd[] = $bpd;
-        // }
+        $nd = array();
+        if (array_key_exists('birthplace', $person)) {
+            foreach ($person['birthplace'] as $bp) {
+                $bpd = array();
+                $bpd[$scafx.'name'] = $bp['placeName'];
+                $url = $bp['url'];
+                if ($url) {
+                    $bpd[$scafx.'sameAs'] = $url;
+                }
+                $nd[] = $bpd;
+            }
+        }
 
-        // if ($nd) {
-        //     $fv = count($nd) > 1 ? $nd : $nd[0];
-        //     $pld[$scafx.'birthPlace'] = $fv;
-        // }
+        if ($nd) {
+            $fv = count($nd) > 1 ? $nd : $nd[0];
+            $pld[$scafx.'birthPlace'] = $fv;
+        }
 
         // external IDs/URLs
         $exids = array();

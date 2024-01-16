@@ -556,7 +556,8 @@ class PersonRepository extends ServiceEntityRepository {
      */
     public function findArrayWithRole($id_list) {
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv, monord, pr, role, diocese, institution')
+                   ->select('p, i, ic, inr, ip, ipt, urlext, auth, ref, gnv, fnv, monord, '.
+                            'pr, role, diocese, institution, birthplace')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->join('i.itemCorpus', 'ic')
                    ->leftJoin('i.itemNameRole', 'inr')
@@ -572,6 +573,7 @@ class PersonRepository extends ServiceEntityRepository {
                    ->leftJoin('pr.role', 'role')
                    ->leftJoin('pr.institution', 'institution')
                    ->leftJoin('pr.diocese', 'diocese')
+                   ->leftJoin('p.birthplace', 'birthplace')
                    ->andWhere('p.id in (:id_list)')
                    ->setParameter('id_list', $id_list);
 
