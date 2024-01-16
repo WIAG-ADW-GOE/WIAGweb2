@@ -80,47 +80,47 @@ class PersonService {
         return $uriId;
     }
 
-    public function createResponse($format, $node_list) {
+    public function createResponse($format, $node_list, $filename) {
         $fcn = 'createResponse'.$format;
-        return $this->$fcn($node_list);
+        return $this->$fcn($node_list, $filename);
     }
 
-    public function createResponseJson($node_list) {
+    public function createResponseJson($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
         $data = $serializer->serialize(['persons' => $node_list], 'json');
 
         $response = new Response();
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".json");
         $response->headers->set('Content-Type', self::CONTENT_TYPE['json']);
-
         $response->setContent($data);
         return $response;
 
     }
 
-    public function createResponseCsv($node_list) {
+    public function createResponseCsv($node_list, $filename_in) {
         # see https://symfony.com/doc/current/components/serializer.html#the-csvencoder
         $csvEncoder = new CsvEncoder();
         $csvOptions = ['csv_delimiter' => "\t"];
 
         if(count($node_list) == 1) {
-            $filename = $node_list[0]['wiagId'].'.csv';
+            $filename = $node_list[0]['wiagId'];
         } else {
-            $filename = "WIAG-Persons.csv";
+            $filename = $filename_in;
         }
 
         $data = $csvEncoder->encode($node_list, 'csv', $csvOptions);
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['csv']);
-        $response->headers->set('Content-Disposition', "filename=".$filename);
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".csv");
 
         $response->setContent($data);
         return $response;
     }
 
-    public function createResponseRdf($node_list) {
+    public function createResponseRdf($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
         $serializer = new Serializer([], array(new XMLEncoder()));
 
@@ -131,12 +131,12 @@ class PersonService {
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['rdf']);
-
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".xml");
         $response->setContent($data);
         return $response;
     }
 
-    public function createResponseJsonld($node_list) {
+    public function createResponseJsonld($node_list, $filename) {
         # see https://symfony.com/doc/current/components/serializer.html#the-jsonencoder
         $serializer = new Serializer([], array(new JSONEncoder()));
 
@@ -145,7 +145,7 @@ class PersonService {
 
         $response = new Response();
         $response->headers->set('Content-Type', self::CONTENT_TYPE['jsonld']);
-
+        $response->headers->set('Content-Disposition', "attachement; filename=".$filename.".json");
         $response->setContent($data);
         return $response;
 

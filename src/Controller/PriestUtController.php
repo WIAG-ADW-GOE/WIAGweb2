@@ -219,7 +219,7 @@ class PriestUtController extends AbstractController {
 
 
         $fncResponse = 'createResponse'.$format; # e.g. 'createResponseRdf'
-        return $personService->$fncResponse($node_list);
+        return $personService->$fncResponse($node_list, "WIAG-Priests-of-Utrecht");
     }
 
 

@@ -18,6 +18,7 @@ use App\Repository\PersonRepository;
 use App\Service\UtilService;
 use App\Service\PersonService;
 use App\Service\DioceseService;
+use App\Service\DownloadService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -131,7 +132,8 @@ class IdController extends AbstractController {
                 $node_list[] = $this->personService->personData($format, $person, $person_role_list);
             }
 
-            return $this->personService->createResponse($format, $node_list);
+            $wiag_id = DownloadService::idPublic($person['item']['itemCorpus']);
+            return $this->personService->createResponse($format, $node_list, $wiag_id);
         }
     }
 
@@ -265,7 +267,9 @@ class IdController extends AbstractController {
 
             $node_list = [$this->personService->personData($format, $person, [$person])];
 
-            return $this->personService->createResponse($format, $node_list);
+            $wiag_id = DownloadService::idPublic($person['item']['itemCorpus']);
+
+            return $this->personService->createResponse($format, $node_list, $wiag_id);
         }
 
     }

@@ -156,7 +156,7 @@ class DownloadService {
      */
     static public function idPublic($item_corpus_list) {
         $id_public_cand = null;
-        foreach (['epc', 'can', 'dreg-can'] as $corpus_id) {
+        foreach (['epc', 'can', 'utp', 'dreg-can'] as $corpus_id) {
             foreach ($item_corpus_list as $ic_loop) {
                 $id_public_cand = $ic_loop['idPublic'];
                 if ($ic_loop['corpusId'] == $corpus_id) {

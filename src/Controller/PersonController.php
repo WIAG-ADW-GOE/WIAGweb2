@@ -349,7 +349,9 @@ class PersonController extends AbstractController {
 
         }
 
-        return $personService->createResponse($format, $node_list);
+        $filename = "WIAG-".Corpus::CORPUS_PRETTY[$model->corpus];
+
+        return $personService->createResponse($format, $node_list, $filename);
 
     }
 
