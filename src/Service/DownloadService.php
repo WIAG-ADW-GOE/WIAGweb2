@@ -407,7 +407,9 @@ class DownloadService {
             'role_group_en',
             'role_group_fq_id',
             'institution',
+            'institution_id',
             'diocese',
+            'diocese_id',
             'date_begin',
             'date_end',
             'date_sort_key',
@@ -421,7 +423,6 @@ class DownloadService {
      * @return formatted person role data
      */
     static public function formatPersonRoleData($person, $role) {
-
         $item = $person['item'];
         $itemCorpus = $item['itemCorpus'];
         $urlExternal = $item['urlExternal'];
@@ -438,12 +439,22 @@ class DownloadService {
             $data['role_group_en'] = $role['role']['roleGroup']['nameEn'];
             $data['role_group_fq_id'] = $role['role']['roleGroup']['factgridId'];
         }
-        $data['institution'] = !is_null($role['institution']) ? $role['institution']['name'] : $role['institutionName'];
+        $institution = $role['institution'];
+        // $data['institution'] = !is_null($role['institution']) ? $role['institution']['name'] : $role['institutionName'];
+        if (!is_null($institution)) {
+            $data['institution'] = $institution['name'];
+            $data['institution_id'] = $institution['idGsn'];
+        } else {
+            $data['institution'] = $role['institutionName'];
+            $data['institution_id'] = null;
+        }
         $diocese = $role['diocese'];
         if (!is_null($diocese)) {
             $data['diocese'] = $diocese['dioceseStatus'].' '.$diocese['name'];
+            $data['diocese_id'] = $diocese['item']['itemCorpus'][0]['idPublic'];
         } else {
             $data['diocese'] = $role['dioceseName'];
+            $data['diocese_id'] = null;
         }
 
         $date_val = is_null($role['dateBegin']) ? null : trim($role['dateBegin']);

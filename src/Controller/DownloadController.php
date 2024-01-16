@@ -181,7 +181,7 @@ class DownloadController extends AbstractController {
             $download_debug = false;
             if ($download_debug) {
                 $person_list = $personRepository->findArray($id_all);
-                $role_list = $itemNameRoleRepository->findPersonRoleArray($id_all);
+                $role_list = $itemNameRoleRepository->findRoleArray($id_all);
                 $person = $person_list[0];
                 $inr_role_list = array_column($person['item']['itemNameRole'], 'itemIdRole');
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
