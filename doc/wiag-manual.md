@@ -398,8 +398,8 @@ Struktur nur so kompliziert sein, wie es mindestens erforderlich ist, um die
 Informationsgehalt zu erhalten. Für unterschiedliche Nutzergruppen
 werden unterschiedliche Angebote gemacht.
 
-Jedes Abfrageergebnis kann zusätzlich zu der HTML-Ausgabe einem der Formate CSV,
-JSON, RDF-XML oder JSON-LD angezeigt oder heruntergeladen werden.
+Jedes Abfrageergebnis kann zusätzlich zu der HTML-Ausgabe in einem der Formate CSV,
+JSON, RDF-XML oder JSON-LD heruntergeladen werden. 
 WIAG spiegelt Daten aus der Personendatenbank der Germania Sacra und aus der
 Klosterdatenbank und macht sie ebenfalls über die serialisierte Ausgabe zugänglich.
 
@@ -499,16 +499,14 @@ Elemente aus schema.org sind im Folgenden mit `schema:` gekennzeichnet.
 ### Datenpakete
 
 Alle Datenpakete lassen sich aus der Listenansicht eines Abfrageergebnisses
-erzeugen über die Schaltflächen „CSV“, „RDF-XML“, „JSON“, „JSON-LD“ und „Export“,
-wobei letztere nur sichbar ist, wenn man sich in der Anwendung angemeldet hat.
+erzeugen über die Schaltflächen „CSV“, „RDF-XML“, „JSON“, „JSON-LD“ und „Export“.
 Der Umfang des Datenpakets entspricht dem Ergebnis der aktuellen Abfrage. Die Ausgabe
 der Datenpakete ist wegen des Ressourcenverbrauchs auf dem Server auf eine
-Trefferliste von maximal 6000 beschränkt. Diese Beschränkung gilt nicht für Ausgaben
-über die Schaltfläche „Export“, da hier die Daten gestreamt werden.
-
-Der Datenbestand für die Bischöfe (etwa 5000 Einträge) kann komplett ausgegeben
-werden. Die Domherren können jeweils für jedes der 34 Domstifte komplett ausgegeben
-werden.
+Trefferliste von maximal 60000 beschränkt. Diese Beschränkung gilt nicht für Ausgaben
+über die Schaltfläche „Export“, da hier die Daten gestreamt werden. 
+Die Dateinamen enthalten das Themengebiet,
+zum Beispiel "Bischöfe", "Domherren", "Priests-of-Utrecht" 
+und je nach Format die Dateiendung "xml", "json" oder "csv".
 
 Das CSV-Format wird in zwei Varianten bereitgestellt. In der ersten Variante
 (Schaltfläche „CSV“) entspricht jedem Element/Feld eines Datensatzes eine Spalte in der
@@ -520,16 +518,16 @@ enthält die bibliographischen Angaben des ersten Literaturverweises für
 die 10. Amtsperiode. Dieses Format führt zu einer großen Zahl von Spalten.
 
 Das zweite Format (Schaltfläche „Export“) unterteilt die Daten und bildet die ersten Ebenen der relationalen
-Beziehungen ab. Die Daten sind so für eine manuelle Sichtung und Weiterverarbeitung
+Struktur ab. Die Daten sind so für eine manuelle Sichtung und Weiterverarbeitung
 leichter zugänglich.
 Die Daten sind unterteilt in
 
-- Personendaten: WIAG ID, Namen, Beschreibung, allgemeine biographische Daten, Normdaten
-- Amtsdaten: WIAG ID, Amtsdaten, Normdaten
-- Literatur Personen: WIAG ID, Literaturverweise bezogen auf die Person, Normdaten
-- Externe IDs: WIAG ID, sämtliche externe IDs, Normdaten
+- „CSV Personendaten“: WIAG ID, Namen, Beschreibung, allgemeine biographische Daten, Normdaten
+- „CSV Amtsdaten“: WIAG ID, Amtsdaten, Normdaten
+- „CSV Literatur Personen“: WIAG ID, Literaturverweise bezogen auf die Person, Normdaten
+- „CSV Externe IDs“: WIAG ID, sämtliche externe IDs, Normdaten
 
-Die WIAG ID dient dazu, die Daten in aufnehmenden Systemen wieder zuzuordnen. Für
+Über die WIAG ID können die Daten in aufnehmenden Systemen wieder zugeordnet werden. Für
 allfällige Abgleiche werden jeweils Normdaten (GND, Wikidata, FactGrid)
 mit ausgegeben.
 
@@ -823,7 +821,7 @@ einer Person dargestellt. Die Sortieung ist chronlogisch aufsteigend.
 
 **Detailansicht**: Die Detailansicht erscheint, wenn der Nutzer dem Link einer Person in
 der Listenansicht folgt, oder wenn ein Datensatz über seine ID direkt aufgerufen
-wird. Die Sortieung ist chronlogisch aufsteigend.
+wird. Die Sortieung ist chronologisch aufsteigend.
 
 **HTML-Gesamtliste auf einer Seite**: Die HTML-Gesamtliste auf einer Seite ist für
 angemeldete Benutzerinnen abrufbar. Typischerweise wird diese Liste für ein
@@ -836,3 +834,139 @@ Sortierkriterium ist die chronologische Ordnung.
 Die Sortierkriterien werden jeweils vom Controller als ein Parameter an das Template
 übergeben. Dort wird eine Sortierfunktion in 'Person.php' aufgerufen, welche die
 Ämter in der sortierten Reihenfolge liefert.
+
+### SQL-Abfragen
+Für bestimmte Auswertungen und Arbeitsschritte ist es einfacher, die Daten direkt aus 
+der Datenbank abzufragen, anstelle eines Exports in ein strukturiertes Format, 
+das dann anschließend wieder verknüpft oder gefiltert werden muss. 
+Im Folgenden sind einige Beispiele zusammengestellt.
+
+#### Zuordnung WIAG-ID zu GSN
+Erstelle eine Übersicht für alle Personen, die auf einen Eintrag im Digitalen Personeregister 
+verweisen mit ihrer ID im Digitalen Personenregister (GSN).
+
+Die Tabelle `t_ip` wird aus einer Abfrage von `item_corpus` erzeugt. 
+`item_corpus` wird mehrmals mit sich selbst verknüpft und nachher in den Wert
+für die WIAG-ID auswählen zu können, der die höchste Priorität hat (siehe `CASE`-Abschnitt). 
+Die ID bezogen auf einen Bischof nach Gatz wird bevorzugt vor einer ID,
+die der Domherren-Datenbank zugeordnet ist, und der ID, welche auf einen Datensatz
+aus dem Digitalen Personenregister verweist.
+Die Verknüpfung mit `item_name_role.item_id_name` dient dazu, Einträge aus dem Digitalen Personenregister
+herauszufiltern, die mit einem Bischof nach Gatz oder einem Domherren aus der Domherren-Datenbank
+verknüpft sind. 
+Die ID des Digitalen Personenregisters in der Tabelle `authority`, bzw. `url_external` ist 200.
+
+``` sql
+SELECT DISTINCT i.id,
+CASE WHEN (t_id.epc IS NOT NULL) THEN t_id.epc
+WHEN (t_id.can IS NOT NULL) THEN t_id.can
+WHEN (t_id.dreg_can IS NOT NULL) THEN t_id.dreg_can
+END AS id_public,
+uext.value AS gsn
+FROM item AS i
+JOIN url_external AS uext ON uext.item_id = i.id AND uext.authority_id = 200
+JOIN item_name_role AS inr ON inr.item_id_name = i.id
+JOIN (select distinct ic.item_id AS item_id,
+   ic_ii.id_public AS epc,
+   ic_iii.id_public AS can,
+   ic_iv.id_public AS dreg_can
+   FROM item_corpus AS ic
+   LEFT JOIN item_corpus AS ic_ii ON ic_ii.item_id = ic.item_id AND ic_ii.corpus_id = 'epc'
+   LEFT JOIN item_corpus AS ic_iii ON ic_iii.item_id = ic.item_id AND ic_iii.corpus_id = 'can'
+   LEFT JOIN item_corpus AS ic_iv ON ic_iv.item_id = ic.item_id AND ic_iv.corpus_id = 'dreg-can'
+   WHERE ic.corpus_id in ('epc', 'can', 'dreg-can')) AS t_id ON t_id.item_id = i.id
+WHERE i.is_online = 1;
+```
+
+#### Pfründe für Mainzer Dompröpste oder Domdekane
+Erstelle eine Liste der Ämter von Personen, die in Mainz Dompropst oder Domdekan waren, aber ohne
+die Ämter am Mainzer Domstift. Es werden keine Amtsangaben ausgelesen, wenn eine Person (nur)
+im Digitalen Personenregister eingetragen ist.
+Die ID des Mainzer Domstiftes in der Tabelle `institution` ist 6623.
+Die Bedingung `WHERE i.id <> 6623` schließt die Ämter am Domstift aus.
+Der Personenkreis wird eingeschränkt durch den Abgleich von `person_role.person_id` mit
+der Abfrage nach Personen, die am Mainzer Domstift das Amt mit der ID 108, Domdekan, oder
+mit der ID 150, Dompropst, innehatten. Siehe zweites `SELECT`-Statement.
+
+``` sql
+SELECT
+p.givenname AS Vorname,
+p.prefixname AS Präfix,
+p.familyname AS Familienname,
+pr.role_name AS Amtsbezeichnung,
+pr.num_date_begin AS Amtsbeginn,
+pr.num_date_end AS Amtsende,
+i.id_gsn AS Institution_ID_GSN,
+i.name AS Institution_Name,
+pl.longitude AS Längengrad,
+pl.latitude AS Breitengrad,
+pl.name AS Ortsname,
+ic.id_public
+FROM person p
+JOIN item_corpus ic ON ic.item_id = p.id AND ic.corpus_id = 'can'
+JOIN person_role pr ON p.id = pr.person_id
+JOIN institution i ON pr.institution_id = i.id
+JOIN institution_place ip ON i.id = ip.institution_id
+LEFT JOIN place pl ON ip.place_id = pl.id
+WHERE i.id <> 6623
+AND person_id in (SELECT DISTINCT person_id
+   FROM person_role AS pr
+   JOIN institution i ON pr.institution_id = i.id
+   JOIN item on item.id = pr.person_id
+   where pr.role_id IN (108, 150) AND i.id = 6623
+   AND item.is_deleted = 0
+   AND item.is_online = 1)
+ORDER BY id_public;
+```
+
+#### Pfründe für Mainzer Bischöfe ohne das Bischofsamt in Mainz
+Erstelle eine Liste der Ämter von Personen, die in Mainz das Bistum geleitet haben,
+aber ohne das Leitungsamt für das Bistum in Mainz selbst.
+Es werden keine Amtsangaben ausgelesen, wenn eine Person (nur)
+im Digitalen Personenregister eingetragen ist.
+Die ID des Mainzer Bistums in der Tabelle `diocese` ist 299.
+Der Personenkreis wird eingeschränkt durch den Abgleich von `person_role.person_id` mit
+der Abfrage nach Personen, die im Mainzer Bistum ein Amt innehatten,
+dessen Gruppe die ID 33 oder 34 hat (`role.role_group_id`).
+das Amt mit der ID 108, Domdekan, oder
+mit der ID 150, Dompropst, innehatten. Siehe zweites `SELECT`-Statement.
+
+``` sql
+SELECT
+p.givenname AS Vorname,
+p.prefixname AS Präfix,
+p.familyname AS Familienname,
+ic.id_public,
+pr.role_name AS Amtsbezeichnung,
+pr.num_date_begin AS Amtsbeginn,
+pr.num_date_end AS Amtsende,
+i.id_gsn AS Institution_ID_GSN,
+i.name AS Institution_Name,
+pl_inst.longitude AS Institution_Laengengrad,
+pl_inst.latitude AS Institution_Breitengrad,
+pl_inst.name AS Domstift_Ortsname,
+ic_dioc.id_public AS Dioezese_ID,
+dioc.name AS Dioezese_Name,
+pl_dioc.longitude AS Dioezese_Sitz_Laengengrad,
+pl_dioc.latitude AS Dioezese_Sitz_Breitengrad
+FROM person p
+JOIN item_corpus ic ON ic.item_id = p.id and ic.corpus_id = 'epc'
+JOIN person_role pr ON p.id = pr.person_id
+JOIN role AS r ON r.id = pr.role_id
+LEFT JOIN institution i ON pr.institution_id = i.id
+LEFT JOIN institution_place ip ON i.id = ip.institution_id
+LEFT JOIN place pl_inst ON pl_inst.id = ip.place_id
+LEFT JOIN diocese AS dioc ON dioc.id = pr.diocese_id
+LEFT JOIN item_corpus AS ic_dioc ON ic_dioc.item_id = dioc.id
+LEFT JOIN place pl_dioc ON pl_dioc.id = dioc.bishopric_seat_id
+WHERE NOT (dioc.id = 299 AND r.role_group_id in (33, 34))
+AND person_id in (SELECT DISTINCT person_id
+   FROM person_role AS pr
+   JOIN diocese AS dioc ON dioc.id = pr.diocese_id
+   JOIN item ON item.id = pr.person_id
+   JOIN role AS r ON r.id = pr.role_id
+   WHERE r.role_group_id IN (33, 34) AND dioc.id = 299
+   AND item.is_deleted = 0
+   AND item.is_online = 1)
+ORDER BY id_public;
+```
