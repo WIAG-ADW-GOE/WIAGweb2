@@ -445,7 +445,6 @@ class EditPersonService {
         }
 
         // copy meta data even if they are still empty (new entry)
-        $item->setIdPublic($data['item']['idPublic']);
         $item->setIdInSource($data['item']['idInSource']);
 
         // item: status values, editorial notes
@@ -937,7 +936,7 @@ class EditPersonService {
             $item_corpus->setIdInCorpus($id_in_corpus);
 
             // ID public
-            $id_public = EditService::makeIdPublic($corpus_id, $id_in_corpus, $this->entityManager);
+            $id_public = EditService::makeIdPublic($corpus_id, $this->entityManager);
             $item_corpus->setIdPublic($id_public);
         }
 

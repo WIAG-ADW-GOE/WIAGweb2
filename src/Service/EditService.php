@@ -17,6 +17,9 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * provide mapping functions
+ *
+ * most functions have $entityManager in their argument lists,
+ * thus they can be declared as static
  */
 class EditService {
 
@@ -180,21 +183,24 @@ class EditService {
     /**
      * compose ID public
      */
-    static public function makeIdPublic($corpus_id, $numeric_part, $entityManager)  {
+    static public function makeIdPublic($corpus_id, $entityManager)  {
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
 
         // find number fields
         $match_list = null;
         $mask = $corpus->getIdPublicMask();
+        $next_id = $corpus->getNextIdPublic();
         $id_public = null;
         if (!is_null($mask)) {
             preg_match_all("/#+/", $mask, $match_list);
 
             $field = $match_list[0][0];
             $width = strlen($field);
-            $numeric_str = str_pad($numeric_part, $width, "0", STR_PAD_LEFT);
+            $numeric_str = str_pad($next_id, $width, "0", STR_PAD_LEFT);
             $id_public = preg_replace("/#+/", $numeric_str, $mask, 1);
+
+            $corpus->setNextIdPublic($next_id + 1);
 
             // second numeric_field: default is '001'
             $field = $match_list[0][1];
@@ -223,13 +229,12 @@ class EditService {
         $id_in_corpus = strval($id_in_corpus);
         $item_corpus->setIdInCorpus($id_in_corpus);
 
-        // ID public
-        $id_public = self::makeIdPublic($corpus_id, $id_in_corpus, $entityManager);
+        // public ID
+        $id_public = self::makeIdPublic($corpus_id, $entityManager);
         $item_corpus->setIdPublic($id_public);
 
         return $item_corpus;
     }
-
 
     /**
      * fill skos label with $data
