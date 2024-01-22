@@ -76,6 +76,11 @@ class Corpus
      */
     private $editChoiceOrder;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $nextIdPublic;
+
 
 
     public function getId(): ?int
@@ -185,6 +190,18 @@ class Corpus
     public function setEditChoiceOrder(?int $editChoiceOrder): self
     {
         $this->editChoiceOrder = $editChoiceOrder;
+
+        return $this;
+    }
+
+    public function getNextIdPublic(): int
+    {
+        return $this->nextIdPublic;;
+    }
+
+    public function setNextIdPublic(int $next_id): self
+    {
+        $this->nextIdPublic = $next_id;
 
         return $this;
     }
