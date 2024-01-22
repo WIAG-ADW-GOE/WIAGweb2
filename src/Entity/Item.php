@@ -152,11 +152,6 @@ class Item {
     private $itemInSource;
 
     /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
-    private $idPublic;
-
-    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $mergedIntoId;
@@ -658,12 +653,6 @@ class Item {
         return $matches ? $matches[1] : null;
     }
 
-    public function setIdPublic(?string $idPublic): self
-    {
-        $this->idPublic = $idPublic;
-
-        return $this;
-    }
 
     /**
      * get idPublic of a related canon or bishop for canons gs
