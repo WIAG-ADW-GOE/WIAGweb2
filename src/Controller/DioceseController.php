@@ -56,7 +56,6 @@ class DioceseController extends AbstractController {
         }
 
         $count = $repository->countByName($name);
-        $offset = 0;
         $result = $repository->dioceseWithBishopricSeat($name, self::PAGE_SIZE, $offset);
 
         return $this->render('diocese/query_result.html.twig', [

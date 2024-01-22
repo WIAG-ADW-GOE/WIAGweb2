@@ -103,6 +103,8 @@ class IdController extends AbstractController {
         $person = $item->getPerson();
         $person_role_list = $item->getPersonRole();
 
+        $format = ucfirst(strtolower($format));
+
         if ($format == 'Html') {
             return $this->render('person/person.html.twig', [
                 'personName' => $person,
@@ -148,7 +150,9 @@ class IdController extends AbstractController {
             $diocese = null;
         }
 
-        if ($format == 'html') {
+        $format = ucfirst(strtolower($format));
+
+        if ($format == 'Html') {
             return $this->render('diocese/diocese.html.twig', [
                 'diocese' => $diocese,
             ]);
