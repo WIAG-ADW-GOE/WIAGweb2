@@ -310,7 +310,6 @@ class EditPersonController extends AbstractController {
         $person_index = array_keys($form_data)[0];
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
-
         /* map/validate form */
         // fill person_list
         $person_list = $this->editService->mapFormdata([$form_data], $current_user_id);
@@ -326,6 +325,11 @@ class EditPersonController extends AbstractController {
             $nameLookupRepository = $em->getRepository(NameLookup::class);
             $itemNameRoleRepository = $em->getRepository(ItemNameRole::class);
             $urlExternalRepository = $em->getRepository(UrlExternal::class);
+            $corpusRepository = $em->getRepository(Corpus::class);
+            $itemCorpusRepository = $em->getRepository(ItemCorpus::class);
+
+            // set ID in corpus and public ID if necessary
+            $this->editService->initItemCorpusMayBe($person->getItem());
 
             // this function is only called if form data have changed
             if ($person_id == 0) { // new entry

@@ -37,7 +37,7 @@ class FactGridService {
      *
      * TODO
      */
-        public function queryWIAGItems() {
+    public function queryWIAGItems() {
 
         $sparql_query = "SELECT DISTINCT ?item ?itemLabel ?wiag ".
                       "WHERE { ?item wdt:P601 ?wiag. ?item wdt:P2 wd:Q7. ".
@@ -56,19 +56,15 @@ class FactGridService {
             throw new Exception($statusCode);
         }
         $contentType = $response->getHeaders()['content-type'][0];
-        dump($contentType);
         $content = $response->getContent();
         $xml_object = simplexml_load_string($content);
         $n = 0;
         foreach ($xml_object->children() as $xml_child) {
-            dump($xml_child);
             $n += 1;
             if ($n >= 22) {
                 break;
             }
         }
-        dd("ende");
-
     }
 
     /**

@@ -523,23 +523,28 @@ class EditPersonService {
         }
 
         // corpus
-        $corpus_found = false;
-        if (array_key_exists('corpus_id', $data)) {
-            foreach ($data['corpus_id'] as $corpus_id) {
-                $corpus_found = $this->mapItemCorpusOrInit($item, $data, $corpus_id);
-            }
-        }
-
-        if (!$corpus_found) {
-            // keep existing data
-            if (array_key_exists('corpus', $data)) {
-                foreach($data['corpus'] as $key => $data_loop) {
-                    $this->mapItemCorpus($item, $key, $data_loop);
+        $corpus_found_in_data = false;
+        if (array_key_exists('corpus', $data)) {
+            // examine selection
+            foreach ($data['corpus'] as $key => $corpus) {
+                if (array_key_exists('checked', $corpus)) {
+                    $corpus_found_in_data = true;
+                    $this->mapItemCorpus($item, $key, $corpus);
                 }
             }
-            $msg = "Mindestens ein Corpus sollte ausgewählt sein.";
+            if (!$corpus_found_in_data) {
+                // keep existing data
+                foreach ($data['corpus'] as $key => $corpus) {
+                    $this->mapItemCorpus($item, $key, $corpus);
+                }
+                $msg = "Mindestens ein Corpus sollte ausgewählt sein.";
+                $item->getInputError()->add(new InputError('status', $msg));
+            }
+        } else {
+            $msg = "Keine Angaben zu Corpus gefunden: Formularfehler";
             $item->getInputError()->add(new InputError('status', $msg));
         }
+
 
         // reference
         if (array_key_exists('ref', $data)) {
@@ -913,34 +918,31 @@ class EditPersonService {
     }
 
     /**
-     * copy data for $corpus_id or initialize itemCorpus
+     * initialize itemCorpus if necessary
      */
-    private function mapItemCorpusOrInit($item, $data, $corpus_id) {
+    public function initItemCorpusMayBe($item) {
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
 
-        $has_data = (array_key_exists('corpus', $data) and array_key_exists($corpus_id, $data['corpus']));
+        foreach ($item->getItemCorpus() as $ic) {
+            $corpus_id = $ic->getCorpusId();
+            if ($ic->getIdInCorpus() == "") {
+                $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
+                $id_in_corpus = strval($id_in_corpus);
+                $ic->setIdInCorpus($id_in_corpus);
+            }
 
-        $item_corpus = new ItemCorpus();
-        $item_corpus->setItem($item);
-        $item->getItemCorpus()->add($item_corpus);
-        $item_corpus->setCorpusId($corpus_id);
+            if ($ic->getIdPublic() == "") {
+                $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+                $mask = $corpus->getIdPublicMask();
+                $next_id = $corpus->getNextIdPublic();
 
-        if ($has_data) {
-            $item_corpus->setIdInCorpus($data['corpus'][$corpus_id]['idInCorpus']);
-            $item_corpus->setIdPublic($data['corpus'][$corpus_id]['idPublic']);
-        } else {
-            $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+                $id_public = EditService::makeIdPublic($mask, $next_id);
+                $ic->setIdPublic($id_public);
 
-            // ID in corpus
-            $id_in_corpus = intval($itemCorpusRepository->findMaxIdInCorpus($corpus_id)) + 1;
-            $id_in_corpus = strval($id_in_corpus);
-            $item_corpus->setIdInCorpus($id_in_corpus);
-
-            // ID public
-            $id_public = EditService::makeIdPublic($corpus_id, $this->entityManager);
-            $item_corpus->setIdPublic($id_public);
+                $corpus->setNextIdPublic($next_id + 1);
+            }
         }
-
-        return $item_corpus;
     }
 
     /**
@@ -953,8 +955,16 @@ class EditPersonService {
         $item->getItemCorpus()->add($item_corpus);
         $item_corpus->setCorpusId($corpus_id);
 
-        $item_corpus->setIdInCorpus($data['idInCorpus']);
-        $item_corpus->setIdPublic($data['idPublic']);
+        if (array_key_exists('idInCorpus', $data)) {
+            $item_corpus->setIdInCorpus($data['idInCorpus']);
+        } else {
+            $item_corpus->setIdInCorpus("");
+        }
+        if (array_key_exists('idPublic', $data)) {
+            $item_corpus->setIdPublic($data['idPublic']);
+        } else {
+            $item_corpus->setIdPublic("");
+        }
 
         return $item_corpus;
     }

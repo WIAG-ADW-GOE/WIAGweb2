@@ -183,24 +183,18 @@ class EditService {
     /**
      * compose ID public
      */
-    static public function makeIdPublic($corpus_id, $entityManager)  {
-        $corpusRepository = $entityManager->getRepository(Corpus::class);
-        $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+    static public function makeIdPublic($id_public_mask, $counter_id_public)  {
 
         // find number fields
         $match_list = null;
-        $mask = $corpus->getIdPublicMask();
-        $next_id = $corpus->getNextIdPublic();
         $id_public = null;
-        if (!is_null($mask)) {
-            preg_match_all("/#+/", $mask, $match_list);
+        if (!is_null($id_public_mask)) {
+            preg_match_all("/#+/", $id_public_mask, $match_list);
 
             $field = $match_list[0][0];
             $width = strlen($field);
-            $numeric_str = str_pad($next_id, $width, "0", STR_PAD_LEFT);
-            $id_public = preg_replace("/#+/", $numeric_str, $mask, 1);
-
-            $corpus->setNextIdPublic($next_id + 1);
+            $numeric_str = str_pad($counter_id_public, $width, "0", STR_PAD_LEFT);
+            $id_public = preg_replace("/#+/", $numeric_str, $id_public_mask, 1);
 
             // second numeric_field: default is '001'
             $field = $match_list[0][1];
@@ -217,6 +211,7 @@ class EditService {
      */
     static public function setNewItemCorpus($item, $corpus_id, $entityManager) {
         $itemCorpusRepository = $entityManager->getRepository(ItemCorpus::class);
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
 
         $item_corpus = new ItemCorpus();
         $item_corpus->setItem($item);
@@ -230,8 +225,14 @@ class EditService {
         $item_corpus->setIdInCorpus($id_in_corpus);
 
         // public ID
-        $id_public = self::makeIdPublic($corpus_id, $entityManager);
+        $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
+        $mask = $corpus->getIdPublicMask();
+        $next_id = $corpus->getNextIdPublic();
+
+        $id_public = self::makeIdPublic($mask, $next_id);
         $item_corpus->setIdPublic($id_public);
+
+        $corpus->setNextIdPublic($next_id + 1);
 
         return $item_corpus;
     }

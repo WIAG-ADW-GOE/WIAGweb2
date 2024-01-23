@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Entity\Corpus;
 use App\Entity\ItemCorpus;
 use App\Entity\ItemNameRole;
 use App\Entity\Person;
@@ -310,6 +311,9 @@ class GsoController extends AbstractController {
         $itemRepository = $doctrine->getRepository(Item::class, 'default');
         $itemCorpusRepository = $doctrine->getRepository(ItemCorpus::class, 'default');
         $institutionRepository = $doctrine->getRepository(Institution::class, 'default');
+        $corpusRepository = $doctrine->getRepository(Corpus::class, 'default');
+
+        $corpus_dreg_can = $corpusRepository->findOneByCorpusId('dreg-can');
 
         $current_user_id = $this->getUser()->getId();
 
@@ -317,7 +321,8 @@ class GsoController extends AbstractController {
 
         $domstift_list = $institutionRepository->findDomstifte();
         $id_cap_list = UtilService::collectionColumn($domstift_list, 'id');
-        $next_num_id_public = $itemCorpusRepository->findMaxNumIdPublic('dreg-can') + 1;
+        $next_num_id_public = $corpus_dreg_can->getNextIdPublic();
+        $id_public_mask = $corpus_dreg_can->getIdPublicMask();
 
         $n_insert = 0;
         $gsn_insert_list = array();
@@ -356,7 +361,7 @@ class GsoController extends AbstractController {
                 $inst = $role->getInstitution();
                 if (!is_null($inst) and in_array($inst->getId(), $id_cap_list)) {
                     $corpus_id = 'dreg-can';
-                    $id_public = EditService::makeIdPublic($corpus_id, $next_num_id_public, $entityManager);
+                    $id_public = EditService::makeIdPublic($id_public_mask, $next_num_id_public);
                     $item_corpus->setIdPublic($id_public);
                     $next_num_id_public += 1;
                     break;
@@ -371,6 +376,8 @@ class GsoController extends AbstractController {
             $person_insert_list[] = $person;
             $n_insert += 1;
         }
+
+        $corpus_dreg_can->setNextIdPublic($next_num_id_public);
 
 
         return $person_insert_list;

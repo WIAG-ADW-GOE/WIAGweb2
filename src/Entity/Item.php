@@ -588,7 +588,7 @@ class Item {
             return null;
         }
         $id_public_cand = null;
-        foreach (['epc', 'can', 'dreg-can'] as $corpus_id) {
+        foreach (['epc', 'can', 'dreg-can', 'dioc'] as $corpus_id) {
             foreach ($this->itemCorpus as $ic_loop) {
                 $id_public_cand = $ic_loop->getIdPublic();
                 if ($ic_loop->getCorpusId() == $corpus_id) {
@@ -656,6 +656,8 @@ class Item {
 
     /**
      * get idPublic of a related canon or bishop for canons gs
+     *
+     * see import from Digitales Personenregister
      */
     public function getIdPublicVisible(): ?string
     {
