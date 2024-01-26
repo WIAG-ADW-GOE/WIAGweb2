@@ -81,6 +81,7 @@ class NameLookupRepository extends ServiceEntityRepository
         $this->clearPerson($person);
 
         // insert new entries
+
         $variant_list = $this->makeVariantList($person);
         foreach ($variant_list as $variant) {
             $nl_new = new NameLookup();
@@ -127,7 +128,6 @@ class NameLookupRepository extends ServiceEntityRepository
         }
 
         $choice_prod_list = Utilservice::array_cartesian(...$choice_list);
-        // name_lookup.gn_fn is obsolete but is still filled to be consistent
         $lookup_list = array();
         foreach($choice_prod_list as $p_list) {
             $lookup_str = join(" ", $p_list);

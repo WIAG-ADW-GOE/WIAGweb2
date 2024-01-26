@@ -3,19 +3,19 @@
     <ul class="dropdown-menu" style="min-width: 14rem">
 	<li><button type="submit"
 		    form="{{ form.vars.id }}"
-		    formaction="{{ path('download-csv-person-data', { 'corpusId': corpus }) }}"
+		    formaction="{{ path('download-csv-person-data', { 'corpusId': corpusId }) }}"
 		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Personendaten</button></li>
 	<li><button type="submit"
 		    form="{{ form.vars.id }}"
-		    formaction="{{ path('download-csv-person-role-data', { 'corpusId': corpus }) }}"
+		    formaction="{{ path('download-csv-person-role-data', { 'corpusId': corpusId }) }}"
 		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Amtsdaten</button></li>
 	<li><button type="submit"
 		    form="{{ form.vars.id }}"
-		    formaction="{{ path('download-csv-person-reference', { 'corpusId': corpus }) }}"
+		    formaction="{{ path('download-csv-person-reference', { 'corpusId': corpusId }) }}"
 		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Literatur Personen</button></li>
 	<li><button type="submit"
 		    form="{{ form.vars.id }}"
-		    formaction="{{ path('download-csv-person-url-external', { 'corpusId': corpus }) }}"
+		    formaction="{{ path('download-csv-person-url-external', { 'corpusId': corpusId }) }}"
 		    class="btn btn-secondary btn-light btn-sm ms-2">CSV Externe IDs</button></li>
     </ul>
 </div>

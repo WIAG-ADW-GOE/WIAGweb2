@@ -108,10 +108,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         // pr is required for sorting; we publish only persons with roles: use innerJoin
         // queries for bishops only consider Gatz-offices (query, sort, facet)
 
-        if ($model->corpus == 'epc') {
-            $qb->innerJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
-        } else {
+        if ($model->corpus == 'can') {
             $qb->innerJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+        } else {
+            $qb->innerJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
         }
         $joined_list[] = 'pr';
 
@@ -176,10 +176,9 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     private function sortList($model) {
         // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
         $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
-        $corpus = $model->corpus;
 
         if ($model->isEmpty()) {
-            if ($corpus == 'can') {
+            if ($model->corpus == 'can') {
                 $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
             } else {
                 $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
@@ -189,13 +188,13 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         } elseif ($model->diocese) {
             $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
         } elseif ($model->office) {
-            if ($corpus == 'can') {
+            if ($corpus_includes_canon) {
                 $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
             } else {
                 $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
             }
         } elseif ($model->name) {
-            if ($corpus == 'can') {
+            if ($model->corpus == 'can') {
                 $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'domstift_name', 'dateSortKey', 'itemIdName'];
             } else {
                 $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
@@ -230,10 +229,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         if ($facetDiocese) {
             $valFctDioc = array_column($facetDiocese, 'name');
             // queries for bishops only consider Gatz-offices (query, sort, facet)
-            if ($model->corpus == 'epc') {
-                $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdName');
-            } else {
+            if ($model->corpus == 'can') {
                 $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdRole');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = inr.itemIdName');
             }
             $qb->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
                ->setParameter('valFctDioc', $valFctDioc);
@@ -243,10 +242,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         if ($facetOffice) {
             $valFctOfc = array_column($facetOffice, 'name');
             // queries for bishops only consider Gatz-offices (query, sort, facet)
-            if ($model->corpus == 'epc') {
-                $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdName');
-            } else {
+            if ($model->corpus == 'can') {
                 $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdRole');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = inr.itemIdName');
             }
 
             $qb->leftjoin('App\Entity\Role', 'rfctofc', 'WITH', 'rfctofc.id = prfctofc.roleId')
@@ -296,11 +295,11 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addFacets($qb, $model);
 
         // queries for bishops only consider Gatz-offices (query, sort, facet)
-        if ($model->corpus == 'epc') {
-            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName')
+        if ($model->corpus == 'can') {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
                ->andWhere("pr_count.dioceseName IS NOT NULL");
         } else {
-            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole')
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName')
                ->andWhere("pr_count.dioceseName IS NOT NULL");
         }
 
@@ -378,10 +377,10 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         $this->addFacets($qb, $model);
 
         // queries for bishops only consider Gatz-offices (query, sort, facet)
-        if ($model->corpus == 'epc') {
-            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName');
-        } else {
+        if ($model->corpus == 'can') {
             $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdRole');
+        } else {
+            $qb->join('App\Entity\PersonRole', 'pr_count', 'WITH', 'pr_count.personId = inr.itemIdName');
         }
         $qb->join('pr_count.role', 'role_count')
            ->andWhere("role_count.name IS NOT NULL");
@@ -485,6 +484,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
             $corpus_id_list = $item->getCorpusIdList();
             $is_online = $item->getIsOnline();
             // primary entry for 'can', 'epc'; filter for corpus = 'can' or 'epc'
+            // TODO 2024-01-26 check for corpus 'ibe'.
             if ($is_online == 1 and (in_array('can', $corpus_id_list) or in_array('epc', $corpus_id_list))) {
                 $id = $p_loop->getId();
                 $inr = new ItemNameRole($id, $id);

@@ -57,16 +57,16 @@ class EditPersonController extends AbstractController {
     /**
      * display query form for persons;
      *
-     * @Route("/edit/person/query", name="edit_person_query")
+     * @Route("/edit/person/query/{corpusId}", name="edit_person_query")
      */
-    public function query(Request $request) {
+    public function query($corpusId, Request $request) {
 
         $model = new PersonFormModel;
         // set defaults
         $model->editStatus = ['- alle -' => '- alle -'];
         $model->isOnline = true;
         $model->listSize = 20;
-        $model->corpus = 'epc,can';
+        $model->corpus = $corpusId;
         $model->isEdit = true;
 
         $status_choices = $this->statusChoices();
@@ -118,6 +118,7 @@ class EditPersonController extends AbstractController {
             $template_params = [
                 'personList' => $person_list,
                 'form' => $form,
+                'corpusId' => $corpusId,
                 'error_list' => $model->getInputError(),
                 'count' => $count,
                 'offset' => $offset,
@@ -126,6 +127,7 @@ class EditPersonController extends AbstractController {
         } else {
             $template_params = [
                 'form' => $form,
+                'corpusId' => $corpusId,
                 'error_list' => $model->getInputError(),
                 'count' => $count,
                 'pageSize' => $model->listSize,

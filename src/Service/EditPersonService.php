@@ -161,11 +161,11 @@ class EditPersonService {
 
         $item->setIsOnline(0);
         $corpus_id_list = $item->getCorpusIdList();
-        // 'can' takes precedence
-        foreach (['can', 'epc'] as $corpus_id) {
+        // if at least one corpus matches, the item goes online
+        foreach ($corpus_id_list as $corpus_id) {
             $corpus = $corpusRepository->findOneByCorpusId($corpus_id);
-            $online_status = $corpus->getOnlineStatus();
-            if (in_array($corpus_id, $corpus_id_list) and $item->getEditStatus() == $online_status) {
+            $corpus_online_status = $corpus->getOnlineStatus();
+            if ($item->getEditStatus() == $corpus_online_status) {
                 $item->setIsOnline(1);
                 break;
             }

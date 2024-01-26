@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block body %}
-    {% set itemTypeId = 4 %}
+    {% set corpusId = form.corpus.vars.value %}
     {{ form_start(form, {
         'attr': {
             'id': form.vars.id,
@@ -33,16 +33,16 @@
                                 {format: 'Json', text: 'JSON'},
                                 {format: 'Jsonld', text: 'JSON-LD'},
                             ] %}
-                                <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_query_data', { 'corpusId': corpus }) }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
+                                <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_query_data', { 'corpusId': corpusId }) }} name="format" value="{{ fmtft.format }}" class="btn btn-secondary btn-light btn-sm ms-2">{{ fmtft.text }}</button>
                             {% endfor %}
-                            {% if is_granted('ROLE_CANON_ONEPAGE') and corpus == 'can' %}
+                            {% if is_granted('ROLE_CANON_ONEPAGE') and corpusId == 'can' %}
                                 <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage') }} name="onepage" class="btn btn-secondary btn-light btn-sm ms-2">Liste chron.</button>
                                 <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'dreg-can'}) }} name="onepage_references_gs" class="btn btn-secondary btn-light btn-sm ms-2">Lit. GS</button>
                                 <button type="submit" form="{{ form.vars.id }}" formaction={{ path('person_onepage_references', {'corpusIdRef': 'can'}) }} name="onepage_references_others" class="btn btn-secondary btn-light btn-sm ms-2">Lit. andere</button>
                             {% endif %}
                             {{ include('person/_dropdown_download.html.twig') }}
                         {% endif %}
-                        <a href="{{ path('person_query', { 'corpusId': corpus }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
+                        <a href="{{ path('person_query', { 'corpusId': corpusId }) }}" role="button" class="btn btn-secondary btn-light btn-sm ms-3">Neue Suche</a>
                     </div>
                 </div>
             </div>

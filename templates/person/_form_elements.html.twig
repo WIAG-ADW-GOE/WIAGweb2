@@ -5,7 +5,7 @@
 	    {# name #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest_online', { 'corpus': corpus, 'field': 'name' }),
+		     url: path('person_suggest_online', { 'corpusId': corpusId, 'field': 'name' }),
 		 }) }}>
 		{{ form_label(form.name) }}
 		{{ form_errors(form.name) }}
@@ -20,7 +20,7 @@
 		    data-autocomplete-target="results"
 		    style="max-width: 20rem;"></ul>
 	    </div>
-	    {% if corpus == "can" %}
+	    {% if form.domstift is defined %}
 		{# domstift #}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
@@ -40,7 +40,7 @@
 			       style="max-width: 14em;"></ul>
 		</div>
 	    {% endif %}
-	    {% if corpus == "epc" %}
+	    {% if form.diocese is defined %}
 		{# diocese #}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
@@ -63,7 +63,7 @@
 	    {# office #}
 	    <div class="me-2 mt-1"
 		 {{ stimulus_controller('autocomplete', {
-		     url: path('person_suggest_online', { 'corpus': corpus, 'field': 'office' }),
+		     url: path('person_suggest_online', { 'corpusId': corpusId, 'field': 'office' }),
 		 }) }}>
 		{{ form_label(form.office) }}
 		{{ form_errors(form.office) }}
@@ -79,10 +79,10 @@
 		    style="max-width: 14em;"></ul>
 	    </div>
 	    {# place #}
-	    {% if corpus == "can" %}
+	    {% if form.place is defined %}
 		<div class="me-2 mt-1"
 		     {{ stimulus_controller('autocomplete', {
-			 url: path('person_suggest_online', { 'corpus': corpus, 'field': 'place' }),
+			 url: path('person_suggest_online', { 'corpusId': corpusId, 'field': 'place' }),
 		     }) }}>
 		    {{ form_label(form.place) }}
 		    {{ form_errors(form.place) }}
@@ -94,8 +94,8 @@
 			},
 		    }) }}
 		    <ul class="list-group autocomplete-target"
-			data-autocomplete-target="results"
-			style="max-width: 12em;"></ul>
+			       data-autocomplete-target="results"
+			       style="max-width: 12em;"></ul>
 		</div>
 	    {% endif %}
 	    {{  form_row(form.year, {
@@ -111,6 +111,7 @@
 		    'size': 26,
 		}
 	    }) }}
+	    {# hidden #}
 	    {{ form_row(form.corpus) }}
 	</div>
     </div>

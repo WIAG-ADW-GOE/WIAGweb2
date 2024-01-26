@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 {% set menuItem='home' %}
-
+{# landing page with tiles for each theme #}
 {% block body %}
     <div class="container-fluid">
 	<div class="row mx-2">
-	    <div class="col-md-3">
+	    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
 		<figure class="figure">
 		    <a href="{{ path('person_query', { 'corpusId': 'epc' }) }}"><img src="{{ asset('images/Bischoefe-sc10.jpg') }}" class="figure-img img-fluid"></a>
 		    <figcaption><a href="{{ path('about_images') }}#kirchenlehrer_naumburg">Bildnachweis</a></figcaption>
@@ -12,7 +12,7 @@
 		<p><a href="{{ path('person_query', { 'corpusId': 'epc' }) }}"><strong>Bischöfe des Alten Reiches</strong></a></p>
 		<p class="mt-n2">Datensammlung mit Basisdaten zu allen Patriarchen, Erzbischöfen, Bischöfen, Weihbischöfen und weiteren diözesanen Leitungspersonen des Alten Reiches, die in dem mehrbändigen Bischofslexikon „Die Bischöfe des Heiligen Römischen Reiches“ sowie „Die Bistümer des Heiligen Römischen Reiches“ von Erwin Gatz (Hg.) verzeichnet sind. Neben den biographischen Angaben sind die wichtigsten Leitungsämter mit Amtszeiten erfasst. Alle Datensätze sind mit Normdaten ausgezeichnet.</p>
 	    </div>
-	    <div class="col-md-3">
+	    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
 		<figure class="figure">
 		    <a href="{{ path('diocese_query') }}"><img src="{{ asset('images/Bistuemer-sc10.jpg') }}" class="figure-img img-fluid"></a>
 		    <figcaption><a href="{{ path('about_images') }}#karte_bistuemer">Bildnachweis</a></figcaption>
@@ -20,15 +20,15 @@
 		<p><a href="{{ path('diocese_query') }}"><strong>Bistümer des Alten Reiches</strong></a></p>
 		<p class="mt-n2">Übersicht über die Erzbistümer und Bistümer des Alten Reiches, nach: „Die Bistümer des Alten Reiches“ nach Erwin Gatz (Hg.), „Die Bistümer des Alten Reiches von ihren Anfängen bis zur Säkularisation“, Freiburg im Breisgau 2003. Die Datensammlung enthält Basisdaten zu den Bistümern und ist mit Links zu Normdatensammlungen angereichert.</p>
 	    </div>
-	    <div class="col-md-3">
+	    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
 		<figure class="figure">
 		    <a href="{{ path('person_query', { 'corpusId': 'can' }) }}"><img src="{{ asset('images/Konstanz_Dacher-bc10.jpg') }}" class="figure-img img-fluid" alt="Stadtansicht von Konstanz mit Münster"></a>
 		    <figcaption><a href="{{ path('about_images') }}#stadtansicht_konstanz">Bildnachweis</a></figcaption>
 		</figure>
 		<p><a href="{{ path('person_query', { 'corpusId': 'can' }) }}"><strong>Domherren des Alten Reiches</strong></a></p>
-		<p class="mt-n2">Datensammlung mit Basisdaten und Normdaten zum geistlichen Personal der Domstifte des Alten Reiches, die auf einschlägigen prosopographischen Studien zu den Domstiften und den Publikationen der Germania	Sacra beruht.</p>
+		<p class="mt-n2">Datensammlung mit Basisdaten und Normdaten zum geistlichen Personal der Domstifte des Alten Reiches, die auf einschlägigen prosopographischen Studien zu den Domstiften und den Publikationen der Germania Sacra beruht.</p>
 	    </div>
-	    <div class="col-md-3">
+	    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
 		<figure class="figure">
 		    <a href="{{ path('priest_ut_query') }}"><img src="{{ asset('images/Uniciteit-van-vornamen_sc_ar.jpg') }}" class="figure-img img-fluid"></a>
 		    <figcaption><a href="{{ path('about_images') }}#vornamen_priester">Bildnachweis</a></figcaption>
@@ -36,15 +36,14 @@
 		<p><a href="{{ path('priest_ut_query') }}"><strong>Ordinations of priests in the medieval diocese of Utrecht (1505-1518)</strong></a></p>
 		<p class="mt-n2">Collection of 4,476 priest ordained in the medieval bishopric of Utrecht between February 1505 and September 1518. The dataset is based on lists originally published by Gisbert Brom in 1896 and 1897. This data collection was originally published by Rombert Stapel, International Institute of Social History, Amsterdam. Cf. Stapel, Rombert, Ordinations of priests in the medieval diocese of Utrecht (1505–1518), <a target="_blank" rel="noopener" href="https://hdl.handle.net/10622/IEYIUX">https://hdl.handle.net/10622/IEYIUX</a>, IISH Data Collection, V2, 2020.</p>
 	    </div>
-	</div>
-	{% if false %}
-	    <div class="row justify-content-center">
-		<figure role="group" class="col col-md-8 pt-3">
-		    <img src="{{ asset('images/WIAG-netz-md.png') }}"
-			 class="img-fluid"
-			 alt="Vernetzte Daten in WIAG">
+	    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+		<figure class="figure">
+		    <a href="{{ path('person_query', { 'corpusId': 'ibe' }) }}"><img src="{{ asset('images/Kastilische-Kroenung.png') }}" class="figure-img img-fluid" alt="Szene der Krönung Alfons XI von Kastilien"></a>
+		    <figcaption><a href="{{ path('about_images') }}#kastilische_kroenung">Bildnachweis</a></figcaption>
 		</figure>
+		<p><a href="{{ path('person_query', { 'corpusId': 'ibe' }) }}"><strong>Bischöfe der iberischen Halbinsel</strong></a></p>
+		<p class="mt-n2">Datensammlung mit Basisdaten zu Bischöfen auf der iberischen Halbinsel.</p>
 	    </div>
-	{% endif %}
+	</div>
     </div>
 {% endblock %}

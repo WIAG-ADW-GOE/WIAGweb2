@@ -26,6 +26,11 @@ use Symfony\Component\Routing\RouterInterface;
 
 class PersonFormType extends AbstractType
 {
+    const FILTER_MAP = [
+        'can' => ['cap', 'ofc', 'plc', 'url'],
+        'epc' => ['dioc', 'ofc'],
+        'ibe' => ['dioc', 'ofc'],
+    ];
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
@@ -42,6 +47,9 @@ class PersonFormType extends AbstractType
         $forceFacets = $options['forceFacets'];
         $repository = $options['repository'];
         $action = $options['action'];
+        $corpusId = $model->corpus;
+
+        $filter_map = self::FILTER_MAP[$corpusId];
 
         $builder
             ->add('name', TextType::class, [
@@ -74,7 +82,8 @@ class PersonFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('corpus', HiddenType::class)
+            ->add('corpus', HiddenType::class, [
+            ])
             ->add('stateFctDioc', HiddenType::class, [
                 'mapped' => false,
             ])
@@ -91,7 +100,7 @@ class PersonFormType extends AbstractType
                  'mapped' => false,
             ]);
 
-        if ($model->corpus == 'epc') {
+        if (in_array('dioc', $filter_map)) {
             $builder->add('diocese', TextType::class, [
                 'label' => 'Erzbistum/Bistum',
                 'required' => false,
@@ -101,7 +110,7 @@ class PersonFormType extends AbstractType
             ]);
         }
 
-        if ($model->corpus == 'can') {
+        if (in_array('cap', $filter_map)) {
             $builder
                 ->add('domstift', TextType::class, [
                     'label' => 'Domstift',
@@ -109,7 +118,10 @@ class PersonFormType extends AbstractType
                     'attr' => [
                         'placeholder' => 'Domstift',
                     ],
-                ])
+                ]);
+        }
+        if (in_array('plc', $filter_map)) {
+            $builder
                 ->add('place', TextType::class, [
                     'label' => 'Ort',
                     'required' => false,
@@ -121,15 +133,19 @@ class PersonFormType extends AbstractType
         }
 
         if ($forceFacets) {
-            $this->createFacetOffice($builder, $model, $repository);
-
-            if ($model->corpus == 'can') {
+            if (in_array('ofc', $filter_map)) {
+                $this->createFacetOffice($builder, $model, $repository);
+            }
+            if (in_array('cap', $filter_map)) {
                 $this->createFacetDomstift($builder, $model, $repository);
+            }
+            if (in_array('plc', $filter_map)) {
                 $this->createFacetPlace($builder, $model, $repository);
+            }
+            if (in_array('url', $filter_map)) {
                 $this->createFacetUrl($builder, $model, $repository);
             }
-
-            if ($model->corpus == 'epc') {
+            if (in_array('dioc', $filter_map)) {
                 $this->createFacetDiocese($builder, $model, $repository);
             }
         }
@@ -141,7 +157,7 @@ class PersonFormType extends AbstractType
         // add facets with current model data
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            function ($event) use ($repository) {
+            function ($event) use ($repository, $filter_map) {
                 $data = $event->getData();
                 if (!$data) {
                     $model = new PersonFormModel();
@@ -150,16 +166,19 @@ class PersonFormType extends AbstractType
                 }
 
                 $form = $event->getForm();
-
-                $this->createFacetOffice($form, $model, $repository);
-
-                if ($model->corpus == 'can') {
+                if (in_array('ofc', $filter_map)) {
+                    $this->createFacetOffice($form, $model, $repository);
+                }
+                if (in_array('cap', $filter_map)) {
                     $this->createFacetDomstift($form, $model, $repository);
+                }
+                if (in_array('plc', $filter_map)) {
                     $this->createFacetPlace($form, $model, $repository);
+                }
+                if (in_array('url', $filter_map)) {
                     $this->createFacetUrl($form, $model, $repository);
                 }
-
-                if ($model->corpus == 'epc') {
+                if (in_array('dioc', $filter_map)) {
                     $this->createFacetDiocese($form, $model, $repository);
                 }
             });

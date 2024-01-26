@@ -335,6 +335,8 @@ class IdController extends AbstractController {
      * respond to beacon requests; find item by GND_ID; show details
      *
      * @Route("/gnd/{id}", name="gnd_id")
+     *
+     * TODO return data for item with item_name_role.item_id_name see function id() above
      */
     public function detailsByGndId(string $id, Request $request) {
 

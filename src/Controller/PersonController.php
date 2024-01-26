@@ -72,7 +72,9 @@ class PersonController extends AbstractController {
 
     /**
      * display query form for persons; handle query
+     *
      * @Route("/query/{corpusId}", name="person_query")
+     * $corpusId denotes the topic. Several corpora may be involved
      */
     public function query($corpusId,
                           Request $request,
@@ -88,6 +90,7 @@ class PersonController extends AbstractController {
 
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
+
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => $flagInit,
             'repository' => $itemNameRoleRepository,
@@ -102,7 +105,7 @@ class PersonController extends AbstractController {
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
         }
-        $model->corpus = $corpusId;
+
 
         if ($form->isSubmitted() && !$form->isValid()) {
             return $this->renderForm('person/query.html.twig', [
@@ -126,7 +129,6 @@ class PersonController extends AbstractController {
         $template_param_list = [
             'menuItem' => 'collections',
             'form' => $form,
-            'corpus' => $corpusId,
             'count' => $count,
             'personList' => $person_list,
             'roleSortCritList' => ['dateSortKey', 'id'],
@@ -232,7 +234,6 @@ class PersonController extends AbstractController {
 
         return $this->render('person/person.html.twig', [
             'form' => $form->createView(),
-            'corpus' => $corpusId,
             'personName' => $person,
             'personRole' => $person_role_list,
             'roleSortCritList' => ['dateSortKey', 'id'],
@@ -433,16 +434,16 @@ class PersonController extends AbstractController {
     /**
      * respond to asynchronous JavaScript request
      *
-     * @Route("/person-suggest-online/{corpus}/{field}", name="person_suggest_online")
+     * @Route("/person-suggest-online/{corpusId}/{field}", name="person_suggest_online")
      * filter by Item->isOnline
      */
     public function autocompleteOnline(Request $request,
-                                       String $corpus,
+                                       String $corpusId,
                                        String $field) {
         $query_param = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        $corpus_id_list = [$corpus];
+        $corpus_id_list = [$corpusId];
         if ($corpus == 'can') {
             $corpus_id_list[] = 'dreg-can';
         }

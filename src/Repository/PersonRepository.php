@@ -69,6 +69,8 @@ class PersonRepository extends ServiceEntityRepository {
     public function findEditPersonIds($model, $limit = 0, $offset = 0) {
         $result = null;
 
+        $corpus_id_list = explode(',', $model->corpus);
+
         // avoid to join the same table twice
         $joined_list = array();
         $qb = $this->createQueryBuilder('p')
@@ -78,10 +80,9 @@ class PersonRepository extends ServiceEntityRepository {
         $qb->leftJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
         $joined_list[] = 'pr';
 
-        $corpusParam = explode(',', $model->corpus);
 
         $qb->join('App\Entity\ItemCorpus', 'c', 'WITH', "c.itemId = i.id AND c.corpusId in (:corpus)")
-           ->setParameter('corpus', $corpusParam);
+           ->setParameter('corpus', $corpus_id_list);
         $joined_list[] = 'c';
 
         $this->addConditions($qb, $model, $joined_list);
@@ -173,9 +174,8 @@ class PersonRepository extends ServiceEntityRepository {
 
     }
 
-    public function addConditions($qb, $model, $joined_list = array()) {
+    public function addConditions($qb, $model, $joinedList = array()) {
 
-        $corpus = $model->corpus;
         $comment_edit = $model->comment;
         $comment_duplicate = $model->commentDuplicate;
         $domstift = $model->domstift;
@@ -192,6 +192,7 @@ class PersonRepository extends ServiceEntityRepository {
         // bishops from Digitales Personenregister have no independent entries in item_name_role,
         // however their offices are visible in detail view (query via item_name_role)
 
+        // TODO 2024-01-26 löschen?
         // if (in_array('epc', $corpus)) {
         //     $qb->join(
         //         'App\Entity\ItemCorpus', 'c',
@@ -203,29 +204,32 @@ class PersonRepository extends ServiceEntityRepository {
         //     );
         // }
 
-        if ($model->corpus == 'can') {
-            $corpusParam = ['can', 'dreg-can'];
-        }else {
-            $corpusParam = explode(',', $model->corpus);
+        if ($model->isEdit) {
+            $corpus_id_list = explode(',', $model->corpus);
+        } else {
+            $corpus_id_list = [$model->corpus];
+            if ($model->corpus == 'can') {
+                $corpus_id_list[] = 'dreg-can';
+            }
         }
 
-        if (!in_array('c', $joined_list)) {
+        if (!in_array('c', $joinedList)) {
             $qb->join('App\Entity\ItemNameRole', 'inr_c',
                       'WITH', 'inr_c.itemIdName = inr.itemIdName')
                ->join('App\Entity\ItemCorpus', 'c',
                       'WITH', "c.itemId = inr_c.itemIdRole AND c.corpusId in (:corpus)")
-               ->setParameter('corpus', $corpusParam);
-            $joined_list[] = 'c';
+               ->setParameter('corpus', $corpus_id_list);
+            $joinedList[] = 'c';
         }
 
         // queries for bishops only consider Gatz-offices (query, sort, facet)
-        if (!in_array('pr', $joined_list) and ($office or $domstift or $diocese or $place)) {
-            if ($corpus == 'epc') {
-                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
-            } elseif ($corpus == 'can') {
+        if (!in_array('pr', $joinedList) and ($office or $domstift or $diocese or $place)) {
+            if ($corpus_id_list == ['can']) {
                 $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdRole');
+            } else {
+                $qb->join('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = inr.itemIdName');
             }
-            $joined_list[] = 'pr';
+            $joinedList[] = 'pr';
         }
 
         if ($domstift) {
@@ -290,15 +294,16 @@ class PersonRepository extends ServiceEntityRepository {
             $diocese = str_ireplace("erzbistum", "", $diocese);
             $diocese = str_ireplace("bistum", "", $diocese);
             $diocese = trim($diocese);
-            if ($corpus == 'epc') {
-                $qb ->andWhere("pr.dioceseName LIKE :q_diocese");
-            } else {
-                $qb->join('App\Entity\PersonRole', 'pr_dioc', 'WITH', 'pr_dioc.personId = pr.personId')
-                    ->andWhere("pr_dioc.dioceseName LIKE :q_diocese");
+            // 2024-01-26 obsolete?
+            // if ($corpus_id_list == 'can') {
+            //     $qb->join('App\Entity\PersonRole', 'pr_dioc', 'WITH', 'pr_dioc.personId = pr.personId')
+            //        ->andWhere("pr_dioc.dioceseName LIKE :q_diocese");
+            // } else {
+            //     $qb ->andWhere("pr.dioceseName LIKE :q_diocese");
+            // }
 
-            }
-
-            $qb->setParameter('q_diocese', '%'.$diocese.'%');
+            $qb ->andWhere("pr.dioceseName LIKE :q_diocese")
+                ->setParameter('q_diocese', '%'.$diocese.'%');
         }
 
         if ($place) {
@@ -306,9 +311,9 @@ class PersonRepository extends ServiceEntityRepository {
                ->setParameter('q_place', '%'.$place.'%');
         }
 
+        // TODO 2024-01-25: check this condition (query by name for retrieval and edit)
         if ($name) {
-            // search also for name in 'Digitales Personenregister' (?)
-            if ($corpus == 'epc' or $corpus == 'can') {
+            if (!$model->isEdit) {
                 $qb->join('App\Entity\NameLookup', 'name_lookup',
                           'WITH', 'name_lookup.personId = inr.itemIdRole');
             } else {
@@ -380,7 +385,8 @@ class PersonRepository extends ServiceEntityRepository {
             }
             if ($year) {
                 // we have no join to person at the level of ItemNameRole.itemIdRole so far
-                if ($model->corpus == 'epc' or $model->corpus == 'can') {
+                // TODO 2024-01-25 why is this relevant?
+                if (true or $model->corpus == 'epc' or $model->corpus == 'can') {
                     $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = inr.itemIdRole');
                     $qb->andWhere("p_year.dateMin - :mgnyear < :q_year ".
                                   " AND :q_year < p_year.dateMax + :mgnyear")
@@ -433,94 +439,6 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         return $qb;
-    }
-
-    /**
-     * 2023-11-04 obsolete
-     * add conditions set by facets
-     */
-    // private function addFacets($qb, $model) {
-    //     $itemTypeId = Item::ITEM_TYPE_ID['Bischof']['id'];
-
-    //     $facetDiocese = isset($model->facetInstitution) ? $model->facetInstitution : null;
-    //     if ($facetDiocese) {
-    //         $valFctDioc = array_column($facetDiocese, 'name');
-    //         $qb->join('App\Entity\PersonRole', 'prfctdioc', 'WITH', 'prfctdioc.personId = i.id')
-    //            ->andWhere("i.itemTypeId = ${itemTypeId}")
-    //            ->andWhere("prfctdioc.dioceseName IN (:valFctDioc)")
-    //            ->setParameter('valFctDioc', $valFctDioc);
-    //     }
-
-    //     $facetOffice = isset($model->facetOffice) ? $model->facetOffice : null;
-    //     if ($facetOffice) {
-    //         $valFctOfc = array_column($facetOffice, 'name');
-    //         $qb->join('App\Entity\PersonRole', 'prfctofc', 'WITH', 'prfctofc.personId = i.id')
-    //            ->andWhere("i.itemTypeId = ${itemTypeId}")
-    //            ->andWhere("prfctofc.roleName IN (:valFctOfc)")
-    //            ->setParameter('valFctOfc', $valFctOfc);
-    //     }
-
-    //     return $qb;
-    // }
-
-    /**
-     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
-     * countBishopDiocese($model)
-     *
-     * return array of dioceses related to a person's role (used for facet)
-     */
-    public function countBishopDiocese_legacy($model) {
-        $corpus = $model->corpus;
-
-        $qb = $this->createQueryBuilder('p')
-                   ->select('DISTINCT prcount.dioceseName AS name, COUNT(DISTINCT(prcount.personId)) AS n')
-                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
-                   ->join('i.itemCorpus', 'c')
-                   ->join('p.role', 'prcount')
-                   ->join('p.role', 'pr') # for form conditions
-                   ->andWhere('c.corpusId = :corpus')
-                   ->andWhere("i.isOnline = 1")
-                   ->andWhere("prcount.dioceseName IS NOT NULL")
-                   ->setParameter("corpus", $corpus);
-
-        $this->addPersonConditions($qb, $model);
-        $this->addFacets($qb, $model);
-
-        $qb->groupBy('prcount.dioceseName');
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        return $result;
-    }
-
-    /**
-     * TODO 2023-08-29 clean up: moved to ItemNameRoleRepository->countDiocese
-     * countBishopOffice($model)
-     *
-     * return array of offices related to a person's role (used for facet)
-     */
-    public function countBishopOffice($model) {
-        $corpus = $model->corpus;
-
-        $qb = $this->createQueryBuilder('p')
-                   ->select('DISTINCT prcount.roleName AS name, COUNT(DISTINCT(prcount.personId)) as n')
-                   ->join('App\Entity\Item', 'i', 'WITH', 'i.id = p.id')
-                   ->join('i.itemCorpus', 'c')
-                   ->join('p.role', 'prcount')
-                   ->join('p.role', 'pr') # for form conditions
-                   ->andWhere('c.corpusId = :corpus')
-                   ->andWhere("i.isOnline = 1")
-                   ->andWhere("prcount.roleName IS NOT NULL")
-                   ->setParameter("corpus", $corpus);
-
-        $this->addPersonConditions($qb, $model);
-        $this->addFacets($qb, $model);
-
-        $qb->groupBy('prcount.roleName');
-
-        $query = $qb->getQuery();
-        $result = $query->getResult();
-        return $result;
     }
 
     /**

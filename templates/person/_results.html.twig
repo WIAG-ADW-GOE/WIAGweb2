@@ -24,7 +24,7 @@
 		    <td><button
 			    type="submit"
 			    form="{{ form.vars.id }}"
-			    formaction="{{ path('person_list_detail', { 'corpusId': corpus })  }}"
+			    formaction="{{ path('person_list_detail', { 'corpusId': corpusId })  }}"
 			    class="btn btn-link p-0 text-sm-start"
 			    name="offset"
 			    value="{{ offset + loop.index0 }}">{{ displayname }}</button>
@@ -47,11 +47,11 @@
 			    {% elseif not r.datebegin and r.dateend %}{{ r.dateend }}
 			    {% elseif r.datebegin and r.dateend %}{{ r.datebegin }}-{{ r.dateend }}{% endif %}
 			</div>{% endfor %}
-			{% if  corpus == 'can' and person.item.itemNameRole|length > 1 %}
+			{% if corpusId == 'can' and person.item.itemNameRole|length > 1 %}
 			    <button
 				type="submit"
 				form="{{ form.vars.id }}"
-				formaction="{{ path('person_list_detail', { 'corpusId': corpus }) }}"
+				formaction="{{ path('person_list_detail', { 'corpusId': corpusId }) }}"
 				class="btn btn-link p-0"
 				name="offset"
 				value="{{ offset + loop.index0 }}"><small>&hellip;</small></button>
