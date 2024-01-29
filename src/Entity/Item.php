@@ -1096,13 +1096,13 @@ class Item {
         if (is_null($cd) or trim($cd) == "") {
             return null;
         }
-        $cand_list = explode(",", $this->commentDuplicate);
+        $cand_list = explode(",", $cd);
         $cand = trim($cand_list[0]);
 
         $matches = array();
         $parts = UtilService::splitIdInCorpus($cand);
 
-        return is_null($parts) ? null : $cand;
+        return in_array($parts['corpusId'], Corpus::EDIT_LIST) ? $cand : null;
     }
 
     public function setCommentDuplicate(?string $commentDuplicate): self

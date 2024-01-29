@@ -1000,17 +1000,19 @@ class UtilService {
      * split strings like 'can-53043'
      */
     static public function splitIdInCorpus($id_in_corpus) {
-        $match_list = array();
+        $parts = [
+            'corpusId' => null,
+            'idInCorpus' => null,
+        ];
 
+        $match_list = array();
         $flag = preg_match("/(^[a-z]{3,4})-([0-9_%]{3,})/", trim($id_in_corpus), $match_list);
         if ($flag == 1) {
-            $parts['corpus_id'] = $match_list[1];
-            $parts['id'] = count($match_list) > 2 ? $match_list[2] : null;
-            return $parts;
-        } else {
-            return null;
+            $parts['corpusId'] = $match_list[1];
+            $parts['idInCorpus'] = count($match_list) > 2 ? $match_list[2] : null;
         }
 
+        return $parts;
     }
 
     static public function equalNotNull($a, $b) {

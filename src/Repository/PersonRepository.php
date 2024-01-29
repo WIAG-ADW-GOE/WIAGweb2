@@ -351,9 +351,13 @@ class PersonRepository extends ServiceEntityRepository {
                     );
 
                     // look for $someid in item_corpus
-                    if ($model->isEdit) {
+                    $some_id_parts = UtilService::splitIdInCorpus($someid);
+                    if (in_array($some_id_parts['corpusId'], $corpus_id_list)) {
                         $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
-                        $iid_q_list = $itemCorpusRepository->findItemIdByCorpusAndId($someid);
+                        $iid_q_list = $itemCorpusRepository->findItemIdByCorpusAndId(
+                            $some_id_parts['corpusId'],
+                            $some_id_parts['idInCorpus']
+                        );
                         if (!is_null($iid_q_list) and count($iid_q_list) > 0) {
                             $id_list_list[] = array_column($iid_q_list, 'itemId');
                         }

@@ -411,17 +411,17 @@ class PersonController extends AbstractController {
     /**
      * respond to asynchronous JavaScript request
      *
-     * @Route("/person-suggest-edit/{field}", name="person_suggest_edit")
-     * response depends on item type
+     * @Route("/person-suggest-edit/{corpusId}/{field}", name="person_suggest_edit")
      */
-    public function autocompleteEdit(Request $request,
-                                     String $field) {
+    public function autocompleteEdit(String $corpusId,
+                                     String $field,
+                                     Request $request) {
         $query_param = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
         $hint_size = self::HINT_SIZE;
         $is_online = 0;
-        $corpus_id_list = Corpus::EDIT_LIST;
+        $corpus_id_list = explode(',', $corpusId);
 
         $suggestions = $this->autocomplete->$fnName($query_param, $hint_size, $is_online, $corpus_id_list);
 
