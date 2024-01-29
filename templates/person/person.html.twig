@@ -69,26 +69,22 @@
 		{# name, comments, dates of birth and death #}
 		{{ include('person/_person_header.html.twig', {person: personName, idpublic: personName.item.idpublic }, with_context = false) }}
 		{# offices #}
-		{% for person_loop in personRole %}
-		    {% if 'epc' in person_loop.item.corpusIdList or 'can' in person_loop.item.corpusIdList %}
-			{% set office_title = 'Amtsangaben aus Referenzwerken' %}
-			{{ include('person/_person_role_group.html.twig', {
-			    person: person_loop,
-			    title: office_title,
-			    with_context: false
-			}) }}
-		    {% endif %}
+		{% for person_loop in personRole|filter(v => v.item.hasEditCorpus) %}
+		    {% set office_title = 'Amtsangaben aus Referenzwerken' %}
+		    {{ include('person/_person_role_group.html.twig', {
+			person: person_loop,
+			title: office_title,
+			with_context: false
+		    }) }}
 		{% endfor %}
-		{% for person_loop in personRole %}
-		    {% if 'dreg-can' in person_loop.item.corpusIdList or 'dreg' in person_loop.item.corpusIdList%}
-			{% set gsnid = person_loop.item.geturlexternalobj('GSN') %}
-			{% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
-			{{ include('person/_person_role_group.html.twig', {
-			    person: person_loop,
-			    title: office_title,
-			    with_context: false
+		{% for person_loop in personRole|filter(v => v.item.hasDregCorpus) %}
+		    {% set gsnid = person_loop.item.geturlexternalobj('GSN') %}
+		    {% set office_title %}<a href="{{ gsnid.authority.urlformatter~gsnid.value  }}" target="_blank" rel="noopener"><strong>Amtsangaben aus dem Digitalen Personenregister der Germania Sacra — {{ gsnid.value }}</strong></a>{% endset %}
+		    {{ include('person/_person_role_group.html.twig', {
+			person: person_loop,
+			title: office_title,
+			with_context: false
 			}) }}
-		    {% endif %}
 		{% endfor %}
 		{# external IDs #}
 		{{ include('person/_person_url_external.html.twig') }}

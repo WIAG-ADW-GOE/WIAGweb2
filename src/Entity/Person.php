@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Entity\Item;
-use App\Entity\ItemCorpus;
 use App\Entity\PersonRole;
 use App\Entity\UrlExternal;
 use App\Repository\PersonRepository;

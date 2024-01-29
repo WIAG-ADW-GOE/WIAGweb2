@@ -376,6 +376,26 @@ class Item {
         return false;
     }
 
+    public function hasEditCorpus() {
+        foreach ($this->itemCorpus as $ic) {
+            if (in_array($ic->getCorpusId(), Corpus::EDIT_LIST)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasDregCorpus() {
+        foreach ($this->itemCorpus as $ic) {
+            if (in_array($ic->getCorpusId(), ['dreg', 'dreg-can'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
     public function concatIdInCorpus() {
         $list = null;
         if (is_null($this->itemCorpus)) {
