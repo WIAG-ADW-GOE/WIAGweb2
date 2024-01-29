@@ -742,7 +742,14 @@ class Person {
     /**
      * an input form for a new person should contain empty fields for references etc.
      */
-    public function addEmptyDefaultElements($auth_list) {
+    public function addEmptyDefaultElements($corpusId, $auth_list) {
+        $item_corpus_list = $this->getItem()->getItemCorpus();
+        if (count($item_corpus_list) < 1) {
+            $ic = new ItemCorpus();
+            $ic->setCorpusId($corpusId);
+            $item_corpus_list->add($ic);
+        }
+
         $role_list = $this->getRole();
         if (count($role_list) < 1) {
             $role_list->add(new PersonRole());

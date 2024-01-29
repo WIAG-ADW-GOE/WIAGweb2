@@ -60,6 +60,13 @@ class EditPersonController extends AbstractController {
      * @Route("/edit/person/query/{corpusId}", name="edit_person_query")
      */
     public function query($corpusId, Request $request) {
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+
+        $corpus_list = $corpusRepository->findBy(['corpusId' => explode(",", $corpusId)]);
+        $title_list = array();
+        foreach ($corpus_list as $cps) {
+            $title_list[] = $cps->getPageTitle();
+        }
 
         $model = new PersonFormModel;
         // set defaults
@@ -112,31 +119,27 @@ class EditPersonController extends AbstractController {
             $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
             foreach ($person_list as $person) {
                 $person->extractSeeAlso();
-                $person->addEmptyDefaultElements($auth_list);
+                $person->addEmptyDefaultElements($corpusId, $auth_list);
             }
 
-            $template_params = [
-                'personList' => $person_list,
-                'form' => $form,
-                'corpusId' => $corpusId,
-                'error_list' => $model->getInputError(),
-                'count' => $count,
-                'offset' => $offset,
-                'pageSize' => $model->listSize,
-            ];
         } else {
-            $template_params = [
-                'form' => $form,
-                'corpusId' => $corpusId,
-                'error_list' => $model->getInputError(),
-                'count' => $count,
-                'pageSize' => $model->listSize,
-                'offset' => 0,
-            ];
+            $person_list = [];
+            $offset = 0;
         }
 
+        $template_params = [
+            'titleList' => $title_list,
+            'personList' => $person_list,
+            'form' => $form,
+            'corpusId' => $corpusId,
+            'error_list' => $model->getInputError(),
+            'count' => $count,
+            'offset' => $offset,
+            'pageSize' => $model->listSize,
+        ];
+
         $template = 'edit_person/query.html.twig';
-        return $this->renderEditElements($template, $template_params);
+        return $this->renderEditElements($corpusId, $template, $template_params);
 
     }
 
@@ -302,9 +305,9 @@ class EditPersonController extends AbstractController {
 
     /**
      * map data to objects and save them to the database
-     * @Route("/edit/person/save-single", name="edit_person_save_single")
+     * @Route("/edit/person/save-single/{corpusId}", name="edit_person_save_single")
      */
-    public function saveSingle(Request $request) {
+    public function saveSingle($corpusId, Request $request) {
         $current_user_id = $this->getUser()->getId();
 
         // use EDIT_FORM_ID as the name attribute of the form in the template
@@ -420,7 +423,7 @@ class EditPersonController extends AbstractController {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
-        $person->addEmptyDefaultElements($auth_list);
+        $person->addEmptyDefaultElements($corpusId, $auth_list);
         $person->getItem()->setFormType($form_data['item']['formType']);
 
         $template = "edit_person/_item.html.twig";
@@ -430,7 +433,7 @@ class EditPersonController extends AbstractController {
             $template = "edit_person/item_debug.html.twig";
         }
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'person' => $person,
             'personIndex' => $person_index,
         ]);
@@ -486,14 +489,16 @@ class EditPersonController extends AbstractController {
     // }
 
 
-    private function renderEditElements($template, $param_list) {
+    private function renderEditElements($corpusId, $template, $param_list) {
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $essential_auth_list = $authorityRepository->findList(array_values(Authority::ID));
 
         $corpusRepository = $this->entityManager->getRepository(Corpus::class);
-        $cc_qr = $corpusRepository->findByEditForm('person', ['editChoiceOrder' => 'ASC']);
+        $corpus_id_list = explode(',', $corpusId);
+
+        $cc_qr = $corpusRepository->findBy(['corpusId' => $corpus_id_list], ['editChoiceOrder' => 'ASC']);
         $corpus_choice = [];
         foreach ($cc_qr as $cc_loop) {
             $corpus_choice[$cc_loop->getCorpusId()] = $cc_loop->getName();
@@ -502,6 +507,7 @@ class EditPersonController extends AbstractController {
         $param_list_combined = array_merge($param_list, [
             'menuItem' => 'edit-menu',
             'editFormId' => self::EDIT_FORM_ID,
+            'corpusId' => $corpusId,
             'userWiagRepository' => $userWiagRepository,
             'essentialAuthorityList' => $essential_auth_list,
             'itemPropertyTypeList' => $this->getItemPropertyTypeList(),
@@ -583,7 +589,7 @@ class EditPersonController extends AbstractController {
 
         $template = 'edit_person/_list.html.twig';
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'personList' => $person_list,
             'count' => count($person_list),
             'formType' => 'list',
@@ -595,14 +601,16 @@ class EditPersonController extends AbstractController {
      *
      * @Route("/edit/person/new", name="edit_person_new")
      */
-    public function newList() {
-        $person = $this->makePerson();
+    public function newList(Request $request) {
+        $corpusId = $request->query->get('corpusId');
+        $corpus_id_list = explode(',', $corpusId);
+        $person = $this->makePerson($corpus_id_list[0]);
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'personList' => array($person),
             'count' => 1,
         ]);
@@ -615,13 +623,15 @@ class EditPersonController extends AbstractController {
      * @Route("/edit/person/new-entry", name="edit_person_new_entry")
      */
     public function _newEntry(Request $request) {
-        $person = $this->makePerson();
+        $corpusId = $request->query->get('corpusId');
+        $corpus_id_list = explode(',', $corpusId);
+        $person = $this->makePerson($corpus_id_list[0]);
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');
         $template = 'edit_person/_item.html.twig';
         $personIndex = $request->query->get('current_idx');
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'person' => $person,
             'personIndex' => $personIndex,
         ]);
@@ -631,14 +641,16 @@ class EditPersonController extends AbstractController {
     /**
      * create new Person with Item and empty default elements
      */
-    private function makePerson() {
+    private function makePerson($corpusId) {
         $current_user_id = intVal($this->getUser()->getId());
         $item = new Item($current_user_id);
         $person = new Person($item);
         // add empty elements for blank form sections
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
-        $person->addEmptyDefaultElements($auth_list);
+        $corpus_id_list = explode(',', $corpusId);
+
+        $person->addEmptyDefaultElements($corpus_id_list[0], $auth_list);
 
         return $person;
     }
@@ -801,9 +813,10 @@ class EditPersonController extends AbstractController {
         $model->editStatus = ['- alle -' => '- alle -'];
         $model->isOnline = true;
         $model->listSize = 10;
-        $model->corpus = 'epc,can';
         $model->isEdit = true;
 
+        $corpusId = $request->query->get('corpusId');
+        $model->corpus = $corpusId;
 
         $status_choices = $this->statusChoices();
         $sort_by_choices = $this->sortByChoices();
@@ -871,11 +884,11 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * @Route("/edit/person/merge-item-local", name="edit_person_merge_local")
+     * @Route("/edit/person/merge-item-local/{corpusId}", name="edit_person_merge_local")
      * merge items using form data; show form with combined data
      * see modal-form.submitForm
      */
-    public function mergeItemLocal(Request $request) {
+    public function mergeItemLocal($corpusId, Request $request) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
@@ -950,14 +963,14 @@ class EditPersonController extends AbstractController {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         $person->extractSeeAlso();
-        $person->addEmptyDefaultElements($auth_list);
+        $person->addEmptyDefaultElements($corpusId, $auth_list);
 
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType("edit");
 
         $template = "edit_person/_item.html.twig";
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'person' => $person,
             'personIndex' => $person_index,
         ]);
@@ -1009,10 +1022,10 @@ class EditPersonController extends AbstractController {
     /**
      * split merged item, show parents in edit forms
      *
-     * @Route("/edit/person/split-item/{id}", name="edit_person_split_item")
+     * @Route("/edit/person/split-item/{corpusId}/{id}", name="edit_person_split_item")
      *
      */
-    public function splitItem(int $id) {
+    public function splitItem($corpusId, int $id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
@@ -1079,14 +1092,14 @@ class EditPersonController extends AbstractController {
         $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
         foreach ($parent_list as $parent) {
             $parent->extractSeeAlso();
-            $parent->addEmptyDefaultElements($auth_list);
+            $parent->addEmptyDefaultElements($corpusId, $auth_list);
 
             $parent->getItem()->setFormType('insert');
         }
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements($corpusId, $template, [
             'personList' => $parent_list,
             'form' => null,
             'count' => count($parent_list),

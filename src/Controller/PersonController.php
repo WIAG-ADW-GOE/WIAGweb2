@@ -444,7 +444,7 @@ class PersonController extends AbstractController {
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
         $corpus_id_list = [$corpusId];
-        if ($corpus == 'can') {
+        if ($corpusId == 'can') {
             $corpus_id_list[] = 'dreg-can';
         }
 

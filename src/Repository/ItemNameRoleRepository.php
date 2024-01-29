@@ -188,7 +188,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
         } elseif ($model->diocese) {
             $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
         } elseif ($model->office) {
-            if ($corpus_includes_canon) {
+            if ($model->corpus == 'can') {
                 $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
             } else {
                 $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
@@ -453,6 +453,8 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
     /**
+     * updateByIdList($id_list)
+     *
      * update entries related to $id_list
      */
     public function updateByIdList($id_list) {
@@ -483,9 +485,8 @@ class ItemNameRoleRepository extends ServiceEntityRepository
             $item = $p_loop->getItem();
             $corpus_id_list = $item->getCorpusIdList();
             $is_online = $item->getIsOnline();
-            // primary entry for 'can', 'epc'; filter for corpus = 'can' or 'epc'
-            // TODO 2024-01-26 check for corpus 'ibe'.
-            if ($is_online == 1 and (in_array('can', $corpus_id_list) or in_array('epc', $corpus_id_list))) {
+            // primary entry
+            if ($is_online == 1 and !(in_array('dreg-can', $corpus_id_list) or in_array('dreg', $corpus_id_list))) {
                 $id = $p_loop->getId();
                 $inr = new ItemNameRole($id, $id);
                 $inr->setItem($item);

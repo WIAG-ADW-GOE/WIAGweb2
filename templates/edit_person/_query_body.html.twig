@@ -6,7 +6,9 @@
 	}
     }) }}
 	<div class="row ms-2 col-12">
-	    <span class="topic-title">Bischöfe und Domherren des Alten Reiches</span>
+	    {% for title in titleList %}
+		<span class="topic-title">{{ title }}</span>
+	    {% endfor %}
 	</div>
 	<div data-controller="trigger"> {# submit form, when some form data change #}
 	    {{ include("edit_person/_form_elements.html.twig", {

@@ -11,11 +11,12 @@ use Doctrine\ORM\Mapping as ORM;
 class Corpus
 {
 
-    const EDIT_LIST = ['can', 'epc'];
+    const EDIT_LIST = ['can', 'epc', 'ibe'];
 
     const CORPUS_PRETTY = [
         'epc' => 'Bischöfe',
         'can' => 'Domherren',
+        'ibe' => 'Bischöfe-iberische-Halbinsel',
     ];
 
     /**

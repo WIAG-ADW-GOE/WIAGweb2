@@ -48,7 +48,7 @@
 	    {% if person.describeReference %}
 		<span class="ms-2 text-truncate" style="max-width: 15rem;"> — {{ person.describeReference }}</span>
 	    {% endif %}
-	    <span class="ms-2">ID: {{ person.item.idInCorpusMain }}</span>
+	    <span class="ms-2">ID: {{ person.item.concatIdInCorpusWithPrefix }}</span>
 	    {{ util.hiddenInput(base_id, base_input_name, ['id'], person.id) }}
 	    {{ util.hiddenInput(base_id, base_input_name, ['item', 'idInSource'], person.item.concatIdInCorpusWithPrefix) }}
 	    <span class="vr ms-auto"></span>

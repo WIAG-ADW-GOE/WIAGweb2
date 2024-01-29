@@ -5,7 +5,7 @@
 <form id ="{{ base_id }}"
       name="{{ base_input_name }}"
       data-id-in-source="{{ person.item.idInSource }}"
-      action="{{ path('edit_person_save_single') }}"
+      action="{{ path('edit_person_save_single', { 'corpusId': corpusId }) }}"
       method="post"
       data-submit-form-target="form">
     <div class="container-fluid p-2 my-2 border border-2 border-success rounded">

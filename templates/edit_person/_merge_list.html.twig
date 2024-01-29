@@ -14,9 +14,9 @@
 	    </thead>
 	    <tbody>
 		{% for person in personList %}
-		    {% set displayname = person.combine('displayname') %}
-		    {% set datebirth = person.combine('datebirth') %}
-		    {% set datedeath = person.combine('datedeath') %}
+		    {% set displayname = person.displayname %}
+		    {% set datebirth = person.dateBirth %}
+		    {% set datedeath = person.dateDeath %}
 		    <tr>
 			<td><div class="form-check">
 			    <input class="form-check-input" type="radio" name="selected" value="{{ person.item.concatIdInCorpusWithPrefix }}">

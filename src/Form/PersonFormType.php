@@ -82,8 +82,7 @@ class PersonFormType extends AbstractType
                     'size' => '25',
                 ],
             ])
-            ->add('corpus', HiddenType::class, [
-            ])
+            ->add('corpus', HiddenType::class)
             ->add('stateFctDioc', HiddenType::class, [
                 'mapped' => false,
             ])

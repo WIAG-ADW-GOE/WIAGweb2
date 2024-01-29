@@ -949,7 +949,6 @@ class EditPersonService {
      * set corpus, copy data
      */
     private function mapItemCorpus($item, $corpus_id, $data) {
-
         $item_corpus = new ItemCorpus();
         $item_corpus->setItem($item);
         $item->getItemCorpus()->add($item_corpus);

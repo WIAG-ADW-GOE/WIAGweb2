@@ -2,7 +2,7 @@
 
 {% block body %}
     <div data-controller="modal-form"
-	 data-modal-form-open-url-value="{{ path('edit_person_merge_query') }}">
+	 data-modal-form-open-url-value="{{ path('edit_person_merge_query', { 'corpusId': corpusId }) }}">
 	{{ include('edit_person/_query_body.html.twig') }}
 	{{ include("modal/_modal.html.twig", {
 	    'modal_title': "Personen zusammenführen",

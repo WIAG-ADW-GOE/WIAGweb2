@@ -155,6 +155,7 @@ class EditPersonFormType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Ort',
                 ],
-            ]);
+            ])
+            ->add('corpus', HiddenType::class);
     }
 }

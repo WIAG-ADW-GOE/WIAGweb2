@@ -192,18 +192,6 @@ class PersonRepository extends ServiceEntityRepository {
         // bishops from Digitales Personenregister have no independent entries in item_name_role,
         // however their offices are visible in detail view (query via item_name_role)
 
-        // TODO 2024-01-26 löschen?
-        // if (in_array('epc', $corpus)) {
-        //     $qb->join(
-        //         'App\Entity\ItemCorpus', 'c',
-        //         'WITH', "c.itemId = inr.itemIdName AND c.corpusId = 'epc'");
-        // } elseif ($corpus == 'can') {
-        //     $qb->join(
-        //         'App\Entity\ItemCorpus', 'c',
-        //         'WITH', "c.itemId = inr.itemIdRole AND c.corpusId in ('can', 'dreg-can')"
-        //     );
-        // }
-
         if ($model->isEdit) {
             $corpus_id_list = explode(',', $model->corpus);
         } else {
@@ -329,7 +317,6 @@ class PersonRepository extends ServiceEntityRepository {
 
         if ($someid || $year) {
             if ($someid) {
-
                 // look for corpus
                 if (in_array($someid, Corpus::EDIT_LIST)) {
                         $qb->andWhere('c.corpusId = :corpus_id')
@@ -385,16 +372,15 @@ class PersonRepository extends ServiceEntityRepository {
             }
             if ($year) {
                 // we have no join to person at the level of ItemNameRole.itemIdRole so far
-                // TODO 2024-01-25 why is this relevant?
-                if (true or $model->corpus == 'epc' or $model->corpus == 'can') {
-                    $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = inr.itemIdRole');
-                    $qb->andWhere("p_year.dateMin - :mgnyear < :q_year ".
-                                  " AND :q_year < p_year.dateMax + :mgnyear")
+                if ($model->isEdit) {
+                    $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p.dateMax + :mgnyear")
                        ->setParameter('mgnyear', Person::MARGINYEAR)
                        ->setParameter('q_year', $year);
                 } else {
-                    $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
-                                  " AND :q_year < p.dateMax + :mgnyear")
+                    $qb->join('App\Entity\Person', 'p_year', 'WITH', 'p_year.id = inr.itemIdRole');
+                    $qb->andWhere("p_year.dateMin - :mgnyear < :q_year ".
+                                  " AND :q_year < p_year.dateMax + :mgnyear")
                        ->setParameter('mgnyear', Person::MARGINYEAR)
                        ->setParameter('q_year', $year);
                 }

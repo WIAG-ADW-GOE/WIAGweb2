@@ -623,29 +623,6 @@ class Item {
         return $corpus_id_match;
     }
 
-
-    /**
-     * @return main corpus ID (epc > can)
-     */
-    public function getIdInCorpusMain(): ?string
-    {
-        if (is_null($this->itemCorpus)) {
-            return null;
-        }
-        $iic_cand = null;
-        foreach (['epc', 'can'] as $corpus_id) {
-            foreach($this->itemCorpus as $ic_loop) {
-                $iic_cand = $corpus_id.'-'.$ic_loop->getIdInCorpus();
-                if ($ic_loop->getCorpusId() == $corpus_id) {
-                    return $iic_cand;
-                }
-            }
-        }
-
-        return $iic_cand;
-
-    }
-
     public function getIdPublicNumber(): ?string {
         $rgx = '/-([0-9]{5})-/';
         $matches = null;
