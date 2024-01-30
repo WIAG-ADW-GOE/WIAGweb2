@@ -142,7 +142,7 @@
 {% set user=role.item.changedByUser %}
 <div class="row">
     <div class="col-12">
-	<span>referenziert (online): {{ role.referenceCount }}</span>
+	<span>referenziert (online): {{ role.referenceCount }}</span><span class="m-2">&mdash;</span><span>Item-ID/Role-ID: {{ role.id }}</span>
 	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ role.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
 	{# store data into the form #}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], role.item.changedBy) }}
