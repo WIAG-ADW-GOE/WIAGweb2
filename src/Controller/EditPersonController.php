@@ -910,7 +910,7 @@ class EditPersonController extends AbstractController {
         $second = null;
         foreach ($iic_second_list as $iic) {
             $parts = UtilService::splitIdInCorpus($iic);
-            $item_id_q  = $itemCorpusRepository->findItemIdByCorpusAndId($parts['corpus_id'], $parts['id_in_corpus']);
+            $item_id_q  = $itemCorpusRepository->findItemIdByCorpusAndId($parts['corpusId'], $parts['idInCorpus']);
             if (!is_null($item_id_q) and count($item_id_q) > 0) {
                 $item_id = array_values(array_column($item_id_q, 'itemId'))[0];
                 $second = $itemRepository->find($item_id);

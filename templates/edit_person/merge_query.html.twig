@@ -1,5 +1,6 @@
 <div class="container-fluid"
      data-controller="hide-on-input">
+    {% set corpusId = form.corpus.vars.value %}
     {{ form_start(form, {
 	'action': path("edit_person_merge_query"),
 	'attr': { 'id': form.vars.id } }) }}
