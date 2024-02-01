@@ -28,7 +28,7 @@ class PersonFormType extends AbstractType
 {
     const FILTER_MAP = [
         'can' => ['cap', 'ofc', 'plc', 'url'],
-        'epc' => ['dioc', 'ofc'],
+        'epc' => ['dioc', 'ofc', 'url'],
         'ibe' => ['dioc', 'ofc'],
     ];
 
