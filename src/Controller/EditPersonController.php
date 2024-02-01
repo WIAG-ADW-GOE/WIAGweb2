@@ -439,56 +439,6 @@ class EditPersonController extends AbstractController {
         ]);
     }
 
-    /**
-     * 2023-10-10 obsolete
-     * @return list of included persons and own id
-     */
-    // private function getIdLinkedPersons($person) {
-    //     $itemRepository = $this->entityManager->getRepository(Item::class);
-    //     $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
-
-    //     $type_id_canon_gs = Item::ITEM_TYPE_ID['Domherr GS']['id'];
-    //     $type_id_episc_gs = Item::ITEM_TYPE_ID['Bischof GS']['id'];
-
-    //     // bishop
-    //     $id_list = array($person->getId());
-    //     $uext = $person->getItem()->getUrlExternalObj('WIAG-ID');
-    //     if (!is_null($uext)) {
-    //         $item_ep_list = $itemRepository->findByIdPublic($uext->getValue());
-    //         if (!is_null($item_ep_list) and count($item_ep_list) > 0) {
-    //             $item_ep_id = $item_ep_list[0]->getId();
-    //             $id_list[] = $item_ep_id;
-    //             $item_ep = $itemRepository->find($item_ep_id);
-
-    //             // canon GS
-    //             $uext = $item_ep->getUrlExternalObj('GS');
-    //             if (!is_null($uext)) {
-    //                 $id_list_cn_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs);
-    //                 $id_list_ep_gs = $urlExternalRepository->findItemId($uext->getValue(), $type_id_episc_gs);
-    //                 $id_list = array_merge($id_list, $id_list_cn_gs, $id_list_ep_gs);
-    //             }
-
-    //         }
-    //     }
-
-    //     // canon GS
-    //     $uext = $person->getItem()->getUrlExternalObj('GS');
-    //     if (!is_null($uext)) {
-    //         $id_list = array_merge($id_list, $urlExternalRepository->findItemId($uext->getValue(), $type_id_canon_gs));
-    //     }
-
-    //     // is bishop referred to by a canon?
-    //     if ($person->getItem()->getItemTypeId() == Item::ITEM_TYPE_ID['Bischof']['id']) {
-    //         $canon_id_list = $urlExternalRepository->findIdBySomeNormUrl($person->getItem()->getIdPublic());
-    //         foreach($canon_id_list as $canon_id) {
-    //             $id_list[] = $canon_id;
-    //         }
-    //     }
-
-    //     return($id_list);
-    // }
-
-
     private function renderEditElements($corpusId, $template, $param_list) {
 
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);

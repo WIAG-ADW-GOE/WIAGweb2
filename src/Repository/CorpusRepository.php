@@ -63,4 +63,14 @@ class CorpusRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function findForItem($item_id) {
+        $qb = $this->createQueryBuilder('c')
+                   ->innerJoin('App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.corpusId = c.corpusId')
+                   ->andWhere('ic.itemId = :item_id')
+                   ->setParameter('item_id', $item_id);
+
+        return $qb->getQuery()->getOneOrNullResult();
+
+    }
 }

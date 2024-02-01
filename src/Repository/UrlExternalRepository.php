@@ -79,20 +79,30 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
     */
 
-    public function findIdBySomeNormUrl($someid, $corpus_id_list, $list_size_max = 200) {
+    /**
+     * @return IDs by external identifiers
+     */
+    public function findIdBySomeNormUrl($someid, $corpus_id_list = null, $list_size_max = 200, $online = null) {
 
         $qb = $this->createQueryBuilder('u')
                    ->select('DISTINCT u.itemId')
                    ->join('u.authority', 'auth')
                    ->join('u.item', 'i')
                    ->join('\App\Entity\ItemCorpus', 'ic', 'WITH', 'ic.itemId = u.itemId')
-                   ->andWhere("auth.urlType in ('Normdaten', 'Interner Identifier')")
-                   ->andWhere('ic.corpusId in (:cil)')
+                   ->andWhere("auth.urlType = 'Normdaten'")
                    ->andWhere('u.value like :someid')
-                   ->setParameter('cil', $corpus_id_list)
                    ->setParameter(':someid', '%'.$someid.'%');
 
         $qb->setMaxResults($list_size_max);
+
+        if (!is_null($online) and $online) {
+            $qb->andWhere('i.isOnline = 1');
+        }
+
+        if (!is_null($corpus_id_list) and count($corpus_id_list) > 0) {
+            $qb->andWhere('ic.corpusId in (:cil)')
+               ->setParameter('cil', $corpus_id_list);
+        }
 
         $query = $qb->getQuery();
         return array_column($query->getResult(), 'itemId');

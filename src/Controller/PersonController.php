@@ -213,24 +213,11 @@ class PersonController extends AbstractController {
         $person_id = $ids[$idx];
 
         // get person data with offices
-        $item_name_role_version_flag = true; // 2023-10-13
-        if ($item_name_role_version_flag) {
-            $item_list = $itemRepository->findItemNameRole([$person_id]);
-            $item = array_values($item_list)[0];
-            $person = $item->getPerson();
-            $person_role_list = $item->getPersonRole();
-        } else {
-            $inr = $itemNameRoleRepository->findByItemIdName($person_id);
-            $p_id_list = UtilService::collectionColumn($inr, 'itemIdRole');
-            $person_role_list = $personRepository->findList($p_id_list);
-            $person = null;
-            // order of roles: see annotation in App\Entity\Person.php
-            foreach($person_role_list as $person_role) {
-                if ($person_role->getId() == $person_id) {
-                    $person = $person_role;
-                }
-            }
-        }
+
+        $item_list = $itemRepository->findItemNameRole([$person_id]);
+        $item = array_values($item_list)[0];
+        $person = $item->getPerson();
+        $person_role_list = $item->getPersonRole();
 
         return $this->render('person/person.html.twig', [
             'form' => $form->createView(),

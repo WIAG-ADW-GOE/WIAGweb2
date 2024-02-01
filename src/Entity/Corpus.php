@@ -11,7 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 class Corpus
 {
 
-    const EDIT_LIST = ['can', 'epc', 'ibe'];
+    const EDIT_LIST = ['dioc', 'can', 'epc', 'ibe'];
+    // corpora that correspond to themes
+    // The order of this list reflects the priority of public IDs.
+    const PUBLIC_LIST = ['dioc', 'ibe', 'utp', 'epc', 'can', 'dreg-can'];
 
     const CORPUS_PRETTY = [
         'epc' => 'Bischöfe',

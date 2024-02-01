@@ -333,7 +333,7 @@ class ItemRepository extends ServiceEntityRepository
 
     /**
      * call this function only for persons
-     * @return items containing $id in ancestor list
+     * @return items containing $q_id as id_public in ancestor list
      */
     public function findIdByAncestor(string $q_id, $with_id_in_corpus, $list_size_max) {
 

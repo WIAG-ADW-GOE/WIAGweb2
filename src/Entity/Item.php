@@ -211,7 +211,7 @@ class Item {
     /**
      * @ORM\Column(type="boolean", nullable=false)
      */
-    private $isOnline = 0;
+    private $isOnline = false;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -294,7 +294,6 @@ class Item {
         $this->urlExternal = new ArrayCollection();
         $this->itemProperty = new ArrayCollection();
         $this->itemCorpus = new ArrayCollection();
-        $this->idPublic = "";
         $this->idInSource = "";
         $this->mergeStatus = 'original';
         $this->mergeParent = new ArrayCollection();
@@ -348,6 +347,25 @@ class Item {
         }
 
         return $person_role;
+    }
+
+    /**
+     * @return corpusId with highest priority
+     */
+    public function getCorpusId() {
+        if (is_null($this->itemCorpus)) {
+            return null;
+        }
+
+        $corpus_id = null;
+        foreach($this->itemCorpus as $ic) {
+            $corpus_id = $ic->getCorpusId();
+            if ($corpus_id == Corpus::PUBLIC_LIST) {
+                return $corpus_id;
+            }
+        }
+
+        return $corpus_id;
     }
 
 
@@ -608,7 +626,7 @@ class Item {
             return null;
         }
         $id_public_cand = null;
-        foreach (['epc', 'can', 'dreg-can', 'dioc'] as $corpus_id) {
+        foreach (Corpus::PUBLIC_LIST as $corpus_id) {
             foreach ($this->itemCorpus as $ic_loop) {
                 $id_public_cand = $ic_loop->getIdPublic();
                 if ($ic_loop->getCorpusId() == $corpus_id) {
@@ -622,47 +640,13 @@ class Item {
     }
 
     /**
-     * @return first corpus in $corpus_id_prio_list
-     */
-    public function getFirstCorpusId($corpus_id_prio_list): ?string
-    {
-        if (is_null($this->itemCorpus)) {
-            return null;
-        }
-
-        $corpus_id_match = null;
-        foreach ($corpus_id_prio_list as $corpus_id) {
-            foreach($this->itemCorpus as $ic) {
-                if ($ic->getCorpusId() == $corpus_id) {
-                    $corpus_id_match = $corpus_id;
-                    break;
-                }
-            }
-        }
-
-        return $corpus_id_match;
-    }
-
-    public function getIdPublicNumber(): ?string {
-        $rgx = '/-([0-9]{5})-/';
-        $matches = null;
-        preg_match($rgx, $this->idPublic, $matches);
-        return $matches ? $matches[1] : null;
-    }
-
-
-    /**
      * get idPublic of a related canon or bishop for canons gs
      *
      * see import from Digitales Personenregister
      */
     public function getIdPublicVisible(): ?string
     {
-        if (!is_null($this->idPublicVisible)) {
             return $this->idPublicVisible;
-        } else {
-            return $this->idPublic;
-        }
     }
 
     public function setIdPublicVisible(?string $idPublic): self

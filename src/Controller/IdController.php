@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Entity\Corpus;
 use App\Entity\Item;
 use App\Entity\ItemCorpus;
 use App\Entity\ItemNameRole;
@@ -12,6 +13,8 @@ use App\Entity\Authority;
 use App\Entity\UrlExternal;
 use App\Entity\PlaceIdExternal;
 use App\Entity\ReferenceVolume;
+
+use App\Form\Model\PersonFormModel;
 
 use App\Repository\PersonRepository;
 
@@ -55,50 +58,76 @@ class IdController extends AbstractController {
      * @Route("/id/{id}", name="id")
      */
     public function id(string $id, Request $request) {
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
-        // $format = $request->request->get('format') ?? 'html';
         $format = $request->query->get('format') ?? 'html';
         $format = ucfirst(strtolower($format));
 
-        $itemRepository = $this->entityManager->getRepository(Item::class);
-        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+        $ic = $itemCorpusRepository->findBy(['idPublic' => $id]);
 
-        $itemResult = $itemRepository->findByIdPublicOrParent($id);
-        if (!is_null($itemResult) and count($itemResult) > 0) {
-            $item = $itemResult[0];
-            $item_id = $item->getId();
-            $corpus = $itemCorpusRepository->findCorpusPrio($item_id);
-            $corpus_id = $corpus->getCorpusId();
-
-            if ($corpus_id == 'dioc') {
-                return $this->diocese($item_id, $format);
-            } elseif ($corpus_id == 'utp') {
-                return $this->priestOfUtrecht($item_id, $format);
-            } else {
-                return $this->person($item_id, $corpus, $format);
-            }
-
-        } else {
+        if (is_null($ic) or count($ic) < 1) {
             return $this->render('home\message.html.twig', [
                 'message' => 'Kein Eintrag für ID '.$id.' vorhanden.'
             ]);
         }
 
+        $id_list = Utilservice::collectionColumn($ic, 'itemId');
 
-     }
+        return $this->renderPublic($id_list, $format);
+
+    }
+
+    /**
+     * respond to beacon requests; find item (any corpus) by GND_ID; show details
+     *
+     * @Route("/gnd/{id}", name="gnd_id")
+     */
+    public function detailsByGnd(string $id,
+                                 Request $request) {
+
+        $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
+
+        $format = $request->query->get('format') ?? 'html';
+
+        $only_online = true;
+        $corpus_id_list = [];
+        $list_size = 200;
+        $id_list = $urlExternalRepository->findIdBySomeNormUrl(
+            $id,
+            $corpus_id_list,
+            $list_size,
+            $only_online
+        );
+
+        if (count($id_list) < 1) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Kein Eintrag für ID '.$id.' vorhanden.'
+            ]);
+        }
+
+        return $this->renderPublic($id_list, $format);
+    }
 
     /**
      * @return HTML or data for ID $id
      */
-    public function person($id, $corpus, $format) {
+    public function person($id, $format) {
 
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         $referenceVolumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
+        $corpus = $corpusRepository->findForItem($id);
+
         // collect office data in an array of Items
         $item_list = $itemRepository->findItemNameRole([$id]);
+        if (is_null($item_list) or count($item_list) < 0) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Keine Person mit gültiger ID '.$id.' gefunden.'
+            ]);
+        }
         $item = array_values($item_list)[0];
         $person = $item->getPerson();
         $person_role_list = $item->getPersonRole();
@@ -115,7 +144,9 @@ class IdController extends AbstractController {
             ]);
         } else {
             if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
-                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
+                return $this->render('home\message.html.twig', [
+                    'message' => 'Unbekanntes Format: '.$format
+                ]);
             }
             // compare PersonController
             $volume_list = $referenceVolumeRepository->findArray();
@@ -143,12 +174,13 @@ class IdController extends AbstractController {
         $repository = $this->entityManager->getRepository(Diocese::class);
 
         $result = $repository->dioceseWithBishopricSeat($id);
-        if (!is_null($result) && count($result) > 0) {
-            $diocese = $result[0];
-        } else {
-            throw $this->createNotFoundException('Bistum nicht gefunden');
-            $diocese = null;
+        if (is_null($result) or count($result) < 1 or !$result[0]->getItem()->getIsOnline()) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Bistum nicht gefunden.'
+            ]);
         }
+
+        $diocese = $result[0];
 
         $format = ucfirst(strtolower($format));
 
@@ -169,56 +201,20 @@ class IdController extends AbstractController {
 
     }
 
-    public function canon_gs($id, $format) {
-        return $this->canon($id, $format);
-    }
-
-    /**
-     *
-     */
-    public function canon($id, $format) {
-
-        $canonLookupRepository = $this->entityManager->getRepository(CanonLookup::class);
-        $canon_lookup_list = $canonLookupRepository->findByPersonIdRole($id);
-        $id_name = $canon_lookup_list[0]->getPersonIdName();
-        $canon_list = $canonLookupRepository->findList([$id_name], null);
-
-        // extract Person object to be compatible with bishops
-        $canon_list = UtilService::sortByFieldList($canon_list, ['prioRole']);
-        $personName = $canon_list[0]->getPersonName();
-        $personRole = array_map(function($el) {
-            return $el->getPerson();
-        }, $canon_list);
-
-        if ($format == 'html') {
-            return $this->render('canon/person.html.twig', [
-                'personName' => $personName,
-                'personRole' => $personRole,
-            ]);
-        } else {
-            if (!in_array($format, ['Json', 'Csv', 'Rdf', 'Jsonld'])) {
-                throw $this->createNotFoundException('Unbekanntes Format: '.$format);
-            }
-
-            // build data array
-            $node_list = [$this->personService->personData($format, $personName, $personRole)];
-
-            return $this->personService->createResponse($format, $node_list);
-        }
-    }
-
     public function priestOfUtrecht($id, $format) {
         $personRepository = $this->entityManager->getRepository(Person::class);
         $referenceVolumeRepository = $this->entityManager->getRepository(referenceVolume::class);
 
         $person_list = $personRepository->findList([$id]);
 
-        if (!is_null($person_list) && count($person_list) > 0) {
-            $person = $person_list[0];
-        } else {
-            throw $this->createNotFoundException('Priester nicht gefunden');
-            $person = null;
+        if (is_null($person_list)
+            or count($person_list) < 1
+            or !$person_list[0]->getItem()->getIsOnline()) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Priester nicht gefunden.'
+            ]);
         }
+        $person = $person_list[0];
 
         $format = ucfirst(strtolower($format));
 
@@ -331,38 +327,60 @@ class IdController extends AbstractController {
         return $response;
     }
 
+
     /**
-     * respond to beacon requests; find item by GND_ID; show details
-     *
-     * @Route("/gnd/{id}", name="gnd_id")
-     *
-     * TODO return data for item with item_name_role.item_id_name see function id() above
+     * map elements of $id_list to IDs of accessible items and return a HTTP response
      */
-    public function detailsByGndId(string $id, Request $request) {
-
-        $urlExternalRepository = $this->entityManager->getRepository(urlExternal::class);
-        $gnd_id = Authority::ID['GND'];
-
-        $urlext = $urlExternalRepository->findBy(['value' => $id, 'authorityId' => $gnd_id]);
-
-        if (is_null($urlext) || count($urlext) < 1) {
-            throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
-        }
-
-        $id = $urlext[0]->getItemId();
-
+    private function renderPublic($id_list, $format) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
+        $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
+        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
 
-        $item = $itemRepository->find($id);
+        $ic_list = $itemCorpusRepository->findByItemId($id_list);
+        $id_list_person = array();
+        $id_list_other = array();
 
-        if (is_null($item)) {
-            throw $this->createNotFoundException('GND-ID wurde nicht gefunden');
+        foreach ($ic_list as $ic) {
+            $item_id = $ic->getItemId();
+            $corpus_id = $ic->getCorpusId();
+            if ($corpus_id == 'dioc') {
+                return $this->diocese($item_id, $format);
+            } elseif ($corpus_id == 'utp') {
+                return $this->priestOfUtrecht($item_id, $format);
+            } else {
+                $id_list_person[] = $ic->getItemId();
+            }
         }
 
-        return $this->id($item->getIdPublic(), $request);
+        // map personIDs to children
+        $item_list = $itemRepository->findBy(['id' => $id_list_person]);
+        $id_child_list = array();
+
+        foreach ($item_list as $item) {
+            $child = $itemRepository->findCurrentChild($item);
+            if ($child) {
+                $id_child_list[] = $child->getId();
+            }
+        }
+
+        if (count($id_child_list) < 1) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Keine Person mit passender gültiger ID gefunden.'
+            ]);
+        }
+
+        $inr_list = $itemNameRoleRepository->findByItemIdRole($id_child_list);
+        if (is_null($inr_list) or count($inr_list) < 1) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Keine Person mit passender gültiger ID gefunden.'
+            ]);
+        }
+
+        $id = $inr_list[0]->getItemIdName();
+
+        return $this->person($id, $format);
 
     }
-
 
 
 }

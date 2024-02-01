@@ -7,7 +7,6 @@
 
 {% block body %}
     {# person is passed as an object #}
-    {% set corpusId = form.corpus.vars.value %}
     {% if not personName %}
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <span class="em">Person nicht gefunden.</span>
@@ -19,6 +18,7 @@
 	<div class="row mx-2 col-12 mt-4 mb-2">
 	    <div class="d-flex">
 		{% if form is defined %}
+		    {% set corpusId = form.corpus.vars.value %}
 		    {{ include('person/_button_step.html.twig',	{
 			'formaction': path('person_list_detail', { 'corpusId': corpusId }),
 			'value': offset - 1,
@@ -30,8 +30,6 @@
 			'disabled': not hassuccessor,
 			'text': 'nächster Treffer'}) }}
 		    <button type="submit" form="form" class="btn btn-outline-secondary btn-sm me-1" name="offset" value="{{ offset }}">Ergebnisliste</button>
-		{% else %}
-		    <a href="{{ path('person_query', { 'corpusId': corpusId }) }}" type="button" class="btn btn-outline-secondary btn-sm me-3">Suche</a>
 		{% endif %}
 		{# button data #}
 		{% for fmtft in [

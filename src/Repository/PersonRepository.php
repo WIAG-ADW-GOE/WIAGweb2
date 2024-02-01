@@ -192,13 +192,10 @@ class PersonRepository extends ServiceEntityRepository {
         // bishops from Digitales Personenregister have no independent entries in item_name_role,
         // however their offices are visible in detail view (query via item_name_role)
 
-        if ($model->isEdit) {
-            $corpus_id_list = explode(',', $model->corpus);
-        } else {
-            $corpus_id_list = [$model->corpus];
-            if ($model->corpus == 'can') {
-                $corpus_id_list[] = 'dreg-can';
-            }
+        $corpus_id_list = explode(',', $model->corpus);
+
+        if (!$model->isEdit and $model->corpus == 'can') {
+            $corpus_id_list[] = 'dreg-can';
         }
 
         if (!in_array('c', $joinedList)) {
@@ -339,18 +336,13 @@ class PersonRepository extends ServiceEntityRepository {
                     // look for $someid in external links
                     $uextRepository = $this->getEntityManager()->getRepository(UrlExternal::class);
                     // look for any person here, further restrictions on the result set (if neccessary) are made elsewhere
-                    if ($model->isEdit) {
-                        $corpus_id_list_url_query = ['epc', 'can'];
-                    } else {
-                        $corpus_id_list_url_query = ['epc', 'can', 'dreg', 'dreg-can'];
-                    }
                     $id_list_list[] = $uextRepository->findIdBySomeNormUrl(
                         $someid,
-                        $corpus_id_list_url_query,
+                        $corpus_id_list,
                         $list_size_max
                     );
 
-                    // look for $someid in item_corpus
+                    // look for $someid in item_corpus, e.g. "can-20161"
                     $some_id_parts = UtilService::splitIdInCorpus($someid);
                     if (in_array($some_id_parts['corpusId'], $corpus_id_list)) {
                         $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
