@@ -119,7 +119,6 @@ class IdController extends AbstractController {
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         $referenceVolumeRepository = $this->entityManager->getRepository(ReferenceVolume::class);
 
-        $corpus = $corpusRepository->findForItem($id);
 
         // collect office data in an array of Items
         $item_list = $itemRepository->findItemNameRole([$id]);
@@ -130,6 +129,8 @@ class IdController extends AbstractController {
         }
         $item = array_values($item_list)[0];
         $person = $item->getPerson();
+        $corpus_list = $corpusRepository->findByCorpusId($item->getCorpusId());
+        $corpus = array_values($corpus_list)[0];
         $person_role_list = $item->getPersonRole();
 
         $format = ucfirst(strtolower($format));
