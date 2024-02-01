@@ -1006,7 +1006,7 @@ class UtilService {
         ];
 
         $match_list = array();
-        $flag = preg_match("/(^[a-z]{3,4})-([0-9_%]{3,})/", trim($id_in_corpus), $match_list);
+        $flag = preg_match("/(^[a-z]{3,4})-([0-9_%]+)/", trim($id_in_corpus), $match_list);
         if ($flag == 1) {
             $parts['corpusId'] = $match_list[1];
             $parts['idInCorpus'] = count($match_list) > 2 ? $match_list[2] : null;
