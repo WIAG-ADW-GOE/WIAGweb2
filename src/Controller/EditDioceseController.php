@@ -42,8 +42,17 @@ class EditDioceseController extends AbstractController {
 
 
         $model = [
-            'name' => '',
+            'name' => null,
+            'any' => null,
+            'group' => ['- alle -']
         ];
+
+        $group_choices = [
+            '- alle -' => '- alle -',
+            'altes Reich' => 'isAltesReich',
+            'Germania Sacra' => 'isDioceseGs'
+        ];
+
 
         $form = $this->createFormBuilder($model)
                      ->setMethod('GET')
@@ -53,6 +62,20 @@ class EditDioceseController extends AbstractController {
                          'attr' => [
                              'placeholder' => 'Bezeichnung'
                          ],
+                     ])
+                     ->add('any', TextType::class, [
+                         'label' => 'andere Felder',
+                         'required' => false,
+                         'attr' => [
+                             'placeholder' => 'Stichwort'
+                         ],
+                     ])
+                     ->add('group', ChoiceType::class, [
+                         'required' => false,
+                         'label' => 'Gruppe',
+                         'multiple' => true,
+                         'expanded' => false,
+                         'choices' => $group_choices,
                      ])
                      ->getForm();
 

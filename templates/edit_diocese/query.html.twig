@@ -12,28 +12,7 @@
 		'id': form.vars.id,
 	    }
 	}) }}
-	    <div class="row ms-2">
-		<div class="col-12">
-		    <div class="d-flex flex-wrap">
-			<div class="w-30 me-2"
-			     {{ stimulus_controller('autocomplete', {
-				 url: path('diocese_suggest', { 'field': 'name' })
-			     }) }}>
-			    {{ form_label(form.name) }}
-			    {{ form_errors(form.name) }}
-			    {{ form_widget(form.name, {
-				'attr': {
-				    'data-autocomplete-target': "input",
-				    'class': 'wiag-input'
-				}
-			    }) }}
-			    <ul class="list-group autocomplete-target"
-				       data-autocomplete-target="results"
-				       style="max-width: 22rem;"></ul>
-			</div>
-		    </div>
-		</div>
-	    </div>
+	    {{ include('edit_diocese/_form_elements.html.twig') }}
 	    <div class="row mt-2 ms-2">
 		<div class="col-12">
 		    <button type="submit" class="btn btn-secondary btn-light btn-sm">Suche</button>

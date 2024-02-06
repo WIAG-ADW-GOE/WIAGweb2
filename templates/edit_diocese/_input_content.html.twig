@@ -136,7 +136,7 @@
 <div class="row">
     <div class="col-12">
 	<span class="ms-1">{{ diocese.item.getIdPublic }}</span>
-	<span class="ms-2">referenziert (online): {{ diocese.referenceCount }}</span>
+	<span class="ms-2">referenziert (online): {{ diocese.referenceCount }}</span></span><span class="m-2">&mdash;</span><span>Item-ID/Diocese-ID: {{ diocese.id }}</span>
 	<span class="wiag-log text-nowrap float-end me-1">geändert: {{ diocese.item.dateChanged|format_datetime() }}{% if user %}, {{ user.email }}{% endif %}</span>
 	{# store data into the form #}
 	{{ util.hiddenInput(base_id, base_input_name, ['item', 'changedBy'], diocese.item.changedBy) }}
