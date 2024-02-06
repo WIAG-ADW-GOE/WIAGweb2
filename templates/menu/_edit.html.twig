@@ -13,7 +13,7 @@
 	<li><hr class="dropdown-divider"></li>
 	<li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
 	<li><hr class="dropdown-divider"></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet') }}">Dubletten</a></li>
+	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'corpusId': 'can,epc' } ) }}">Dubletten für Bischöfe und Domherren abfragen</a></li>
 	<li><hr class="dropdown-divider"></li>
 	<li><span class="dropdown-header">Basisdaten (neuer Tab)</span></li>
 	<li><a class="dropdown-item" href="{{ path('edit_reference_query') }}" target="_blank" rel="noopener">Literatur</a></li>

@@ -1098,9 +1098,9 @@ class EditPersonController extends AbstractController {
     /**
      * display query form for doublets
      *
-     * @Route("/edit/person/query-doublet", name="edit_person_query_doublet")
+     * @Route("/edit/person/query-doublet/{corpusId}", name="edit_person_query_doublet")
      */
-    public function queryDoublet(Request $request) {
+    public function queryDoublet(string $corpusId, Request $request) {
         // parameters
         $list_size = 20;
 
@@ -1176,7 +1176,8 @@ class EditPersonController extends AbstractController {
             $auth_list = $authorityRepository->findList(Authority::ESSENTIAL_ID_LIST);
             foreach ($person_list as $person) {
                 $person->extractSeeAlso();
-                $person->addEmptyDefaultElements($auth_list);
+                $cid = $person->getItem()->getCorpusId();
+                $person->addEmptyDefaultElements($cid, $auth_list);
             }
 
             $template_params = [
@@ -1189,7 +1190,7 @@ class EditPersonController extends AbstractController {
             ];
 
         $template = 'edit_person/query_doublet.html.twig';
-        return $this->renderEditElements($template, $template_params);
+        return $this->renderEditElements($corpusId, $template, $template_params);
 
     }
 

@@ -195,11 +195,39 @@ class DioceseRepository extends ServiceEntityRepository
                    ->join('d.item', 'i')
                    ->leftjoin('i.urlExternal', 'ext')
                    ->leftjoin('i.reference', 'ref')
+                   ->leftjoin('\App\Entity\ReferenceVolume', 'vol',
+                              'WITH', 'vol.referenceId = ref.referenceId')
                    ->addOrderBy('d.name');
 
         if ($model['name'] != '') {
             $qb->andWhere('d.name like :name')
                ->setParameter('name', '%'.$model['name'].'%');
+        }
+
+        if (array_key_exists('any', $model) and trim($model['any']) != '') {
+            $qb->andWhere('d.comment LIKE :any_param'.
+                          ' OR d.note LIKE :any_param'.
+                          ' OR d.ecclesiasticalProvince LIKE :any_param'.
+                          ' OR d.dioceseStatus LIKE :any_param'.
+                          ' OR d.noteBishopricSeat LIKE :any_param'.
+                          ' OR d.dateOfFounding LIKE :any_param'.
+                          ' OR d.dateOfDissolution LIKE :any_param'.
+                          ' OR vol.fullCitation LIKE :any_param '.
+                          ' OR vol.titleShort LIKE :any_param'.
+                          ' OR vol.authorEditor LIKE :any_param'.
+                          ' OR vol.gsCitation LIKE :any_param'.
+                          ' OR vol.gsVolumeNr LIKE :any_param')
+               ->setParameter('any_param', '%'.trim($model['any']).'%');
+        }
+
+        if (array_key_exists('group', $model) and !in_array('- alle -', $model['group'])) {
+            $sql_cond = [];
+            foreach ($model['group'] as $g) {
+                $sql_cond[] = 'd.'.$g.' = 1';
+            }
+            if (count($sql_cond) > 0) {
+                $qb->andWhere(implode($sql_cond, ' OR '));
+            }
         }
 
         $query = $qb->getQuery();
