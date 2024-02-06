@@ -5,16 +5,24 @@
 	<a class="nav-link dropdown-toggle fw-bold" href="#" id="edit-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Edit</a>
     {% endif %}
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="edit-menu">
-	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'corpusId': 'can,epc' }) }}">Bischöfe und Domherren</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'corpusId': 'can,epc' }) }}" target="_blank" rel="noopener">Bischöfe und Domherren anlegen (neuer Tab)</a></li>
-	<li><hr class="dropdown-divider"></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_query', { 'corpusId': 'ibe' }) }}">Bischöfe der Iberischen Halbinsel</a></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_new', { 'corpusId': 'ibe' }) }}" target="_blank" rel="noopener">Bischöfe der Iberischen Halbinsel anlegen (neuer Tab)</a></li>
-	<li><hr class="dropdown-divider"></li>
-	<li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
-	<li><hr class="dropdown-divider"></li>
-	<li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'corpusId': 'can,epc' } ) }}">Dubletten für Bischöfe und Domherren abfragen</a></li>
-	<li><hr class="dropdown-divider"></li>
+	{% if is_granted('ROLE_EDIT_CAN') or is_granted('ROLE_EDIT_EPC') %}
+	    <li><a class="dropdown-item" href="{{ path('edit_person_query', { 'corpusId': 'can,epc' }) }}">Bischöfe und Domherren</a></li>
+	    <li><a class="dropdown-item" href="{{ path('edit_person_new', { 'corpusId': 'can,epc' }) }}" target="_blank" rel="noopener">Bischöfe und Domherren anlegen (neuer Tab)</a></li>
+	    <li><hr class="dropdown-divider"></li>
+	{% endif %}
+	{% if is_granted('ROLE_EDIT_IBE') %}
+	    <li><a class="dropdown-item" href="{{ path('edit_person_query', { 'corpusId': 'ibe' }) }}">Bischöfe der Iberischen Halbinsel</a></li>
+	    <li><a class="dropdown-item" href="{{ path('edit_person_new', { 'corpusId': 'ibe' }) }}" target="_blank" rel="noopener">Bischöfe der Iberischen Halbinsel anlegen (neuer Tab)</a></li>
+	    <li><hr class="dropdown-divider"></li>
+	{% endif %}
+	{% if is_granted('ROLE_EDIT_DIOC') %}
+	    <li><a class="dropdown-item" href="{{ path('edit_diocese_query') }}">Bistümer</a></li>
+	    <li><hr class="dropdown-divider"></li>
+	{% endif %}
+	{% if is_granted('ROLE_EDIT_CAN') or is_granted('ROLE_EDIT_EPC') %}
+	    <li><a class="dropdown-item" href="{{ path('edit_person_query_doublet', { 'corpusId': 'can,epc' } ) }}">Dubletten für Bischöfe und Domherren abfragen</a></li>
+	    <li><hr class="dropdown-divider"></li>
+	{% endif %}
 	<li><span class="dropdown-header">Basisdaten (neuer Tab)</span></li>
 	<li><a class="dropdown-item" href="{{ path('edit_reference_query') }}" target="_blank" rel="noopener">Literatur</a></li>
 	<li><a class="dropdown-item" href="{{ path('edit_authority_query') }}" target="_blank" rel="noopener">Normdaten/Externe Ressourcen</a></li>

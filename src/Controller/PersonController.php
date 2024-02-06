@@ -337,7 +337,8 @@ class PersonController extends AbstractController {
 
         }
 
-        $filename = "WIAG-".Corpus::CORPUS_PRETTY[$model->corpus];
+        $corpus_txt = str_replace(' ', '-', $corpus->getName());
+        $filename = "WIAG-".$corpus_txt;
 
         return $personService->createResponse($format, $node_list, $filename);
 

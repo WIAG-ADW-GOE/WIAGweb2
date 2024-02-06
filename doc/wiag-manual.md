@@ -612,6 +612,17 @@ Weiter werden folgende Identifier übertragen:
   - Swikidatawiki: Wikidata ID
   - Sdewiki: Eintrag in der deutschen Wikipedia
 
+## Einfügen eines neuen Corpus
+### Datengrundlage
+- Themenbild z.B. 1200 zu 770 Pixel
+
+### Daten in die WIAG-Struktur aufnehmen
+### Elemente des Corpus online stellen
+### Anpassungen in der Web-Anwendung
+- Menü
+- Formular
+- Rechte
+
 ## Entwickler-Dokumentation
 
 ### Inhaltliche Struktur und Datenmodell
@@ -834,6 +845,29 @@ Sortierkriterium ist die chronologische Ordnung.
 Die Sortierkriterien werden jeweils vom Controller als ein Parameter an das Template
 übergeben. Dort wird eine Sortierfunktion in 'Person.php' aufgerufen, welche die
 Ämter in der sortierten Reihenfolge liefert.
+
+### Rechtevergabe
+
+Symfony unterstützt die Verwaltung von Benutzerrechten, in dem jedem Benutzer/jeder Benutzerin eine
+oder mehrere Rollen zugewiesen werden können. Diese Zuordnungen werden über die
+WIAG-Benutzerverwaltung in der Tabelle `user_wiag` eingetragen. Rollen können zu Gruppen
+zusammengefasst werden, so dass ein Benutzer, der einer Gruppe zugeordnet ist, alle
+Rechte der Rollen erhält, die in dieser Gruppe enthalten sind. In der Datei
+`config/packages/security.yaml` sind die Gruppen festgelegt.
+
+Folgende Rechte werden in WIAG verwendet:
+- "ROLE\_EDIT\_{corpus}": Redaktion des entsprechenden Corpus'
+- "ROLE\_EDIT\_ALL": Redaktion aller Corpora'
+- "ROLE\_CANON\_ONEPAGE": Ausgabe von Domherren eines Domstifts gesammelt auf einer
+  HTML-Seite
+- "ROLE\_EDIT\_USER": Redaktion von Benutzerrechten
+- "ROLE\_DATA\_EDIt": Import von Daten aus externen Quellen (Digitales
+  Personenregister, Klosterdatenbank)
+
+Im Menü für die Rechtevergabe für die einzelnen Benutzer könne alle Rollen unabhängig
+voneinander angewählt oder abgewählt werden. Die Anwendung überprüft nicht, ob
+Zuweisungen unnötig sind, z.B. wenn gleichzeitig ein Recht über eine Gruppe aber auch
+direkt vergeben wird.
 
 ### SQL-Abfragen
 Für bestimmte Auswertungen und Arbeitsschritte ist es einfacher, die Daten direkt aus 

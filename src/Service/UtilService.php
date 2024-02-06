@@ -158,7 +158,7 @@ class UtilService {
     }
 
 
-        /**
+    /**
      * use $field to reorder $list
      *
      * An index in $sorted may occur several times as a value in $list

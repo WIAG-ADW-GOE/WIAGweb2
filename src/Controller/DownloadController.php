@@ -55,10 +55,12 @@ class DownloadController extends AbstractController {
         ini_set('max_execution_time', 300);
 
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
         $personRoleRepository = $this->entityManager->getRepository(PersonRole::class);
 
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
@@ -95,7 +97,8 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Lebensdaten.csv";
+            $corpus_txt = str_replace(' ', '-', $corpus->getName());
+            $filename = "WIAG-".$corpus_txt."-Lebensdaten.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -158,10 +161,12 @@ class DownloadController extends AbstractController {
 
         ini_set('max_execution_time', 300);
 
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
 
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
@@ -198,7 +203,8 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Ämter.csv";
+            $corpus_txt = str_replace(' ', '-', $corpus->getName());
+            $filename = "WIAG-".$corpus_txt."-Ämter.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -258,10 +264,13 @@ class DownloadController extends AbstractController {
 
         ini_set('max_execution_time', 300);
 
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         // dev
         // $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
@@ -295,7 +304,8 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-Literatur.csv";
+            $corpus_txt = str_replace(' ', '-', $corpus->getName());
+            $filename = "WIAG-".$corpus_txt."-Literatur.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');
@@ -356,10 +366,13 @@ class DownloadController extends AbstractController {
 
         ini_set('max_execution_time', 300);
 
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         // dev
         // $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
@@ -391,7 +404,8 @@ class DownloadController extends AbstractController {
                 $callback($id_all);
             });
 
-            $filename = "WIAG-".Corpus::CORPUS_PRETTY[$corpusId]."-externe-IDs.csv";
+            $corpus_txt = str_replace(' ', '-', $corpus->getName());
+            $filename = "WIAG-".$corpus_txt."-externe-IDs.csv";
 
             $response->headers->set('X-Accel-Buffering', 'no');
             $response->headers->set('Content-Type', 'application/force-download');

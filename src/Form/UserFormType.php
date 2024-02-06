@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\UserWiag;
+use App\Entity\Corpus;
+
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,11 +20,7 @@ class UserFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $role_list = array_flip(UserWiag::ROLE_DICT);
-
-        if ($options['has_admin_access']) {
-            $role_list = array_merge($role_list, array_flip(UserWiag::ROLE_DICT_EXTRA));
-        }
+        $role_list = $options['role_list'];
 
         $builder
             ->add('givenname', null, [
@@ -73,7 +71,7 @@ class UserFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => UserWiag::class,
-            'has_admin_access' => false,
+            'role_list' => [],
         ]);
     }
 }

@@ -1,0 +1,17 @@
+<tr>
+    <td><a href="{{ path('edit_user', { 'email': user.email}) }}">{{ user.id }}</a></td>
+    <td>{{ user.active > 0 ? 'ja' : 'nein' }}</td>
+    <td>{{ user.name }}</td>
+    <td>{{ user.givenname }}</td>
+    <td>{{ user.familyname }}</td>
+    <td>{{ user.email }}</td>
+    <td>
+	<ul class="list-unstyled">
+	    {% for role in user.roles|filter(v => v != 'ROLE_USER') %}
+		{% set display_name = roleNameList[role] is defined ? roleNameList[role] : role %}
+		<li>{{ display_name }}</li>		    
+	    {% endfor %}
+	</ul>
+    </td>
+    <td>{{ user.datecreated|format_datetime('short', 'short', locale='de') }}</td>
+</tr>

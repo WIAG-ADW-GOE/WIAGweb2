@@ -60,9 +60,13 @@ class EditPersonController extends AbstractController {
      * @Route("/edit/person/query/{corpusId}", name="edit_person_query")
      */
     public function query($corpusId, Request $request) {
-        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
 
-        $corpus_list = $corpusRepository->findBy(['corpusId' => explode(",", $corpusId)]);
+
+        $corpusRepository = $this->entityManager->getRepository(Corpus::class);
+        $corpus_id_list = explode(",", $corpusId);
+        $corpus_list = $corpusRepository->findBy(['corpusId' => $corpus_id_list]);
+
+        $this->denyAccessUnlessGranted('ROLE_EDIT_'.strtoupper($corpus_id_list[0]));
         $title_list = array();
         foreach ($corpus_list as $cps) {
             $title_list[] = $cps->getPageTitle();
@@ -554,6 +558,9 @@ class EditPersonController extends AbstractController {
     public function newList(Request $request) {
         $corpusId = $request->query->get('corpusId');
         $corpus_id_list = explode(',', $corpusId);
+        $this->denyAccessUnlessGranted('ROLE_EDIT_'.strtoupper($corpus_id_list[0]));
+
+
         $person = $this->makePerson($corpus_id_list[0]);
         $person->getItem()->setFormIsExpanded(true);
         $person->getItem()->setFormType('insert');

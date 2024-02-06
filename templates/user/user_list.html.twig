@@ -23,20 +23,7 @@
 			</thead>
 			<tbody>
 			    {% for user in user_list %}
-				<tr>
-				    <td><a href="{{ path('edit_user', { 'email': user.email}) }}">{{ user.id }}</a></td>
-				    <td>{{ user.active > 0 ? 'ja' : 'nein' }}</td>
-				    <td>{{ user.name }}</td>
-				    <td>{{ user.givenname }}</td>
-				    <td>{{ user.familyname }}</td>
-				    <td>{{ user.email }}</td>
-				    <td>
-					{% for role in user.roles|filter(r => r != 'ROLE_USER') %}
-					    <span>{{ user.roledisplayname(role) }}</span><br/>
-					{% endfor %}
-				    </td>
-				    <td>{{ user.datecreated|format_datetime('short', 'short', locale='de') }}</td>
-				</tr>
+				{{ include('user/_row.html.twig') }}
 			    {% endfor %}
 			</tbody>
 		    </table>

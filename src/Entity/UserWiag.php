@@ -14,15 +14,18 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    const ROLE_DICT = [
-        'ROLE_EDIT' => 'Redaktion',
-        'ROLE_CANON_ONEPAGE' => 'Domherren eines Domstifts als Liste ausgeben',
+    // exclusive privileges
+    const ROLE_EXTRA_LIST = [
+            'Benutzerverwaltung' => 'ROLE_EDIT_USER',
+            'alle Rechte' => 'ROLE_ADMIN',
+            'Datenimport Personenregister, Klöster' => 'ROLE_DATA_EDIT'
+        ];
+
+    const ROLE_LIST = [
+        'Redaktion aller Corpora' => 'ROLE_EDIT_ALL',
+        'Ausgabe Domherrenliste' => 'ROLE_CANON_ONEPAGE',
     ];
-    const ROLE_DICT_EXTRA = [
-        'ROLE_EDIT_USER' => 'Benutzerverwaltung',
-        'ROLE_ADMIN' => 'alle Rechte',
-        'ROLE_DATA_EDIT' => 'Datenbereinigung',
-    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -313,7 +316,8 @@ class UserWiag implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     static public function roleDisplayName($role): ?string {
-        $role_dict = array_merge(self::ROLE_DICT, self::ROLE_DICT_EXTRA);
-        return $role_dict[$role];
+        // $role_dict = array_merge(self::ROLE_DICT, self::ROLE_DICT_EXTRA);
+        // return $role_dict[$role];
+        return $role;
     }
 }
