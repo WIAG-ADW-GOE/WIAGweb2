@@ -617,9 +617,9 @@ Weiter werden folgende Identifier übertragen:
 Damit ein Corpus in WIAG aufgenommen werden kann, muss es eine kompatible
 Grundstruktur aufweisen: Lebensdaten von Personen, Daten zu Ämtern in Bistümern,
 Domstiften oder Klöstern, Verweise auf Literaturquellen und optional externe
-Identifier. Wenn diese Daten tabellarisch in CSV-Dateien vorliegen können sie über
+Identifier. Wenn diese Daten tabellarisch in CSV-Dateien vorliegen, können sie über
 ein Jupyter-Notebook in die WIAG-Struktur überführt werden. Zusätzlich muss die
-Web-Anwendung auf das neue Corpus angepasst werden.
+Web-Anwendung für das neue Corpus angepasst werden.
 
 
 ### Anpassungen in der Web-Anwendung
@@ -627,9 +627,10 @@ Web-Anwendung auf das neue Corpus angepasst werden.
 #### Corpus bekannt machen
 Die Tabelle `corpus` verzeichnet die für die Anwendung erforderlichen Daten. Das Feld
 `corpus_id` enthält den Schlüssel, über den das Corpus in der Anwendung identifiziert
-wird, z.B. `dioc`, `epc`.
+wird, z.B. `dioc`, `epc`. Mithilfe eines Jupyter-Notebooks wird eine Import-Datei für
+den Datensatz in der Tabelle `corpus` erzeugt.
 Außerdem definiert die Datei `src/Entity/Corpus.php` die Liste editierbarer Corpora
-und die Liste von Corpora, deren Mitglieder eine öffentliche ID haben.
+und die Liste von Corpora, deren Element eine öffentliche ID haben.
 
 ```
      // editable corpora
@@ -646,11 +647,10 @@ Die Datei `templates/home/home.html` enthält für jedes abfragbare Corpus einen
 Abschnitt mit einem Bild, einem Link auf die entsprechende Abfrage-Seite und eine
 Kurzbeschreibung. Für ein neues Corpus ist ein solcher Abschnitt an der gewünschten
 Stelle einzufügen.
-
-Die Datei `templates/_main_menu.html` enthält das Dropdown-Menü für die
-Hauptnavigation. Hier ist in den Abschnitten "collections, Datensammlungen" und
-"edit" ein Link für die Abfrage des Corpus, bzw. für die Redaktion des Corpus
-einzufügen.
+Die Datei `templates/menu/_main.html` enthält das Dropdown-Menü für die
+Hauptnavigation. Hier ist im Abschnitt "collections, Datensammlungen"
+ein Link für die Abfrage des Corpus einzufügen.
+Analog ist in der Datei `templates/menu/_edit.html` für die Redaktion zu verfahren.
 
 Der Umfang des Abfrageformulars und seiner Filter wird in der Datei
 `src/Form/PersonFormType.php` festgelegt. Dazu dient die Konstante `FILTER_MAP`.
@@ -664,18 +664,48 @@ Der Umfang des Abfrageformulars und seiner Filter wird in der Datei
 
 ```
 
-Das Formular für das Corpus "can, Domherren-DB" umfasst Felder für eine Abfrage nach
+Zum Beispiel umfasst das Formular für das Corpus "can, Domherren-DB" Felder für eine Abfrage nach
 Domstift ('cap'), Amt ('ofc'), Ort ('plc') und Externe ID ('url'). Bischöfe werden
 nicht nach Domstift, sondern nach Diözese ('dioc') abgefragt.
 
-TODO: Rechte security.yaml
+Die Rechteverwaltung in Symfony basiert auf Rollen. Für die Redaktionsrechte eines
+Corpus wird eine dem Corpus zugeordnete Rolle verwendet: "ROLE\_EDIT\_[corpus]"
+(Siehe Abschnitt "Rechtevergabe"). Der Abschnitt für den Eintrag im Navigationsmenü in
+der Datei `templates/menu/_edit.html.twig` ist eingerahmt von
+`{% if is_granted('ROLE_EDIT_[corpus]') %}` und `{% endif %}`. Der Controller für die
+Redaktion prüft automatisch, ob ein Benutzer die notwendigen Rechte, sprich Rolle hat.
 
-### Datengrundlage
+### Datenimport
+CSV-Dateien können mithilfe eines Jupyter-Notebooks in SQL-Dateien für den Import in
+die Datenbank überführt werden: `notebooks/Csv2WIAG.ipynb`.
+Jede der CSV-Dateien muss eine Spalte "id_csv" enthalten.
+Sie dient dazu, die Daten zu einer Person oder einem Referenzwerk eindeutig zuzuordnen
+und Bezüge zwischen den Daten in verschiedenen Dateien herzustellen.
+Folgende Daten können verarbeitet werden.
 
-- Themenbild z.B. 1200 zu 770 Pixel
+- "reference\_volume.csv": Literatur
+- "person.csv": Namen und Lebensdaten
+- "item\_reference.csv": Literaturverweise
+- "person\_role.csv": Amtsangaben zu den Personen
+- "url\_external.csv": Verweise auf externe Identifier
 
-### Daten in die WIAG-Struktur aufnehmen
-### Elemente des Corpus online stellen
+"item\_reference.csv" und "url\_external.csv" können sich auf bestehende Datensätze
+in WIAG zu Literatur und normgebenden Institutionen beziehen.
+
+Das Corpus 'dioc' für Bistümer kann ergänzt werden mit Daten aus:
+
+- "diocese.csv": Namen und Gründungsdaten
+- "item\_reference\_diocese.csv": Literaturverweise
+
+Weitere Details ergeben sich aus dem Jupyter-Notebook.
+
+Für den Abschnitt auf der WIAG-Hauptseite wird ein Bild (Kachel) mit dem Seitenverhältnis
+von Breite zu Höhe von 1.56 verwendet. Also zum Beispiel in der Größe 1200.0 mal
+770.0 Pixel.
+
+Mit dem Notebook kann auch ein Skript erstellt werden, das den Statuswert für alle
+neuen Datensätze auf 'online' setzt, so dass sie in der Abfrage sichtbar werden. Es
+kann optional auf die Datenbank angewendet werden.
 
 ## Entwickler-Dokumentation
 
@@ -903,12 +933,13 @@ Rechte der Rollen erhält, die in dieser Gruppe enthalten sind. In der Datei
 `config/packages/security.yaml` sind die Gruppen festgelegt.
 
 Folgende Rechte werden in WIAG verwendet:
-- "ROLE\_EDIT\_{corpus}": Redaktion des entsprechenden Corpus'
+
+- "ROLE\_EDIT\_[corpus]": Redaktion des entsprechenden Corpus'
 - "ROLE\_EDIT\_ALL": Redaktion aller Corpora'
 - "ROLE\_CANON\_ONEPAGE": Ausgabe von Domherren eines Domstifts gesammelt auf einer
   HTML-Seite
 - "ROLE\_EDIT\_USER": Redaktion von Benutzerrechten
-- "ROLE\_DATA\_EDIt": Import von Daten aus externen Quellen (Digitales
+- "ROLE\_DATA\_EDIT": Import von Daten aus externen Quellen (Digitales
   Personenregister, Klosterdatenbank)
 
 Im Menü für die Rechtevergabe für die einzelnen Benutzer könne alle Rollen unabhängig
