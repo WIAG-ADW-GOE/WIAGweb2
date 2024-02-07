@@ -56,6 +56,8 @@ class EditRoleController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
+
         $roleRepository = $entityManager->getRepository(Role::class);
         $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
 
@@ -393,6 +395,7 @@ class EditRoleController extends AbstractController {
      */
     public function newRole(Request $request,
                             EntityManagerInterface $entityManager) {
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
         $roleGroupRepository = $entityManager->getRepository(RoleGroup::class);
 
         $current_user_id = $this->getUser()->getId();

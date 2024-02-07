@@ -48,6 +48,8 @@ class EditReferenceController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
+
         $corpus_choices = [
             '- alle -' => '',
             'Bischof/Domherr' => 'epc, can',

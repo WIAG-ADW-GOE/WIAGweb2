@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Item;
-use App\Entity\ItemType;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
 use App\Entity\InputError;
@@ -29,11 +28,12 @@ class EditBaseController extends AbstractController {
      */
     public function propertyList(Request $request,
                                  EntityManagerInterface $entityManager): Response {
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
+
         $edit_form_id = 'prop_edit_form';
 
         $model = ['sortBy' => 'name']; // set default
 
-        $itemTypeRepository = $entityManager->getRepository(ItemType::class);
         $itemPropertyTypeRepository = $entityManager->getRepository(ItemPropertyType::class);
         $itemPropertyRepository = $entityManager->getRepository(ItemProperty::class);
 

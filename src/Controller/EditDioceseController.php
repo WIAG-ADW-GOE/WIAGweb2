@@ -38,6 +38,7 @@ class EditDioceseController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
+        $this->denyAccessUnlessGranted('ROLE_EDIT_DIOC');
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
 
 
@@ -438,7 +439,7 @@ class EditDioceseController extends AbstractController {
      */
     public function newDiocese(Request $request,
                                EntityManagerInterface $entityManager) {
-
+        $this->denyAccessUnlessGranted('ROLE_EDIT_DIOC');
         $current_user_id = $this->getUser()->getId();
         $obj = new Diocese($current_user_id);
         // set default

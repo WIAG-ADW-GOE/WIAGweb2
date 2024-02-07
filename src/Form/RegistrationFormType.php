@@ -19,11 +19,7 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
 
-        $role_list = array_flip(UserWiag::ROLE_DICT);
-
-        if ($options['has_admin_access']) {
-            $role_list = array_merge($role_list, array_flip(UserWiag::ROLE_DICT_EXTRA));
-        }
+        $role_list = $options['role_list'];
 
         $builder
             ->add('givenname', null, [
@@ -115,7 +111,7 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => UserWiag::class,
-            'has_admin_access' => false,
+            'role_list' => [],
         ]);
     }
 }

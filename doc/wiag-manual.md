@@ -613,15 +613,69 @@ Weiter werden folgende Identifier übertragen:
   - Sdewiki: Eintrag in der deutschen Wikipedia
 
 ## Einfügen eines neuen Corpus
+
+Damit ein Corpus in WIAG aufgenommen werden kann, muss es eine kompatible
+Grundstruktur aufweisen: Lebensdaten von Personen, Daten zu Ämtern in Bistümern,
+Domstiften oder Klöstern, Verweise auf Literaturquellen und optional externe
+Identifier. Wenn diese Daten tabellarisch in CSV-Dateien vorliegen können sie über
+ein Jupyter-Notebook in die WIAG-Struktur überführt werden. Zusätzlich muss die
+Web-Anwendung auf das neue Corpus angepasst werden.
+
+
+### Anpassungen in der Web-Anwendung
+
+#### Corpus bekannt machen
+Die Tabelle `corpus` verzeichnet die für die Anwendung erforderlichen Daten. Das Feld
+`corpus_id` enthält den Schlüssel, über den das Corpus in der Anwendung identifiziert
+wird, z.B. `dioc`, `epc`.
+Außerdem definiert die Datei `src/Entity/Corpus.php` die Liste editierbarer Corpora
+und die Liste von Corpora, deren Mitglieder eine öffentliche ID haben.
+
+```
+     // editable corpora
+    const EDIT_LIST = ['dioc', 'can', 'epc', 'ibe'];
+    // corpora that correspond to themes
+    // The order of this list reflects the priority of public IDs.
+    const PUBLIC_LIST = ['dioc', 'ibe', 'utp', 'epc', 'can', 'dreg-can'];
+```
+
+Ein neues Corpus ist hier einzutragen mit seiner Corpus-ID. (`corpus.corpus_id`).
+
+#### Einstiegsseite, Menü und Abfrageformular
+Die Datei `templates/home/home.html` enthält für jedes abfragbare Corpus einen
+Abschnitt mit einem Bild, einem Link auf die entsprechende Abfrage-Seite und eine
+Kurzbeschreibung. Für ein neues Corpus ist ein solcher Abschnitt an der gewünschten
+Stelle einzufügen.
+
+Die Datei `templates/_main_menu.html` enthält das Dropdown-Menü für die
+Hauptnavigation. Hier ist in den Abschnitten "collections, Datensammlungen" und
+"edit" ein Link für die Abfrage des Corpus, bzw. für die Redaktion des Corpus
+einzufügen.
+
+Der Umfang des Abfrageformulars und seiner Filter wird in der Datei
+`src/Form/PersonFormType.php` festgelegt. Dazu dient die Konstante `FILTER_MAP`.
+
+```
+    const FILTER_MAP = [
+        'can' => ['cap', 'ofc', 'plc', 'url'],
+        'epc' => ['dioc', 'ofc', 'url'],
+        'ibe' => ['dioc', 'ofc'],
+    ];
+
+```
+
+Das Formular für das Corpus "can, Domherren-DB" umfasst Felder für eine Abfrage nach
+Domstift ('cap'), Amt ('ofc'), Ort ('plc') und Externe ID ('url'). Bischöfe werden
+nicht nach Domstift, sondern nach Diözese ('dioc') abgefragt.
+
+TODO: Rechte security.yaml
+
 ### Datengrundlage
+
 - Themenbild z.B. 1200 zu 770 Pixel
 
 ### Daten in die WIAG-Struktur aufnehmen
 ### Elemente des Corpus online stellen
-### Anpassungen in der Web-Anwendung
-- Menü
-- Formular
-- Rechte
 
 ## Entwickler-Dokumentation
 
@@ -631,8 +685,9 @@ Weiter werden folgende Identifier übertragen:
 
 WIAG gliedert sich nach Themen, bzw. nach Corpora. Bisher umfasst die Anwendung Bistümer
 des Alten Reiches, Bischöfe des Alten Reiches nach Gatz, Domherren des Alten
-Reiches aus der entsprechenden Datenbank der Germania Sacra und Priester der
-mittelalterlichen Diözese Utrecht. Ergänzend werden Amtsdaten aus dem Digitalen
+Reiches aus der entsprechenden Datenbank der Germania Sacra, Priester der
+mittelalterlichen Diözese Utrecht und Bischöfe der iberischen Halbinsel. 
+Ergänzend werden Amtsdaten aus dem Digitalen
 Personenregister der Germania Sacra angezeigt.
 In der Abfrage spiegelt sich diese Gliederung wider in den Menüeinträgen unter dem
 Hauptmenüpunkt „Datensammlungen“, bzw. in den Schaltflächen auf der Einstiegsseite.
@@ -657,12 +712,11 @@ Auszug aus `corpus`.
 |  9 | ofcm      | Ämterliste                             | normierte Ämterliste                                                        |
 | 10 | canf      | weibliche Geistliche                   | weibliche Geistliche, z.B. Äbtissinen                                       |
 | 11 | utp       | Priester von Utrecht                   | Priesterweihen in der mittelalterlichen Diözese Utrecht nach Rombert Stapel |
-
+| 13 | ibe       | Bischöfe Iberische Halbinsel | Datenbank zu Bischöfen der iberischen Halbinsel im Mittelalter (bis ins 13. Jahrhundert) |
 
 #### Datenmodell
 
-Metadaten, Inhalte und technische Hilfsdaten entsprechen jeweils einer eigenen Gruppe
-von Tabellen. Metadaten zum Redaktionsprozess enthalten die Tabellen:
+Das Datenmodell lässt sich gruppieren in Tabllen zu  Metadaten, technische Hilfsdaten und zu den eigenlichten Inhalten. Metadaten zum Redaktionsprozess enthalten die Tabellen:
 `user_wiag`, `item`, `corpus`, `item_property_type`, `place_type`
 
 Technische Hilfstabellen, z.B. um Abfragen effizienter zu machen, sind die Tabellen
@@ -693,17 +747,10 @@ Die Tabelle `item_name_role` hat folgende Struktur:
 `id` ist eine fortlaufende tabelleneigene ID. `itme_id_name` ist die ID der Person
 aus der Quelle, deren Namensdaten verwendet werden. `item_id_role` ist die ID der
 Person aus der Quelle, deren Amtsdaten verwendet werden.
-Es kommen folgende Kombinationen in Bezug auf die Quellen vor:
-
-- nur Digitales Personenregister der Germania Sacra.
-- nur Domherrendatenbank und/oder Gatz-Bischofslisten.
-- Domherrendatebank und/oder Gatz-Bischofslisten mit Digitalem Personenregister.
-
-In den ersten beiden Fällen gibt es jeweils nur eine Zeile in `item_name_role`, 
-wobei die Spalten `item_id_name` und `item_id_role` den gleichen Wert haben.
-Im letzten Fall enthält die Tabelle `item_name_role` zwei Zeilen. Diese haben jeweils
-in der Spalte `item_id_name` den gleichen Wert, weichen aber in der Spalte
-`item_id_role` voneinander ab.
+Als zusätzliche Quelle kommt aktuell nur das Digitale Personenregister
+vor. Beispielsweise kann ein Eintrag in `item_id_name` zum Corpus Domherrendatenbank
+gehören und ein Eintrag in `item_id_role` zum Corpus Digitales Personenregister. In
+den meisten Fällen sind die Einträge in den beiden Spalten gleich.
 
 ### Framework
 

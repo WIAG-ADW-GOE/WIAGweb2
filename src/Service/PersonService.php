@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Corpus;
 use App\Entity\Item;
 use App\Entity\ItemProperty;
 use App\Entity\ItemPropertyType;
@@ -1005,7 +1006,6 @@ class PersonService {
         return $nd;
     }
 
-
     /**
      * @return string for bibliographic citation
      */
@@ -1810,5 +1810,23 @@ class PersonService {
             return $uext['authority']['urlFormatter'].$uext['value'];
         }
     }
+
+    /**
+     * @return role list with an entry for each editable corpus
+     */
+    static public function roleEditList($entityManager) {
+        $corpusRepository = $entityManager->getRepository(Corpus::class);
+        $corpus_list = $corpusRepository->findBy(['corpusId' => Corpus::EDIT_LIST]);
+        $corpus_list = UtilService::mapByField($corpus_list, 'corpusId');
+
+        $role_list = array();
+        foreach (Corpus::EDIT_LIST as $corpus_id) {
+            $idx = $corpus_list[$corpus_id]->getName();
+            $role_list['Redaktion '.$idx] = 'ROLE_EDIT_'.strtoupper($corpus_id);
+        }
+
+        return $role_list;
+    }
+
 
 }

@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\UserWiag;
-use App\Entity\Corpus;
 use App\Form\UserFormType;
-use App\Service\UtilService;
+use App\Service\PersonService;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,11 +32,9 @@ class UserController extends AbstractController
         $user = $userRepository->findOneBy(['email' => $email]);
         $has_admin_access = $this->isGranted("ROLE_ADMIN");
 
-
-        $role_list = array_merge($this->roleEditList($entityManager), UserWiag::ROLE_LIST);
+        $role_list = array_merge(PersonService::roleEditList($entityManager), UserWiag::ROLE_LIST);
 
         // admin users may grant special rights
-
         if ($has_admin_access) {
             $role_list = array_merge($role_list, UserWiag::ROLE_EXTRA_LIST);
         }
@@ -96,31 +93,15 @@ class UserController extends AbstractController
         $repository = $entityManager->getRepository(UserWiag::class);
         $user_list = $repository->findBy([], ['id' => 'ASC']);
 
-        $role_list = array_merge(UserWiag::ROLE_LIST, $this->roleEditList($entityManager));
-        $role_list = array_merge($role_list, UserWiag::ROLE_EXTRA_LIST);
+        $role_list = array_merge(PersonService::roleEditList($entityManager),
+                                 UserWiag::ROLE_LIST,
+                                 UserWiag::ROLE_EXTRA_LIST);
 
         return $this->render('user/user_list.html.twig', [
             'roleNameList' => array_flip($role_list),
             'menuItem' => 'edit-menu',
             'user_list' => $user_list,
         ]);
-    }
-
-    /**
-     * @return role list with an entry for each editable corpus
-     */
-    private function roleEditList($entityManager) {
-        $corpusRepository = $entityManager->getRepository(Corpus::class);
-        $corpus_list = $corpusRepository->findBy(['corpusId' => Corpus::EDIT_LIST]);
-        $corpus_list = UtilService::mapByField($corpus_list, 'corpusId');
-
-        $role_list = array();
-        foreach (Corpus::EDIT_LIST as $corpus_id) {
-            $idx = $corpus_list[$corpus_id]->getName();
-            $role_list['Redaktion '.$idx] = 'ROLE_EDIT_'.strtoupper($corpus_id);
-        }
-
-        return $role_list;
     }
 
 }

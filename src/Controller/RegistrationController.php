@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\UserWiag;
 use App\Form\RegistrationFormType;
+use App\Service\PersonService;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,8 +30,17 @@ class RegistrationController extends AbstractController
                              FormLoginAuthenticator $formLoginAuthenticator): Response {
         $user = new UserWiag();
         $has_admin_access = $this->isGranted("ROLE_ADMIN");
+
+        $role_list = array_merge(PersonService::roleEditList($entityManager), UserWiag::ROLE_LIST);
+
+        // admin users may grant special rights
+        if ($has_admin_access) {
+            $role_list = array_merge($role_list, UserWiag::ROLE_EXTRA_LIST);
+        }
+
+        $has_admin_access = $this->isGranted("ROLE_ADMIN");
         $form = $this->createForm(RegistrationFormType::class, $user, [
-            'has_admin_access' => $has_admin_access
+            'role_list' => $role_list
         ]);
         $form->handleRequest($request);
 

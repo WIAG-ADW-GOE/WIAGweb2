@@ -28,6 +28,8 @@ class EditAuthorityController extends AbstractController {
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
+
         $authorityRepository = $entityManager->getRepository(Authority::class);
 
         $type_choices = [
@@ -288,6 +290,8 @@ class EditAuthorityController extends AbstractController {
      * @Route("/edit/authority/new-authority", name="edit_authority_new_authority")
      */
     public function newAuthority(Request $request) {
+
+        $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
 
         $auth = new Authority();
         $auth->setFormIsExpanded(true);

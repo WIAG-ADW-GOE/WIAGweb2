@@ -66,7 +66,13 @@ class EditPersonController extends AbstractController {
         $corpus_id_list = explode(",", $corpusId);
         $corpus_list = $corpusRepository->findBy(['corpusId' => $corpus_id_list]);
 
-        $this->denyAccessUnlessGranted('ROLE_EDIT_'.strtoupper($corpus_id_list[0]));
+        if (!$this->checkAccess($corpus_id_list)) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Sie haben nicht die erforderlichen Rechte oder sind nicht angemeldet.'
+            ]);
+        }
+
+        // $this->denyAccessUnlessGranted('ROLE_EDIT_'.strtoupper($corpus_id_list[0]));
         $title_list = array();
         foreach ($corpus_list as $cps) {
             $title_list[] = $cps->getPageTitle();
@@ -558,8 +564,12 @@ class EditPersonController extends AbstractController {
     public function newList(Request $request) {
         $corpusId = $request->query->get('corpusId');
         $corpus_id_list = explode(',', $corpusId);
-        $this->denyAccessUnlessGranted('ROLE_EDIT_'.strtoupper($corpus_id_list[0]));
 
+        if (!$this->checkAccess($corpus_id_list)) {
+            return $this->render('home\message.html.twig', [
+                'message' => 'Sie haben nicht die erforderlichen Rechte oder sind nicht angemeldet.'
+            ]);
+        }
 
         $person = $this->makePerson($corpus_id_list[0]);
         $person->getItem()->setFormIsExpanded(true);
@@ -1199,6 +1209,15 @@ class EditPersonController extends AbstractController {
         $template = 'edit_person/query_doublet.html.twig';
         return $this->renderEditElements($corpusId, $template, $template_params);
 
+    }
+
+    private function checkAccess($corpus_id_list) {
+        foreach($corpus_id_list as $cid) {
+            if ($this->isGranted('ROLE_EDIT_'.strtoupper($cid))) {
+                     return true;
+            }
+        }
+        return false;
     }
 
 }
