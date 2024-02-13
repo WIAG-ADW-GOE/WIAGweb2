@@ -80,7 +80,6 @@ class PersonController extends AbstractController {
                           Request $request,
                           EntityManagerInterface $entityManager) {
 
-        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
@@ -93,7 +92,7 @@ class PersonController extends AbstractController {
 
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => $flagInit,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         if ($request->isMethod('GET')) {
@@ -117,7 +116,7 @@ class PersonController extends AbstractController {
             ]);
         }
 
-        $id_all = $itemNameRoleRepository->findPersonIds($model);
+        $id_all = $personRepository->findPersonIds($model);
         $count = count($id_all);
 
         // set offset to page begin
@@ -177,7 +176,6 @@ class PersonController extends AbstractController {
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
-        $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
         $itemRepository = $entityManager->getRepository(Item::class);
 
         $model = new PersonFormModel;
@@ -186,7 +184,7 @@ class PersonController extends AbstractController {
 
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
         $form->handleRequest($request);
 
@@ -197,13 +195,13 @@ class PersonController extends AbstractController {
         $hassuccessor = false;
         $idx = 0;
         if($offset == 0) {
-            $ids = $itemNameRoleRepository->findPersonIds($model,
+            $ids = $personRepository->findPersonIds($model,
                                                           2,
                                                           $offset);
             if(count($ids) == 2) $hassuccessor = true;
 
         } else {
-            $ids = $itemNameRoleRepository->findPersonIds($model,
+            $ids = $personRepository->findPersonIds($model,
                                                           3,
                                                           $offset - 1);
             if(count($ids) == 3) $hassuccessor = true;
@@ -291,7 +289,7 @@ class PersonController extends AbstractController {
 
         $model->corpus = $corpusId;
         $model->isDeleted = 0; # 2023-10-12 obsolete?
-        $id_all = $itemNameRoleRepository->findPersonIds($model);
+        $id_all = $personRepository->findPersonIds($model);
 
         if (count($id_all) >= self::DATA_MAX_SIZE) {
             if ($request->isMethod('POST')) {
@@ -360,7 +358,7 @@ class PersonController extends AbstractController {
 
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
             'action' => $this->generateUrl('person_query', ['corpusId' => $corpusId]),
         ]);
 

@@ -119,6 +119,7 @@ class PersonFormType extends AbstractType
                     ],
                 ]);
         }
+
         if (in_array('plc', $filter_map)) {
             $builder
                 ->add('place', TextType::class, [
