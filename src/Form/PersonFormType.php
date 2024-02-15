@@ -37,7 +37,7 @@ class PersonFormType extends AbstractType
             'data_class' => PersonFormModel::class,
             'forceFacets' => false,
             'repository' => null,
-            'sortByChoices' => null,
+            'sortByChoices' => array(),
             'action' => "",
         ]);
 
@@ -49,7 +49,6 @@ class PersonFormType extends AbstractType
         $repository = $options['repository'];
         $action = $options['action'];
         $corpusId = $model->corpus;
-        $sort_by_choices = $options['sortByChoices'];
 
         $filter_map = self::FILTER_MAP[$corpusId];
 
@@ -139,8 +138,10 @@ class PersonFormType extends AbstractType
             'label' => 'Sortierung',
             'multiple' => false,
             'expanded' => false,
-            'choices' => $sort_by_choices,
-        ]);
+            'choices' => self::sortByChoices($filter_map)
+        ])            // data set via JavaScript
+                ->add('sortOrder', HiddenType::class);
+;
 
         if ($forceFacets) {
             if (in_array('ofc', $filter_map)) {
@@ -342,5 +343,27 @@ class PersonFormType extends AbstractType
 
         }
     }
+
+    /**
+     *
+     */
+    static public function sortByChoices($filter_list) {
+
+        if (in_array('cap', $filter_list)) {
+            $choice_list['Domstift/Kloster'] = 'domstift';
+        }
+
+        $choice_list['Vorname, Familienname'] = 'givenname';
+        $choice_list['Familienname, Vorname'] = 'familyname';
+
+        if (in_array('dioc', $filter_list)) {
+            $choice_list['Bistum'] = 'diocese';
+        }
+
+        $choice_list['Jahr'] = 'year';
+
+        return $choice_list;
+    }
+
 
 }

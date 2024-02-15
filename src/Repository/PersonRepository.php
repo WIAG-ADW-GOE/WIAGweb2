@@ -145,7 +145,7 @@ class PersonRepository extends ServiceEntityRepository {
         }, $result);
 
         $sort_list = $this->sortList($model);
-        $result = UtilService::sortByFieldList($result, $sort_list);
+        $result = UtilService::sortByFieldList($result, $sort_list, $model->sortOrder);
 
         if ($limit > 0) {
             $result = array_slice($result, $offset, $limit);
