@@ -90,9 +90,16 @@ class PersonController extends AbstractController {
         $model = PersonFormModel::newByArray($request->query->all());
         $model->corpus = $corpusId;
 
+        $sort_by_choices = $this->sortByChoices($corpusId);
+
+        if (is_null($model->sortBy)) {
+            $model->sortBy = array_values($sort_by_choices)[0];
+        }
+
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => $flagInit,
             'repository' => $personRepository,
+            'sortByChoices' => $sort_by_choices,
         ]);
 
         if ($request->isMethod('GET')) {
@@ -104,7 +111,6 @@ class PersonController extends AbstractController {
             $offset = $request->request->get('offset');
             $page_number = $request->request->get('pageNumber');
         }
-
 
         if ($form->isSubmitted() && !$form->isValid()) {
             return $this->renderForm('person/query.html.twig', [
@@ -442,5 +448,26 @@ class PersonController extends AbstractController {
         ]);
     }
 
+    /**
+     *
+     */
+    public function sortByChoices($corpus_id) {
+        $filter_list = PersonFormType::FILTER_MAP[$corpus_id];
+
+        if (in_array('cap', $filter_list)) {
+            $choice_list['Domstift/Kloster'] = 'domstift';
+        }
+
+        $choice_list['Vorname, Familienname'] = 'givenname';
+        $choice_list['Familienname, Vorname'] = 'familyname';
+
+        if (in_array('dioc', $filter_list)) {
+            $choice_list['Bistum'] = 'diocese';
+        }
+
+        $choice_list['Jahr'] = 'year';
+
+        return $choice_list;
+    }
 
 }

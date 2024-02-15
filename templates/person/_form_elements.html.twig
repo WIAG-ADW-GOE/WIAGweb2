@@ -94,8 +94,8 @@
 			},
 		    }) }}
 		    <ul class="list-group autocomplete-target"
-			       data-autocomplete-target="results"
-			       style="max-width: 12em;"></ul>
+			data-autocomplete-target="results"
+			style="max-width: 12em;"></ul>
 		</div>
 	    {% endif %}
 	    {{  form_row(form.year, {
@@ -105,12 +105,23 @@
 		}
 	    }) }}
 	    {{  form_row(form.someid, {
-		row_attr: {class: 'mt-1'},
+		row_attr: {class: 'me-2 mt-1'},
 		attr: {
 		    'class': 'wiag-input',
 		    'size': 26,
 		}
 	    }) }}
+	    <div class="me-2 mt-1">
+		{{ form_label(form.sortBy) }}
+		{{ form_errors(form.sortBy) }}
+		{{ form_widget(form.sortBy, {
+		    'attr': {
+			'class': 'wiag-input',
+			'style': 'min-width: 7rem',
+			'data-action': 'trigger#click',
+		    }
+		}) }}
+	    </div>
 	    {# hidden #}
 	    {{ form_row(form.corpus) }}
 	</div>

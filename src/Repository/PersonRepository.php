@@ -172,6 +172,7 @@ class PersonRepository extends ServiceEntityRepository {
         $qb = $this->createQueryBuilder('p')
                    ->join('p.item', 'i');
 
+
         // pr is required for sorting
         $qb->leftJoin('App\Entity\PersonRole', 'pr', 'WITH', 'pr.personId = p.id');
         $joined_list[] = 'pr';
@@ -244,6 +245,7 @@ class PersonRepository extends ServiceEntityRepository {
 
     private function sortQuery($result, $model) {
         $sort_by = $model->sortBy;
+        // default
         $sort_list = ['givenname', 'familyname'];
         if ($model->sortBy == 'givenname') {
             $sort_list = ['givenname', 'familyname'];
@@ -296,10 +298,14 @@ class PersonRepository extends ServiceEntityRepository {
 
         // sorting for canons includes all sources for office data
         if ($domstift or $monastery or $diocese or $office or $place) {
-            if ($model->corpus == 'can') {
-                $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = inr.itemIdRole');
+            if ($model->isEdit) {
+                $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = p.id');
             } else {
-                $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = inr.itemIdName');
+                if ($model->corpus == 'can') {
+                    $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = inr.itemIdRole');
+                } else {
+                    $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = inr.itemIdName');
+                }
             }
         }
         $joined_list[] = 'pr_cond';
@@ -1103,38 +1109,59 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     static function sortList($model) {
-        // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
-        $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
 
-        if ($model->isEmpty()) {
-            if ($model->corpus == 'can') {
-                $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-            } else {
-                $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
-            }
-        } elseif ($model->domstift) {
-            $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-        } elseif ($model->diocese) {
-            $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-        } elseif ($model->office) {
-            if ($model->corpus == 'can') {
-                $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-            } else {
-                $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
-            }
-        } elseif ($model->name) {
-            if ($model->corpus == 'can') {
-                $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'domstift_name', 'dateSortKey', 'itemIdName'];
-            } else {
-                $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
-            }
-        } elseif ($model->year) {
-            $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
-        } elseif ($model->someid) {
-            $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
-        } elseif ($model->place) {
-            $sort_list = ['place_name', 'dateSortKey', 'familyname', 'givenname', 'itemIdName'];
+        $sort_by = $model->sortBy;
+        // default
+        if ($model->sortBy == 'givenname') {
+            $sort_list = ['givenname', 'familyname'];
+        } elseif ($model->sortBy == 'familyname') {
+            $sort_list = ['hasFamilyname', 'familyname', 'givenname'];
+        } elseif ($model->sortBy == 'domstift') {
+            $sort_list = ['domstift_name'];
+        } elseif ($model->sortBy == 'diocese') {
+            $sort_list = ['diocese_name'];
+        } elseif ($model->sortBy == 'year') {
+            $sort_list = [];
+        } else {
+            $sort_list = [];
         }
+
+        $sort_list[] = 'dateSortKey';
+        $sort_list[] = 'itemIdName';
+
+        // before 2024-02-15
+        // NULL is sorted last; the field 'hasFamilyname' overrides this behaviour
+        // $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
+
+        // if ($model->isEmpty()) {
+        //     if ($model->corpus == 'can') {
+        //         $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
+        //     } else {
+        //         $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
+        //     }
+        // } elseif ($model->domstift) {
+        //     $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
+        // } elseif ($model->diocese) {
+        //     $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
+        // } elseif ($model->office) {
+        //     if ($model->corpus == 'can') {
+        //         $sort_list = ['domstift_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
+        //     } else {
+        //         $sort_list = ['diocese_name', 'dateSortKey', 'givenname', 'familyname', 'itemIdName'];
+        //     }
+        // } elseif ($model->name) {
+        //     if ($model->corpus == 'can') {
+        //         $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'domstift_name', 'dateSortKey', 'itemIdName'];
+        //     } else {
+        //         $sort_list = ['hasFamilyname', 'familyname',  'givenname', 'dateSortKey', 'itemIdName'];
+        //     }
+        // } elseif ($model->year) {
+        //     $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
+        // } elseif ($model->someid) {
+        //     $sort_list = ['dateSortKey', 'familyname', 'givenname', 'itemIdName'];
+        // } elseif ($model->place) {
+        //     $sort_list = ['place_name', 'dateSortKey', 'familyname', 'givenname', 'itemIdName'];
+        // }
 
         return $sort_list;
     }

@@ -37,6 +37,7 @@ class PersonFormType extends AbstractType
             'data_class' => PersonFormModel::class,
             'forceFacets' => false,
             'repository' => null,
+            'sortByChoices' => null,
             'action' => "",
         ]);
 
@@ -48,6 +49,7 @@ class PersonFormType extends AbstractType
         $repository = $options['repository'];
         $action = $options['action'];
         $corpusId = $model->corpus;
+        $sort_by_choices = $options['sortByChoices'];
 
         $filter_map = self::FILTER_MAP[$corpusId];
 
@@ -131,6 +133,14 @@ class PersonFormType extends AbstractType
                     ],
                 ]);
         }
+
+        $builder->add('sortBy', ChoiceType::class, [
+            'required' => true,
+            'label' => 'Sortierung',
+            'multiple' => false,
+            'expanded' => false,
+            'choices' => $sort_by_choices,
+        ]);
 
         if ($forceFacets) {
             if (in_array('ofc', $filter_map)) {
