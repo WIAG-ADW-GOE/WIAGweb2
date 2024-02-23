@@ -45,6 +45,8 @@ class GsoController extends AbstractController {
     public function gsoUpdateInfo(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
+        $personRepository = $entityManager->getRepository(Person::class, 'default');
 
 
         // The element type of $data_transfer['person_new_list'] is PersonGso.
@@ -60,14 +62,20 @@ class GsoController extends AbstractController {
             ]);
         }
 
-        $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
+        // find duplicates
+        $corpus_id_list = ['dreg', 'dreg-can'];
+        $auth_id_gs = Authority::ID['GSN'];
+        $duplicate_id_list = $urlExternalRepository->findDuplicates($auth_id_gs, $corpus_id_list);
+        $person_duplicate_list = $personRepository->findList($duplicate_id_list);
+
+        $auth_gs = $authorityRepository->find($auth_id_gs);
         return $this->render("gso/update_info.html.twig", [
             'menuItem' => 'edit-menu',
             'countReferenced' => $data_transfer['count_ref'],
             'updateList' => $data_transfer['person_update_list'],
             'missingList' => $data_transfer['person_missing_list'],
             'newList' => $data_transfer['person_new_list'],
-            'duplicateList' => $data_transfer['person_duplicate_list'],
+            'duplicateList' => $person_duplicate_list,
             'gsUrl' => $auth_gs->getUrlFormatter(),
             'isInfo' => true,
         ]);
@@ -113,11 +121,23 @@ class GsoController extends AbstractController {
      */
     public function gsoUpdate(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
+        $itemRepository = $entityManager->getRepository(Item::class, 'default');
         $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
         $itemNameRoleRepository = $entityManager->getRepository(itemNameRole::class, 'default');
         $nameLookupRepository = $entityManager->getRepository(nameLookup::class, 'default');
 
+        // find duplicates
+        $corpus_id_list = ['dreg', 'dreg-can'];
+        $auth_id_gs = Authority::ID['GSN'];
+        $duplicate_id_list = $urlExternalRepository->findDuplicates($auth_id_gs, $corpus_id_list);
+        $item_duplicate_list = $itemRepository->findBy(['id' => $duplicate_id_list]);
+        // set duplicates offline
+        foreach ($item_duplicate_list as $i_duplicate) {
+            $i_duplicate->setIsOnline(0);
+            $i_duplicate->setEditStatus('Dublette');
+        }
+        $entityManager->flush();
 
         // $data_transfer['meta_list'] contains GSO meta data for persons in $person_update_list.
         // The element type of $data_transfer['person_new_list'] is PersonGso.
@@ -128,7 +148,6 @@ class GsoController extends AbstractController {
         // - update entries and return list with all office data (corpus = 'dreg' or 'dreg-can');
         $person_updated_list = $this->updateList($doctrine, $data_transfer['meta_update_list']);
         $entityManager->flush();
-
 
         // insert new data
         // The element type of $person_inserted_list is Person
@@ -164,6 +183,7 @@ class GsoController extends AbstractController {
 
         $gs_url = $authorityRepository->find(Authority::ID['GSN'])->getUrlFormatter();
         return $this->render("gso/update_info.html.twig", [
+            'menuItem' => 'edit-menu',
             'countReferenced' => $data_transfer['count_ref'],
             'updateList' => $person_updated_list,
             'missingList' => $data_transfer['person_missing_list'],
@@ -282,9 +302,9 @@ class GsoController extends AbstractController {
         $current_user_id = $this->getUser()->getId();
 
         $id_list = array_keys($meta_data_list);
-        $person_update_list = $personRepository->findList($id_list);
+        $person_list = $personRepository->findList($id_list);
 
-        foreach($person_update_list as $person_target) {
+        foreach($person_list as $person_target) {
             $item_id = $person_target->getItem()->getId();
             $gso_person_id = $meta_data_list[$item_id]['gso_person_id'];
             // do not drop entries without offices here; it is possible that they
@@ -301,7 +321,7 @@ class GsoController extends AbstractController {
 
             $this->editPersonService->updateFromGso($person_target, $person_gso, $current_user_id);
         }
-        return $person_update_list;
+        return $person_list;
     }
 
     private function insertList($doctrine, $gso_insert_list) {
@@ -427,7 +447,7 @@ class GsoController extends AbstractController {
         }
         $entityManager->flush();
 
-        // get office data for updated persons (in Digitalem Peronenregister) and missing persons
+        // get office data for persons with new data in Digitalem Peronenregister and missing persons
         $id_list = array_keys($meta_update_list);
         $person_update_list = $personRepository->findList($id_list);
         // add visible id_public
@@ -483,13 +503,6 @@ class GsoController extends AbstractController {
         }
         $entityManager->flush();
 
-        // find duplicates
-        $corpus_id_list = ['dreg', 'dreg-can'];
-        $auth_id_gs = Authority::ID['GSN'];
-        $duplicate_id_list = $urlExternalRepository->findDuplicates($auth_id_gs, $corpus_id_list);
-
-        $person_duplicate_list = $personRepository->findList($duplicate_id_list);
-
         $person_missing_all = array_merge($person_missing_list, $person_niw_missing_list);
         $data_transfer = [
             'count_ref' => count($dreg_item_list),
@@ -497,7 +510,6 @@ class GsoController extends AbstractController {
             'person_update_list' => $person_update_list,
             'person_new_list' => $person_new_list,
             'person_missing_list' => $person_missing_all,
-            'person_duplicate_list' => $person_duplicate_list,
         ];
 
         return $data_transfer;

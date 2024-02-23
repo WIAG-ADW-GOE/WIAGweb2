@@ -9,74 +9,74 @@
 
 {% block body %}
     <div class="container-fluid mb-2">
-	<div class="row ms-2">
-	    <div class="col-12">
-		{% if isInfo %}
-		    <div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernehmen (Info)</div>
-		{% else %}
-		    <div class="topic-title mb-2">Daten wurden aus dem Digitalen Personenregister ausgelesen</div>
-		{% endif %}
-		<p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
-	    </div>
-	</div>
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		<h4>Datensätze mit neueren Daten</h4>
-		<ul class="list-group list-group-flush">
-		    {% for person in updateList %}
-			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+        <div class="row ms-2">
+            <div class="col-12">
+                {% if isInfo %}
+                    <div class="topic-title mb-2">Daten aus dem Digitalen Personenregister übernehmen (Info)</div>
+                {% else %}
+                    <div class="topic-title mb-2">Daten wurden aus dem Digitalen Personenregister ausgelesen</div>
+                {% endif %}
+                <p>Zahl der referenzierten Datensätze: {{ countReferenced }}</p>
+            </div>
+        </div>
+        <div class="row ms-2 mt-2">
+            <div class="col-12">
+                <h4>Datensätze mit neueren Daten</h4>
+                <ul class="list-group list-group-flush">
+                    {% for person in updateList %}
+                        {{ include("gso/_item_li.html.twig", { 'person': person }) }}
                     {% else %}
-			<li class="list-group-item">keine</li>
-		    {% endfor %}
-		</ul>
-	    </div>
-	</div>
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		{% if isInfo %}
-		    <h4>neue Datensätze im Digitalen Personenregister</h4>
-		{% else %}
-		    <h4>neue Datensätze</h4>
-		{% endif %}
-		<ul class="list-group list-group-flush">
-		    {% for person in newList %}
-			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                        <li class="list-group-item">keine</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row ms-2 mt-2">
+            <div class="col-12">
+                {% if isInfo %}
+                    <h4>neue Datensätze im Digitalen Personenregister</h4>
+                {% else %}
+                    <h4>neue Datensätze</h4>
+                {% endif %}
+                <ul class="list-group list-group-flush">
+                    {% for person in newList %}
+                        {{ include("gso/_item_li.html.twig", { 'person': person }) }}
                     {% else %}
-			<li class="list-group-item">keine</li>
-		    {% endfor %}
-		</ul>
-	    </div>
-	</div>
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		<h4>Fehlende Datensätze</h4>
-		<ul class="list-group list-group-flush">
-		    {% for person in missingList %}
-			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                        <li class="list-group-item">keine</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row ms-2 mt-2">
+            <div class="col-12">
+                <h4>Fehlende Datensätze</h4>
+                <ul class="list-group list-group-flush">
+                    {% for person in missingList %}
+                        {{ include("gso/_item_li.html.twig", { 'person': person }) }}
                     {% else %}
-			<li class="list-group-item">keine</li>
-		    {% endfor %}
-		</ul>
-	    </div>
-	</div>
-	<div class="row ms-2 mt-2">
-	    <div class="col-12">
-		<h4>Dubletten</h4>
-		<ul class="list-group list-group-flush">
-		    {% for person in duplicateList %}
-			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
-                    {% else %}
-			<li class="list-group-item">keine</li>
-		    {% endfor %}
-		</ul>
-	    </div>
-	</div>
-	{% if isInfo %}
-	    <div class="row ms-2 mt-2">
-		<div class="col-12">
-		    <a href="{{ path('gso_update') }}" class="btn btn-primary" role="button>">Start</a>
-		</div>
-	    </div>
-	{% endif %}
+                        <li class="list-group-item">keine</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% if isInfo %}
+            <div class="row ms-2 mt-2">
+                <div class="col-12">
+                    <h4>Dubletten</h4>
+                    <ul class="list-group list-group-flush">
+                        {% for person in duplicateList %}
+                            {{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                        {% else %}
+                            <li class="list-group-item">keine</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="row ms-2 mt-2">
+                <div class="col-12">
+                    <a href="{{ path('gso_update') }}" class="btn btn-primary" role="button>">Start</a>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

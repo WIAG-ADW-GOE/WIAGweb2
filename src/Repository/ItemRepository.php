@@ -453,6 +453,7 @@ class ItemRepository extends ServiceEntityRepository
                    ->select('i.id, i.dateChanged, uext.value as gsn')
                    ->join('i.urlExternal', 'uext')
                    ->join('i.itemCorpus', 'ic')
+                   ->andWhere('i.isOnline = 1')
                    ->andWhere('uext.authorityId = :authority_id')
                    ->andWhere('ic.corpusId in (:corpus_id_list)')
                    ->setParameter('authority_id', $authority_id)
