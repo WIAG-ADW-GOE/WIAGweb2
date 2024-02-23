@@ -62,10 +62,12 @@ class GsoController extends AbstractController {
 
         $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
         return $this->render("gso/update_info.html.twig", [
+            'menuItem' => 'edit-menu',
             'countReferenced' => $data_transfer['count_ref'],
             'updateList' => $data_transfer['person_update_list'],
             'missingList' => $data_transfer['person_missing_list'],
             'newList' => $data_transfer['person_new_list'],
+            'duplicateList' => $data_transfer['person_duplicate_list'],
             'gsUrl' => $auth_gs->getUrlFormatter(),
             'isInfo' => true,
         ]);
@@ -481,13 +483,21 @@ class GsoController extends AbstractController {
         }
         $entityManager->flush();
 
+        // find duplicates
+        $corpus_id_list = ['dreg', 'dreg-can'];
+        $auth_id_gs = Authority::ID['GSN'];
+        $duplicate_id_list = $urlExternalRepository->findDuplicates($auth_id_gs, $corpus_id_list);
+
+        $person_duplicate_list = $personRepository->findList($duplicate_id_list);
+
         $person_missing_all = array_merge($person_missing_list, $person_niw_missing_list);
         $data_transfer = [
             'count_ref' => count($dreg_item_list),
             'meta_update_list' => $meta_update_list,
             'person_update_list' => $person_update_list,
             'person_new_list' => $person_new_list,
-            'person_missing_list' => $person_missing_all
+            'person_missing_list' => $person_missing_all,
+            'person_duplicate_list' => $person_duplicate_list,
         ];
 
         return $data_transfer;

@@ -459,5 +459,65 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * findDuplicates($authority_id, $corpus_id_list)
+     *
+     * @return list of IDs of duplicate entries
+     */
+    function findDuplicates($authority_id, $corpus_id_list) {
+        $qb_count = $this->createQueryBuilder('uext')
+                   ->select('uext.value, ic.corpusId, count(uext.value) as n')
+                   ->innerJoin('\App\Entity\ItemCorpus', 'ic',
+                               'WITH', 'ic.itemId = uext.itemId and ic.corpusId in (:cil)')
+                   ->innerJoin('\App\Entity\Item', 'i', 'WITH', 'i.id = uext.itemId and i.isOnline = 1')
+                   ->andWhere('uext.authorityId = :auth_id')
+                   ->groupBy('uext.value, ic.corpusId')
+                   ->setParameter('auth_id', $authority_id)
+                   ->setParameter('cil', $corpus_id_list)
+                   ->andHaving('n > 1');
+
+        $query_count = $qb_count->getQuery();
+
+        $count = $query_count->getResult();
+
+        $result = array();
+
+        if (is_null($count) or count($count) < 1) {
+            return $result;
+        }
+
+        // find corresponding recoreds
+        $value_list = array_column($count, 'value');
+
+        $qb = $this->createQueryBuilder('uext')
+                   ->select('uext.itemId, uext.value')
+                   ->innerJoin('\App\Entity\ItemCorpus', 'ic',
+                               'WITH', 'ic.itemId = uext.itemId and ic.corpusId in (:cil)')
+                   ->innerJoin('\App\Entity\Item', 'i', 'WITH', 'i.id = uext.itemId and i.isOnline = 1')
+                   ->andWhere('uext.authorityId = :auth_id')
+                   ->andWhere('uext.value in (:value_list)')
+                   ->addOrderBy('uext.value')
+                   ->addOrderBy('uext.itemId', 'DESC')
+                   ->setParameter('auth_id', $authority_id)
+                   ->setParameter('cil', $corpus_id_list)
+                   ->setParameter('value_list', $value_list);
+
+        $query = $qb->getQuery();
+        $duplicate_all = $query->getResult();
+
+        // extract one item per value
+        $duplicate_list = array();
+        $value_last = null;
+        foreach ($duplicate_all as $d_cand) {
+            $value_loop = $d_cand['value'];
+            if ($value_last != $value_loop) {
+                $duplicate_list[] = $d_cand['itemId'];
+                $value_last = $value_loop;
+            }
+        }
+
+        return $duplicate_list;
+
+    }
 
 }

@@ -59,6 +59,18 @@
 		</ul>
 	    </div>
 	</div>
+	<div class="row ms-2 mt-2">
+	    <div class="col-12">
+		<h4>Dubletten</h4>
+		<ul class="list-group list-group-flush">
+		    {% for person in duplicateList %}
+			{{ include("gso/_item_li.html.twig", { 'person': person }) }}
+                    {% else %}
+			<li class="list-group-item">keine</li>
+		    {% endfor %}
+		</ul>
+	    </div>
+	</div>
 	{% if isInfo %}
 	    <div class="row ms-2 mt-2">
 		<div class="col-12">
