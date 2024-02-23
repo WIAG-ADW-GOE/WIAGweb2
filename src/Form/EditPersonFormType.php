@@ -27,15 +27,23 @@ use Symfony\Component\Routing\RouterInterface;
 
 class EditPersonFormType extends AbstractType
 {
+    const SORT_BY_CHOICES = [
+        'Vorname, Familienname' => 'givenname',
+        'Familienname, Vorname' => 'familyname',
+        'Domstift/Kloster' => 'institution',
+            'Bistum' => 'diocese',
+        'Jahr' => 'year',
+        'identisch mit' => 'commentDuplicate',
+        'ID' => 'idInSource',
+        'Status' => 'editStatus'
+    ];
+
 
     public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
             'statusChoices' => [
                 '- alle -' => null,
-            ],
-            'sortByChoices' => [
-                'Name' => 'name',
             ]
         ]);
 
@@ -137,7 +145,7 @@ class EditPersonFormType extends AbstractType
                 'label' => 'Sortierung',
                 'multiple' => false,
                 'expanded' => false,
-                'choices' => $options['sortByChoices'],
+                'choices' => self::SORT_BY_CHOICES,
             ])
             ->add('isEdit', HiddenType::class)
             // data set via JavaScript

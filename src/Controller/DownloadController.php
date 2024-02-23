@@ -54,7 +54,6 @@ class DownloadController extends AbstractController {
 
         ini_set('max_execution_time', 300);
 
-        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         $corpusRepository = $this->entityManager->getRepository(Corpus::class);
         // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -66,7 +65,7 @@ class DownloadController extends AbstractController {
         $model->corpus = $corpusId;
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         $form->handleRequest($request);
@@ -75,7 +74,7 @@ class DownloadController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            $id_all = $personRepository->findPersonIds($model);
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
@@ -162,8 +161,6 @@ class DownloadController extends AbstractController {
         ini_set('max_execution_time', 300);
 
         $corpusRepository = $this->entityManager->getRepository(Corpus::class);
-        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
-        // dev
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
@@ -172,7 +169,7 @@ class DownloadController extends AbstractController {
         $model->corpus = $corpusId;
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         $form->handleRequest($request);
@@ -181,7 +178,7 @@ class DownloadController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            $id_all = $personRepository->findPersonIds($model);
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
@@ -265,9 +262,6 @@ class DownloadController extends AbstractController {
         ini_set('max_execution_time', 300);
 
         $corpusRepository = $this->entityManager->getRepository(Corpus::class);
-        $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
-        // dev
-        // $itemReferenceRepository = $this->entityManager->getRepository(ItemReference::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
 
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
@@ -276,7 +270,7 @@ class DownloadController extends AbstractController {
         $model->corpus = $corpusId;
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         $form->handleRequest($request);
@@ -285,7 +279,7 @@ class DownloadController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            $id_all = $personRepository->findPersonIds($model);
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
@@ -378,7 +372,7 @@ class DownloadController extends AbstractController {
         $model->corpus = $corpusId;
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         $form->handleRequest($request);
@@ -387,7 +381,7 @@ class DownloadController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $id_all = $itemNameRoleRepository->findPersonIds($model);
+            $id_all = $personRepository->findPersonIds($model);
             // dev/debug
             $download_debug = false;
             if ($download_debug) {

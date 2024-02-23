@@ -1282,6 +1282,7 @@ class EditPersonService {
 
             $count_role += 1;
         }
+
         return $count_role;
     }
 

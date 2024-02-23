@@ -87,11 +87,9 @@ class EditPersonController extends AbstractController {
         $model->isEdit = true;
 
         $status_choices = $this->statusChoices();
-        $sort_by_choices = $this->sortByChoices();
 
         $form = $this->createForm(EditPersonFormType::class, $model, [
             'statusChoices' => $status_choices,
-            'sortByChoices' => $sort_by_choices,
         ]);
 
         $offset = 0;
@@ -151,24 +149,6 @@ class EditPersonController extends AbstractController {
         $template = 'edit_person/query.html.twig';
         return $this->renderEditElements($corpusId, $template, $template_params);
 
-    }
-
-    /**
-     * sortByChoices()
-     *
-     * @return choice list for sorting
-     */
-    private function sortByChoices() {
-        return [
-            'Vorname, Familienname' => 'givenname',
-            'Familienname, Vorname' => 'familyname',
-            'Domstift/Kloster' => 'institution',
-            'Bistum' => 'diocese',
-            'Jahr' => 'year',
-            'identisch mit' => 'commentDuplicate',
-            'ID' => 'idInSource',
-            'Status' => 'editStatus'
-        ];
     }
 
     /**
@@ -786,14 +766,12 @@ class EditPersonController extends AbstractController {
         $model->corpus = $corpusId;
 
         $status_choices = $this->statusChoices();
-        $sort_by_choices = $this->sortByChoices();
 
         $form = $formFactory->createNamed(
             'person_merge_query',
             EditPersonFormType::class,
             $model, [
                 'statusChoices' => $status_choices,
-                'sortByChoices' => $sort_by_choices,
             ]);
 
         $offset = 0;

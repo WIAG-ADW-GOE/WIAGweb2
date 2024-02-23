@@ -54,9 +54,15 @@ class OnePageController extends AbstractController {
         $model = new PersonFormModel;
         $model->corpus = $corpusId;
 
+        $sort_by_choices = PersonFormType::sortByChoices(PersonFormType::FILTER_MAP[$corpusId]);
+
+        if (is_null($model->sortBy)) {
+            $model->sortBy = array_values($sort_by_choices)[0];
+        }
+
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
         $form->handleRequest($request);
         $model = $form->getData();
@@ -81,7 +87,7 @@ class OnePageController extends AbstractController {
         if (!is_null($domstift)) {
             $model->domstift = $domstift->getName();
         }
-        $id_all = $itemNameRoleRepository->findPersonIds($model);
+        $id_all = $personRepository->findPersonIds($model);
         $count = count($id_all);
 
         // set global limit here (avoid server crash!)
@@ -278,18 +284,27 @@ class OnePageController extends AbstractController {
                                $corpusIdRef) {
 
         $itemNameRoleRepository = $entityManager->getRepository(ItemNameRole::class);
+        $personRepository = $entityManager->getRepository(Person::class);
 
         $model = new PersonFormModel;
-        $model->corpus = 'can'; // query corpus is always 'can'
+        $corpus_id = 'can'; // query corpus is always 'can'
+        $model->corpus = $corpus_id;
+
+        $sort_by_choices = PersonFormType::sortByChoices(PersonFormType::FILTER_MAP[$corpus_id]);
+
+        if (is_null($model->sortBy)) {
+            $model->sortBy = array_values($sort_by_choices)[0];
+        }
+
         $form = $this->createForm(PersonFormType::class, $model, [
             'forceFacets' => false,
-            'repository' => $itemNameRoleRepository,
+            'repository' => $personRepository,
         ]);
 
         $form->handleRequest($request);
         $model = $form->getData();
 
-        $id_list = $itemNameRoleRepository->findPersonIds($model);
+        $id_list = $personRepository->findPersonIds($model);
         $reference_list = $itemNameRoleRepository->referenceListByCorpus($id_list, $corpusIdRef);
 
         $title = 'Literatur andere';

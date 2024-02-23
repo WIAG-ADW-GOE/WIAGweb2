@@ -94,8 +94,8 @@
 			},
 		    }) }}
 		    <ul class="list-group autocomplete-target"
-			       data-autocomplete-target="results"
-			       style="max-width: 12em;"></ul>
+			data-autocomplete-target="results"
+			style="max-width: 12em;"></ul>
 		</div>
 	    {% endif %}
 	    {{  form_row(form.year, {
@@ -105,12 +105,41 @@
 		}
 	    }) }}
 	    {{  form_row(form.someid, {
-		row_attr: {class: 'mt-1'},
+		row_attr: {class: 'me-2 mt-1'},
 		attr: {
 		    'class': 'wiag-input',
 		    'size': 26,
 		}
 	    }) }}
+	    <div class="d-flex">
+		<div class="me-2 mt-1">
+		    {{ form_label(form.sortBy) }}
+		    {{ form_errors(form.sortBy) }}
+		    {{ form_widget(form.sortBy, {
+			'attr': {
+			    'class': 'wiag-input',
+			    'style': 'min-width: 7rem',
+			    'data-action': 'trigger#click',
+			}
+		    }) }}
+		</div>
+		<div class="me-2 mt-1"
+		     data-controller="sync"
+		     data-sync-toggle-first-value="ASC"
+		     data-sync-toggle-second-value="DESC">
+		    {% set sort_order=form.sortOrder.vars.value %}
+		    <button class="btn form-control"
+			    style="margin-top: 2rem !important;"
+			    data-action="sync#toggle trigger#click"
+			    id="{{ form.vars.id }}_sortOrderButton"
+			    type="button">{% if sort_order == 'ASC' %}<img src="{{ asset('images/symbols/chevron-down-lg.svg') }}" alt="Pfeilsymbol">{% else %}<img src="{{ asset('images/symbols/chevron-up-lg.svg') }}" alt="Pfeilsymbol">{% endif %}</button>
+		    {{ form_widget(form.sortOrder, {
+			'attr': {
+			    'data-sync-target': 'toggle',
+			}
+		    }) }}
+		</div>
+	    </div>
 	    {# hidden #}
 	    {{ form_row(form.corpus) }}
 	</div>
