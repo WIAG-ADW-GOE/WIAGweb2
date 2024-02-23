@@ -160,14 +160,14 @@ class GsoController extends AbstractController {
         $entityManager->flush();
 
 
-        $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
+        $gs_url = $authorityRepository->find(Authority::ID['GSN'])->getUrlFormatter();
         return $this->render("gso/update_info.html.twig", [
             'countReferenced' => $data_transfer['count_ref'],
             'updateList' => $person_updated_list,
             'missingList' => $data_transfer['person_missing_list'],
             'newList' => $person_inserted_list,
             'isInfo' => false,
-            'gsUrl' => $auth_gs->getUrlFormatter(),
+            'gsUrl' => $gs_url,
         ]);
     }
 
@@ -396,6 +396,7 @@ class GsoController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class, 'default');
         $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
         $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
+        $gsoGsnRepository = $entityManager_gso->getRepository(Gsn::class, 'gso');
 
         // consider only active entries (online);
         $dreg_item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg']);
@@ -409,7 +410,22 @@ class GsoController extends AbstractController {
         // check update date; missing list holds elements of $item_list not found in GSO
         list($meta_update_list, $missing_list) = $this->updateRequired($dreg_item_list, $dreg_gso_meta_list, 'gsn');
 
-        // get office data for updated persons and missing persons
+        // check if there are new GSN in Digitales Personenregister (see also below)
+        // update GSN in url_external for elements of $meta_update_list
+        foreach ($meta_update_list as $id => $upd) {
+            $gsn_ante = $upd['gsn'];
+            $gsn = $gsoGsnRepository->findCurrentGsn($gsn_ante);
+            if (!is_null($gsn)) {
+                $gsn_post = $gsn['gsn'];
+                if ($gsn_post != $gsn_ante) {
+                    $meta_update_list[$id]['gsn'] = $gsn_post;
+                    $urlExternalRepository->updateValue($gsn_ante, $gsn_post);
+                }
+            }
+        }
+        $entityManager->flush();
+
+        // get office data for updated persons (in Digitalem Peronenregister) and missing persons
         $id_list = array_keys($meta_update_list);
         $person_update_list = $personRepository->findList($id_list);
         // add visible id_public
@@ -431,8 +447,8 @@ class GsoController extends AbstractController {
 
         $cap_pid_list = array_column($canon_cap_gso, 'person_id');
 
-        // * find all references of active entries (online)
-        // without an corresponding item (dreg, dreg-can) in WIAG
+        // * find all references of active entries (online) without an corresponding item (dreg, dreg-can) in WIAG
+        // list of GSN for items not in WIAG
         $niw_gsn_list = $urlExternalRepository->findNewGsn();
 
         $niw_gso_meta_list = $this->personGsoIdsByList($doctrine, $niw_gsn_list);
@@ -453,14 +469,13 @@ class GsoController extends AbstractController {
         // because entries without offices are dropped.
 
         // check if there are new GSN in Digitales Personenregister
-        $updated_gsn_list = array();
+        // update GSN in url_external, where item is not yet in WIAG.
         foreach ($niw_gsn_list as $niw_gsn) {
             foreach ($person_new_list as $p_new) {
                 $gso_item = $p_new->getItem();
                 if ($gso_item->hasGsn($niw_gsn)
                     and $gso_item->getCurrentGsn() != $niw_gsn) {
                     $urlExternalRepository->updateValue($niw_gsn, $gso_item->getCurrentGsn());
-                    $updated_gsn_list[$niw_gsn] = $gso_item->getCurrentGsn();
                 }
             }
         }
