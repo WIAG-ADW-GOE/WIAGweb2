@@ -285,6 +285,7 @@ class PersonRepository extends ServiceEntityRepository {
         $reference = $model->reference;
         $year = $model->year;
         $someid = $model->someid;
+        $misc = $model->misc;
 
         // include in queries for corpus 'can' also canons from the Digitales Personenregister
         // bishops from Digitales Personenregister have no independent entries in item_name_role,
@@ -297,7 +298,7 @@ class PersonRepository extends ServiceEntityRepository {
         }
 
         // sorting for canons includes all sources for office data
-        if ($domstift or $monastery or $diocese or $office or $place) {
+        if ($domstift or $monastery or $diocese or $office or $place or $misc) {
             if ($model->isEdit) {
                 $qb->innerJoin('App\Entity\PersonRole', 'pr_cond', 'WITH', 'pr_cond.personId = p.id');
             } else {
@@ -475,7 +476,6 @@ class PersonRepository extends ServiceEntityRepository {
             }
         }
 
-        $misc = $model->misc;
         if ($misc) {
             $qb->leftJoin('p.role', 'pr_misc')
                ->leftJoin('pr_misc.institution', 'inst_misc')
