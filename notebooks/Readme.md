@@ -1,0 +1,200 @@
+# Synchronizing Data Between PR, WIAG, and FactGrid Using Jupyter Notebooks
+
+## Introduction
+
+This document provides an overview of the process for synchronizing data between three databases:
+
+- **Personenregister (PR)**: The primary source of data containing persons from books produced by Germania Sacra.
+- **WIAG**: A local MySQL database with an API.
+- **FactGrid (FG)**: A Wikidata-based site for historians.
+
+This guide is intended for team members at Germania Sacra who are domain experts in historical texts but may not have technical expertise. It will help you understand and execute the Jupyter notebooks designed to synchronize data between these databases.
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+### Software Requirements
+
+- **Python**: Required to run the Jupyter notebooks.
+- **Julia**: Some notebooks are written in Julia.
+- **Jupyter Notebook**: An interactive environment for running the notebooks.
+
+#### Required Libraries
+
+A list of necessary Python and Julia libraries will be provided separately. Please ensure all required libraries are installed before proceeding.
+
+### Access and Credentials
+
+- **Database Access**: Credentials are needed to interact with PR, WIAG, and FG databases.
+- **CSV Files**: Some notebooks require CSV files obtained by running SQL queries on the databases.
+
+To obtain the necessary credentials and CSV files, please contact **Barbara Kroeger** at Germania Sacra.
+
+## Workflow Overview
+
+The synchronization process involves several steps, each performed using a specific Jupyter notebook or action. The steps are designed to be executed in a specific sequence to maintain data consistency.
+
+### Sequence of Steps
+
+1. **Import Personenregister Entries into WIAG** (Non-notebook action)
+2. **Update WIAG IDs in Personenregister** (`pr_recon.ipynb`)
+3. **Reconciling FactGrid Entries with WIAG IDs** (`factgrid_recon.ipynb`)
+4. **Add FactGrid Links to WIAG** (`FactGrid-IDs2WIAG.ipynb`)
+5. **Create New Entries on FactGrid from WIAG** (`Csv2FactGrid-create.ipynb`)
+6. **Add Offices to Persons on FactGrid** (`wiag_to_factgrid.ipynb`)
+7. **Update PR Entries with FactGrid Links** (`fg_to_pr.ipynb`)
+8. **Update FactGrid Entries with PR Links** (`pr_to_fg.ipynb`)
+
+_Note: Steps 2 and 3 can be run in parallel._
+
+<!-- A diagram illustrating the data flow between PR, WIAG, and FactGrid can be included here. -->
+
+## Detailed Instructions
+
+### Step 1: Import Personenregister Entries into WIAG
+
+**Action**: Use the button in WIAG to automatically import persons from PR into WIAG.
+
+- **Source**: PR
+- **Destination**: WIAG
+
+**Instructions**:
+
+1. Log in to WIAG using your credentials.
+2. Locate and click the button to import entries from PR.
+3. Newly imported entries will receive a higher WIAG ID, distinguishing them from native WIAG entries.
+4. These entries require manual review. After verification, they will be assigned a lower WIAG ID.
+
+### Step 2: Update WIAG IDs in Personenregister
+
+**Notebook**: `pr_recon.ipynb`
+
+- **Source**: WIAG
+- **Destination**: PR
+
+**Purpose**: Updates PR with the WIAG IDs assigned to each person, ensuring PR remains the primary and up-to-date source of data.
+
+**Instructions**:
+
+1. Open `pr_recon.ipynb` in Jupyter Notebook.
+2. Run each cell sequentially by clicking `Run` or pressing `Shift + Enter`.
+3. Some cells may prompt you for input or require you to check outputs. Pause and verify as needed.
+4. Upon completion, confirm that PR entries now include the correct WIAG IDs.
+
+### Step 3: Reconciling FactGrid Entries with WIAG IDs
+
+**Notebook**: `factgrid_recon.ipynb`
+
+- **Source**: WIAG
+- **Destination**: FG
+
+**Purpose**: Identifies FG entries linked to higher WIAG IDs and updates them to the correct lower IDs after manual review.
+
+**Instructions**:
+
+1. Open `factgrid_recon.ipynb` in Jupyter Notebook.
+2. Run each cell sequentially.
+3. If discrepancies are found, the notebook will highlight them. Manually correct these in FG as necessary.
+4. Verify that all FG entries now link to the correct WIAG IDs.
+
+### Step 4: Add FactGrid Links to WIAG
+
+**Notebook**: `FactGrid-IDs2WIAG.ipynb`
+
+- **Source**: FG
+- **Destination**: WIAG
+
+**Purpose**: Adds links to FG entries within the WIAG database.
+
+**Instructions**:
+
+1. Open `FactGrid-IDs2WIAG.ipynb`.
+2. Run the notebook cell by cell.
+3. Ensure that the FG links are correctly added to the corresponding WIAG entries.
+
+### Step 5: Create New Entries on FactGrid from WIAG
+
+**Notebook**: `Csv2FactGrid-create.ipynb`
+
+- **Source**: WIAG
+- **Destination**: FG
+
+**Purpose**: Creates new FG entries using data from WIAG.
+
+**Instructions**:
+
+1. Open `Csv2FactGrid-create.ipynb`.
+2. Run each cell in order.
+3. The notebook will generate an output CSV file.
+4. Upload the CSV file to FactGrid or execute it against the database as instructed.
+
+### Step 5.5: Add Offices to Persons on FactGrid
+
+**Notebook**: `wiag_to_factgrid.ipynb`
+
+- **Source**: WIAG
+- **Destination**: FG
+
+**Purpose**: Adds office information to existing persons on FG. This is the most complex notebook and requires careful attention.
+
+**Instructions**:
+
+1. Open `wiag_to_factgrid.ipynb`.
+2. Proceed through the notebook one cell at a time.
+3. Pay special attention to any instructions for manual supervision.
+4. Check outputs carefully and make necessary adjustments in the databases if required.
+5. Confirm that office details are accurately added to FG entries.
+
+### Step 6: Update PR Entries with FactGrid Links
+
+**Notebook**: `fg_to_pr.ipynb`
+
+- **Source**: FG
+- **Destination**: PR
+
+**Purpose**: Updates PR entries to include links to their corresponding FG entries.
+
+**Instructions**:
+
+1. Open `fg_to_pr.ipynb`.
+2. Run each cell sequentially.
+3. Verify that PR entries now contain the correct FG links.
+
+### Step 7: Update FactGrid Entries with PR Links
+
+**Notebook**: `pr_to_fg.ipynb`
+
+- **Source**: PR
+- **Destination**: FG
+
+**Purpose**: Ensures FG entries link back to the corresponding PR entries.
+
+**Instructions**:
+
+1. Open `pr_to_fg.ipynb`.
+2. Run the notebook cell by cell.
+3. Confirm that FG entries are updated with the correct PR links.
+
+## Best Practices
+
+- **Sequential Execution**: Follow the steps in the specified order to maintain data integrity. Steps 2 and 3 may be run in parallel if needed.
+- **Manual Supervision**: Some notebook cells require manual checks. Take the time to review outputs and make any necessary adjustments.
+- **Running Cells**: Execute cells one at a time to monitor progress and catch any errors early.
+- **Verification**: After running each notebook, check that the expected outputs are generated and that updates are reflected in the databases.
+- **Data Consistency**: Ensure that any changes made are consistent across all databases to prevent discrepancies.
+
+## Troubleshooting
+
+- **CSV File Handling**: If a notebook requires a CSV file, ensure it is properly downloaded and renamed as instructed.
+- **Common Issues**: While uncommon, you might encounter issues like missing libraries or incorrect file paths. Review error messages for guidance.
+- **Assistance**: If you need help or encounter persistent issues, please contact **Barbara Kroeger** at Germania Sacra.
+
+## Additional Resources
+
+- **Library Installation Guide**: Refer to the provided documentation for installing necessary Python and Julia libraries.
+- **Diagram of Data Flow**: A visual diagram illustrating the synchronization process is available upon request.
+
+## Conclusion
+
+By following this guide, you will effectively synchronize data between PR, WIAG, and FactGrid. This ensures that all platforms are up-to-date and that historical data remains consistent and accurate across the databases.
