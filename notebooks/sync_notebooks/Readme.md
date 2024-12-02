@@ -62,9 +62,10 @@ _Note: Steps 2 and 3 can be run in parallel._
 **Instructions**:
 
 1. Log in to WIAG using your credentials.
-2. Locate and click the button to import entries from PR.
-3. Newly imported entries will receive a higher WIAG ID, distinguishing them from native WIAG entries.
-4. These entries require manual review. After verification, they will be assigned a lower WIAG ID.
+2. Click on Edit > Domherren aus dem Digitalen Personenregister
+3. Locate and click the button "Start" to import entries from PR at the bottom of the page.
+4. Newly imported entries will receive a higher WIAG ID, distinguishing them from native WIAG entries.
+5. These entries require manual review. After verification, they will be assigned a lower WIAG ID.
 
 ### Step 2: Update WIAG IDs in Personenregister
 
