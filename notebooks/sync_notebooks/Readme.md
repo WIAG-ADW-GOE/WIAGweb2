@@ -10,6 +10,12 @@ This document provides an overview of the process for synchronizing data between
 
 This guide is intended for team members at Germania Sacra who are domain experts in historical texts but may not have technical expertise. It will help you understand and execute the Jupyter notebooks designed to synchronize data between these databases.
 
+The list of all documents that are part of this documentation are:
+
+1. [Main Document](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/Readme.md)
+2. [Installation](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Installation.md)
+3. [Running SQL](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_SQL_Query_and_Export_CSV.md)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following:
