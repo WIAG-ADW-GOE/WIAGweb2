@@ -52,9 +52,11 @@ The synchronization process involves several steps, each performed using a speci
 7. **Update PR Entries with FactGrid Links** (`fg_to_pr.ipynb`)
 8. **Update FactGrid Entries with PR Links** (`pr_to_fg.ipynb`)
 
-_Note: Steps 2 and 3 can be run in parallel._
+Note: 
+ - Steps 2 and 3 can be run in parallel, ie, the order of running these notebooks does not matter
+ - Step 6 can be skipped. This step is very long and you might not be interested in creating the offices for all persons along with all the other factgrid entries.
 
-<!-- A diagram illustrating the data flow between PR, WIAG, and FactGrid can be included here. -->
+![sync notebooks](docs/images/all_notebooks.drawio.png)
 
 ## Detailed Instructions
 
@@ -136,7 +138,7 @@ _Note: Steps 2 and 3 can be run in parallel._
 3. The notebook will generate an output CSV file.
 4. Upload the CSV file to FactGrid or execute it against the database as instructed.
 
-### Step 5.5: Add Offices to Persons on FactGrid
+### Step 6: Add Offices to Persons on FactGrid
 
 **Notebook**: `wiag_to_factgrid.ipynb`
 
@@ -153,7 +155,7 @@ _Note: Steps 2 and 3 can be run in parallel._
 4. Check outputs carefully and make necessary adjustments in the databases if required.
 5. Confirm that office details are accurately added to FG entries.
 
-### Step 6: Update PR Entries with FactGrid Links
+### Step 7: Update PR Entries with FactGrid Links
 
 **Notebook**: `fg_to_pr.ipynb`
 
@@ -168,7 +170,7 @@ _Note: Steps 2 and 3 can be run in parallel._
 2. Run each cell sequentially.
 3. Verify that PR entries now contain the correct FG links.
 
-### Step 7: Update FactGrid Entries with PR Links
+### Step 8: Update FactGrid Entries with PR Links
 
 **Notebook**: `pr_to_fg.ipynb`
 
