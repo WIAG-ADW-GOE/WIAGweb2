@@ -7,12 +7,12 @@ This document provides a step-by-step guide to installing and setting up Jupyter
 1. [Credentials and Notes](#2-credentials-and-notes): Provides essential information about administrator credentials required for installations and the limitations of Julia library sharing across users.
 2. [Julia Installation](#3-julia-installation): Step-by-step guide to downloading, installing, and configuring Julia, including adding it to the system PATH.
 3. [Python Installation](#4-python-installation): Detailed instructions for installing Python and ensuring compatibility through system configurations.
-4. [Restart](#5-restart): Highlights the importance of restarting your system to apply changes made during installation.
+4. [Restart](#5-restart)
 5. [Python Libraries Installation](#6-python-libraries-installation): Guides you through installing required Python libraries using pip.
 6. [Julia Libraries Installation](#7-julia-libraries-installation): Provides commands to install necessary Julia libraries for Jupyter Notebook.
 7. [Jupyter Notebook Shortcut Creation](#8-jupyter-notebook-shortcut-creation): Instructions for creating a shortcut to launch Jupyter Notebook conveniently and an advanced alternative using `jupyter-lab`.
 8. [Troubleshooting](#9-troubleshooting): Covers potential issues during installation and usage with solutions.
-9. [References](#10-references): Links to official documentation for Julia, Python, and Jupyter Notebook for further learning.
+9. [References](#10-references): Links to official documentation for Julia, Python, and Jupyter Notebook for further troubleshooting.
 
 ## 2. Credentials and Notes
 
