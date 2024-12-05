@@ -121,6 +121,7 @@ _No additional software installations or prerequisites are required._
   <notebook_path>/notebooks/sync_notebooks/input_files
   ```
 - Move the CSV File by either dragging and dropping or copying and pasting.
+- Rename the file if required.
 
 ## Troubleshooting
 
