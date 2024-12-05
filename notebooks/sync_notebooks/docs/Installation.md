@@ -33,22 +33,25 @@ This document provides a step-by-step guide to installing and setting up Jupyter
 
    Replace `XXXX` with the version number (e.g., `1.10.4`, if used the example julia version above).
 
-4. Check the box for **“Add Julia to PATH”** and proceed with the installation.
+4. Check the box for **“Add Julia to PATH”** and proceed with the installation. You can then simply click on `Finish`.
 
 5. Update the PATH environment variable:
 
    - Search for `Systemumgebungsvariablen bearbeiten` and open it.
    - Click **“Umgebungsvariablen…”**.
-   - Under `Benutzervariablen für…`, copy the Julia-related entry from the `PATH` variable.
-   - Under `Systemvariabeln`, add the copied string to the `PATH` variable.
+   - Under `Benutzervariablen für…`, double-click on the `PATH` variable.
+   - Copy the Julia-related entry from the list of entries. This entry will have julia written in it.
+   - Under `Systemvariabeln`, double-clickthe `PATH` variable.
+   - Add the copied string as a new entry here.
    - Save changes by clicking **OK** in all windows.
 
-6. **Verify Installation**:  
-   Open Command Prompt and run:
+6. **Verify Installation (Optional)**:  
+   - Open Command Prompt (for eg: powershell)
+   - Without changing the path, run the following command:
 
-   ```bash
-   julia --version
-   ```
+      ```bash
+      julia --version
+      ```
 
    If Julia is installed correctly, it will display the version number.
 
@@ -65,19 +68,21 @@ This document provides a step-by-step guide to installing and setting up Jupyter
 
 3. During installation:
 
-   - Check **Admin privileges** and **Add python.exe to PATH**.
-   - Choose **Custom Install** and uncheck:
+   - Check the boxes for **Admin privileges** and **Add python.exe to PATH**.
+   - Choose **Custom Install** and uncheck the boxes:
      - `tcl/tk`
      - `Python test suite`
    - Check **Install Python 3.12 for all users** and **Precompile Standard Library**.
 
-4. Complete the installation and select **Disable path length limit**.
+4. Select **Disable path length limit** and then complete the installation.
 
 ## 5. Restart
 
 Restart your computer to apply all changes from the Julia and Python installations.
 
 ## 6. Python Libraries Installation
+
+*Note: please open this document again to copy the commands easier.*
 
 1. Open the Command Prompt as Administrator.
    - To do this, search for "Eingabeaufforderung" on the Windows search bar.
@@ -90,7 +95,7 @@ Restart your computer to apply all changes from the Julia and Python installatio
 
 ## 7. Julia Libraries Installation
 
-1. Open the Command Prompt (not as Administrator).
+1. Open the Command Prompt but this time not as Administrator. The last prompt was opened as Administrator.
 2. Run Julia by typing:
    ```bash
    julia
@@ -101,7 +106,7 @@ Restart your computer to apply all changes from the Julia and Python installatio
    ```
 4. Install libraries by running:
    ```julia
-   add CSV DataFrame Dates
+   add CSV DataFrames Dates
    ```
 5. **Common Issues and Fixes**:
    - **Issue**: Network errors during installation.  
@@ -109,18 +114,18 @@ Restart your computer to apply all changes from the Julia and Python installatio
 
 ## 8. Jupyter Notebook Shortcut Creation
 
-1. Open the folder:
+1. Create a new shortcut (`Verknüpfung`). To do this, right-click on an empty space on the desktop. Then click on `Neu` and then `Verknüpfung`.
+2. Use the following as the shortcut path:
    ```
-   %ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs
+   cmd /k py -m jupyter notebook
    ```
-2. Create a new shortcut (`Verknüpfung`).
-3. Use the following as the shortcut path:
-   ```
-   cmd /c cd C:\ && py –m jupyter notebook
-   ```
-4. Rename the shortcut to **“Jupyter Notebook”**.
 
-### Advanced Alternative:
+   *Note: In case have problems by copy-pasting the line above. Please delete the hyphen and type it again on your keyboard. Some browsers may use a different unicode for the hypen and cause this issue.*
+3. Rename the shortcut to **“Jupyter Notebook”**.
+4. Right click on the created shortcut. Then click on "An start anheften". This would link the shortcut to the start menu so that you can search for it more easily.
+5. You can double click on the short cut to see if it works.
+
+#### Advanced Alternative (Optional):
 
 To use Jupyter Lab (an enhanced version of Jupyter Notebook), open the command prompt and run:
 
