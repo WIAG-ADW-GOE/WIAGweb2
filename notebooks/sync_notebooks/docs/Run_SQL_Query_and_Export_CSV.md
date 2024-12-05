@@ -13,15 +13,12 @@ This guide provides step-by-step instructions for non-technical users to run a S
 7. [Troubleshooting](#troubleshooting)
 8. [Additional Notes](#additional-notes)
 
----
-
 ## Prerequisites
 
 - **Credentials:** Obtain your phpMyAdmin login credentials from **Barbara Kroeger**.
 
 _No additional software installations or prerequisites are required._
 
----
 
 ## Accessing phpMyAdmin
 
@@ -59,8 +56,6 @@ _No additional software installations or prerequisites are required._
    - Click on the **"wiagvokabulare"** database to select it. This could be something different as well. Usually there would be only two options, one of them being: `information_schema`, which is MySQL's internal database, which is not relevant to our use case.
      ![Database Selection](images/Screenshot_2024-12-05_09-32-23.png)
 
----
-
 ## Running the SQL Query
 
 1. **Navigate to the SQL Tab:**
@@ -81,7 +76,6 @@ _No additional software installations or prerequisites are required._
 
    - **Note:** The example here is taken from the first query in `pr_recon.ipynb` The red lines on the words here can be ignored.
 
----
 
 ## Exporting the Results as CSV
 
@@ -109,7 +103,6 @@ _No additional software installations or prerequisites are required._
 
    - Click the **"OK"** button to download the CSV file. This will now start downloading the file.
 
----
 
 ## Moving the CSV File
 
@@ -159,6 +152,5 @@ If you encounter any issues while following these steps, consider the following 
 
 - **Assistance:** If you need further help or encounter issues not covered in this guide, please reach out to **Barbara Kroeger** for support.
 
----
 
 _This documentation was last updated on December 3, 2024._
