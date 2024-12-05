@@ -1,0 +1,99 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0" version="24.7.6">
+  <diagram name="Seite-1" id="leB474EhjVgnFdigj9KG">
+    <mxGraphModel dx="794" dy="726" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-1" value="&lt;div&gt;Personen register&lt;/div&gt;&lt;div&gt;https://personendatenbank.germania-sacra.de/&lt;br&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="299" y="80" width="230" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-2" value="&lt;div&gt;Wiag&lt;br&gt;&lt;/div&gt;&lt;div&gt;https://wiag-vocab.adw-goe.de/&lt;br&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="69" y="350" width="230" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-3" value="&lt;div&gt;Factgrid&lt;/div&gt;&lt;div&gt;https://database.factgrid.de/&lt;br&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="529" y="350" width="230" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-5" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-1" target="4jHds4j0ekdmrDRGuYUK-2" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-6" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.713;exitY=0.033;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-2" target="4jHds4j0ekdmrDRGuYUK-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-7" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.948;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.078;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-2" target="4jHds4j0ekdmrDRGuYUK-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-8" value="" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-3" target="4jHds4j0ekdmrDRGuYUK-2" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-10" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.674;exitY=0;exitDx=0;exitDy=0;entryX=0.983;entryY=0.658;entryDx=0;entryDy=0;exitPerimeter=0;entryPerimeter=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-3" target="4jHds4j0ekdmrDRGuYUK-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-11" value="1. Login to WIAG and click Button &quot;Domherren aus dem Digitalen Personenregister&quot; " style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="30" y="270" width="144" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-12" value="&lt;div&gt;2. Update wiag ids in personenregister&lt;/div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/pr_recon.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;pr_recon.ipynb, (File)&quot; title=&quot;pr_recon.ipynb&quot;&gt;pr_recon.ipynb&lt;/a&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="299" y="240" width="124" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-13" value="&lt;div&gt;4. Add factgrid ids to corresponding entries in wiag&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/FactGrid-IDs2WIAG.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;FactGrid-IDs2WIAG.ipynb, (File)&quot; title=&quot;FactGrid-IDs2WIAG.ipynb&quot;&gt;FactGrid-IDs2WIAG.ipynb&lt;/a&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="327" y="410" width="174" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-14" value="&lt;div&gt;5. Create new entries on Factgrid&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/Csv2FactGrid-create.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;Csv2FactGrid-create.ipynb, (File)&quot; title=&quot;Csv2FactGrid-create.ipynb&quot;&gt;Csv2FactGrid-create.ipynb&lt;/a&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="322" y="330" width="184" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-15" value="&lt;div&gt;7. Update Personenregister with new factgrid id&lt;/div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/fg_to_pr.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;fg_to_pr.ipynb, (File)&quot; title=&quot;fg_to_pr.ipynb&quot;&gt;fg_to_pr.ipynb&lt;/a&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="480" y="250" width="124" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-17" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-2" target="4jHds4j0ekdmrDRGuYUK-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="240" y="520" />
+              <mxPoint x="560" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-18" value="&lt;div&gt;3. Update factgrid entries to use lower wiag ids instead of higher ones.&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/factgrid_recon.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;factgrid_recon.ipynb, (File)&quot; title=&quot;factgrid_recon.ipynb&quot;&gt;factgrid_recon.ipynb&lt;/a&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="342" y="510" width="144" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-19" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.965;exitY=0.275;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-1" target="4jHds4j0ekdmrDRGuYUK-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="420" as="sourcePoint" />
+            <mxPoint x="440" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4jHds4j0ekdmrDRGuYUK-20" value="&lt;div&gt;8. Update personenregister id in factgrid.&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/pr_to_fg.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;pr_to_fg.ipynb, (File)&quot; title=&quot;pr_to_fg.ipynb&quot;&gt;pr_to_fg.ipynb&lt;/a&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="620" y="190" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xsnPgOfgVxO_Im8gat-1" value="" style="curved=1;endArrow=classic;html=1;rounded=0;exitX=0.213;exitY=0.917;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.826;entryY=0.917;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="4jHds4j0ekdmrDRGuYUK-2" target="4jHds4j0ekdmrDRGuYUK-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="480" as="sourcePoint" />
+            <mxPoint x="440" y="430" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="200" y="640" />
+              <mxPoint x="640" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R6xsnPgOfgVxO_Im8gat-4" value="&lt;div&gt;6. Add office information (and check or create other nested information) for people on factgrid&lt;/div&gt;&lt;div&gt;&lt;a href=&quot;https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/wiag_to_factgrid.ipynb&quot; class=&quot;Link--primary&quot; aria-label=&quot;wiag_to_factgrid.ipynb, (File)&quot; title=&quot;wiag_to_factgrid.ipynb&quot;&gt;wiag_to_factgrid.ipynb&lt;/a&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="319" y="650" width="190" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
