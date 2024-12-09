@@ -15,8 +15,9 @@ The list of all documents that are part of this documentation are:
 1. [Main Document](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/Readme.md)
 2. [Installation](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Installation.md)
 3. [Running SQL](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_SQL_Query_and_Export_CSV.md)
-4. [Running Factgrid]()
-5. [Wiag export]()
+4. [Running Factgrid](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_factgrid_csv.md)
+5. [Wiag export](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/wiag_export.md)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following:
