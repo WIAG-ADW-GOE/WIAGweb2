@@ -1,6 +1,6 @@
 # Running SQL Queries and Exporting Results as CSV
 
-This guide provides step-by-step instructions for non-technical users to run a SQL query on ours databases using **phpMyAdmin**, export the results as a CSV file, and move the CSV file to a specific directory.
+This guide provides instructions for users to run a SQL query on ours databases using **phpMyAdmin**, export the results as a CSV file, and move the CSV file to a specific directory.
 
 There are different databases that can be accessed on phpMyAdmin. Most notable ones are the Personen datenbank and the WIAG database. Both of these are accessible from the same webpage but they require different credentials.
 
