@@ -1,6 +1,8 @@
 # Running SQL Queries and Exporting Results as CSV
 
-This guide provides step-by-step instructions for non-technical users to run a SQL query on the **wiag** database using **phpMyAdmin**, export the results as a CSV file, and move the CSV file to a specific directory.
+This guide provides step-by-step instructions for non-technical users to run a SQL query on ours databases using **phpMyAdmin**, export the results as a CSV file, and move the CSV file to a specific directory.
+
+There are different databases that can be accessed on phpMyAdmin. Most notable ones are the Personen datenbank and the WIAG database. Both of these are accessible from the same webpage but they require different credentials.
 
 ## Table of Contents
 
@@ -18,7 +20,6 @@ This guide provides step-by-step instructions for non-technical users to run a S
 - **Credentials:** Obtain your phpMyAdmin login credentials from **Barbara Kroeger**.
 
 _No additional software installations or prerequisites are required._
-
 
 ## Accessing phpMyAdmin
 
@@ -76,7 +77,6 @@ _No additional software installations or prerequisites are required._
 
    - **Note:** The example here is taken from the first query in `pr_recon.ipynb` The red lines on the words here can be ignored.
 
-
 ## Exporting the Results as CSV
 
 1. **Scroll to the Export Section:**
@@ -102,7 +102,6 @@ _No additional software installations or prerequisites are required._
    ![export detailed options 1](images/image3.png)
 
    - Click the **"OK"** button to download the CSV file. This will now start downloading the file.
-
 
 ## Moving the CSV File
 
@@ -151,6 +150,5 @@ If you encounter any issues while following these steps, consider the following 
 ## Additional Notes
 
 - **Assistance:** If you need further help or encounter issues not covered in this guide, please reach out to **Barbara Kroeger** for support.
-
 
 _This documentation was last updated on December 3, 2024._
