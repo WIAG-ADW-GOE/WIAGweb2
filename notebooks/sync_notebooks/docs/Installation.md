@@ -117,13 +117,15 @@ Restart your computer to apply all changes from the Julia and Python installatio
 1. Create a new shortcut (`Verknüpfung`). To do this, right-click on an empty space on the desktop. Then click on `Neu` and then `Verknüpfung`.
 2. Use the following as the shortcut path:
    ```
-   cmd /k py -m jupyter notebook
+   cmd /k cd C:\ && py -m jupyter notebook
    ```
 
    *Note: In case have problems by copy-pasting the line above. Please delete the hyphen and type it again on your keyboard. Some browsers may use a different unicode for the hypen and cause this issue.*
 3. Rename the shortcut to **“Jupyter Notebook”**.
 4. Right click on the created shortcut. Then click on "An start anheften". This would link the shortcut to the start menu so that you can search for it more easily.
 5. You can double click on the short cut to see if it works.
+
+You can now navigate go the jupyter files on your computer and run them.
 
 #### Advanced Alternative (Optional):
 
