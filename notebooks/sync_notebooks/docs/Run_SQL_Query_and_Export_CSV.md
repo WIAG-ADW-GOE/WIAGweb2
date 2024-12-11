@@ -54,7 +54,7 @@ _No additional software installations or prerequisites are required._
 
 2. **Select the **wiag** Database:**
 
-   - Click on the **"wiagvokabulare"** database to select it. This could be something different as well. Usually there would be only two options, one of them being: `information_schema`, which is MySQL's internal database, which is not relevant to our use case.
+   - Click on the **"wiagvokabulare"** or **"gsdatenbank"** database to select it. This choice would depend on the credentials that you used. The two set of credentials use the same portal but give you access to two different databases. (Usually there would be only two options, one of them being: `information_schema`, which is MySQL's internal database, which is not relevant to our use case.)
      ![Database Selection](images/Screenshot_2024-12-05_09-32-23.png)
 
 ## Running the SQL Query
