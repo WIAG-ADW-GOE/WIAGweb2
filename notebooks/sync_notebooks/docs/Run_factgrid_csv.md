@@ -56,7 +56,7 @@ _No additional software installations or prerequisites are required._
 
 1. Click on "New Batch"
 
-2. In the new screen click on the empty text box and paste the generated text from the csv file
+2. In the new screen click on the empty text box and paste the generated text from the csv file. Open the csv file using the Notepad Editor as excel may not open it properly.
 
 3. Click on "Import CSV Commands"
    ![alt text](images/image6.png)
