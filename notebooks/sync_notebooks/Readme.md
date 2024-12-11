@@ -18,6 +18,8 @@ The list of all documents that are part of this documentation are:
 4. [Running Factgrid](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_factgrid_csv.md)
 5. [Exporting Personen and Amstdaten from WIAG](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/wiag_export.md)
 
+The recommended way is to first install the software as described in the [Software Installation](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Installation.md) guide and then download [this repository as a zip file](https://github.com/WIAG-ADW-GOE/WIAGweb2/archive/refs/heads/main.zip) and running the notebooks. More details are provided below.
+
 ## Prerequisites
 
 ### Software Requirements
@@ -30,7 +32,7 @@ The installation of the software mentioned below is mentioned [in detail here](h
 
 #### Required Libraries
 
-A list of necessary Python and Julia libraries will be provided separately. Please ensure all required libraries are installed before proceeding.
+A list of necessary Python and Julia libraries are provided in the document. Please ensure all required libraries are installed before proceeding.
 
 ### Access and Credentials
 
