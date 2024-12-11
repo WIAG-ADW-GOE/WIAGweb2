@@ -5,7 +5,7 @@ This guide provides instructions for users to upload data to Factgrid using Quic
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Accessing phpMyAdmin](#accessing-phpmyadmin)
+2. [Accessing Factgrid](#accessing-factgrid)
 3. [Selecting the Database](#selecting-the-database)
 4. [Running the SQL Query](#running-the-sql-query)
 5. [Exporting the Results as CSV](#exporting-the-results-as-csv)
@@ -19,13 +19,13 @@ This guide provides instructions for users to upload data to Factgrid using Quic
 
 _No additional software installations or prerequisites are required._
 
-## Accessing phpMyAdmin
+## Accessing Factgrid
 
 1. **Open Your Web Browser:**
 
    - Launch your preferred web browser (e.g., Chrome, Firefox, Edge).
 
-2. **Navigate to phpMyAdmin:**
+2. **Navigate to Factgrid:**
 
    - Enter the following URL in the address bar and press Enter:
 
