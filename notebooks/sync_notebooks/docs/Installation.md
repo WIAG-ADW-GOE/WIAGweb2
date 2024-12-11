@@ -89,7 +89,7 @@ Restart your computer to apply all changes from the Julia and Python installatio
    - Right click on it. This will show you an option called “Als Administrator ausführen” which will allow you to open Command Prompt as Administrator.
 2. Run the following commands to install required libraries:
    ```bash
-   py -m pip install notebook pandas asyncio aiohttp
+   py -m pip install notebook pandas asyncio aiohttp tqdm
    ```
    Do this by copying this line and pasting it in the command prompt and then pressing enter. Please wait until the installation is completed.
 

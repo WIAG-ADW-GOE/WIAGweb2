@@ -6,4 +6,4 @@ The data exported here is from the WIAG portal. It exports the data from the WIA
 2. Click on the Export button
 3. Click on `CSV Personendaten` or `CSV Amsdaten` depending on the data requested.
 4. This will start downloading the data.
-5. Rename the file and move it to an appropriate location.
+5. Rename the file and move it to an appropriate location. By default this should be the `notebooks/sync_notebooks/input_files` directory in the location where you extracted the zip file.
