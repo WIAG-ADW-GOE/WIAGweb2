@@ -13,10 +13,10 @@
     "license": "UNLICENSED",
     "private": true,
     "scripts": {
-        "dev-server": "encore dev-server",
-        "dev": "encore dev",
-        "watch": "encore dev --watch",
-        "build": "encore production --progress"
+        "dev-server": "SET NODE_OPTIONS=--openssl-legacy-provider && encore dev-server",
+        "dev": "SET NODE_OPTIONS=--openssl-legacy-provider && encore dev",
+        "watch": "SET NODE_OPTIONS=--openssl-legacy-provider && encore dev --watch",
+        "build": "SET NODE_OPTIONS=--openssl-legacy-provider && encore production --progress"
     },
     "dependencies": {
         "@fontsource/lato": "^4.5.9",

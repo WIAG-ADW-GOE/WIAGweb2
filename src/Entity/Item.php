@@ -437,7 +437,7 @@ class Item {
             $list[] = $ic->getIdInCorpusWithPrefix();
         }
 
-        return is_null($list) ? $list : implode($list, ", ");
+        return is_null($list) ? $list : implode(", ", $list);
     }
 
     /**
