@@ -37,7 +37,7 @@
 			    <p class="ms-3">* {{ datebirth }} <span class="ms-2">&dagger; {{ datedeath }}</span></p>
 			{% endif %}
 		    </td>
-		    <td>{% for r in person.getRoleSortedIterator(roleSortCritList) %}
+		    <td>{% for r in person.getRoleSortedIterator (roleSortCritList) %}
 			<div class="fs-6">{% if r.displayRoleName %}{{ r.displayRoleName }}{% endif %}
 			    {% if r.placename %}({{ r.placename }})
 			    {% elseif r.diocese %}({{ r.diocese.name }})

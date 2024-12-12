@@ -79,11 +79,11 @@ class PersonController extends AbstractController {
     public function query($corpusId,
                           Request $request,
                           EntityManagerInterface $entityManager) {
-
+                            
         $personRepository = $entityManager->getRepository(Person::class);
         $corpusRepository = $entityManager->getRepository(Corpus::class);
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
-
+        
         // call with empty $request?
         $flagInit = count($request->request->all()) == 0;
 
@@ -129,7 +129,7 @@ class PersonController extends AbstractController {
 
         $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
         $person_list = $personRepository->findList($id_list);
-
+        echo("Hello from query");
         $template_param_list = [
             'menuItem' => 'collections',
             'form' => $form,

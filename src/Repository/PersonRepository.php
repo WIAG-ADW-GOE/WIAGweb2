@@ -638,7 +638,8 @@ class PersonRepository extends ServiceEntityRepository {
     private function getRoleList($person_list) {
         $role_list = array_map(function($el) {
             # array_merge accepts only an array
-            return $el->getRole()->toArray();
+            print("Hello from role list");
+            return $el->getRole()->slice(0, 10);
         }, $person_list);
         $role_list = array_merge(...$role_list);
 
