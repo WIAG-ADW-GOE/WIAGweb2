@@ -59,7 +59,7 @@ The synchronization process involves several steps, each performed using a speci
 Note:
 
 - Steps 2 and 3 can be run in parallel, ie, the order of running these notebooks does not matter
-- Step 6 can be skipped. This step is very long and you might not be interested in creating the offices for all persons along with all the other factgrid entries.
+- Step 6 can be skipped. This step is very long and you might not be interested in creating the offices for all persons along with all the other factgrid entries. Also, the results of this step do not affect any other steps down the line.
 
 ![sync notebooks](docs/images/all_notebooks.drawio.png)
 
