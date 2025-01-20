@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
+use App\Service\UtilService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -89,5 +90,29 @@ class ItemReferenceRepository extends ServiceEntityRepository
         return $query->getSingleResult()['count'];
     }
 
+    /**
+     * set reference in $item_list
+     */
+    public function setReference($item_list) {
+
+        $id_list = UtilService::collectionColumn($item_list, "id");
+
+        $qb = $this->createQueryBuilder('ir')
+                   ->andWhere('ir.itemId in (:list)')
+                   ->setParameter(':list', $id_list)
+                   ->select('ir');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // lookup table for $item_list
+        $item_dict = array_combine($id_list, $item_list);
+
+        foreach ($result as $ref) {
+            $item_id = $ref->getItemId();
+            $item_dict[$item_id]->addReference($ref);
+        }
+
+    }
 
 }

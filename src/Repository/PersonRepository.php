@@ -9,6 +9,7 @@ use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Institution;
+use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Authority;
 use App\Entity\UrlExternal;
@@ -582,13 +583,12 @@ class PersonRepository extends ServiceEntityRepository {
      *
      */
     public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
+        $em = $this->getEntityManager();
+
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
+                   ->select('p, i, inr, bp, role, role_type, institution')
                    ->join('p.item', 'i') # avoid query in twig ...
                    ->leftJoin('i.itemNameRole', 'inr')
-                   ->leftJoin('i.itemProperty', 'ip')
-                   ->leftJoin('i.urlExternal', 'urlext')
-                   ->leftJoin('i.reference', 'ref')
                    ->leftJoin('p.birthplace', 'bp')
                    ->leftJoin('p.role', 'role')
                    ->leftJoin('role.role', 'role_type')
@@ -602,12 +602,17 @@ class PersonRepository extends ServiceEntityRepository {
             $qb->andWhere('i.isDeleted = 0');
         }
 
-        // sorting of birthplaces see annotation
-
         $query = $qb->getQuery();
         $person_list = $query->getResult();
 
-        $em = $this->getEntityManager();
+        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+
+        $em->getRepository(ItemReference::class)->setReference($item_list);
+        $em->getRepository(UrlExternal::class)->setUrlExternal($item_list);
+        $em->getRepository(ItemProperty::class)->setItemProperty($item_list);
+
+        // sorting of birthplaces see annotation
+
         $itemRepository = $em->getRepository(Item::class);
 
         $role_list = $this->getRoleList($person_list);

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ItemProperty;
+use App\Service\UtilService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,6 +48,32 @@ class ItemPropertyRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    /**
+     * set ItemProperty for $item_list
+     */
+    public function setItemProperty($item_list) {
+
+        $id_list = UtilService::collectionColumn($item_list, "id");
+
+        $qb = $this->createQueryBuilder('ip')
+                   ->andWhere('ip.itemId in (:list)')
+                   ->setParameter(':list', $id_list)
+                   ->select('ip');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // lookup table for $item_list
+        $item_dict = array_combine($id_list, $item_list);
+
+        foreach ($result as $ip) {
+            $item_id = $ip->getItemId();
+            $item_dict[$item_id]->addItemProperty($ip);
+        }
+
+    }
+
 
     public function referenceCount($type_id) {
         $qb = $this->createQueryBuilder('ip')

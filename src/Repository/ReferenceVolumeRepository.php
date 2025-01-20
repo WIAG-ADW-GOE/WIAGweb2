@@ -51,7 +51,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     */
 
     /**
-     * set reference volume for references in $person_list
+     * set reference volume for references in $item_list
      */
     public function setReferenceVolume($item_list) {
         // an entry in item_reference belongs to one item at most
