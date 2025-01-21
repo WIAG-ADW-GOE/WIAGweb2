@@ -11,7 +11,6 @@ use App\Entity\PersonRole;
 use App\Entity\Institution;
 use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
-use App\Entity\Authority;
 use App\Entity\UrlExternal;
 
 use App\Service\UtilService;
@@ -578,6 +577,14 @@ class PersonRepository extends ServiceEntityRepository {
         return $person_list;
     }
 
+    public function findPureList($id_list) {
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.id in (:id_list)')
+            ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
     /**
      *
@@ -586,9 +593,8 @@ class PersonRepository extends ServiceEntityRepository {
         $em = $this->getEntityManager();
 
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, inr, bp, role, role_type, institution')
+                   ->select('p, i, bp, role, role_type, institution')
                    ->join('p.item', 'i') # avoid query in twig ...
-                   ->leftJoin('i.itemNameRole', 'inr')
                    ->leftJoin('p.birthplace', 'bp')
                    ->leftJoin('p.role', 'role')
                    ->leftJoin('role.role', 'role_type')
@@ -618,18 +624,10 @@ class PersonRepository extends ServiceEntityRepository {
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
-
         // set ancestors
         if ($with_ancestors) {
             $itemRepository->setAncestor($item_list);
         }
-
-        // set reference volumes
-        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
-
-        // set authorities
-        $em->getRepository(Authority::class)->setAuthority($item_list);
 
         // restore order as in $id_list
         $person_list = UtilService::reorder($person_list, $id_list, "id");

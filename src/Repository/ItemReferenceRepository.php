@@ -113,6 +113,9 @@ class ItemReferenceRepository extends ServiceEntityRepository
             $item_dict[$item_id]->addReference($ref);
         }
 
+        // set reference volumes
+        $this->getEntityManager()->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
+
     }
 
 }

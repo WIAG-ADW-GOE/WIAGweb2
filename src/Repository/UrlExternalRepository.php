@@ -405,6 +405,8 @@ class UrlExternalRepository extends ServiceEntityRepository
             $item_dict[$item_id]->addUrlExternal($uext);
         }
 
+        // set authorities
+        $this->getEntityManager()->getRepository(Authority::class)->setAuthority($item_list);
     }
 
 
