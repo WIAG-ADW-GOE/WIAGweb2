@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Authority;
+use App\Service\UtilService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -78,17 +79,11 @@ class AuthorityRepository extends ServiceEntityRepository
         $query = $qb->getQuery();
         $result = $query->getResult();
 
+        $auth_id_list = UtilService::collectionColumn($result, "id");
+        $auth_dict = array_combine($auth_id_list, $result);
 
-        // match authorities by id
-        // the result list is not large so the filter is no performance problem
-        $id_loop = null;
-        foreach ($url_external_list as $url_loop) {
-            $auth_id = $url_loop->getAuthorityId();
-            $auth = array_filter($result, function($el) use ($auth_id) {
-                return ($el->getId() == $auth_id);
-            });
-            $auth_obj = (!is_null($auth) && count($auth) > 0) ? array_values($auth)[0] : null;
-            $url_loop->setAuthority($auth_obj);
+        foreach ($url_external_list as $uext) {
+            $uext->setAuthority($auth_dict[$uext->getAuthorityId()]);
         }
 
         return null;

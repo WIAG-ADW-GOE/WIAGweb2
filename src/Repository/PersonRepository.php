@@ -9,8 +9,8 @@ use App\Entity\ItemProperty;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\Institution;
+use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
-use App\Entity\Authority;
 use App\Entity\UrlExternal;
 
 use App\Service\UtilService;
@@ -577,18 +577,24 @@ class PersonRepository extends ServiceEntityRepository {
         return $person_list;
     }
 
+    public function findPureList($id_list) {
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.id in (:id_list)')
+            ->setParameter('id_list', $id_list);
+
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
 
     /**
      *
      */
     public function findList($id_list, $with_deleted = false, $with_ancestors = false) {
+        $em = $this->getEntityManager();
+
         $qb = $this->createQueryBuilder('p')
-                   ->select('p, i, inr, ip, bp, role, role_type, institution, urlext, ref')
+                   ->select('p, i, bp, role, role_type, institution')
                    ->join('p.item', 'i') # avoid query in twig ...
-                   ->leftJoin('i.itemNameRole', 'inr')
-                   ->leftJoin('i.itemProperty', 'ip')
-                   ->leftJoin('i.urlExternal', 'urlext')
-                   ->leftJoin('i.reference', 'ref')
                    ->leftJoin('p.birthplace', 'bp')
                    ->leftJoin('p.role', 'role')
                    ->leftJoin('role.role', 'role_type')
@@ -602,29 +608,26 @@ class PersonRepository extends ServiceEntityRepository {
             $qb->andWhere('i.isDeleted = 0');
         }
 
-        // sorting of birthplaces see annotation
-
         $query = $qb->getQuery();
         $person_list = $query->getResult();
 
-        $em = $this->getEntityManager();
+        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
+
+        $em->getRepository(ItemReference::class)->setReference($item_list);
+        $em->getRepository(UrlExternal::class)->setUrlExternal($item_list);
+        $em->getRepository(ItemProperty::class)->setItemProperty($item_list);
+
+        // sorting of birthplaces see annotation
+
         $itemRepository = $em->getRepository(Item::class);
 
         $role_list = $this->getRoleList($person_list);
         $em->getRepository(PersonRole::class)->setPlaceNameInRole($role_list);
 
-        $item_list = array_map(function($p) {return $p->getItem();}, $person_list);
-
         // set ancestors
         if ($with_ancestors) {
             $itemRepository->setAncestor($item_list);
         }
-
-        // set reference volumes
-        $em->getRepository(ReferenceVolume::class)->setReferenceVolume($item_list);
-
-        // set authorities
-        $em->getRepository(Authority::class)->setAuthority($item_list);
 
         // restore order as in $id_list
         $person_list = UtilService::reorder($person_list, $id_list, "id");

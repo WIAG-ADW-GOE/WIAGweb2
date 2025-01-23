@@ -455,8 +455,16 @@ class Item {
         return $this->itemProperty;
     }
 
+    public function addItemProperty($ip): void {
+        $this->itemProperty->add($ip);
+    }
+
     public function getUrlExternal() {
         return $this->urlExternal;
+    }
+
+    public function addUrlExternal($url): void {
+        $this->urlExternal->add($url);
     }
 
     /**
@@ -560,6 +568,10 @@ class Item {
     public function setReference(ArrayCollection $reference) {
         $this->reference = $reference;
         return $this;
+    }
+
+    public function addReference($reference): void {
+        $this->reference->add($reference);
     }
 
 
