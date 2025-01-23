@@ -382,6 +382,34 @@ class UrlExternalRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    /**
+     * set external Urls for $item_list
+     */
+    public function setUrlExternal($item_list) {
+
+        $id_list = UtilService::collectionColumn($item_list, "id");
+
+        $qb = $this->createQueryBuilder('uext')
+                   ->andWhere('uext.itemId in (:list)')
+                   ->setParameter(':list', $id_list)
+                   ->select('uext');
+
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+
+        // lookup table for $item_list
+        $item_dict = array_combine($id_list, $item_list);
+
+        foreach ($result as $uext) {
+            $item_id = $uext->getItemId();
+            $item_dict[$item_id]->addUrlExternal($uext);
+        }
+
+        // set authorities
+        $this->getEntityManager()->getRepository(Authority::class)->setAuthority($item_list);
+    }
+
+
 
     /**
      * 2023-10-10 obsolete

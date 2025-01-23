@@ -111,7 +111,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
         // set/restore entries based on online status, corpus and references to the Digitales Personenregister
         $n = 0;
-        $person_list = $personRepository->findList($id_list);
+        $person_list = $personRepository->findPureList($id_list);
 
         $id_primary_list = array();
         $id_secondary_list = array();

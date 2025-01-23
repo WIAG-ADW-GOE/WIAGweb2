@@ -51,7 +51,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     */
 
     /**
-     * set reference volume for references in $person_list
+     * set reference volume for references in $item_list
      */
     public function setReferenceVolume($item_list) {
         // an entry in item_reference belongs to one item at most
@@ -61,21 +61,23 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
         }
         $item_ref_list = array_merge(...$item_ref_list_meta);
 
+        $ref_id_list_all = UtilService::collectionColumn($item_ref_list, "referenceId");
+        $ref_id_list = array_unique($ref_id_list_all);
+
         $qb = $this->createQueryBuilder('r')
+                   ->andWhere('r.referenceId in (:ril)')
+                   ->setParameter(':ril', $ref_id_list)
                    ->select('r');
 
         $query = $qb->getQuery();
         $result = $query->getResult();
 
-        // match volumes by ref_id
-        // - the result list is not large so the filter is no performance problem
-        foreach ($item_ref_list as $ref) {
-            $ref_id = $ref->getReferenceId();
-            $vol = array_filter($result, function($el) use ($ref_id) {
-                return ($el->getReferenceId() == $ref_id);
-            });
-            $vol_obj = (!is_null($vol) and count($vol) > 0) ? array_values($vol)[0] : null;
-            $ref->setReferenceVolume($vol_obj);
+        // assign volumes
+        $vol_id_list = UtilService::collectionColumn($result, "referenceId");
+        $vol_dict = array_combine($vol_id_list, $result);
+
+        foreach ($item_ref_list as $ir) {
+             $ir->setReferenceVolume($vol_dict[$ir->getReferenceId()]);
         }
 
         // sort references
