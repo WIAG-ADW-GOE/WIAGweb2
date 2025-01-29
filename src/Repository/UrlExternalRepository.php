@@ -387,6 +387,10 @@ class UrlExternalRepository extends ServiceEntityRepository
      */
     public function setUrlExternal($item_list) {
 
+        foreach ($item_list as $item) {
+            $item->clearUrlExternal();
+        }
+
         $id_list = UtilService::collectionColumn($item_list, "id");
 
         $qb = $this->createQueryBuilder('uext')
