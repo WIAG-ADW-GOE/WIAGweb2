@@ -631,7 +631,6 @@ class PersonRepository extends ServiceEntityRepository {
 
         // restore order as in $id_list
         $person_list = UtilService::reorder($person_list, $id_list, "id");
-
         return $person_list;
     }
 

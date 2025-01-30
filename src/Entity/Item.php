@@ -130,7 +130,7 @@ class Item {
     private $itemProperty;
 
     /**
-     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"}, fetch="LAZY")
      * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
      */
     private $urlExternal;
@@ -461,6 +461,10 @@ class Item {
 
     public function getUrlExternal() {
         return $this->urlExternal;
+    }
+
+    public function clearUrlExternal(): void {
+        $this->urlExternal->clear();
     }
 
     public function addUrlExternal($url): void {
