@@ -66,14 +66,17 @@ _No additional software installations or prerequisites are required._
    ![SQL Tab](images/Screenshot_2024-12-05_09-36-06.png)
 
 2. **Enter the SQL Query:**
-
-   - In the SQL query editor, paste your SQL query provided in the accompanying document.
+    - Either: Select the query you want to run (if no query has been saved, the option to select one will not appear)
+  ![Selecting a Query](images/select_sql_query.jpg)
+    - Or: In the SQL query editor, paste your SQL query provided in the accompanying document.
 
 3. **Execute the Query:**
 
-   - After pasting the query, click the **"OK"** button to run it.
-
-   ![Running the Query](images/Screenshot_2024-12-05_09-38-53.png)
+   - To execute the query, click the **"OK"** button.
+   - If you selected a pre-saved query:
+   ![Running the selected Query](images/start_selected_query.jpg)
+   - If you pasted it:
+   ![Running the pasted Query](images/Screenshot_2024-12-05_09-38-53.png)
 
    - **Note:** The example here is taken from the first query in `pr_recon.ipynb` The red lines on the words here can be ignored.
 
