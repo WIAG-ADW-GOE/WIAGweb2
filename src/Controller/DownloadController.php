@@ -182,6 +182,7 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
+                $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
                 $person_list = $personRepository->findArray($id_all);
                 $role_list = $itemNameRoleRepository->findRoleArray($id_all);
                 $person = $person_list[0];
@@ -283,6 +284,7 @@ class DownloadController extends AbstractController {
             // dev/debug
             $download_debug = false;
             if ($download_debug) {
+                $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
                 $person_list = $personRepository->findArray($id_all);
                 $vol_list = $itemNameRoleRepository->findSimpleReferenceList($id_all);
                 $person = $person_list[1];
