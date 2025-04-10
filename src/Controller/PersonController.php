@@ -293,7 +293,7 @@ class PersonController extends AbstractController {
                 $error_node_list['error']['unknown key'] = $ukk;
             }
             if (count($unkown_list) > 0) {
-                return $personService->createResponse($format, $error_node_list);
+                return $personService->createResponse($format, $error_node_list, '');
             }
         }
         $format = ucfirst(strtolower($format));
@@ -311,7 +311,7 @@ class PersonController extends AbstractController {
                 'message' => "Query result is larger than the upper limmit",
                 'limit' => self::DATA_MAX_SIZE,
                 ];
-                return $personService->createResponse($format, $error_node_list);
+                return $personService->createResponse($format, $error_node_list, '');
             }
         }
 

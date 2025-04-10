@@ -916,7 +916,7 @@ class EditPersonController extends AbstractController {
 
         $template = 'edit_person/new_person.html.twig';
 
-        return $this->renderEditElements($template, [
+        return $this->renderEditElements('',$template, [
             'personList' => $person_list,
             'form' => null,
             'title' => null,

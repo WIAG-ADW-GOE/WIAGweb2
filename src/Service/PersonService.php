@@ -83,7 +83,7 @@ class PersonService {
 
     public function createResponse($format, $node_list, $filename) {
         $fcn = 'createResponse'.$format;
-        return $this->$fcn($node_list, $filename);
+        return $this->$fcn($node_list, $filename); //TODO debug to understand what this does and how it works
     }
 
     public function createResponseJson($node_list, $filename) {

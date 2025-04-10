@@ -556,7 +556,7 @@ class EditPersonService {
         // property
         if (array_key_exists('prop', $data)) {
             foreach($data['prop'] as $data_loop) {
-                $this->mapItemProperty($item, $data_loop);
+                $this->mapItemProperty($item, $data_loop, $person);
             }
         }
 
@@ -969,7 +969,7 @@ class EditPersonService {
     }
 
 
-    private function mapItemProperty($item, $data) {
+    private function mapItemProperty($item, $data, $person) {
 
         $id = $data['id'];
         // the property entry is considered empty if no value is set
