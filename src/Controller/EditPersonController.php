@@ -936,10 +936,9 @@ class EditPersonController extends AbstractController {
         $model = new PersonFormModel;
         $model->someid = $someid;
 
-        $online_only = false;
         $limit = null;
         $offset = null;
-        $id_all = $personRepository->findEditPersonIds($model, $limit, $offset, $online_only);
+        $id_all = $personRepository->findEditPersonIds($model, $limit, $offset);
 
         $person_list = $personRepository->findList($id_all);
 

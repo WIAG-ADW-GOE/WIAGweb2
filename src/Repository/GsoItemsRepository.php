@@ -18,7 +18,7 @@ class GsoItemsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, GsoItems::class, 'gso');
+        parent::__construct($registry, GsoItems::class);
     }
 
     public function add(GsoItems $entity, bool $flush = false): void

@@ -44,9 +44,9 @@ class GsoController extends AbstractController {
      */
     public function gsoUpdateInfo(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
-        $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
-        $personRepository = $entityManager->getRepository(Person::class, 'default');
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+        $personRepository = $entityManager->getRepository(Person::class);
 
 
         // The element type of $data_transfer['person_new_list'] is PersonGso.
@@ -121,11 +121,11 @@ class GsoController extends AbstractController {
      */
     public function gsoUpdate(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
-        $itemRepository = $entityManager->getRepository(Item::class, 'default');
-        $authorityRepository = $entityManager->getRepository(Authority::class, 'default');
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
-        $itemNameRoleRepository = $entityManager->getRepository(itemNameRole::class, 'default');
-        $nameLookupRepository = $entityManager->getRepository(nameLookup::class, 'default');
+        $itemRepository = $entityManager->getRepository(Item::class);
+        $authorityRepository = $entityManager->getRepository(Authority::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+        $itemNameRoleRepository = $entityManager->getRepository(itemNameRole::class);
+        $nameLookupRepository = $entityManager->getRepository(nameLookup::class);
 
         // find duplicates
         $corpus_id_list = ['dreg', 'dreg-can'];
@@ -277,8 +277,8 @@ class GsoController extends AbstractController {
         $entityManager_gso = $doctrine->getManager('gso');
         $entityManager = $doctrine->getManager('default');
 
-        $personsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
-        $institutionRepository = $entityManager->getRepository(Institution::class, 'default');
+        $personsRepository = $entityManager_gso->getRepository(Persons::class);
+        $institutionRepository = $entityManager->getRepository(Institution::class);
 
         $domstift_list = $institutionRepository->findDomstifte();
 
