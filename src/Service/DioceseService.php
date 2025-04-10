@@ -145,13 +145,10 @@ class DioceseService {
         case 'Json':
         case 'Csv':
             return $this->dioceseDataPlain($diocese);
-            break;
         case 'Jsonld':
             return $this->dioceseJSONLinkedData($diocese);
-            break;
         case 'Rdf':
             return $this->dioceseLinkedData($diocese);
-            break;
         default:
             return null;
         }

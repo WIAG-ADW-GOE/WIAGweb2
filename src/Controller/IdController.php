@@ -263,7 +263,6 @@ class IdController extends AbstractController {
                 }
             } else {
                 throw $this->createNotFoundException('Priester nicht gefunden');
-                $person = null;
             }
 
             $node_list = [$this->personService->personData($format, $person, [$person])];

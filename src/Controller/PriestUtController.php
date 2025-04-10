@@ -137,7 +137,6 @@ class PriestUtController extends AbstractController {
             $person = $person_list[0];
         } else {
             throw $this->createNotFoundException('Priester nicht gefunden');
-            $person = null;
         }
 
         $birthplace = $person->getBirthplace();

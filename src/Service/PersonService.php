@@ -160,13 +160,10 @@ class PersonService {
         case 'Json':
         case 'Csv':
             return $this->personDataPlain($person, $personRole);
-            break;
         case 'Jsonld':
             return $this->personJSONLinkedData($person, $personRole);
-            break;
         case 'Rdf':
             return $this->personLinkedData($person, $personRole);
-            break;
         default:
             return null;
         }
