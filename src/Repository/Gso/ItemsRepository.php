@@ -12,10 +12,6 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends EntityRepository<Items>
  *
- * @method GsoItems|null find($id, $lockMode = null, $lockVersion = null)
- * @method GsoItems|null findOneBy(array $criteria, array $orderBy = null)
- * @method GsoItems[]    findAll()
- * @method GsoItems[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ItemsRepository extends EntityRepository
 {
