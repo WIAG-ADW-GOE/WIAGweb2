@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ['copy', 'check', 'fill', 'toggle', 'expand', 'click', 'mark'];

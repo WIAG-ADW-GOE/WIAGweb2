@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 
 // 2022-08-30 obsolete?
 export default class extends Controller {
