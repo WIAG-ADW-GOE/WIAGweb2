@@ -139,10 +139,7 @@ class RoleRepository extends ServiceEntityRepository
      * Returns list of role names for autocompletion
      */
     public function suggestRoleGroup($q_param) {
-        $roleGroupRepository = $this->getEntitymanager();
-
-
-        $qb = $roleGroupRepository->createQueryBuilder()
+        $qb = $this->getEntitymanager()->createQueryBuilder()
                    ->select('DISTINCT rg.name AS suggestion')
                    ->andWhere('rg.name like :q_param')
                    ->setParameter('q_param', '%'.$q_param.'%');
@@ -155,10 +152,7 @@ class RoleRepository extends ServiceEntityRepository
      * Returns list of role names for autocompletion
      */
     public function suggestRoleGroupEn($q_param) {
-        $roleGroupRepository = $this->getEntitymanager();
-
-
-        $qb = $roleGroupRepository->createQueryBuilder()
+        $qb = $this->getEntitymanager()->createQueryBuilder()
                    ->select('DISTINCT rg.name_en AS suggestion')
                    ->andWhere('rg.name_en like :q_param')
                    ->setParameter('q_param', '%'.$q_param.'%');
