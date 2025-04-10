@@ -74,7 +74,7 @@ class FactGridService {
      */
     public function queryGSList($chunk_size, $offset) {
 
-        $response = $this->client->request('GET', self::LIST_URL_GS, [
+        $response = $this->client->request('GET', MonasteryService::LIST_URL_GS, [
             'query' => [
                 'limit' => $chunk_size,
                 'offset' => $offset
@@ -181,7 +181,7 @@ class FactGridService {
         } else {
             $num_date_begin = $institution_place->getDateBeginTaq();
             if (!is_null($num_date_begin)) {
-                $institution_place->setNumDateBegin($num_date_begin - self::DATE_MARGIN);
+                $institution_place->setNumDateBegin($num_date_begin - MonasteryService::DATE_MARGIN);
             }
         }
 
@@ -191,7 +191,7 @@ class FactGridService {
         } else {
             $num_date_end = $institution_place->getDateEndTpq();
             if (!is_null($num_date_end)) {
-                $institution_place->setNumDateEnd($num_date_end + self::DATE_MARGIN);
+                $institution_place->setNumDateEnd($num_date_end + MonasteryService::DATE_MARGIN);
             }
         }
         return $institution_place;
@@ -215,7 +215,7 @@ class FactGridService {
      */
     private function queryGSByGsn($gsn) {
 
-        $response = $this->client->request('GET', self::SINGLE_URL_GS.'/'.$gsn);
+        $response = $this->client->request('GET', MonasteryService::SINGLE_URL_GS.'/'.$gsn);
 
         $statusCode = $response->getStatusCode();
         if ($statusCode != 200) {

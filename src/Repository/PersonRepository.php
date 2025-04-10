@@ -805,7 +805,7 @@ class PersonRepository extends ServiceEntityRepository {
         if ($year) {
             $qb->andWhere("p.dateMin - :mgnyear < :q_year ".
                           " AND :q_year < p.dateMax + :mgnyear")
-               ->setParameter(':mgnyear', self::MARGINYEAR)
+                ->setParameter('mgnyear', Person::MARGINYEAR)
                ->setParameter('q_year', $year);
         }
 
