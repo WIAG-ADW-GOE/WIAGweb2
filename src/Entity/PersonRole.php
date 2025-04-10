@@ -164,18 +164,6 @@ class PersonRole
         return $this;
     }
 
-    public function institutionPlace()
-    {
-        return $this->institutionPlace;
-    }
-
-    public function setInstitutionPlace($institutionPlace): self
-    {
-        $this->institutionPlace = $institutionPlace;
-
-        return $this;
-    }
-
     public function getId(): ?int
     {
         return $this->id;

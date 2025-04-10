@@ -947,13 +947,6 @@ class Item {
         }
     }
 
-    /**
-     *
-     */
-    public function isa($itemTypeName) {
-        return $this->itemTypeId == self::ITEMTYPEID[$itemTypeName];
-    }
-
     private function findAuthorityId($authorityIdOrName) {
         $authority_id = intval($authorityIdOrName, 10);
         if ($authority_id == 0) {
@@ -997,21 +990,6 @@ class Item {
     public function getUriExtByAuthId($authorityId) {
         $id = $this->getUrlExternalObj($authorityId);
         return $id ? $id->getAuthority()->getUrlFormatter().$id->getValue() : null;
-    }
-
-    /**
-     * return name for $typeId
-     */
-    public function getSource() {
-        $typeId = $this->itemTypeId;
-        if (!is_null($typeId)) {
-            foreach(Item::ITEM_TYPE_ID as $key => $i) {
-                if ($i['id'] == $typeId) {
-                    return $key;
-                }
-            }
-        }
-        return $typeId;
     }
 
     /**
