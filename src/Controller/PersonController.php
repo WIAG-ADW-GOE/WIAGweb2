@@ -304,12 +304,12 @@ class PersonController extends AbstractController {
 
         if (count($id_all) >= self::DATA_MAX_SIZE) {
             if ($request->isMethod('POST')) {
-                $msg = "Das Maximum von $data_max_size für die Zahl der Datensätze bei der Ausgabe strukturierter Daten ist überschritten. Schränken Sie die Auswahl ein.";
+                $msg = sprintf("Das Maximum von %d für die Zahl der Datensätze bei der Ausgabe strukturierter Daten ist überschritten. Schränken Sie die Auswahl ein.", self::DATA_MAX_SIZE);
                 return $this->queryError($corpusId, $msg, $entityManager);
             } else {
                 $error_node_list['error'] = [
                 'message' => "Query result is larger than the upper limmit",
-                'limit' => $data_max_size,
+                'limit' => self::DATA_MAX_SIZE,
                 ];
                 return $personService->createResponse($format, $error_node_list);
             }

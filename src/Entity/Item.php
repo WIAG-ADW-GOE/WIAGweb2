@@ -338,7 +338,7 @@ class Item {
     public function getPersonRole() {
         $inr_list = $this->itemNameRole;
         if (is_null($inr_list)) {
-            return $null;
+            return null;
         }
 
         $person_role = [];
