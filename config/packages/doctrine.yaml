@@ -14,6 +14,8 @@ doctrine:
         enable_lazy_ghost_objects: true
         auto_generate_proxy_classes: true
         default_entity_manager: default
+        #controller_resolver:
+            #auto_mapping: false # "Symfony Mapped Route Parameters should be used as replacement." but these are only introduced in symfony 7.1
         entity_managers:
             default:
                 connection: default
@@ -22,7 +24,7 @@ doctrine:
                 mappings:
                     Main:
                         is_bundle: false
-                        type: annotation
+                        type: attribute
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
                         alias: Main
@@ -33,6 +35,6 @@ doctrine:
                     Gso:
                         is_bundle: false
                         dir: '%kernel.project_dir%/src/Entity/Gso'
-                        type: annotation
+                        type: attribute
                         prefix: 'App\Entity\Gso'
                         alias: Gso

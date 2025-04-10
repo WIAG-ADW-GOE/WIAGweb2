@@ -13,7 +13,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class AuthorityController extends AbstractController {

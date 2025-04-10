@@ -30,7 +30,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class PersonController extends AbstractController {

@@ -16,7 +16,6 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class FactGridController extends AbstractController {
     // route '/edit' is globally protected (see security.yaml)

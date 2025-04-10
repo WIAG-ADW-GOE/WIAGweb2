@@ -31,7 +31,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
  * provide bulk download functions

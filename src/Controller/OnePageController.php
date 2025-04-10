@@ -30,7 +30,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class OnePageController extends AbstractController {
