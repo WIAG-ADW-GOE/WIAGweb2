@@ -88,9 +88,9 @@ class GsoController extends AbstractController {
      * global update of GSN in WIAG (time consuming); see also collectPerson
      * 2023-11-08 not in use
      */
-    public function updateGsn($doctrine) {
+    public function updateGsn(ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
         $gsoGsnRepository = $doctrine->getRepository(Gsn::class, 'gso');
 
         $uext_gsn_list = $urlExternalRepository->findAllGsn();
@@ -294,7 +294,7 @@ class GsoController extends AbstractController {
     /**
      * find GSO entry for each element in $update_list and update it's data
      */
-    private function updateList($doctrine, $meta_data_list) {
+    private function updateList(ManagerRegistry $doctrine, $meta_data_list) {
         $personRepository = $doctrine->getRepository(Person::class, 'default');
         $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
         $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
@@ -324,7 +324,7 @@ class GsoController extends AbstractController {
         return $person_list;
     }
 
-    private function insertList($doctrine, $gso_insert_list) {
+    private function insertList(ManagerRegistry $doctrine, $gso_insert_list) {
         $entityManager = $doctrine->getManager('default');
 
         $personRepository = $doctrine->getRepository(Person::class, 'default');
@@ -410,15 +410,15 @@ class GsoController extends AbstractController {
     /**
      * get all person records that need an update or that are missing in GSO
      */
-    private function collectPerson($doctrine) {
+    private function collectPerson(ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
         $entityManager_gso = $doctrine->getManager('gso');
 
-        $itemRepository = $entityManager->getRepository(Item::class, 'default');
-        $personRepository = $entityManager->getRepository(Person::class, 'default');
-        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class, 'default');
-        $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class, 'gso');
-        $gsoGsnRepository = $entityManager_gso->getRepository(Gsn::class, 'gso');
+        $itemRepository = $entityManager->getRepository(Item::class);
+        $personRepository = $entityManager->getRepository(Person::class);
+        $urlExternalRepository = $entityManager->getRepository(UrlExternal::class);
+        $gsoPersonsRepository = $entityManager_gso->getRepository(Persons::class);
+        $gsoGsnRepository = $entityManager_gso->getRepository(Gsn::class);
 
         // consider only active entries (online);
         $dreg_item_list = $itemRepository->findGsnByCorpusId(['dreg-can', 'dreg']);
