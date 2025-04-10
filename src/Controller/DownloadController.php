@@ -85,8 +85,6 @@ class DownloadController extends AbstractController {
                 $role_list_single = UtilService::findAllArray($role_list, 'personId', $inr_role_list);
                 DownloadService::describeRoleList($role_list_single);
                 dd($role_list_single);
-                $description = DownloadService::describe($person, $role_list_single);
-                // dd($person, $role_list_single, $description);
             }
 
             $response = new StreamedResponse();
