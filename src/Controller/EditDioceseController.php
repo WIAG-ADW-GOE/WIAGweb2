@@ -133,7 +133,7 @@ class EditDioceseController extends AbstractController {
         $current_user = $userWiagRepository->find($current_user_id);
 
         $edit_form_id = 'diocese_edit_form';
-        $form_data = $request->request->get($edit_form_id) ?? array();
+        $form_data = $request->request->all($edit_form_id) ?? array();
 
         // validation
         $error_flag = false;
@@ -332,7 +332,7 @@ class EditDioceseController extends AbstractController {
                                 int $q_id,
                                 EntityManagerInterface $entityManager) {
         $edit_form_id = 'diocese_edit_form';
-        $form_data = $request->request->get($edit_form_id);
+        $form_data = $request->request->all($edit_form_id);
 
         $dioceseRepository = $entityManager->getRepository(Diocese::class);
 

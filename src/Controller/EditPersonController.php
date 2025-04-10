@@ -178,7 +178,7 @@ class EditPersonController extends AbstractController {
      */
     // public function save(Request $request) {
 
-    //     $form_data = $request->request->get(self::EDIT_FORM_ID);
+    //     $form_data = $request->request->all(self::EDIT_FORM_ID);
     //     $item_type_id = $form_data[0]['item']['itemTypeId'];
     //     $current_user_id = $this->getUser()->getId();
 
@@ -301,7 +301,7 @@ class EditPersonController extends AbstractController {
         $current_user_id = $this->getUser()->getId();
 
         // use EDIT_FORM_ID as the name attribute of the form in the template
-        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $form_data = $request->request->all(self::EDIT_FORM_ID);
         $person_index = array_keys($form_data)[0];
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
@@ -467,7 +467,7 @@ class EditPersonController extends AbstractController {
         $itemNameRoleRepository = $this->entityManager->getRepository(ItemNameRole::class);
         $urlExternalRepository = $this->entityManager->getRepository(UrlExternal::class);
 
-        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $form_data = $request->request->all(self::EDIT_FORM_ID);
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];
         $id = $form_data['id'];
@@ -506,7 +506,7 @@ class EditPersonController extends AbstractController {
     public function deleteEntry(Request $request, $q_id) {
         $person_repository = $this->entityManager->getRepository(Person::class);
 
-        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $form_data = $request->request->all(self::EDIT_FORM_ID);
 
         $id_list = array_column($form_data, 'id');
 
@@ -842,7 +842,7 @@ class EditPersonController extends AbstractController {
         $current_user_id = $this->getUser()->getId();
 
         // use EDIT_FORM_ID as the name attribute of the form in the template
-        $form_data = $request->request->get(self::EDIT_FORM_ID);
+        $form_data = $request->request->all(self::EDIT_FORM_ID);
         $person_index = array_keys($form_data)[0];
         // get first element independent from indexing
         $form_data = array_values($form_data)[0];

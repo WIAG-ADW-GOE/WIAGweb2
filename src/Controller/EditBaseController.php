@@ -76,7 +76,7 @@ class EditBaseController extends AbstractController {
                                  UtilService $utilService) {
 
         $edit_form_id = 'prop_edit_form';
-        $form_data = $request->request->get($edit_form_id);
+        $form_data = $request->request->all($edit_form_id);
 
         /* map/validate form */
         // the properties are not linked to items yet
