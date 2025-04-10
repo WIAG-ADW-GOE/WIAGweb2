@@ -189,8 +189,8 @@ class Persons
     }
 
     public function getDisplayname() {
-        $prefixpart = strlen($this->namenspraefix) > 0 ? ' '.$this->namenspraefix : '';
-        $familypart = strlen($this->familienname) > 0 ? ' '.$this->familienname : '';
+        $prefixpart = ($this->namenspraefix !== null && strlen($this->namenspraefix) > 0) ? ' '.$this->namenspraefix : '';
+        $familypart = ($this->familienname !== null && strlen($this->familienname)) > 0 ? ' '.$this->familienname : '';
         $agnomenpart = '';
         if (!is_null($this->namenszusatz) and strlen($this->namenszusatz) > 0) {
             $note_name = str_replace(';', ',', $this->namenszusatz);

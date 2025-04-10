@@ -408,8 +408,8 @@ class Person {
      * @return complete name
      */
     public function getDisplayname() {
-        $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
-        $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
+        $prefixpart = ($this->prefixname !== null && strlen($this->prefixname) > 0) ? ' '.$this->prefixname : '';
+        $familypart = ($this->familyname !== null && strlen($this->familyname)) > 0 ? ' '.$this->familyname : '';
         $agnomenpart = '';
         if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
             $note_name = str_replace(';', ',', $this->noteName);
@@ -423,8 +423,8 @@ class Person {
      * @return complete name; mark note with '()'
      */
     public function getDisplaynameWithSeparators() {
-        $prefixpart = strlen($this->prefixname) > 0 ? ' '.$this->prefixname : '';
-        $familypart = strlen($this->familyname) > 0 ? ' '.$this->familyname : '';
+        $prefixpart = ($this->prefixname !== null && strlen($this->prefixname) > 0) ? ' '.$this->prefixname : '';
+        $familypart = ($this->familyname !== null && strlen($this->familyname)) > 0 ? ' '.$this->familyname : '';
         $agnomenpart = '';
         if (!is_null($this->noteName) and strlen($this->noteName) > 0) {
             $note_name = str_replace(';', ',', $this->noteName);
@@ -497,7 +497,7 @@ class Person {
     /**
      * concatenate name variants and comments
      */
-    public function commentLine($flag_names = true, $flag_properties) {
+    public function commentLine($flag_properties, $flag_names = true) {
 
 
         $str_gn_variants = null;
