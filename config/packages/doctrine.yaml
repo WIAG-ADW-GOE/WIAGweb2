@@ -14,8 +14,8 @@ doctrine:
         enable_lazy_ghost_objects: true
         auto_generate_proxy_classes: true
         default_entity_manager: default
-        #controller_resolver:
-            #auto_mapping: false # "Symfony Mapped Route Parameters should be used as replacement." but these are only introduced in symfony 7.1
+        controller_resolver:
+            auto_mapping: true # "Symfony Mapped Route Parameters should be used as replacement." but these are only introduced in symfony 7.1
         entity_managers:
             default:
                 connection: default
