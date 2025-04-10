@@ -329,7 +329,7 @@ class EditPersonController extends AbstractController {
             'corpusChoice' => $corpus_choice,
         ]);
 
-        return $this->renderForm($template, $param_list_combined);
+        return $this->render($template, $param_list_combined);
 
     }
 
@@ -620,7 +620,7 @@ class EditPersonController extends AbstractController {
         $debug_flag = $request->query->get('debug');
         $template = $debug_flag ? 'merge_query_debug.html.twig' : 'merge_query.html.twig';
 
-        return $this->renderForm('edit_person/'.$template, $template_params);
+        return $this->render('edit_person/'.$template, $template_params);
 
     }
 

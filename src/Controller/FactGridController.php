@@ -33,7 +33,7 @@ class FactGridController extends AbstractController {
 
         return new Response("FactGridController->update()");
 
-        // return $this->renderForm('monastery/update.html.twig', [
+        // return $this->render('monastery/update.html.twig', [
         //     'menuItem' => 'edit-menu',
         // ]);
     }

@@ -89,7 +89,7 @@ class EditAuthorityController extends AbstractController {
         $template = 'edit_authority/query.html.twig';
         $edit_form_id = 'authority_edit_form';
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,

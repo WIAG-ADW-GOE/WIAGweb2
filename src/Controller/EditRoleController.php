@@ -126,7 +126,7 @@ class EditRoleController extends AbstractController {
         $template = 'edit_role/query.html.twig';
         $edit_form_id = 'role_edit_form';
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,

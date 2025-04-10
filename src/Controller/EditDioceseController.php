@@ -105,7 +105,7 @@ class EditDioceseController extends AbstractController {
         $template = 'edit_diocese/query.html.twig';
         $edit_form_id = 'diocese_edit_form';
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,

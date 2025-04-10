@@ -38,7 +38,7 @@ class ReferenceVolumeController extends AbstractController {
             ];
         }
 
-        return $this->renderForm('reference/list.html.twig', [
+        return $this->render('reference/list.html.twig', [
             'reference_list' => $result,
         ]);
     }
@@ -54,7 +54,7 @@ class ReferenceVolumeController extends AbstractController {
 
         $result = $repository->find($id);
 
-        return $this->renderForm('reference/reference.html.twig', [
+        return $this->render('reference/reference.html.twig', [
             'reference' => $result,
         ]);
     }

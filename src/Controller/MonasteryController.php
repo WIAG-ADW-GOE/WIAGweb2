@@ -33,7 +33,7 @@ class MonasteryController extends AbstractController {
                            MonasteryService $service) {
 
 
-        return $this->renderForm('monastery/update.html.twig', [
+        return $this->render('monastery/update.html.twig', [
             'menuItem' => 'edit-menu',
         ]);
     }

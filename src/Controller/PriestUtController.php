@@ -63,7 +63,7 @@ class PriestUtController extends AbstractController {
         $personRepository = $entityManager->getRepository(Person::class);
 
         if ($form->isSubmitted() && !$form->isValid()) {
-            return $this->renderForm('priest_ut/query.html.twig', [
+            return $this->render('priest_ut/query.html.twig', [
                     'menuItem' => 'collections',
                     'form' => $form,
             ]);
@@ -83,7 +83,7 @@ class PriestUtController extends AbstractController {
             $id_list = array_slice($id_all, $offset, self::PAGE_SIZE);
             $person_list = $personRepository->findList($id_list);
 
-            return $this->renderForm('priest_ut/query_result.html.twig', [
+            return $this->render('priest_ut/query_result.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'count' => $count,

@@ -135,7 +135,7 @@ class EditReferenceController extends AbstractController {
         $template = 'edit_reference/query.html.twig';
         $edit_form_id = 'reference_edit_form';
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,

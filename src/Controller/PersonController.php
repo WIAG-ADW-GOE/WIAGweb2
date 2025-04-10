@@ -107,7 +107,7 @@ class PersonController extends AbstractController {
         }
 
         if ($form->isSubmitted() && !$form->isValid()) {
-            return $this->renderForm('person/query.html.twig', [
+            return $this->render('person/query.html.twig', [
                 'menuItem' => 'collections',
                 'form' => $form,
                 'corpus' => $corpusId,
@@ -136,7 +136,7 @@ class PersonController extends AbstractController {
             'pageTitle' => $corpus->getPageTitle(),
         ];
 
-        return $this->renderForm('person/query_result.html.twig', $template_param_list);
+        return $this->render('person/query_result.html.twig', $template_param_list);
     }
 
 
@@ -366,7 +366,7 @@ class PersonController extends AbstractController {
             'action' => $this->generateUrl('person_query', ['corpusId' => $corpusId]),
         ]);
 
-        return $this->renderForm('person/query.html.twig', [
+        return $this->render('person/query.html.twig', [
             'menuItem' => 'collections',
             'form' => $form,
             'corpus' => $corpusId,

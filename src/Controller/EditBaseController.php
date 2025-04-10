@@ -57,7 +57,7 @@ class EditBaseController extends AbstractController {
         $sortBy = $model['sortBy'];
         $item_property_type_list = UtilService::sortByFieldList($item_property_type_list, [$sortBy]);
 
-        return $this->renderForm('edit_base/property.html.twig', [
+        return $this->render('edit_base/property.html.twig', [
             'menuItem' => 'edit-menu',
             'form' => $form,
             'editFormId' => $edit_form_id,
@@ -151,7 +151,7 @@ class EditBaseController extends AbstractController {
 
         $template = 'edit_base/_edit_prop_form.html.twig';
 
-        return $this->renderForm($template, [
+        return $this->render($template, [
             'menuItem' => 'edit-menu',
             'editFormId' => $edit_form_id,
             'itemPropertyTypeList' => $property_list_2,
