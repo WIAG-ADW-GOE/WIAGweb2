@@ -217,7 +217,7 @@ class PersonFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,
-                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_label' => 'label', //TODO insert sensible labels again
                 'choice_value' => 'name',
             ]);
             // it is not possible to set data for field stateFctDioc
@@ -247,7 +247,7 @@ class PersonFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,
-                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_label' => 'label', //TODO insert sensible labels again
                 'choice_value' => 'name',
             ]);
 
@@ -277,7 +277,7 @@ class PersonFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,
-                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_label' => 'label', //TODO insert sensible labels again
                 'choice_value' => 'name',
             ]);
 
@@ -307,7 +307,7 @@ class PersonFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,
-                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_label' => 'label', //TODO insert sensible labels again
                 'choice_value' => 'name',
             ]);
 
@@ -337,7 +337,7 @@ class PersonFormType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choices' => $choices,
-                'choice_label' => ChoiceList::label($this, 'label'),
+                'choice_label' => 'label', //TODO insert sensible labels again
                 'choice_value' => 'name',
             ]);
 
