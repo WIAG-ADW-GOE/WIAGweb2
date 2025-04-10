@@ -816,14 +816,6 @@ class Item {
         return $this;
     }
 
-    /**
-     * 2023-10-05 obsolete?
-     */
-    public function updateIsOnline_legacy() {
-        $online_status = self::ITEM_TYPE[$this->itemTypeId]['online_status'];
-        $this->isOnline = $this->editStatus == $online_status ? 1 : 0;
-    }
-
     public function setWiagChanged(?bool $value): self {
         $this->wiagChanged = $value;
         return $this;

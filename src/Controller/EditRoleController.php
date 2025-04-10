@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\ItemCorpus;
-use App\Entity\ItemType;
 use App\Entity\Role;
 use App\Entity\RoleGroup;
 use App\Entity\PersonRole;
