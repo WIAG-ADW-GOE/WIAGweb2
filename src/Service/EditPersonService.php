@@ -1004,33 +1004,6 @@ class EditPersonService {
         return $itemProperty;
     }
 
-    private function mapCorpus($item, $corpus_id) {
-
-        $item_corpus = new ItemCorpus();
-        $item_corpus->setItem($item);
-        $item->getItemCorpus()->add($item_corpus);
-
-
-
-        // set data
-        UtilService::setByKeys($item_corpus, $data, ['deleteFlag']);
-
-        $property_type = $this->entityManager->getRepository(ItemCorpusType::class)
-                                             ->find($data['type']);
-        $item_corpus->setCorpusTypeId($property_type->getId());
-        $item_corpus->setType($property_type);
-
-        // case of completely missing data see above
-        if (trim($data['value']) == "") {
-            $msg = "Das Feld 'Attribut-Wert' darf nicht leer sein.";
-            $person->getInputError()->add(new InputError('name', $msg));
-        }
-        $item_corpus->setValue($data['value']);
-
-        return $item_corpus;
-    }
-
-
     /**
      * fill url external with $data
      */
