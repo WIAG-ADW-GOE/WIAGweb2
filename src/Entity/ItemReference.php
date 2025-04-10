@@ -5,16 +5,12 @@ namespace App\Entity;
 use App\Repository\ItemReferenceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ItemReferenceRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemReferenceRepository::class)]
 class ItemReference
 {
 
-     /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="reference")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+     #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'reference')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
     /**
@@ -22,42 +18,28 @@ class ItemReference
      */
     private $referenceVolume;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="string", length=511, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 511, nullable: true)]
     private $page;
 
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $idInReference;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $isPreferred;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $referenceId;
 
     /**

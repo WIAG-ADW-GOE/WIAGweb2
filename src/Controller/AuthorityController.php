@@ -21,9 +21,8 @@ class AuthorityController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/authority-suggest-core/{field}", name="authority_suggest_core")
      */
+    #[Route(path: '/authority-suggest-core/{field}', name: 'authority_suggest_core')]
     public function autocompleteCore(Request $request,
                                  EntityManagerInterface $entityManager,
                                  String $field) {
@@ -43,9 +42,8 @@ class AuthorityController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/authority-suggest/{field}", name="authority_suggest")
      */
+    #[Route(path: '/authority-suggest/{field}', name: 'authority_suggest')]
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,
                                  String $field) {

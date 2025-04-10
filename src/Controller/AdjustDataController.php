@@ -45,9 +45,8 @@ class AdjustDataController extends AbstractController {
 
     /**
      * update dateRange of persons
-     *
-     * @Route("/edit/person/data-adjust/date-range", name="edit_data_date_range")
      */
+    #[Route(path: '/edit/person/data-adjust/date-range', name: 'edit_data_date_range')]
     public function dateRange(Request $request) {
 
         $this->denyAccessUnlessGranted('ROLE_DATA_EDIT');

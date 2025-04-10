@@ -54,9 +54,8 @@ class IdController extends AbstractController {
      * find item by public ID; show details or deliver data as JSON, CSV or XML
      *
      * decide which format should be delivered
-     *
-     * @Route("/id/{id}", name="id")
      */
+    #[Route(path: '/id/{id}', name: 'id')]
     public function id(string $id, Request $request) {
         $itemCorpusRepository = $this->entityManager->getRepository(ItemCorpus::class);
 
@@ -79,9 +78,8 @@ class IdController extends AbstractController {
 
     /**
      * respond to beacon requests; find item (any corpus) by GND_ID; show details
-     *
-     * @Route("/gnd/{id}", name="gnd_id")
      */
+    #[Route(path: '/gnd/{id}', name: 'gnd_id')]
     public function detailsByGnd(string $id,
                                  Request $request) {
 
@@ -276,9 +274,8 @@ class IdController extends AbstractController {
 
     /**
      * return list of GND numbers for all bishops
-     *
-     * @Route("/beacon.txt", name="beacon")
      */
+    #[Route(path: '/beacon.txt', name: 'beacon')]
     public function beacon (Request $request) {
         $response = new Response();
         $data = "line1\nline2";

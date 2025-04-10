@@ -5,36 +5,24 @@ namespace App\Entity;
 use App\Repository\ReligiousOrderRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ReligiousOrderRepository::class)
- */
+#[ORM\Entity(repositoryClass: ReligiousOrderRepository::class)]
 class ReligiousOrder
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $abbreviation;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
     public function getId(): ?int

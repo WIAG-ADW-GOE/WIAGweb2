@@ -6,36 +6,24 @@ use App\Repository\RolePropertyTypeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-/**
- * @ORM\Entity(repositoryClass=RolePropertyTypeRepository::class)
- */
+#[ORM\Entity(repositoryClass: RolePropertyTypeRepository::class)]
 class RolePropertyType
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=63)
-     */
+    #[ORM\Column(type: 'string', length: 63)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=63)
-     */
+    #[ORM\Column(type: 'string', length: 63)]
     private $label;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemTypeId;
 
     /**

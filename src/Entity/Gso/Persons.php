@@ -7,123 +7,77 @@ use App\Entity\Gso\Items;
 use App\Repository\Gso\PersonsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PersonsRepository::class)
- */
+#[ORM\Entity(repositoryClass: PersonsRepository::class)]
 class Persons
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Items")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Items::class)]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Offices", mappedBy="person", fetch="EAGER")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
+    #[ORM\OneToMany(targetEntity: \Offices::class, mappedBy: 'person', fetch: 'EAGER')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $role;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="string", length=500)
-     */
+    #[ORM\Column(type: 'string', length: 500)]
     private $vorname;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $vornamenvarianten;
 
-    /**
-     * @ORM\Column(type="string", length=300)
-     */
+    #[ORM\Column(type: 'string', length: 300)]
     private $familienname;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $familiennamenvarianten;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private $titel;
 
-    /**
-     * @ORM\Column(type="string", length=400, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 400, nullable: true)]
     private $anmerkungen;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $namenspraefix;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $namenszusatz;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $herkunftsname;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $orden;
 
-    /**
-     * @ORM\Column(type="string", length=500, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
     private $belegdaten;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $zeitraumBis;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $zeitraumVon;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $geburtsdatum;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $sterbedatum;
 
-    /**
-     * @ORM\Column(type="string", length=300, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 300, nullable: true)]
     private $gndnummer;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $cerlid;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $viaf;
 
     public function getId(): ?int

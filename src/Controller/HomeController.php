@@ -14,46 +14,35 @@ class HomeController extends AbstractController {
 
     /**
      * display query form for bishops; handle query
-     *
-     * @Route("/", name="home")
      */
+    #[Route(path: '/', name: 'home')]
     public function home() {
         return $this->render('home/home.html.twig');
     }
 
-    /**
-     * @Route("/about", name="about")
-     */
+    #[Route(path: '/about', name: 'about')]
     public function about() {
         return $this->render('home/about.html.twig', ['menuItem' => 'about']);
     }
 
-    /**
-     * @Route("/about/images", name="about_images")
-     */
+    #[Route(path: '/about/images', name: 'about_images')]
     public function images() {
         return $this->render('home/images.html.twig', ['menuItem' => 'about']);
     }
 
-    /**
-     * @Route("/contact", name="contact")
-     */
+    #[Route(path: '/contact', name: 'contact')]
     public function contact() {
         return $this->render('home/contact.html.twig', [
             'menuItem' => 'about',
         ]);
     }
 
-    /**
-     * @Route("/about/data-service", name="data_service")
-     */
+    #[Route(path: '/about/data-service', name: 'data_service')]
     public function dataService() {
         return $this->render('home/data_service.html.twig', ['menuItem' => 'service']);
     }
 
-    /**
-     * @Route("/about/phpinfo", name="about_phpinfo")
-     */
+    #[Route(path: '/about/phpinfo', name: 'about_phpinfo')]
     public function phpinfo() {
         dd(phpinfo());
     }

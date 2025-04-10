@@ -12,9 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @ORM\Entity(repositoryClass=ItemRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemRepository::class)]
 class Item {
     const DEFAULT_STATUS_NEW = 'Neuaufnahme';
     const DEFAULT_STATUS_MERGE = 'generiert';
@@ -98,124 +96,78 @@ class Item {
 
     const JOIN_DELIM = "|";
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Person::class)]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $person;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ItemCorpus", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \ItemCorpus::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $itemCorpus;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ItemNameRole", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id_name")
-     */
+    #[ORM\OneToMany(targetEntity: \ItemNameRole::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id_name')]
     private $itemNameRole;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ItemProperty", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \ItemProperty::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $itemProperty;
 
-    /**
-     * @ORM\OneToMany(targetEntity="UrlExternal", mappedBy="item", cascade={"persist"}, fetch="LAZY")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \UrlExternal::class, mappedBy: 'item', cascade: ['persist'], fetch: 'LAZY')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $urlExternal;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ItemReference", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \ItemReference::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $reference;
 
-    /**
-     * @ORM\Column(type="string", length=511, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 511, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $itemInSource;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $mergedIntoId;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $editStatus;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     *
-     * one of: original, parent, child, orphan
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)] // one of: original, parent, child, orphan
     private $mergeStatus;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $createdBy;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $dateCreated;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $changedBy;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $dateChanged;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $isDeleted;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $normdataEditedBy;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $lang;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $idInSource;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=false)
-     */
+    #[ORM\Column(type: 'boolean', nullable: false)]
     private $isOnline = false;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $commentDuplicate;
 
     /**

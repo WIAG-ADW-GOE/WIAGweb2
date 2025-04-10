@@ -10,9 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 
-/**
- * @ORM\Entity(repositoryClass=ReferenceVolumeRepository::class)
- */
+#[ORM\Entity(repositoryClass: ReferenceVolumeRepository::class)]
 class ReferenceVolume extends Model {
 
     const EDIT_FIELD_LIST = [
@@ -30,97 +28,61 @@ class ReferenceVolume extends Model {
         'comment',
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity="RefIdExternal", mappedBy="reference")
-     * @ORM\JoinColumn(name="id", referencedColumnName="reference_id")
-     */
+    #[ORM\OneToMany(targetEntity: \RefIdExternal::class, mappedBy: 'reference')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'reference_id')]
     private $idsExternal;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=false)
-     */
+    #[ORM\Column(type: 'boolean', nullable: false)]
     private $isOnline;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $referenceId = 0;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=false)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
     private $fullCitation = "";
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $titleShort = null;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $authorEditor = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $riOpacId;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $isbn;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $yearPublication;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $displayOrder;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $gsVolumeNr;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $gsDoi;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $gsUrl;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $onlineResource;
 
-    /**
-     * @ORM\Column(type="string", length=511, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 511, nullable: true)]
     private $gsCitation;
 
     private $referenceCount = 0;

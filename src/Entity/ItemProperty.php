@@ -5,9 +5,7 @@ namespace App\Entity;
 use App\Repository\ItemPropertyRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ItemPropertyRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemPropertyRepository::class)]
 class ItemProperty {
 
     const ITEM_PROPERTY_TYPE_ID = [
@@ -15,48 +13,32 @@ class ItemProperty {
         'domstift_short' => 10,
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="itemProperty")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemProperty')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToOne(targetEntity="ItemPropertyType", fetch="EAGER")
-     * @ORM\JoinColumn(name="property_type_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \ItemPropertyType::class, fetch: 'EAGER')]
+    #[ORM\JoinColumn(name: 'property_type_id', referencedColumnName: 'id')]
     private $type;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=511, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 511, nullable: true)]
     private $value;
 
-    /**
-     * @ORM\Column(type="date", nullable=true)
-     */
+    #[ORM\Column(type: 'date', nullable: true)]
     private $dateValue;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $propertyTypeId;
 
     /**
@@ -64,9 +46,7 @@ class ItemProperty {
      */
     private $deleteFlag;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $placeValue;
 
     // same as type->diplayOrder

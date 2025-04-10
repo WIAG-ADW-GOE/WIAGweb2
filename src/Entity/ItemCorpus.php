@@ -5,44 +5,30 @@ namespace App\Entity;
 use App\Repository\ItemCorpusRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ItemCorpusRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemCorpusRepository::class)]
 class ItemCorpus
 {
     const CORPUS_ID_DEFAULT = 'can';
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="itemCorpus")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemCorpus')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="string", length=31)
-     */
+    #[ORM\Column(type: 'string', length: 31)]
     private $corpusId;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $idPublic;
 
-    /**
-     * @ORM\Column(type="string", length=63)
-     */
+    #[ORM\Column(type: 'string', length: 63)]
     private $idInCorpus;
 
     public function getId(): ?int

@@ -26,9 +26,8 @@ class EditReferenceController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/reference-suggest/entry", name="reference_suggest_entry")
      */
+    #[Route(path: '/reference-suggest/entry', name: 'reference_suggest_entry')]
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager): Response {
         $query_param = $request->query->get('q');
@@ -42,9 +41,7 @@ class EditReferenceController extends AbstractController {
     }
 
 
-    /**
-     * @Route("/edit/reference/query", name="edit_reference_query")
-     */
+    #[Route(path: '/edit/reference/query', name: 'edit_reference_query')]
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
@@ -150,9 +147,7 @@ class EditReferenceController extends AbstractController {
 
     }
 
-    /**
-     * @Route("/edit/reference/save", name="edit_reference_save")
-     */
+    #[Route(path: '/edit/reference/save', name: 'edit_reference_save')]
     public function save(Request $request,
                          EntityManagerInterface $entityManager) {
 
@@ -255,10 +250,7 @@ class EditReferenceController extends AbstractController {
 
     }
 
-    /**
-     *
-     * @Route("/edit/reference/delete/{q_id}", name="edit_reference_delete")
-     */
+    #[Route(path: '/edit/reference/delete/{q_id}', name: 'edit_reference_delete')]
     public function deleteEntry(Request $request,
                                 int $q_id,
                                 EntityManagerInterface $entityManager) {
@@ -306,8 +298,8 @@ class EditReferenceController extends AbstractController {
 
     /**
      * get data for item with ID $id and pass $index
-     * @Route("/edit/reference/item/{id}/{index}", name="edit_reference_item")
      */
+    #[Route(path: '/edit/reference/item/{id}/{index}', name: 'edit_reference_item')]
     public function _item(int $id,
                           int $index,
                           EntityManagerInterface $entityManager): Response {
@@ -334,9 +326,8 @@ class EditReferenceController extends AbstractController {
 
     /**
      * Returns template for new reference
-     *
-     * @Route("/edit/reference/new-reference", name="edit_reference_new_reference")
      */
+    #[Route(path: '/edit/reference/new-reference', name: 'edit_reference_new_reference')]
     public function newReference(Request $request) {
 
         $ref = new ReferenceVolume();

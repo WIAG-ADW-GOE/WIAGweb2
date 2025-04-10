@@ -23,9 +23,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class EditBaseController extends AbstractController {
 
-    /**
-     * @Route("/edit/prop", name="edit_prop")
-     */
+    #[Route(path: '/edit/prop', name: 'edit_prop')]
     public function propertyList(Request $request,
                                  EntityManagerInterface $entityManager): Response {
         $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
@@ -68,9 +66,7 @@ class EditBaseController extends AbstractController {
         ]);
     }
 
-    /**
-     * @Route("/edit/prop/save", name="edit_prop_save")
-     */
+    #[Route(path: '/edit/prop/save', name: 'edit_prop_save')]
     public function propertySave(Request $request,
                                  EntityManagerInterface $entityManager,
                                  UtilService $utilService) {

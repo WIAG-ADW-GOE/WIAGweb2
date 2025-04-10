@@ -8,9 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @ORM\Entity(repositoryClass=AuthorityRepository::class)
- */
+#[ORM\Entity(repositoryClass: AuthorityRepository::class)]
 class Authority {
 
     const ID = [
@@ -36,52 +34,34 @@ class Authority {
         'comment'
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity="RefIdExternal", mappedBy="authority")
-     * @ORM\JoinColumn(name="id", referencedColumnName="authority_id")
-     */
+    #[ORM\OneToMany(targetEntity: \RefIdExternal::class, mappedBy: 'authority')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'authority_id')]
     private $refIdExternal;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $url;
 
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
+    #[ORM\Column(type: 'string', length: 127)]
     private $urlFormatter;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $urlType;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $urlNameFormatter;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $urlValueExample;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $displayOrder;
 
     /**

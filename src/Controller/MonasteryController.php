@@ -23,15 +23,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class MonasteryController extends AbstractController {
     // route '/edit' is globally protected (see security.yaml)
-
-
     /**
      * update monastery data
      *
      * display page with update options
-     *
-     * @Route("/edit/monastery/update", name="edit_monastery_update")
      */
+    #[Route(path: '/edit/monastery/update', name: 'edit_monastery_update')]
     public function update(Request $request,
                            EntityManagerInterface $entityManager,
                            MonasteryService $service) {
@@ -44,9 +41,8 @@ class MonasteryController extends AbstractController {
 
     /**
      * update monastery data
-     *
-     * @Route("/edit/monastery/update-step", name="edit_monastery_update_step")
      */
+    #[Route(path: '/edit/monastery/update-step', name: 'edit_monastery_update_step')]
     function updateStep(Request $request,
                         MonasteryService $service,
                         EntityManagerInterface $entityManager) {

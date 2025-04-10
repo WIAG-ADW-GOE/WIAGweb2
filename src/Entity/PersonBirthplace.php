@@ -5,42 +5,28 @@ namespace App\Entity;
 use App\Repository\PersonBirthplaceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PersonBirthplaceRepository::class)
- */
+#[ORM\Entity(repositoryClass: PersonBirthplaceRepository::class)]
 class PersonBirthplace
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="birthplace")
-     * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'birthplace')]
+    #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id')]
     private $person;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personId;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $placeName;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $placeId;
 
-    /**
-     * @ORM\Column(type="decimal", precision=10, scale=8, nullable=true)
-     */
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 8, nullable: true)]
     private $weight;
 
     /**

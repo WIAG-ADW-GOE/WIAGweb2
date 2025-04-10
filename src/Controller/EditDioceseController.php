@@ -32,9 +32,7 @@ class EditDioceseController extends AbstractController {
     const PAGE_SIZE = 30;
     const EDIT_FORM_ID = 'diocese_edit_form';
 
-    /**
-     * @Route("/edit/diocese/query", name="edit_diocese_query")
-     */
+    #[Route(path: '/edit/diocese/query', name: 'edit_diocese_query')]
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
@@ -119,9 +117,7 @@ class EditDioceseController extends AbstractController {
 
     }
 
-    /**
-     * @Route("/edit/diocese/save", name="edit_diocese_save")
-     */
+    #[Route(path: '/edit/diocese/save', name: 'edit_diocese_save')]
     public function save(Request $request,
                          EntityManagerInterface $entityManager) {
 
@@ -324,10 +320,7 @@ class EditDioceseController extends AbstractController {
         }
     }
 
-    /**
-     *
-     * @Route("/edit/diocese/delete/{q_id}", name="edit_diocese_delete")
-     */
+    #[Route(path: '/edit/diocese/delete/{q_id}', name: 'edit_diocese_delete')]
     public function deleteEntry(Request $request,
                                 int $q_id,
                                 EntityManagerInterface $entityManager) {
@@ -387,8 +380,8 @@ class EditDioceseController extends AbstractController {
     /**
      * AJAX
      * get data for item with ID $id and pass $index
-     * @Route("/edit/diocese/item/{id}/{index}", name="edit_diocese_item")
      */
+    #[Route(path: '/edit/diocese/item/{id}/{index}', name: 'edit_diocese_item')]
     public function _item(int $id,
                           int $index,
                           EntityManagerInterface $entityManager): Response {
@@ -434,9 +427,8 @@ class EditDioceseController extends AbstractController {
 
     /**
      * Returns template for new diocese
-     *
-     * @Route("/edit/diocese/new-diocese", name="edit_diocese_new_diocese")
      */
+    #[Route(path: '/edit/diocese/new-diocese', name: 'edit_diocese_new_diocese')]
     public function newDiocese(Request $request,
                                EntityManagerInterface $entityManager) {
         $this->denyAccessUnlessGranted('ROLE_EDIT_DIOC');
@@ -459,9 +451,8 @@ class EditDioceseController extends AbstractController {
 
     /**
      * Returns template for new reference
-     *
-     * @Route("/edit/diocese/new-reference/{itemIndex}", name="edit_diocese_new_reference")
      */
+    #[Route(path: '/edit/diocese/new-reference/{itemIndex}', name: 'edit_diocese_new_reference')]
     public function newReference(Request $request,
                                  int $itemIndex) {
 
@@ -478,9 +469,8 @@ class EditDioceseController extends AbstractController {
 
     /**
      * Returns template for new external ID
-     *
-     * @Route("/edit/diocese/new-url-external/{itemIndex}", name="edit_diocese_new_urlexternal")
      */
+    #[Route(path: '/edit/diocese/new-url-external/{itemIndex}', name: 'edit_diocese_new_urlexternal')]
     public function newUrlExternal(Request $request,
                                    int $itemIndex) {
 
@@ -498,9 +488,8 @@ class EditDioceseController extends AbstractController {
 
     /**
      * Returns template for new skos label
-     *
-     * @Route("/edit/diocese/new-skos-label/{itemIndex}", name="edit_diocese_new_skos_label")
      */
+    #[Route(path: '/edit/diocese/new-skos-label/{itemIndex}', name: 'edit_diocese_new_skos_label')]
     public function newSkosLabel(EntityManagerInterface $entityManager,
                                  Request $request,
                                  int $itemIndex) {

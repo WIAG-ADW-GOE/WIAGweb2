@@ -8,9 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
 
-/**
- * @ORM\Entity(repositoryClass=RoleRepository::class)
- */
+#[ORM\Entity(repositoryClass: RoleRepository::class)]
 class Role
 {
 
@@ -28,73 +26,47 @@ class Role
         'comment'
     ];
 
-    /**
-     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Item::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToOne(targetEntity="RoleGroup")
-     * @ORM\JoinColumn(name="role_group_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \RoleGroup::class)]
+    #[ORM\JoinColumn(name: 'role_group_id', referencedColumnName: 'id')]
     private $roleGroup;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $gsRegId;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $genericTerm;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $plural;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $definition;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $gender;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $roleGroupId;
 
-    /**
-     * @ORM\Column(type="string", length=31)
-     */
+    #[ORM\Column(type: 'string', length: 31)]
     private $lang = "de";
 
     /**

@@ -11,114 +11,72 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 
-/**
- * @ORM\Entity(repositoryClass=PersonRoleRepository::class)
- */
+#[ORM\Entity(repositoryClass: PersonRoleRepository::class)]
 class PersonRole
 {
     const MAX_DATE_SORT_KEY = 9000900;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity="PersonRoleProperty", mappedBy="personRole")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_role_id")
-     */
+    #[ORM\OneToMany(targetEntity: \PersonRoleProperty::class, mappedBy: 'personRole')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_role_id')]
     private $roleProperty;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="role")
-     */
+    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'role')]
     private $person;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Institution")
-     */
+    #[ORM\OneToOne(targetEntity: \Institution::class)]
     private $institution;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $roleId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Role")
-     */
+    #[ORM\ManyToOne(targetEntity: \Role::class)]
     private $role;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $roleName;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $dioceseId;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Diocese")
-     */
+    #[ORM\OneToOne(targetEntity: \Diocese::class)]
     private $diocese;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $dioceseName;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $dateBegin;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $dateEnd;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $numDateBegin;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $numDateEnd;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $institutionId;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $displayOrder;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $uncertain;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
     /**
@@ -126,14 +84,10 @@ class PersonRole
      */
     private $placeName = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $institutionName;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $dateSortKey;
 
     /**

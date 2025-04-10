@@ -5,81 +5,51 @@ namespace App\Entity\Gso;
 use App\Repository\Gso\OfficesRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=OfficesRepository::class)
- */
+#[ORM\Entity(repositoryClass: OfficesRepository::class)]
 class Offices
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Persons", inversedBy="role")
-     */
+    #[ORM\ManyToOne(targetEntity: \Persons::class, inversedBy: 'role')]
     private $person;
 
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
+    #[ORM\Column(type: 'string', length: 100)]
     private $bezeichnung;
 
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
+    #[ORM\Column(type: 'string', length: 100)]
     private $art;
 
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
+    #[ORM\Column(type: 'string', length: 100)]
     private $ort;
 
-    /**
-     * @ORM\Column(type="string", length=300)
-     */
+    #[ORM\Column(type: 'string', length: 300)]
     private $institution;
 
-    /**
-     * @ORM\Column(type="string", length=300)
-     */
+    #[ORM\Column(type: 'string', length: 300)]
     private $dioezese;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     */
+    #[ORM\Column(type: 'string', length: 10)]
     private $klosterid;
 
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
+    #[ORM\Column(type: 'string', length: 100)]
     private $weihegrad;
 
-    /**
-     * @ORM\Column(type="string", length=300)
-     */
+    #[ORM\Column(type: 'string', length: 300)]
     private $von;
 
-    /**
-     * @ORM\Column(type="string", length=250)
-     */
+    #[ORM\Column(type: 'string', length: 250)]
     private $bis;
 
-    /**
-     * @ORM\Column(type="string", length=500)
-     */
+    #[ORM\Column(type: 'string', length: 500)]
     private $anmerkung;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private $deleted;
 
     public function getId(): ?int

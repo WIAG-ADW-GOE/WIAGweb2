@@ -56,9 +56,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * display query form for persons;
-     *
-     * @Route("/edit/person/query/{corpusId}", name="edit_person_query")
      */
+    #[Route(path: '/edit/person/query/{corpusId}', name: 'edit_person_query')]
     public function query($corpusId, Request $request) {
 
 
@@ -172,8 +171,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * map data to objects and save them to the database
-     * @Route("/edit/person/save-single/{corpusId}", name="edit_person_save_single")
      */
+    #[Route(path: '/edit/person/save-single/{corpusId}', name: 'edit_person_save_single')]
     public function saveSingle($corpusId, Request $request) {
         $current_user_id = $this->getUser()->getId();
 
@@ -335,9 +334,7 @@ class EditPersonController extends AbstractController {
 
     }
 
-    /**
-     * @Route("/edit/person/delete-local", name="edit_person_delete_local")
-     */
+    #[Route(path: '/edit/person/delete-local', name: 'edit_person_delete_local')]
     public function deleteEntryLocal(Request $request) {
         $personRepository = $this->entityManager->getRepository(Person::class);
         $itemRepository = $this->entityManager->getRepository(Item::class);
@@ -376,9 +373,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * display edit form for new person
-     *
-     * @Route("/edit/person/new", name="edit_person_new")
      */
+    #[Route(path: '/edit/person/new', name: 'edit_person_new')]
     public function newList(Request $request) {
         $corpusId = $request->query->get('corpusId');
         $corpus_id_list = explode(',', $corpusId);
@@ -404,9 +400,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * display edit form for new person
-     *
-     * @Route("/edit/person/new-entry", name="edit_person_new_entry")
      */
+    #[Route(path: '/edit/person/new-entry', name: 'edit_person_new_entry')]
     public function _newEntry(Request $request) {
         $corpusId = $request->query->get('corpusId');
         $corpus_id_list = explode(',', $corpusId);
@@ -442,9 +437,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * Returns template for new item property
-     *
-     * @Route("/edit/person/new-property/{personIndex}", name="edit_person_new_property")
      */
+    #[Route(path: '/edit/person/new-property/{personIndex}', name: 'edit_person_new_property')]
     public function newProperty(Request $request,
                                 int $personIndex) {
 
@@ -466,9 +460,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * Returns template for new role
-     *
-     * @Route("/edit/person/new-role/{personIndex}", name="edit_person_new_role")
      */
+    #[Route(path: '/edit/person/new-role/{personIndex}', name: 'edit_person_new_role')]
     public function newRole(Request $request,
                             int $personIndex) {
 
@@ -488,9 +481,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * Returns template for new role
-     *
-     * @Route("/edit/person/new-role-property/{personIndex}/{roleIndex}", name="edit_person_new_role_property")
      */
+    #[Route(path: '/edit/person/new-role-property/{personIndex}/{roleIndex}', name: 'edit_person_new_role_property')]
     public function newRoleProperty(Request $request,
                                     int $personIndex,
                                     int $roleIndex) {
@@ -519,9 +511,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * Returns template for new reference
-     *
-     * @Route("/edit/person/new-reference/{personIndex}", name="edit_person_new_reference")
      */
+    #[Route(path: '/edit/person/new-reference/{personIndex}', name: 'edit_person_new_reference')]
     public function newReference(Request $request,
                                  int $personIndex) {
 
@@ -538,9 +529,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * Returns template for new external ID
-     *
-     * @Route("/edit/person/new-url-external/{personIndex}", name="edit_person_new_urlexternal")
      */
+    #[Route(path: '/edit/person/new-url-external/{personIndex}', name: 'edit_person_new_urlexternal')]
     public function newUrlExternal(Request $request,
                                  int $personIndex) {
 
@@ -557,9 +547,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * display query form for bishops; handle query
-     *
-     * @Route("/edit/person/merge-query", name="edit_person_merge_query")
      */
+    #[Route(path: '/edit/person/merge-query', name: 'edit_person_merge_query')]
     public function mergeQuery(Request $request,
                                FormFactoryInterface $formFactory) {
 
@@ -636,11 +625,7 @@ class EditPersonController extends AbstractController {
 
     }
 
-    /**
-     * @Route("/edit/person/merge-item-local/{corpusId}", name="edit_person_merge_local")
-     * merge items using form data; show form with combined data
-     * see modal-form.submitForm
-     */
+    #[Route(path: '/edit/person/merge-item-local/{corpusId}', name: 'edit_person_merge_local')] // merge items using form data; show form with combined data
     public function mergeItemLocal($corpusId, Request $request) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -733,9 +718,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * edit a single entry
-     *
-     * @Route("/edit/person/edit-single/{someid}", name="edit_person_edit_single")
      */
+    #[Route(path: '/edit/person/edit-single/{someid}', name: 'edit_person_edit_single')]
     public function editSingle(Request $request,
                                $someid) {
 
@@ -775,9 +759,9 @@ class EditPersonController extends AbstractController {
     /**
      * split merged item, show parents in edit forms
      *
-     * @Route("/edit/person/split-item/{corpusId}/{id}", name="edit_person_split_item")
      *
      */
+    #[Route(path: '/edit/person/split-item/{corpusId}/{id}', name: 'edit_person_split_item')]
     public function splitItem($corpusId, int $id) {
         $itemRepository = $this->entityManager->getRepository(Item::class);
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -862,9 +846,8 @@ class EditPersonController extends AbstractController {
 
     /**
      * display query form for doublets
-     *
-     * @Route("/edit/person/query-doublet/{corpusId}", name="edit_person_query_doublet")
      */
+    #[Route(path: '/edit/person/query-doublet/{corpusId}', name: 'edit_person_query_doublet')]
     public function queryDoublet(string $corpusId, Request $request) {
         // parameters
         $list_size = 20;

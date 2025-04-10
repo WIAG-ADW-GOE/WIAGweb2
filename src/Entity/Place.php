@@ -5,46 +5,30 @@ namespace App\Entity;
 use App\Repository\PlaceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PlaceRepository::class)
- */
+#[ORM\Entity(repositoryClass: PlaceRepository::class)]
 class Place
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $countryId;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private $name;
 
-    /**
-     * @ORM\Column(type="decimal", precision=11, scale=8, nullable=true)
-     */
+    #[ORM\Column(type: 'decimal', precision: 11, scale: 8, nullable: true)]
     private $latitude;
 
-    /**
-     * @ORM\Column(type="decimal", precision=11, scale=8, nullable=true)
-     */
+    #[ORM\Column(type: 'decimal', precision: 11, scale: 8, nullable: true)]
     private $longitude;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $geonamesId;
 
     public function getId(): ?int

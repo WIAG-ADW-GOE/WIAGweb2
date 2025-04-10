@@ -25,11 +25,9 @@ class DioceseController extends AbstractController {
     const SUGGEST_SIZE = 8;
 
 
-    /**
-     * @Route("/bistuemer")
-     * @Route("/api/bistuemer")
-     * @Route("/query/dioc", name="diocese_query")
-     */
+    #[Route(path: '/bistuemer')]
+    #[Route(path: '/api/bistuemer')]
+    #[Route(path: '/query/dioc', name: 'diocese_query')]
     public function diocese(Request $request, DioceseRepository $repository) {
 
         $name = $request->query->get('name');
@@ -71,9 +69,8 @@ class DioceseController extends AbstractController {
 
     /**
      * display details
-     *
-     * @Route("/listelement/dioc", name="diocese_list_detail")
      */
+    #[Route(path: '/listelement/dioc', name: 'diocese_list_detail')]
     public function dioceseListDetail(Request $request) {
 
         $form = $this->createForm(DioceseFormType::class);
@@ -114,9 +111,9 @@ class DioceseController extends AbstractController {
 
     /**
      * return diocese data
-     * @Route("/bistum/data")
-     * @Route("/data/dioc", name="diocese_query_data")
      */
+    #[Route(path: '/bistum/data')]
+    #[Route(path: '/data/dioc', name: 'diocese_query_data')]
     public function queryData(Request $request,
                               DioceseRepository $repository,
                               DioceseService $service) {
@@ -152,9 +149,8 @@ class DioceseController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/diocese-suggest/{field}", name="diocese_suggest")
      */
+    #[Route(path: '/diocese-suggest/{field}', name: 'diocese_suggest')]
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,
                                  String $field): Response {

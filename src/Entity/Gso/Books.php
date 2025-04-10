@@ -5,51 +5,33 @@ namespace App\Entity\Gso;
 use App\Repository\Gso\BooksRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=BooksRepository::class)
- */
+#[ORM\Entity(repositoryClass: BooksRepository::class)]
 class Books
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $deleted;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private $nummer;
 
-    /**
-     * @ORM\Column(type="string", length=500, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
     private $titel;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private $jahr;
 
-    /**
-     * @ORM\Column(type="string", length=300)
-     */
+    #[ORM\Column(type: 'string', length: 300)]
     private $kurztitel;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $autoren;
 
-    /**
-     * @ORM\Column(type="string", length=200, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $uri;
 
     public function getId(): ?int

@@ -38,10 +38,7 @@ class GsoController extends AbstractController {
         $this->editPersonService = $editPersonService;
     }
 
-    /**
-     *
-     * @Route("/edit/gso-update-info", name="gso_update_info")
-     */
+    #[Route(path: '/edit/gso-update-info', name: 'gso_update_info')]
     public function gsoUpdateInfo(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
         $authorityRepository = $entityManager->getRepository(Authority::class);
@@ -115,10 +112,7 @@ class GsoController extends AbstractController {
         return $gsn_map;
     }
 
-    /**
-     *
-     * @Route("/edit/gso-update", name="gso_update")
-     */
+    #[Route(path: '/edit/gso-update', name: 'gso_update')]
     public function gsoUpdate(Request $request, ManagerRegistry $doctrine) {
         $entityManager = $doctrine->getManager('default');
         $itemRepository = $entityManager->getRepository(Item::class);

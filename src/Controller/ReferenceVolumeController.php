@@ -19,9 +19,8 @@ class ReferenceVolumeController extends AbstractController {
 
     /**
      * display the list of references
-     *
-     * @Route("/referenz/liste", name="reference_list")
      */
+    #[Route(path: '/referenz/liste', name: 'reference_list')]
     public function list(Request $request,
                          EntityManagerInterface $entityManager) {
         $corpusRepository = $entityManager->getRepository(Corpus::class);
@@ -46,9 +45,8 @@ class ReferenceVolumeController extends AbstractController {
 
     /**
      * display reference details
-     *
-     * @Route("/referenz/{id}", name="reference")
      */
+    #[Route(path: '/referenz/{id}', name: 'reference')]
     public function referenceDetail (int $id, Request $request) {
 
         $repository = $this->getDoctrine()

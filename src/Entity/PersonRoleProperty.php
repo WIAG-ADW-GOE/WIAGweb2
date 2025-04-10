@@ -5,63 +5,41 @@ namespace App\Entity;
 use App\Repository\PersonRolePropertyRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PersonRolePropertyRepository::class)
- */
+#[ORM\Entity(repositoryClass: PersonRolePropertyRepository::class)]
 class PersonRoleProperty
 {
-    /**
-     * @ORM\ManyToOne(targetEntity="PersonRole", inversedBy="roleProperty")
-     */
+    #[ORM\ManyToOne(targetEntity: \PersonRole::class, inversedBy: 'roleProperty')]
     private $personRole;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    /**
-     * @ORM\OneToOne(targetEntity="ItemPropertyType", fetch="EAGER")
-     * @ORM\JoinColumn(name="property_type_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \ItemPropertyType::class, fetch: 'EAGER')]
+    #[ORM\JoinColumn(name: 'property_type_id', referencedColumnName: 'id')]
     private $type;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personRoleId;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personId;
 
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=63)
-     */
+    #[ORM\Column(type: 'string', length: 63)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=511)
-     */
+    #[ORM\Column(type: 'string', length: 511)]
     private $value;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $propertyTypeId;
 
     /**

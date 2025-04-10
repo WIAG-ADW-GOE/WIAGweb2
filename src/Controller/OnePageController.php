@@ -37,8 +37,8 @@ class OnePageController extends AbstractController {
 
     /**
      * show selected canons (e.g. by domstift) in one page
-     * @Route("/person/onepage", name="person_onepage")
      */
+    #[Route(path: '/person/onepage', name: 'person_onepage')]
     public function onepage(Request $request,
                             EntityManagerInterface $entityManager,
                             UtilService $utilService) {
@@ -277,8 +277,8 @@ class OnePageController extends AbstractController {
 
      /**
      * show references for selected canons
-     * @Route("/domherr/onepage/literatur/{corpusIdRef}", name="person_onepage_references")
      */
+    #[Route(path: '/domherr/onepage/literatur/{corpusIdRef}', name: 'person_onepage_references')]
     public function references(Request $request,
                                EntityManagerInterface $entityManager,
                                $corpusIdRef) {

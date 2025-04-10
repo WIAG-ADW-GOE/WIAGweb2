@@ -18,9 +18,8 @@ class PlaceController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/place-suggest/{field}", name="place_suggest")
      */
+    #[Route(path: '/place-suggest/{field}', name: 'place_suggest')]
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,
                                  String $field): Response {

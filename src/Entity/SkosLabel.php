@@ -5,57 +5,37 @@ namespace App\Entity;
 use App\Repository\SkosLabelRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=SkosLabelRepository::class)
- */
+#[ORM\Entity(repositoryClass: SkosLabelRepository::class)]
 class SkosLabel
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $skosSchemeId;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $conceptId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Diocese", inversedBy="altLabels")
-     * @ORM\JoinColumn(name="concept_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Diocese::class, inversedBy: 'altLabels')]
+    #[ORM\JoinColumn(name: 'concept_id', referencedColumnName: 'id')]
     private $diocese;
 
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
+    #[ORM\Column(type: 'string', length: 127)]
     private $label;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $isPreferred;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $lang;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $displayOrder;
 
     /**

@@ -5,82 +5,52 @@ namespace App\Entity;
 use App\Repository\InstitutionPlaceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=InstitutionPlaceRepository::class)
- */
+#[ORM\Entity(repositoryClass: InstitutionPlaceRepository::class)]
 class InstitutionPlace
 {
-    /**
-     * @ORM\ManyToOne(targetEntity="Institution", inversedBy="institutionPlace")
-     * @ORM\JoinColumn(name="institution_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Institution::class, inversedBy: 'institutionPlace')]
+    #[ORM\JoinColumn(name: 'institution_id', referencedColumnName: 'id')]
     private $institution;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $institutionId;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $placeId;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $placeName;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $dateBeginTaq;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $dateBeginTpq;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $dateEndTaq;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $dateEndTpq;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $numDateBegin;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $numDateEnd;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $noteBegin;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $noteEnd;
 
     public function getId(): ?int

@@ -12,9 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @ORM\Entity(repositoryClass=PersonRepository::class)
- */
+#[ORM\Entity(repositoryClass: PersonRepository::class)]
 class Person {
 
     const EDIT_FIELD_LIST = [
@@ -29,123 +27,79 @@ class Person {
 
     const MARGINYEAR = 1;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Item::class)]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToMany(targetEntity="PersonRole", mappedBy="person", fetch="EAGER")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     * @ORM\OrderBy({"dateSortKey" = "ASC"})
-     */
+    #[ORM\OneToMany(targetEntity: \PersonRole::class, mappedBy: 'person', fetch: 'EAGER')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
+    #[ORM\OrderBy(['dateSortKey' => 'ASC'])]
     private $role;
 
-    /**
-     * @ORM\OneToMany(targetEntity="GivennameVariant", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
+    #[ORM\OneToMany(targetEntity: \GivennameVariant::class, mappedBy: 'person')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $givennameVariants;
 
-    /**
-     * @ORM\OneToMany(targetEntity="FamilynameVariant", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     */
+    #[ORM\OneToMany(targetEntity: \FamilynameVariant::class, mappedBy: 'person')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $familynameVariants;
 
-    /**
-     * @ORM\OneToMany(targetEntity="PersonBirthplace", mappedBy="person")
-     * @ORM\JoinColumn(name="id", referencedColumnName="person_id")
-     * @ORM\OrderBy({"weight" = "DESC"})
-     */
+    #[ORM\OneToMany(targetEntity: \PersonBirthplace::class, mappedBy: 'person')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
+    #[ORM\OrderBy(['weight' => 'DESC'])]
     private $birthplace;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $notePerson;
 
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
+    #[ORM\Column(type: 'string', length: 127)]
     private $givenname;
 
-    /**
-     * @ORM\Column(type="string", length=127, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 127, nullable: true)]
     private $familyname;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $prefixname;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $noteName;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $academicTitle;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $religiousOrderId;
 
-    /**
-     * @ORM\OneToOne(targetEntity="ReligiousOrder")
-     */
+    #[ORM\OneToOne(targetEntity: \ReligiousOrder::class)]
     private $religiousOrder;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $dateBirth;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $dateDeath;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $dateMin;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $dateMax;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $noteDates;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $numDateBirth;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $numDateDeath;
 
     /**

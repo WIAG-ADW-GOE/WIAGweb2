@@ -40,9 +40,8 @@ class PriestUtController extends AbstractController {
 
     /**
      * display query form for priestUts; handle query
-     *
-     * @Route("/priest_utrecht", name="priest_ut_query")
      */
+    #[Route(path: '/priest_utrecht', name: 'priest_ut_query')]
     public function query(Request $request,
                           EntityManagerInterface $entityManager) {
 
@@ -97,9 +96,8 @@ class PriestUtController extends AbstractController {
 
     /**
      * display details for a priestUt
-     *
-     * @Route("/priest_utrecht/listenelement", name="priest_ut_list_detail")
      */
+    #[Route(path: '/priest_utrecht/listenelement', name: 'priest_ut_list_detail')]
     public function priestUtListDetail(Request $request,
                                        EntityManagerInterface $entityManager) {
 
@@ -160,9 +158,8 @@ class PriestUtController extends AbstractController {
 
     /**
      * return priestUt data
-     *
-     * @Route("/priest_utrecht/data", name="priest_ut_query_data")
      */
+    #[Route(path: '/priest_utrecht/data', name: 'priest_ut_query_data')]
     public function queryData(Request $request,
                               EntityManagerInterface $entityManager,
                               PersonService $personService) {
@@ -224,9 +221,8 @@ class PriestUtController extends AbstractController {
 
     /**
      * AJAX
-     *
-     * @Route("/priest-utrecht-suggest/{field}", name="priest_ut_suggest")
      */
+    #[Route(path: '/priest-utrecht-suggest/{field}', name: 'priest_ut_suggest')]
     public function autocomplete(Request $request,
                                  String $field) {
         $name = $request->query->get('q');

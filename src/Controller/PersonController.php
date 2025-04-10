@@ -50,10 +50,9 @@ class PersonController extends AbstractController {
 
     /**
      * display query form for bishops (legacy route)
-     *
-     * @Route("/bischoefe")
-     * @Route("/api/bischoefe")
      */
+    #[Route(path: '/bischoefe')]
+    #[Route(path: '/api/bischoefe')]
     public function queryBishop(Request $request,
                                 EntityManagerInterface $entityManager) {
         return $this->query('epc', $request, $entityManager);
@@ -61,10 +60,9 @@ class PersonController extends AbstractController {
 
     /**
      * display query form for canons (legacy route)
-     *
-     * @Route("/domherren")
-     * @Route("/api/domherren")
      */
+    #[Route(path: '/domherren')]
+    #[Route(path: '/api/domherren')]
     public function queryCanon(Request $request,
                                EntityManagerInterface $entityManager) {
         return $this->query('can', $request, $entityManager);
@@ -72,10 +70,8 @@ class PersonController extends AbstractController {
 
     /**
      * display query form for persons; handle query
-     *
-     * @Route("/query/{corpusId}", name="person_query")
-     * $corpusId denotes the topic. Several corpora may be involved
      */
+    #[Route(path: '/query/{corpusId}', name: 'person_query')] // $corpusId denotes the topic. Several corpora may be involved
     public function query($corpusId,
                           Request $request,
                           EntityManagerInterface $entityManager) {
@@ -170,9 +166,8 @@ class PersonController extends AbstractController {
 
     /**
      * display details
-     *
-     * @Route("/listelement/{corpusId}", name="person_list_detail")
      */
+    #[Route(path: '/listelement/{corpusId}', name: 'person_list_detail')]
     public function personListDetail($corpusId,
                                      Request $request,
                                      EntityManagerInterface $entityManager) {
@@ -242,8 +237,8 @@ class PersonController extends AbstractController {
 
     /**
      * return bishop data (legacy route)
-     * @Route("/bischof/data")
      */
+    #[Route(path: '/bischof/data')]
     public function queryBishopData(Request $request,
                                     EntityManagerInterface $entityManager,
                                     PersonService $personService) {
@@ -254,8 +249,8 @@ class PersonController extends AbstractController {
 
     /**
      * return canon data (legacy routes)
-     * @Route("/domherr/data")
      */
+    #[Route(path: '/domherr/data')]
     public function queryCanonData(Request $request,
                                    EntityManagerInterface $entityManager,
                                    PersonService $personService) {
@@ -265,9 +260,8 @@ class PersonController extends AbstractController {
 
     /**
      * return person data
-     *
-     * @Route("/data/{corpusId}", name="person_query_data")
      */
+    #[Route(path: '/data/{corpusId}', name: 'person_query_data')]
     public function queryData($corpusId,
                               Request $request,
                               EntityManagerInterface $entityManager,
@@ -386,10 +380,8 @@ class PersonController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/person-suggest/{field}/{hintSizeParam}", name="person_suggest")
-     * response depends on item type
      */
+    #[Route(path: '/person-suggest/{field}/{hintSizeParam}', name: 'person_suggest')] // response depends on item type
     public function autocomplete(Request $request,
                                  String $field,
                                  int $hintSizeParam = 0) {
@@ -407,9 +399,8 @@ class PersonController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/person-suggest-edit/{corpusId}/{field}", name="person_suggest_edit")
      */
+    #[Route(path: '/person-suggest-edit/{corpusId}/{field}', name: 'person_suggest_edit')]
     public function autocompleteEdit(String $corpusId,
                                      String $field,
                                      Request $request) {
@@ -430,10 +421,8 @@ class PersonController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/person-suggest-online/{corpusId}/{field}", name="person_suggest_online")
-     * filter by Item->isOnline
      */
+    #[Route(path: '/person-suggest-online/{corpusId}/{field}', name: 'person_suggest_online')] // filter by Item->isOnline
     public function autocompleteOnline(Request $request,
                                        String $corpusId,
                                        String $field) {

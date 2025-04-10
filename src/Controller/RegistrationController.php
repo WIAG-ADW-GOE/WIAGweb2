@@ -19,10 +19,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class RegistrationController extends AbstractController
 {
-    /**
-     * @Route("/register", name="user_register")
-     * @IsGranted("ROLE_EDIT_USER")
-     */
+    #[Route(path: '/register', name: 'user_register')]
+    #[IsGranted('ROLE_EDIT_USER')]
     public function register(Request $request,
                              UserPasswordHasherInterface $userPasswordHasher,
                              EntityManagerInterface $entityManager,

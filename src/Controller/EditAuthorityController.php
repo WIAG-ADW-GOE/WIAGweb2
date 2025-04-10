@@ -22,9 +22,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class EditAuthorityController extends AbstractController {
     const HINT_SIZE = 12;
 
-    /**
-     * @Route("/edit/authority/query", name="edit_authority_query")
-     */
+    #[Route(path: '/edit/authority/query', name: 'edit_authority_query')]
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
@@ -101,9 +99,7 @@ class EditAuthorityController extends AbstractController {
     }
 
 
-    /**
-     * @Route("/edit/authority/save", name="edit_authority_save")
-     */
+    #[Route(path: '/edit/authority/save', name: 'edit_authority_save')]
     public function save(Request $request,
                          EntityManagerInterface $entityManager) {
 
@@ -208,10 +204,7 @@ class EditAuthorityController extends AbstractController {
 
     }
 
-    /**
-     *
-     * @Route("/edit/authority/delete/{q_id}", name="edit_authority_delete")
-     */
+    #[Route(path: '/edit/authority/delete/{q_id}', name: 'edit_authority_delete')]
     public function deleteEntry(Request $request,
                                 int $q_id,
                                 EntityManagerInterface $entityManager) {
@@ -259,8 +252,8 @@ class EditAuthorityController extends AbstractController {
 
     /**
      * get data for item with ID $id and pass $index
-     * @Route("/edit/authority/item/{id}/{index}", name="edit_authority_item")
      */
+    #[Route(path: '/edit/authority/item/{id}/{index}', name: 'edit_authority_item')]
     public function _item(int $id,
                           int $index,
                           EntityManagerInterface $entityManager): Response {
@@ -286,9 +279,8 @@ class EditAuthorityController extends AbstractController {
 
     /**
      * Returns template for new authority
-     *
-     * @Route("/edit/authority/new-authority", name="edit_authority_new_authority")
      */
+    #[Route(path: '/edit/authority/new-authority', name: 'edit_authority_new_authority')]
     public function newAuthority(Request $request) {
 
         $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');

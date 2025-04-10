@@ -31,9 +31,8 @@ class EditRoleController extends AbstractController {
 
     /**
      * respond to asynchronous JavaScript request
-     *
-     * @Route("/role-suggest/{field}", name="role_suggest")
      */
+    #[Route(path: '/role-suggest/{field}', name: 'role_suggest')]
     public function autocomplete(Request $request,
                                  EntityManagerInterface $entityManager,
                                  String $field): Response {
@@ -49,9 +48,7 @@ class EditRoleController extends AbstractController {
     }
 
 
-    /**
-     * @Route("/edit/role/query", name="edit_role_query")
-     */
+    #[Route(path: '/edit/role/query', name: 'edit_role_query')]
     public function query(Request $request,
                           EntityManagerInterface $entityManager): Response {
 
@@ -141,9 +138,7 @@ class EditRoleController extends AbstractController {
 
     }
 
-    /**
-     * @Route("/edit/role/save", name="edit_role_save")
-     */
+    #[Route(path: '/edit/role/save', name: 'edit_role_save')]
     public function save(Request $request,
                          EntityManagerInterface $entityManager) {
 
@@ -298,10 +293,7 @@ class EditRoleController extends AbstractController {
         }
     }
 
-    /**
-     *
-     * @Route("/edit/role/delete/{q_id}", name="edit_role_delete")
-     */
+    #[Route(path: '/edit/role/delete/{q_id}', name: 'edit_role_delete')]
     public function deleteEntry(Request $request,
                                 int $q_id,
                                 EntityManagerInterface $entityManager) {
@@ -355,8 +347,8 @@ class EditRoleController extends AbstractController {
 
     /**
      * get data for item with ID $id and pass $index
-     * @Route("/edit/role/item/{id}/{index}", name="edit_role_item")
      */
+    #[Route(path: '/edit/role/item/{id}/{index}', name: 'edit_role_item')]
     public function _item(int $id,
                           int $index,
                           EntityManagerInterface $entityManager): Response {
@@ -389,9 +381,8 @@ class EditRoleController extends AbstractController {
 
     /**
      * Returns template for new role
-     *
-     * @Route("/edit/role/new-role", name="edit_role_new_role")
      */
+    #[Route(path: '/edit/role/new-role', name: 'edit_role_new_role')]
     public function newRole(Request $request,
                             EntityManagerInterface $entityManager) {
         $this->denyAccessUnlessGranted('ROLE_EDIT_BASE');
@@ -416,9 +407,8 @@ class EditRoleController extends AbstractController {
 
         /**
      * Returns template for new external ID
-     *
-     * @Route("/edit/role/new-url-external/{itemIndex}", name="edit_role_new_urlexternal")
      */
+    #[Route(path: '/edit/role/new-url-external/{itemIndex}', name: 'edit_role_new_urlexternal')]
     public function newUrlExternal(Request $request,
                                    int $itemIndex) {
 

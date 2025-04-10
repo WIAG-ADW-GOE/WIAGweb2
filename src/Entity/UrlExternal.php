@@ -5,53 +5,35 @@ namespace App\Entity;
 use App\Repository\UrlExternalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=UrlExternalRepository::class)
- */
+#[ORM\Entity(repositoryClass: UrlExternalRepository::class)]
 class UrlExternal
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="urlExternal")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'urlExternal')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Authority")
-     * @ORM\JoinColumn(name="authority_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Authority::class)]
+    #[ORM\JoinColumn(name: 'authority_id', referencedColumnName: 'id')]
     private $authority;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $authorityId;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private $value;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
     /**

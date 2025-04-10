@@ -5,48 +5,32 @@ namespace App\Entity\Gso;
 use App\Repository\Gso\LocationsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=LocationsRepository::class)
- */
+#[ORM\Entity(repositoryClass: LocationsRepository::class)]
 class Locations
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Items", inversedBy="reference")
-     * @ORM\JoinColumn(name="item_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Items::class, inversedBy: 'reference')]
+    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Books")
-     * @ORM\JoinColumn(name="book_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Books::class)]
+    #[ORM\JoinColumn(name: 'book_id', referencedColumnName: 'id')]
     private $referenceVolume;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $itemMergedintoId;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $bookId;
 
-    /**
-     * @ORM\Column(type="string", length=1000)
-     */
+    #[ORM\Column(type: 'string', length: 1000)]
     private $seiten;
 
     public function getId(): ?int

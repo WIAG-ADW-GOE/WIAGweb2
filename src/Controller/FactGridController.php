@@ -20,15 +20,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class FactGridController extends AbstractController {
     // route '/edit' is globally protected (see security.yaml)
-
-
     /**
      * update FactGridIds
      *
      * display page with update options
-     *
-     * @Route("/edit/factgrid/update", name="edit_factgrid_update")
      */
+    #[Route(path: '/edit/factgrid/update', name: 'edit_factgrid_update')]
     public function update(Request $request,
                            EntityManagerInterface $entityManager,
                            FactGridService $service) {
@@ -44,9 +41,8 @@ class FactGridController extends AbstractController {
 
     /**
      * update monastery data
-     *
-     * @Route("/edit/monastery/update-step", name="edit_monastery_update_step")
      */
+    #[Route(path: '/edit/monastery/update-step', name: 'edit_monastery_update_step')]
     function updateStep(Request $request,
                         MonasteryService $service,
                         EntityManagerInterface $entityManager) {

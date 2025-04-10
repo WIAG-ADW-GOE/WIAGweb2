@@ -5,38 +5,26 @@ namespace App\Entity;
 use App\Repository\ItemNameRoleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ItemNameRoleRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemNameRoleRepository::class)]
 class ItemNameRole
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Item", inversedBy="itemNameRole")
-     * @ORM\JoinColumn(name="item_id_name", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemNameRole')]
+    #[ORM\JoinColumn(name: 'item_id_name', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Person")
-     * @ORM\JoinColumn(name="item_id_role", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Person::class)]
+    #[ORM\JoinColumn(name: 'item_id_role', referencedColumnName: 'id')]
     private $personRolePerson;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemIdName;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $itemIdRole;
 
     public function __construct($item_id_name, $item_id_role) {

@@ -6,9 +6,7 @@ use App\Repository\DioceseRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
-/**
- * @ORM\Entity(repositoryClass=DioceseRepository::class)
- */
+#[ORM\Entity(repositoryClass: DioceseRepository::class)]
 class Diocese
 {
 
@@ -25,65 +23,43 @@ class Diocese
         'comment'
     ];
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Item", cascade={"persist"})
-     * @ORM\JoinColumn(name="id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Item::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    /**
-     * @ORM\OneToMany(targetEntity="SkosLabel", mappedBy="diocese", cascade = {"persist"})
-     * @ORM\JoinColumn(name="id", referencedColumnName="concept_id")
-     * @ORM\OrderBy({"displayOrder" = "ASC"})
-     */
+    #[ORM\OneToMany(targetEntity: \SkosLabel::class, mappedBy: 'diocese', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'concept_id')]
+    #[ORM\OrderBy(['displayOrder' => 'ASC'])]
     private $altLabels;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $note;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $ecclesiasticalProvince;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $dioceseStatus;
 
-    /**
-     * @ORM\Column(type="string", length=31, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 31, nullable: true)]
     private $shapefile;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $bishopricSeatId;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Place")
-     * @ORM\JoinColumn(name="bishopric_seat_id", referencedColumnName="id")
-     */
+    #[ORM\OneToOne(targetEntity: \Place::class)]
+    #[ORM\JoinColumn(name: 'bishopric_seat_id', referencedColumnName: 'id')]
     private $bishopricSeat;
 
     /**
@@ -91,39 +67,23 @@ class Diocese
      */
     private $formBishopricSeat;
 
-    /**
-     * @ORM\Column(type="string", length=1023, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 1023, nullable: true)]
     private $noteBishopricSeat;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $dateOfFounding;
 
-    /**
-     * @ORM\Column(type="string", length=63, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 63, nullable: true)]
     private $dateOfDissolution;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $noteAuthorityFile;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $isAltesReich;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $isDioceseGs;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
 
     /**
      * no db mapping

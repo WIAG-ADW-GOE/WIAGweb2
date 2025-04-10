@@ -45,11 +45,7 @@ class DownloadController extends AbstractController {
     }
 
 
-    /**
-     * @Route("/download/csv/person/{corpusId}", name="download-csv-person-data")
-     *
-     * Returns streamed response for person data, e.g. name, birthday
-     */
+    #[Route(path: '/download/csv/person/{corpusId}', name: 'download-csv-person-data')] // Returns streamed response for person data, e.g. name, birthday
     public function csvPersonData(Request $request, $corpusId) {
 
         ini_set('max_execution_time', 300);
@@ -149,11 +145,7 @@ class DownloadController extends AbstractController {
         fclose($handle);
     }
 
-    /**
-     * @Route("/download/csv/person-role/{corpusId}", name="download-csv-person-role-data")
-     *
-     * Returns streamed response for person role data
-     */
+    #[Route(path: '/download/csv/person-role/{corpusId}', name: 'download-csv-person-role-data')] // Returns streamed response for person role data
     public function csvPersonRoleData(Request $request, $corpusId) {
 
         ini_set('max_execution_time', 300);
@@ -251,11 +243,7 @@ class DownloadController extends AbstractController {
         fclose($handle);
     }
 
-    /**
-     * @Route("/download/csv/person-reference/{corpusId}", name="download-csv-person-reference")
-     *
-     * Returns streamed response for person reference data
-     */
+    #[Route(path: '/download/csv/person-reference/{corpusId}', name: 'download-csv-person-reference')] // Returns streamed response for person reference data
     public function csvPersonReference(Request $request, $corpusId) {
 
         ini_set('max_execution_time', 300);
@@ -351,11 +339,7 @@ class DownloadController extends AbstractController {
     }
 
 
-    /**
-     * @Route("/download/csv/person-url-external/{corpusId}", name="download-csv-person-url-external")
-     *
-     * Returns streamed response for person reference data
-     */
+    #[Route(path: '/download/csv/person-url-external/{corpusId}', name: 'download-csv-person-url-external')] // Returns streamed response for person reference data
     public function csvPersonUrlExternal(Request $request, $corpusId) {
 
         ini_set('max_execution_time', 300);

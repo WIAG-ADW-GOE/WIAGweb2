@@ -19,10 +19,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class UserController extends AbstractController
 {
 
-    /**
-     * @Route("/user/edit/{email}", name="edit_user")
-     * @IsGranted("ROLE_EDIT_USER")
-     */
+    #[Route(path: '/user/edit/{email}', name: 'edit_user')]
+    #[IsGranted('ROLE_EDIT_USER')]
     public function edit(Request $request,
                          UserPasswordHasherInterface $userPasswordHasher,
                          EntityManagerInterface $entityManager,
@@ -85,9 +83,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/user/list", name="user_list")
-     */
+    #[Route(path: '/user/list', name: 'user_list')]
     public function list(Request $request,
                          EntityManagerInterface $entityManager): Response {
         $repository = $entityManager->getRepository(UserWiag::class);

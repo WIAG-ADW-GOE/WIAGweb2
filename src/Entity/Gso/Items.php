@@ -8,68 +8,44 @@ use App\Repository\Gso\ItemsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-/**
- * @ORM\Entity(repositoryClass=ItemsRepository::class)
- */
+#[ORM\Entity(repositoryClass: ItemsRepository::class)]
 class Items
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Gsn", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \Gsn::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $gsn;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Locations", mappedBy="item")
-     * @ORM\JoinColumn(name="id", referencedColumnName="item_id")
-     */
+    #[ORM\OneToMany(targetEntity: \Locations::class, mappedBy: 'item')]
+    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $reference;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private $deleted;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $created;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $modified;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $createdBy;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $modifiedBy;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $mergedintoId;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $merged;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private $status;
 
     public function getId(): ?int

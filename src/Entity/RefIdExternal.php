@@ -5,53 +5,35 @@ namespace App\Entity;
 use App\Repository\RefIdExternalRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=RefIdExternalRepository::class)
- */
+#[ORM\Entity(repositoryClass: RefIdExternalRepository::class)]
 class RefIdExternal
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $comment;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $referenceId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ReferenceVolume", inversedBy="idsExternal")
-     * @ORM\JoinColumn(name="reference_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \ReferenceVolume::class, inversedBy: 'idsExternal')]
+    #[ORM\JoinColumn(name: 'reference_id', referencedColumnName: 'id')]
     private $reference;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $authorityId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Authority", inversedBy="refIdExternal")
-     * @ORM\JoinColumn(name="authority_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Authority::class, inversedBy: 'refIdExternal')]
+    #[ORM\JoinColumn(name: 'authority_id', referencedColumnName: 'id')]
     private $authority;
 
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
+    #[ORM\Column(type: 'string', length: 127)]
     private $value;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
     public function getId(): ?int

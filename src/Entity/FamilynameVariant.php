@@ -5,37 +5,25 @@ namespace App\Entity;
 use App\Repository\FamilynameVariantRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=FamilynameVariantRepository::class)
- */
+#[ORM\Entity(repositoryClass: FamilynameVariantRepository::class)]
 class FamilynameVariant
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private $personId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Person", inversedBy="familynameVariants")
-     * @ORM\JoinColumn(name="person_id", referencedColumnName="id")
-     */
+    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'familynameVariants')]
+    #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id')]
     private $person;
 
-    /**
-     * @ORM\Column(type="string", length=127)
-     */
+    #[ORM\Column(type: 'string', length: 127)]
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=31)
-     */
+    #[ORM\Column(type: 'string', length: 31)]
     private $lang;
 
     public function getId(): ?int
