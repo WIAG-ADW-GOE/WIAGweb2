@@ -33,7 +33,7 @@ class PriestUtFormType extends AbstractType
         $this->repository = $repository;
     }
 
-    public function configureOptions(OptionsResolver $resolver) {
+    public function configureOptions(OptionsResolver $resolver): void {
         $resolver->setDefaults([
             'data_class' => PriestUtFormModel::class,
             'forceFacets' => false,
@@ -41,7 +41,7 @@ class PriestUtFormType extends AbstractType
 
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options) {
+    public function buildForm(FormBuilderInterface $builder, array $options): void {
         $model = $options['data'] ?? null;
         $forceFacets = $options['forceFacets'];
 
@@ -107,7 +107,7 @@ class PriestUtFormType extends AbstractType
             });
     }
 
-    public function createFacetOrder($form, $modelIn) {
+    public function createFacetOrder($form, $modelIn): void {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
         $model->facetOrder = null;
@@ -135,7 +135,7 @@ class PriestUtFormType extends AbstractType
         }
     }
 
-    public function createFacetDiocese($form, $modelIn) {
+    public function createFacetDiocese($form, $modelIn): void {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
         $model->facetDiocese = null;
@@ -164,7 +164,7 @@ class PriestUtFormType extends AbstractType
         }
     }
 
-    public function createFacetOffice($form, $modelIn) {
+    public function createFacetOffice($form, $modelIn): void {
         // do not filter by office themselves
         $model = clone $modelIn;
         $model->facetOffice = null;

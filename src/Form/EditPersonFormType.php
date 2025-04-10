@@ -39,7 +39,7 @@ class EditPersonFormType extends AbstractType
     ];
 
 
-    public function configureOptions(OptionsResolver $resolver) {
+    public function configureOptions(OptionsResolver $resolver): void {
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
             'statusChoices' => [
@@ -49,7 +49,7 @@ class EditPersonFormType extends AbstractType
 
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options) {
+    public function buildForm(FormBuilderInterface $builder, array $options): void {
         $model = $options['data'] ?? null;
 
         $builder

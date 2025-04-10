@@ -32,7 +32,7 @@ class PersonFormType extends AbstractType
         'ibe' => ['dioc', 'ofc'],
     ];
 
-    public function configureOptions(OptionsResolver $resolver) {
+    public function configureOptions(OptionsResolver $resolver): void {
         $resolver->setDefaults([
             'data_class' => PersonFormModel::class,
             'forceFacets' => false,
@@ -43,7 +43,7 @@ class PersonFormType extends AbstractType
 
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options) {
+    public function buildForm(FormBuilderInterface $builder, array $options): void {
         $model = $options['data'] ?? null;
         $forceFacets = $options['forceFacets'];
         $repository = $options['repository'];
@@ -195,7 +195,7 @@ class PersonFormType extends AbstractType
             });
     }
 
-    public function createFacetDiocese($form, $modelIn, $repository) {
+    public function createFacetDiocese($form, $modelIn, $repository): void {
         // do not filter by dioceses themselves
         $model = clone $modelIn;
         $model->facetDiocese = null;
@@ -224,7 +224,7 @@ class PersonFormType extends AbstractType
         }
     }
 
-    public function createFacetOffice($form, $modelIn, $repository) {
+    public function createFacetOffice($form, $modelIn, $repository): void {
         // do not filter by office themselves
         $model = clone $modelIn;
         $model->facetOffice = null;
@@ -254,7 +254,7 @@ class PersonFormType extends AbstractType
         }
     }
 
-    public function createFacetDomstift($form, $modelIn, $repository) {
+    public function createFacetDomstift($form, $modelIn, $repository): void {
         // do not filter by filter domstift itsself
         $model = clone $modelIn;
         $model->facetDomstift = null;
@@ -284,7 +284,7 @@ class PersonFormType extends AbstractType
         }
     }
 
-    public function createFacetPlace($form, $modelIn, $repository) {
+    public function createFacetPlace($form, $modelIn, $repository): void {
         // do not filter by facet place itsself
         $model = clone $modelIn;
         $model->facetPlace = null;
@@ -314,7 +314,7 @@ class PersonFormType extends AbstractType
         }
     }
 
-    public function createFacetUrl($form, $modelIn, $repository) {
+    public function createFacetUrl($form, $modelIn, $repository): void {
         // do not filter by facet URL itsself
         $model = clone $modelIn;
         $model->facetUrl = null;
@@ -347,7 +347,7 @@ class PersonFormType extends AbstractType
     /**
      *
      */
-    static public function sortByChoices($filter_list) {
+    static public function sortByChoices($filter_list): array {
 
         if (in_array('cap', $filter_list)) {
             $choice_list['Domstift/Kloster'] = 'domstift';
