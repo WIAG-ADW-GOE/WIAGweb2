@@ -97,7 +97,7 @@ class ItemReference
     }
 
     /**
-     * @return page without markup
+     * Returns page without markup
      */
     public function getPagePlain(): ?string
     {

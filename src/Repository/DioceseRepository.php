@@ -29,7 +29,7 @@ class DioceseRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Diocese[] Returns an array of Diocese objects
+    //  * Returns Diocese[] Returns an array of Diocese objects
     //  */
     /*
     public function findByExampleField($value)

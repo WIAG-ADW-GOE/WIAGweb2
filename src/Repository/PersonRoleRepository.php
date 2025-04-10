@@ -24,7 +24,7 @@ class PersonRoleRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return PersonRole[] Returns an array of PersonRole objects
+    //  * Returns PersonRole[] Returns an array of PersonRole objects
     //  */
     /*
     public function findByExampleField($value)
@@ -53,7 +53,7 @@ class PersonRoleRepository extends ServiceEntityRepository
     */
 
     /**
-     * @return role data for persons in $id_list
+     * Returns role data for persons in $id_list
      *
      */
     public function findArray($person_id_list) {
@@ -76,7 +76,7 @@ class PersonRoleRepository extends ServiceEntityRepository
     /**
      * find roles for `$personId`; set place names
      * 2022-07-20 obsolete?
-     * @return PersonRole[]
+     * Returns PersonRole[]
      */
     public function findRoleWithPlace_legacy($personId) {
         $qb = $this->createQueryBuilder('r')
@@ -195,7 +195,7 @@ class PersonRoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return number of items that refer to the role with $role_id
+     * Returns number of items that refer to the role with $role_id
      */
     public function referenceCount($role_id) {
         $qb = $this->createQueryBuilder('r')
@@ -212,7 +212,7 @@ class PersonRoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return number of items that refer to the role with $role_id
+     * Returns number of items that refer to the role with $role_id
      */
     public function dioceseReferenceCount($diocese_id) {
         $qb = $this->createQueryBuilder('r')

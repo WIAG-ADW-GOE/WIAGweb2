@@ -21,7 +21,7 @@ class ItemPropertyRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return ItemProperty[] Returns an array of ItemProperty objects
+    //  * Returns ItemProperty[] Returns an array of ItemProperty objects
     //  */
     /*
     public function findByExampleField($value)

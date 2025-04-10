@@ -22,7 +22,7 @@ class ItemReferenceRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return ItemReference[] Returns an array of ItemReference objects
+    //  * Returns ItemReference[] Returns an array of ItemReference objects
     //  */
     /*
     public function findByExampleField($value)
@@ -51,7 +51,7 @@ class ItemReferenceRepository extends ServiceEntityRepository
     */
 
     /**
-     * @return reference for items in $id_list as array
+     * Returns reference for items in $id_list as array
      */
     public function findArray($item_id_list) {
         $qb = $this->createQueryBuilder('ref')

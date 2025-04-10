@@ -20,7 +20,7 @@ class PersonRolePropertyRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return PersonRoleProperty[] Returns an array of PersonRoleProperty objects
+    //  * Returns PersonRoleProperty[] Returns an array of PersonRoleProperty objects
     //  */
     /*
     public function findByExampleField($value)

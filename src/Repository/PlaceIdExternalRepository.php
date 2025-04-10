@@ -48,7 +48,7 @@ class PlaceIdExternalRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return PlaceIdExternal[] Returns an array of PlaceIdExternal objects
+    //  * Returns PlaceIdExternal[] Returns an array of PlaceIdExternal objects
     //  */
     /*
     public function findByExampleField($value)
@@ -77,7 +77,7 @@ class PlaceIdExternalRepository extends ServiceEntityRepository
     */
 
     /**
-      @return URL in the World Historical Gazetteer
+      Returns URL in the World Historical Gazetteer
      */
     public function findUrlWhg($id) {
         $qb = $this->createQueryBuilder('p')
@@ -101,7 +101,7 @@ class PlaceIdExternalRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array indexed by place ID
+     * Returns array indexed by place ID
      */
     public function findMappedArray() {
         $qb = $this->createQueryBuilder('bp');

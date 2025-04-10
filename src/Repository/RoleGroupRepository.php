@@ -40,7 +40,7 @@ class RoleGroupRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return RoleGroup[] Returns an array of RoleGroup objects
+//     * Returns RoleGroup[] Returns an array of RoleGroup objects
 //     */
 //    public function findByExampleField($value): array
 //    {

@@ -50,7 +50,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return ItemNameRole[] Returns an array of ItemNameRole objects
+//     * Returns ItemNameRole[] Returns an array of ItemNameRole objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -193,7 +193,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return role data for persons in $id_list
+     * Returns role data for persons in $id_list
      *
      * collect roles for a person via ItemNameRole; consider only one source
      */
@@ -219,7 +219,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return persons in $id_list with role data
+     * Returns persons in $id_list with role data
      *
      */
     public function findPersonRoleArray($person_id_list) {
@@ -247,7 +247,7 @@ class ItemNameRoleRepository extends ServiceEntityRepository
 
 
     /**
-     * @return reference data for persons in $id_list
+     * Returns reference data for persons in $id_list
      *
      * collect all references for a person via ItemNameRole
      */

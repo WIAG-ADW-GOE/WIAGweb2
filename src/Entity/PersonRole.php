@@ -493,7 +493,7 @@ class PersonRole
     }
 
     /**
-     * @return institution name
+     * Returns institution name
      */
     public function institutionDisplayName(): ?string {
         $name = null;

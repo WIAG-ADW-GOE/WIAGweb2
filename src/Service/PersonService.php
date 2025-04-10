@@ -153,7 +153,7 @@ class PersonService {
     }
 
     /**
-     * @return node list with structured data for a person with office data in `personRole`
+     * Returns node list with structured data for a person with office data in `personRole`
      */
     public function personData($format, $person, $personRole) {
         switch ($format) {
@@ -983,7 +983,7 @@ class PersonService {
     }
 
     /**
-     * @return string for bibliographic citation
+     * Returns string for bibliographic citation
      */
     public function objReferenceCitation($ref_list) {
         $nd = array();
@@ -1007,7 +1007,7 @@ class PersonService {
     }
 
     /**
-     * @return string for bibliographic citation
+     * Returns string for bibliographic citation
      */
     static public function referenceCitation($ref_list) {
         $nd = array();
@@ -1511,7 +1511,7 @@ class PersonService {
     }
 
     /**
-     * @return array of role data with meta data
+     * Returns array of role data with meta data
      */
     public function jsonRoleNode($office, $ref_list) {
         $scafx = "schema:";
@@ -1590,7 +1590,7 @@ class PersonService {
 
     /**
      * 2024-01-04 obsolete?
-     * @return array of role data
+     * Returns array of role data
      */
     public function roleObjData($role, $ref_list) {
         $pj = array();
@@ -1675,7 +1675,7 @@ class PersonService {
 
     /**
      * collect reference data
-     * @return list of reference nodes
+     * Returns list of reference nodes
      */
     public function referenceData($ref_list) {
         $nd = array();
@@ -1717,7 +1717,7 @@ class PersonService {
 
     /**
      * collect reference data
-     * @return list of reference nodes
+     * Returns list of reference nodes
      */
     public function referenceArrayData($ref_list) {
         $nd = array();
@@ -1759,7 +1759,7 @@ class PersonService {
 
     /**
      * 2024-01-04 obsolete?
-     * @return a text version for a set of elements in `properties`
+     * Returns a text version for a set of elements in `properties`
      */
     public function itemPropertyText($properties, string $key): ?string {
 
@@ -1812,7 +1812,7 @@ class PersonService {
     }
 
     /**
-     * @return role list with an entry for each editable corpus
+     * Returns role list with an entry for each editable corpus
      */
     static public function roleEditList($entityManager) {
         $corpusRepository = $entityManager->getRepository(Corpus::class);

@@ -285,7 +285,7 @@ class EditAuthorityController extends AbstractController {
     }
 
     /**
-     * @return template for new authority
+     * Returns template for new authority
      *
      * @Route("/edit/authority/new-authority", name="edit_authority_new_authority")
      */

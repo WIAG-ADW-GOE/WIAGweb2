@@ -36,7 +36,7 @@ class LocationsRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Locations[] Returns an array of Locations objects
+//     * Returns Locations[] Returns an array of Locations objects
 //     */
 //    public function findByExampleField($value): array
 //    {

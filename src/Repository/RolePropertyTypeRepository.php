@@ -46,7 +46,7 @@ class RolePropertyTypeRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return RolePropertyType[] Returns an array of RolePropertyType objects
+    //  * Returns RolePropertyType[] Returns an array of RolePropertyType objects
     //  */
     /*
     public function findByExampleField($value)

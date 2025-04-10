@@ -38,7 +38,7 @@ class MonasteryService {
     /**
      * queryGSList($chunk_size, $offset)
      *
-     * @return status code and list of gsn
+     * Returns status code and list of gsn
      */
     public function queryGSList($chunk_size, $offset) {
 
@@ -179,7 +179,7 @@ class MonasteryService {
     /**
      * queryGSByGsn($gsn)
      *
-     * @return status code and list of gsn
+     * Returns status code and list of gsn
      */
     private function queryGSByGsn($gsn) {
 

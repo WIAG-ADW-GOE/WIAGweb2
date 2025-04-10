@@ -32,7 +32,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Item[] Returns an array of Item objects
+    //  * Returns Item[] Returns an array of Item objects
     //  */
     /*
       public function findByExampleField($value)
@@ -249,7 +249,7 @@ class ItemRepository extends ServiceEntityRepository
     // }
 
     /**
-     * @return entry matching $id_public or having $id_public as a parent (merging); is_online = true
+     * Returns entry matching $id_public or having $id_public as a parent (merging); is_online = true
      */
     public function findByIdPublicOrParent($id_public) {
         $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);
@@ -309,7 +309,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of items that were merged into $item in one or several steps
+     * Returns list of items that were merged into $item in one or several steps
      */
     public function findAncestor(Item $item) {
         $ancestor_list = array();
@@ -333,7 +333,7 @@ class ItemRepository extends ServiceEntityRepository
 
     /**
      * call this function only for persons
-     * @return items containing $q_id as id_public in ancestor list
+     * Returns items containing $q_id as id_public in ancestor list
      */
     public function findIdByAncestor(string $q_id, $with_id_in_corpus, $list_size_max) {
 
@@ -367,7 +367,7 @@ class ItemRepository extends ServiceEntityRepository
 
     /**
      * 2023-06-30 obsolete; see findIdByAncestor
-     * @return items containing $id in ancestor list
+     * Returns items containing $id in ancestor list
      */
     public function findCurrentChildById(string $q_id, $with_id_in_source, $list_size_max) {
 
@@ -400,7 +400,7 @@ class ItemRepository extends ServiceEntityRepository
 
 
     /**
-     * @return first item that is online or has no descendants
+     * Returns first item that is online or has no descendants
      */
     public function findCurrentChild(Item $item) {
         $child = $item;
@@ -421,7 +421,7 @@ class ItemRepository extends ServiceEntityRepository
 
     /**
      * 2023-11-04 obsolete
-     * @return maximum value for id_in_source, if it is numerical
+     * Returns maximum value for id_in_source, if it is numerical
      */
     // public function maxIdInSource($item_type_id) {
     //     // Doctrine does not know the function CAST nor CONVERT
@@ -444,7 +444,7 @@ class ItemRepository extends ServiceEntityRepository
     // }
 
     /**
-     * @return meta data and GSN for items with corpus_id in $corpus_id_list
+     * Returns meta data and GSN for items with corpus_id in $corpus_id_list
      */
     public function findGsnByCorpusId($corpus_id_list) {
         $authority_id = Authority::ID['GSN'];
@@ -501,7 +501,7 @@ class ItemRepository extends ServiceEntityRepository
     // }
 
     /**
-     * @return list of items with associated persons via item_name_role and all data
+     * Returns list of items with associated persons via item_name_role and all data
      */
     public function findItemNameRole($id_list) {
         $entityManager = $this->getEntityManager();

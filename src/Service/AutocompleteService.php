@@ -218,7 +218,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * @return suggestions for edit status values for editable corpora
+     * Returns suggestions for edit status values for editable corpora
      *
      * usually used for asynchronous JavaScript request
      */
@@ -344,7 +344,7 @@ class AutocompleteService extends ServiceEntityRepository {
     }
 
     /**
-     * @return list of WIAG-IDs of bishops
+     * Returns list of WIAG-IDs of bishops
      */
     public function suggestBishop($queryParam, $hint_size) {
         $repository = $this->getEntityManager()->getRepository(Item::class);

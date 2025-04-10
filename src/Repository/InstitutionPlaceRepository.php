@@ -21,7 +21,7 @@ class InstitutionPlaceRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return InstitutionPlace[] Returns an array of InstitutionPlace objects
+    //  * Returns InstitutionPlace[] Returns an array of InstitutionPlace objects
     //  */
     /*
     public function findByExampleField($value)

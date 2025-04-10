@@ -20,7 +20,7 @@ class GivennameVariantRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return GivennameVariant[] Returns an array of GivennameVariant objects
+    //  * Returns GivennameVariant[] Returns an array of GivennameVariant objects
     //  */
     /*
     public function findByExampleField($value)

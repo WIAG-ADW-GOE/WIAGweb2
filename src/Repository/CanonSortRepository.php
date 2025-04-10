@@ -46,7 +46,7 @@ class CanonSortRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return CanonSort[] Returns an array of CanonSort objects
+    //  * Returns CanonSort[] Returns an array of CanonSort objects
     //  */
     /*
     public function findByExampleField($value)

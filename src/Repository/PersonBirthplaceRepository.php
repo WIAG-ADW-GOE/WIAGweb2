@@ -46,7 +46,7 @@ class PersonBirthplaceRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return PersonBirthplace[] Returns an array of PersonBirthplace objects
+    //  * Returns PersonBirthplace[] Returns an array of PersonBirthplace objects
     //  */
     /*
     public function findByExampleField($value)

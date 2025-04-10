@@ -23,7 +23,7 @@ class NameLookupRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return NameLookup[] Returns an array of NameLookup objects
+    //  * Returns NameLookup[] Returns an array of NameLookup objects
     //  */
     /*
     public function findByExampleField($value)

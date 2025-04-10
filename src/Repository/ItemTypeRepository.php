@@ -20,7 +20,7 @@ class ItemTypeRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return ItemType[] Returns an array of ItemType objects
+    //  * Returns ItemType[] Returns an array of ItemType objects
     //  */
     /*
     public function findByExampleField($value)

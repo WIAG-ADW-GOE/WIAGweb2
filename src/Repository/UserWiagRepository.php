@@ -63,7 +63,7 @@ class UserWiagRepository extends ServiceEntityRepository implements PasswordUpgr
     }
 
     // /**
-    //  * @return UserWiag[] Returns an array of UserWiag objects
+    //  * Returns UserWiag[] Returns an array of UserWiag objects
     //  */
     /*
     public function findByExampleField($value)

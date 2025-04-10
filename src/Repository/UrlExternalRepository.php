@@ -51,7 +51,7 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return UrlExternal[] Returns an array of UrlExternal objects
+    //  * Returns UrlExternal[] Returns an array of UrlExternal objects
     //  */
     /*
     public function findByExampleField($value)
@@ -80,7 +80,7 @@ class UrlExternalRepository extends ServiceEntityRepository
     */
 
     /**
-     * @return IDs by external identifiers
+     * Returns IDs by external identifiers
      */
     public function findIdBySomeNormUrl($someid, $corpus_id_list = null, $list_size_max = 200, $online = null) {
 
@@ -217,7 +217,7 @@ class UrlExternalRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return number of items with an URL external for $authority_id
+     * Returns number of items with an URL external for $authority_id
      */
     public function referenceCount($authority_id) {
         $qb = $this->createQueryBuilder('uext')
@@ -417,7 +417,7 @@ class UrlExternalRepository extends ServiceEntityRepository
 
     /**
      * 2023-10-10 obsolete
-     * @return list of pair of IDs for references to Digitales Personenregister
+     * Returns list of pair of IDs for references to Digitales Personenregister
      */
     // public function findDregIds($id_list) {
     //     $auth_dreg_id = Authority::ID['Dreg'];
@@ -494,7 +494,7 @@ class UrlExternalRepository extends ServiceEntityRepository
     /**
      * findDuplicates($authority_id, $corpus_id_list)
      *
-     * @return list of IDs of duplicate entries
+     * Returns list of IDs of duplicate entries
      */
     function findDuplicates($authority_id, $corpus_id_list) {
         $qb_count = $this->createQueryBuilder('uext')

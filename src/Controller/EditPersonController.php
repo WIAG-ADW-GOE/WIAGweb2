@@ -154,7 +154,7 @@ class EditPersonController extends AbstractController {
     /**
      * statusChoices()
      *
-     * @return choice list for status values
+     * Returns choice list for status values
      */
     private function statusChoices() {
         $personRepository = $this->entityManager->getRepository(Person::class);
@@ -633,7 +633,7 @@ class EditPersonController extends AbstractController {
     // }
 
     /**
-     * @return template for new item property
+     * Returns template for new item property
      *
      * @Route("/edit/person/new-property/{personIndex}", name="edit_person_new_property")
      */
@@ -657,7 +657,7 @@ class EditPersonController extends AbstractController {
 
 
     /**
-     * @return template for new role
+     * Returns template for new role
      *
      * @Route("/edit/person/new-role/{personIndex}", name="edit_person_new_role")
      */
@@ -679,7 +679,7 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * @return template for new role
+     * Returns template for new role
      *
      * @Route("/edit/person/new-role-property/{personIndex}/{roleIndex}", name="edit_person_new_role_property")
      */
@@ -710,7 +710,7 @@ class EditPersonController extends AbstractController {
 
 
     /**
-     * @return template for new reference
+     * Returns template for new reference
      *
      * @Route("/edit/person/new-reference/{personIndex}", name="edit_person_new_reference")
      */
@@ -729,7 +729,7 @@ class EditPersonController extends AbstractController {
     }
 
     /**
-     * @return template for new external ID
+     * Returns template for new external ID
      *
      * @Route("/edit/person/new-url-external/{personIndex}", name="edit_person_new_urlexternal")
      */

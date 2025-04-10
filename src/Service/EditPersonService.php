@@ -51,7 +51,7 @@ class EditPersonService {
     /**
      * map/validate content of form
      *
-     * @return list of persons containing the data in $form_data
+     * Returns list of persons containing the data in $form_data
      */
     public function mapFormData($form_data, $user_id) {
 

@@ -21,7 +21,7 @@ class AuthorityRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Authority[] Returns an array of Authority objects
+    //  * Returns Authority[] Returns an array of Authority objects
     //  */
     /*
     public function findByExampleField($value)
@@ -158,7 +158,7 @@ class AuthorityRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array indexed by ID
+     * Returns array indexed by ID
      */
     public function findMappedArray($id_list) {
         $qb = $this->createQueryBuilder('a')

@@ -271,7 +271,7 @@ class GsoController extends AbstractController {
 
 
     /**
-     * @return items.id, gsn and modification date for canons (by Domstift)
+     * Returns items.id, gsn and modification date for canons (by Domstift)
      */
     private function canonGsoIds(ManagerRegistry $doctrine) {
         $entityManager_gso = $doctrine->getManager('gso');

@@ -80,7 +80,7 @@ class DownloadService {
     }
 
     /**
-     * @return header for formatted person data
+     * Returns header for formatted person data
      */
     static public function formatPersonDataHeader() {
         return [
@@ -103,7 +103,7 @@ class DownloadService {
     }
 
     /**
-     * @return formatted person data
+     * Returns formatted person data
      */
     static public function formatPersonData($person, $role_list) {
 
@@ -152,7 +152,7 @@ class DownloadService {
     }
 
     /**
-     * @return preferred ID public (see Entity/Item)
+     * Returns preferred ID public (see Entity/Item)
      */
     static public function idPublic($item_corpus_list) {
         $id_public_cand = null;
@@ -238,7 +238,7 @@ class DownloadService {
     }
 
     /**
-     * @return a string with the most import offices
+     * Returns a string with the most import offices
      */
     static public function prioRoleList($role_list) {
         // hard code highest ranked office types(!?)
@@ -396,7 +396,7 @@ class DownloadService {
     }
 
     /**
-     * @return header for formatted person role data
+     * Returns header for formatted person role data
      */
     static public function formatPersonRoleDataHeader() {
         return [
@@ -420,7 +420,7 @@ class DownloadService {
     }
 
     /**
-     * @return formatted person role data
+     * Returns formatted person role data
      */
     static public function formatPersonRoleData($person, $role) {
         $item = $person['item'];
@@ -475,7 +475,7 @@ class DownloadService {
     }
 
     /**
-     * @return header for formatted person reference data
+     * Returns header for formatted person reference data
      */
     static public function formatPersonReferenceHeader() {
         return [
@@ -490,7 +490,7 @@ class DownloadService {
     }
 
     /**
-     * @return formatted person role data
+     * Returns formatted person role data
      */
     static public function formatPersonReference($person, $ref) {
 
@@ -521,7 +521,7 @@ class DownloadService {
     }
 
     /**
-     * @return header for formatted person reference data
+     * Returns header for formatted person reference data
      */
     static public function formatPersonUrlExternalHeader() {
         return [
@@ -536,7 +536,7 @@ class DownloadService {
     }
 
     /**
-     * @return formatted data for external IDs
+     * Returns formatted data for external IDs
      */
     static public function formatPersonUrlExternal($person, $uext) {
 

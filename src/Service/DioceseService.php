@@ -138,7 +138,7 @@ class DioceseService {
     }
 
     /**
-     * @return node list with structured data for a diocese
+     * Returns node list with structured data for a diocese
      */
     public function dioceseData($format, $diocese) {
         switch ($format) {

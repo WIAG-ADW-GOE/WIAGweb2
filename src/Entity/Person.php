@@ -405,7 +405,7 @@ class Person {
     }
 
     /**
-     * @return complete name
+     * Returns complete name
      */
     public function getDisplayname() {
         $prefixpart = ($this->prefixname !== null && strlen($this->prefixname) > 0) ? ' '.$this->prefixname : '';
@@ -420,7 +420,7 @@ class Person {
     }
 
     /**
-     * @return complete name; mark note with '()'
+     * Returns complete name; mark note with '()'
      */
     public function getDisplaynameWithSeparators() {
         $prefixpart = ($this->prefixname !== null && strlen($this->prefixname) > 0) ? ' '.$this->prefixname : '';

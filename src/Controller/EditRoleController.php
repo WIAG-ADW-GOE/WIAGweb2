@@ -389,7 +389,7 @@ class EditRoleController extends AbstractController {
     }
 
     /**
-     * @return template for new role
+     * Returns template for new role
      *
      * @Route("/edit/role/new-role", name="edit_role_new_role")
      */
@@ -416,7 +416,7 @@ class EditRoleController extends AbstractController {
     }
 
         /**
-     * @return template for new external ID
+     * Returns template for new external ID
      *
      * @Route("/edit/role/new-url-external/{itemIndex}", name="edit_role_new_urlexternal")
      */

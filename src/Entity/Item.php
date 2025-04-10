@@ -350,7 +350,7 @@ class Item {
     }
 
     /**
-     * @return corpusId with highest priority
+     * Returns corpusId with highest priority
      */
     public function getCorpusId() {
         if (is_null($this->itemCorpus)) {
@@ -370,7 +370,7 @@ class Item {
 
 
     /**
-     * @return array of corpus IDs
+     * Returns array of corpus IDs
      */
     public function getCorpusIdList() {
         $list = array();
@@ -441,7 +441,7 @@ class Item {
     }
 
     /**
-     * @return sorted list of item properties
+     * Returns sorted list of item properties
      */
     public function getItemProperty() {
         $sorted_list = $this->itemProperty->toArray();
@@ -634,7 +634,7 @@ class Item {
     }
 
     /**
-     * @return public ID (epc > can)
+     * Returns public ID (epc > can)
      */
     public function getIdPublic(): ?string
     {
@@ -963,7 +963,7 @@ class Item {
     }
 
     /**
-     * @return object of type UrlExternal for $authorityIdOrName
+     * Returns object of type UrlExternal for $authorityIdOrName
      */
     public function getUrlExternalObj($authorityIdOrName) {
         $authorityId = $this->findAuthorityId($authorityIdOrName);
@@ -1033,7 +1033,7 @@ class Item {
 
 
     /**
-     * @return elements of `itemProperty` as array with `item_property_type.name` as key
+     * Returns elements of `itemProperty` as array with `item_property_type.name` as key
      */
     public function arrayItemProperty() {
         $itemPropByName = array();
@@ -1057,7 +1057,7 @@ class Item {
     }
 
     /**
-     * @return elements of `itemProperty` as array with `item_property_type.name` as key
+     * Returns elements of `itemProperty` as array with `item_property_type.name` as key
      */
     public function arrayItemPropertyWithName() {
         $itemPropByName = array();

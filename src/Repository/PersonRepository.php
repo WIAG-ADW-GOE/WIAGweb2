@@ -33,7 +33,7 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     // /**
-    //  * @return Person[] Returns an array of Person objects
+    //  * Returns Person[] Returns an array of Person objects
     //  */
     /*
     public function findByExampleField($value)
@@ -159,7 +159,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * findEditPersonIds($model, $limit = 0, $offset = 0) {
      *
-     * @return list of IDs matching conditions given by $model.
+     * Returns list of IDs matching conditions given by $model.
      *
      */
     public function findEditPersonIds($model, $limit = 0, $offset = 0) {
@@ -516,7 +516,7 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
-     * @return person data as array
+     * Returns person data as array
      */
     public function findArray($id_list) {
         $qb = $this->createQueryBuilder('p')
@@ -544,7 +544,7 @@ class PersonRepository extends ServiceEntityRepository {
     }
 
     /**
-     * @return person data as array
+     * Returns person data as array
      */
     public function findArrayWithRole($id_list) {
         $qb = $this->createQueryBuilder('p')
@@ -708,7 +708,7 @@ class PersonRepository extends ServiceEntityRepository {
 
     /**
      * adjust data
-     * @return IDs of entries with missing date range information
+     * Returns IDs of entries with missing date range information
      */
     public function findMissingDateRange($limit = null, $offset = null) {
         $qb = $this->createQueryBuilder('p')
@@ -848,7 +848,7 @@ class PersonRepository extends ServiceEntityRepository {
     /**
      * queryBuilderCount($model)
      *
-     * @return query builder for $model->corpus with person_role as pr_count
+     * Returns query builder for $model->corpus with person_role as pr_count
      */
     private function queryBuilderCount($model) {
         $itemCorpusRepository = $this->getEntityManager()->getRepository(ItemCorpus::class);

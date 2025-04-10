@@ -40,7 +40,7 @@ class OfficesRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Offices[] Returns an array of Offices objects
+//     * Returns Offices[] Returns an array of Offices objects
 //     */
 //    public function findByExampleField($value): array
 //    {

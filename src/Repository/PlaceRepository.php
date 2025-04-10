@@ -20,7 +20,7 @@ class PlaceRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Place[] Returns an array of Place objects
+    //  * Returns Place[] Returns an array of Place objects
     //  */
     /*
     public function findByExampleField($value)

@@ -109,7 +109,7 @@ class IdController extends AbstractController {
     }
 
     /**
-     * @return HTML or data for ID $id
+     * Returns HTML or data for ID $id
      */
     public function person($id, $format) {
 

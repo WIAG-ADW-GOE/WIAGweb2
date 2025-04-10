@@ -36,7 +36,7 @@ class GsnRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Gsn[] Returns an array of Gsn objects
+//     * Returns Gsn[] Returns an array of Gsn objects
 //     */
 //    public function findByExampleField($value): array
 //    {

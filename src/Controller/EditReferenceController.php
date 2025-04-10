@@ -333,7 +333,7 @@ class EditReferenceController extends AbstractController {
     }
 
     /**
-     * @return template for new reference
+     * Returns template for new reference
      *
      * @Route("/edit/reference/new-reference", name="edit_reference_new_reference")
      */

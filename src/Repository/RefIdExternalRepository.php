@@ -20,7 +20,7 @@ class RefIdExternalRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return RefIdExternal[] Returns an array of RefIdExternal objects
+    //  * Returns RefIdExternal[] Returns an array of RefIdExternal objects
     //  */
     /*
     public function findByExampleField($value)

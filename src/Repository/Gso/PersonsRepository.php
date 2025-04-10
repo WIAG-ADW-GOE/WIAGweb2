@@ -36,7 +36,7 @@ class PersonsRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Persons[] Returns an array of Persons objects
+//     * Returns Persons[] Returns an array of Persons objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -62,7 +62,7 @@ class PersonsRepository extends EntityRepository
 
 
     /**
-     * @return ID, and modification date for persons with an office in $domstift_gsn_list
+     * Returns ID, and modification date for persons with an office in $domstift_gsn_list
      */
     public function findCanonIds($domstift_gsn_list) {
         $qb = $this->createQueryBuilder('p')

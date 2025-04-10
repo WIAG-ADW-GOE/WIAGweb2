@@ -20,7 +20,7 @@ class FamilynameVariantRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return FamilynameVariant[] Returns an array of FamilynameVariant objects
+    //  * Returns FamilynameVariant[] Returns an array of FamilynameVariant objects
     //  */
     /*
     public function findByExampleField($value)

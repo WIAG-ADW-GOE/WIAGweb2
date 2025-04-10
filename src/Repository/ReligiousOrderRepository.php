@@ -20,7 +20,7 @@ class ReligiousOrderRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return ReligiousOrder[] Returns an array of ReligiousOrder objects
+    //  * Returns ReligiousOrder[] Returns an array of ReligiousOrder objects
     //  */
     /*
     public function findByExampleField($value)

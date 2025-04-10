@@ -934,7 +934,7 @@ class UtilService {
 
     /**
      * array diff by field
-     * @return elements in $a missing in $b
+     * Returns elements in $a missing in $b
      */
     static public function arrayDiffByField($a, $b, string $field) {
         $delta = array();

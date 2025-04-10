@@ -40,7 +40,7 @@ class LangRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return Lang[] Returns an array of Lang objects
+//     * Returns Lang[] Returns an array of Lang objects
 //     */
 //    public function findByExampleField($value): array
 //    {

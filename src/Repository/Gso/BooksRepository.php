@@ -36,7 +36,7 @@ class BooksRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Books[] Returns an array of Books objects
+//     * Returns Books[] Returns an array of Books objects
 //     */
 //    public function findByExampleField($value): array
 //    {

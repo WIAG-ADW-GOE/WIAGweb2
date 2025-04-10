@@ -433,7 +433,7 @@ class EditDioceseController extends AbstractController {
     }
 
     /**
-     * @return template for new diocese
+     * Returns template for new diocese
      *
      * @Route("/edit/diocese/new-diocese", name="edit_diocese_new_diocese")
      */
@@ -458,7 +458,7 @@ class EditDioceseController extends AbstractController {
     }
 
     /**
-     * @return template for new reference
+     * Returns template for new reference
      *
      * @Route("/edit/diocese/new-reference/{itemIndex}", name="edit_diocese_new_reference")
      */
@@ -477,7 +477,7 @@ class EditDioceseController extends AbstractController {
     }
 
     /**
-     * @return template for new external ID
+     * Returns template for new external ID
      *
      * @Route("/edit/diocese/new-url-external/{itemIndex}", name="edit_diocese_new_urlexternal")
      */
@@ -497,7 +497,7 @@ class EditDioceseController extends AbstractController {
     }
 
     /**
-     * @return template for new skos label
+     * Returns template for new skos label
      *
      * @Route("/edit/diocese/new-skos-label/{itemIndex}", name="edit_diocese_new_skos_label")
      */

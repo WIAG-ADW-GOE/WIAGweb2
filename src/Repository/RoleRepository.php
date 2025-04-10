@@ -24,7 +24,7 @@ class RoleRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Role[] Returns an array of Role objects
+    //  * Returns Role[] Returns an array of Role objects
     //  */
     /*
     public function findByExampleField($value)
@@ -108,7 +108,7 @@ class RoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of role names for autocompletion
+     * Returns list of role names for autocompletion
      */
     public function suggestName($q_param, $size) {
         $qb = $this->createQueryBuilder('r')
@@ -123,7 +123,7 @@ class RoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of role names for autocompletion
+     * Returns list of role names for autocompletion
      */
     public function suggestGender($q_param) {
         $qb = $this->createQueryBuilder('r')
@@ -136,7 +136,7 @@ class RoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of role names for autocompletion
+     * Returns list of role names for autocompletion
      */
     public function suggestRoleGroup($q_param) {
         $roleGroupRepository = $this->getEntitymanager(RoleGroup::class);
@@ -152,7 +152,7 @@ class RoleRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list of role names for autocompletion
+     * Returns list of role names for autocompletion
      */
     public function suggestRoleGroupEn($q_param) {
         $roleGroupRepository = $this->getEntitymanager(RoleGroup::class);

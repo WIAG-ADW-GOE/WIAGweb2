@@ -40,7 +40,7 @@ class CorpusRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return Corpus[] Returns an array of Corpus objects
+//     * Returns Corpus[] Returns an array of Corpus objects
 //     */
 //    public function findByExampleField($value): array
 //    {

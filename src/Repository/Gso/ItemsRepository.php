@@ -39,7 +39,7 @@ class ItemsRepository extends EntityRepository
     }
 
 //    /**
-//     * @return Items[] Returns an array of Items objects
+//     * Returns Items[] Returns an array of Items objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -64,7 +64,7 @@ class ItemsRepository extends EntityRepository
 //    }
 
     /**
-     * @return items.id and other meta data for entries in $gsn_list, online
+     * Returns items.id and other meta data for entries in $gsn_list, online
      */
     public function findIdsByGsnList($gsn_list) {
         $qb = $this->createQueryBuilder('i')

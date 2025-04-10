@@ -20,7 +20,7 @@ class SkosLabelRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return SkosLabel[] Returns an array of SkosLabel objects
+    //  * Returns SkosLabel[] Returns an array of SkosLabel objects
     //  */
     /*
     public function findByExampleField($value)

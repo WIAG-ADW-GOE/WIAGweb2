@@ -22,7 +22,7 @@ class InstitutionRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return Institution[] Returns an array of Institution objects
+    //  * Returns Institution[] Returns an array of Institution objects
     //  */
     /*
     public function findByExampleField($value)
@@ -51,7 +51,7 @@ class InstitutionRepository extends ServiceEntityRepository
     */
 
     /**
-     * @return Domstifte
+     * Returns Domstifte
      */
     public function findDomstifte() {
         $qb = $this->createQueryBuilder('i')
@@ -65,7 +65,7 @@ class InstitutionRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return matching Domstifte
+     * Returns matching Domstifte
      */
     public function findByCorpusAndNameShort($corpus_id, $name) {
         $qb = $this->createQueryBuilder('i')

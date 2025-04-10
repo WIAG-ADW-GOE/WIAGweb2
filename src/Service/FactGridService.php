@@ -70,7 +70,7 @@ class FactGridService {
     /**
      * queryGSList($chunk_size, $offset)
      *
-     * @return status code and list of gsn
+     * Returns status code and list of gsn
      */
     public function queryGSList($chunk_size, $offset) {
 
@@ -211,7 +211,7 @@ class FactGridService {
     /**
      * queryGSByGsn($gsn)
      *
-     * @return status code and list of gsn
+     * Returns status code and list of gsn
      */
     private function queryGSByGsn($gsn) {
 

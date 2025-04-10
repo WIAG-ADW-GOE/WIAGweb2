@@ -42,7 +42,7 @@ class ItemCorpusRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return ItemCorpus[] Returns an array of ItemCorpus objects
+//     * Returns ItemCorpus[] Returns an array of ItemCorpus objects
 //     */
 //    public function findByExampleField($value): array
 //    {

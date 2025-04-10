@@ -40,7 +40,7 @@ class GsoItemsRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return GsoItems[] Returns an array of GsoItems objects
+//     * Returns GsoItems[] Returns an array of GsoItems objects
 //     */
 //    public function findByExampleField($value): array
 //    {

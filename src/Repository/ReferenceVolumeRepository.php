@@ -22,7 +22,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return ReferenceVolume[] Returns an array of ReferenceVolume objects
+    //  * Returns ReferenceVolume[] Returns an array of ReferenceVolume objects
     //  */
     /*
     public function findByExampleField($value)
@@ -103,7 +103,7 @@ class ReferenceVolumeRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return volumes as array by list of reference_id
+     * Returns volumes as array by list of reference_id
      */
     public function findArray($ref_id_list = null) {
         $qb = $this->createQueryBuilder('r')
