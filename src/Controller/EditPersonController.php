@@ -497,45 +497,6 @@ class EditPersonController extends AbstractController {
         return new Response("delete ID ".$id);
     }
 
-
-    /**
-     * 2023-10-11 not in use
-     *
-     * @Route("/edit/person/delete/{q_id}", name="edit_person_delete")
-     */
-    public function deleteEntry(Request $request, $q_id) {
-        $person_repository = $this->entityManager->getRepository(Person::class);
-
-        $form_data = $request->request->all(self::EDIT_FORM_ID);
-
-        $id_list = array_column($form_data, 'id');
-
-        $person_list = $person_repository->findList($id_list);
-
-        // deletion takes priority: all other edit data are lost and sub-forms are closed
-        foreach ($person_list as $person) {
-            $id_loop = $person->getId();
-            if ($id_loop == $q_id) {
-                $person->getItem()->setIsDeleted(1);
-                $person->getItem()->setIsOnline(0);
-            }
-        }
-
-        $this->entityManager->flush();
-
-        $person_list = array_filter($person_list, function ($v) {
-            return !$v->getItem()->getIsDeleted();
-        });
-
-        $template = 'edit_person/_list.html.twig';
-
-        return $this->renderEditElements($corpusId, $template, [
-            'personList' => $person_list,
-            'count' => count($person_list),
-            'formType' => 'list',
-        ]);
-    }
-
     /**
      * display edit form for new person
      *
