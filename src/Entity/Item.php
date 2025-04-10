@@ -424,7 +424,7 @@ class Item {
             $list[] = $ic->getIdInCorpus();
         }
 
-        return is_null($list) ? $list : implode($list, ", ");
+        return is_null($list) ? $list : implode( ", ", $list);
     }
 
     public function concatIdInCorpusWithPrefix() {
@@ -437,7 +437,7 @@ class Item {
             $list[] = $ic->getIdInCorpusWithPrefix();
         }
 
-        return is_null($list) ? $list : implode($list, ", ");
+        return is_null($list) ? $list : implode( ", ",$list);
     }
 
     /**
@@ -943,7 +943,7 @@ class Item {
             $id_list = array_map(
                 function ($v) {return $v->getIdInSource();},
                 $this->mergeParent);
-            return implode($id_list, ", ");
+            return implode( ", ", $id_list);
         }
     }
 
@@ -1254,7 +1254,7 @@ class Item {
                         $last_ref_ext = $ref_ext;
                         $merged_list->add($ref_ext);
                     } else {
-                        $last_ref_ext->setValue(implode([$last_value, $merge_value], " | "));
+                        $last_ref_ext->setValue(implode( " | ", [$last_value, $merge_value]));
                     }
                 }
             }
@@ -1289,7 +1289,7 @@ class Item {
                 $last_value = $last_prop->getValue();
                 $merge_value = $prop->getValue();
                 if ($last_value != $merge_value) {
-                    $last_prop->setValue(implode([$last_value, $merge_value], " | "));
+                    $last_prop->setValue(implode( " | ", [$last_value, $merge_value]));
                 }
             }
         }

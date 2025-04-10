@@ -315,7 +315,7 @@ class IdController extends AbstractController {
 
         $cdata = array_merge($cbeaconheader, array_column($gnd_list, 'value'));
 
-        $data = implode($cdata, "\n")."\n";
+        $data = implode( "\n", $cdata)."\n";
 
         $debug_flag = false;
         if ($debug_flag) {

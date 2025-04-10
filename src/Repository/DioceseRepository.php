@@ -226,7 +226,7 @@ class DioceseRepository extends ServiceEntityRepository
                 $sql_cond[] = 'd.'.$g.' = 1';
             }
             if (count($sql_cond) > 0) {
-                $qb->andWhere(implode($sql_cond, ' OR '));
+                $qb->andWhere(implode( ' OR ', $sql_cond));
             }
         }
 
