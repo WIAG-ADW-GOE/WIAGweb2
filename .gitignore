@@ -40,3 +40,6 @@ config/secrets/prod/
 ###> documentation preview
 doc/*.html
 ###< documentation preview
+
+#VSCodium
+.vscode
