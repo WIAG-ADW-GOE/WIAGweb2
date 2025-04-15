@@ -5,22 +5,29 @@ doctrine:
                 url: '%env(resolve:DATABASE_URL)%'
             gso:
                 url: '%env(resolve:DATABASE_GSO_URL)%'
+
+            profiling_collect_backtrace: '%kernel.debug%' #reenable later?
+            use_savepoints: true
+
         default_connection: default
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '13'
+        #server_version: '16'
+
     orm:
         enable_lazy_ghost_objects: true
         auto_generate_proxy_classes: true
         default_entity_manager: default
         controller_resolver:
-            auto_mapping: true # "Symfony Mapped Route Parameters should be used as replacement." but these are only introduced in symfony 7.1
+            auto_mapping: false # "Symfony Mapped Route Parameters should be used as replacement." but these are only introduced in symfony 7.1 - still works...
         entity_managers:
+            validate_xml_mapping: true
+
             default:
                 connection: default
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-                auto_mapping: false
+                report_fields_where_declared: true
                 mappings:
                     Main:
                         is_bundle: false
@@ -31,6 +38,7 @@ doctrine:
             gso:
                 connection: gso
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                report_fields_where_declared: true
                 mappings:
                     Gso:
                         is_bundle: false
@@ -38,3 +46,29 @@ doctrine:
                         type: attribute
                         prefix: 'App\Entity\Gso'
                         alias: Gso
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system
