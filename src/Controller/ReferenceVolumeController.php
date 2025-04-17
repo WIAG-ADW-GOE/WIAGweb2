@@ -47,10 +47,9 @@ class ReferenceVolumeController extends AbstractController {
      * display reference details
      */
     #[Route(path: '/referenz/{id}', name: 'reference')]
-    public function referenceDetail (int $id, Request $request) {
+    public function referenceDetail (int $id, Request $request, EntityManagerInterface $entityManager) {
 
-        $repository = $this->getDoctrine()
-                           ->getRepository(ReferenceVolumne::class);
+        $repository = $entityManager->getRepository(ReferenceVolumne::class);
 
         $result = $repository->find($id);
 

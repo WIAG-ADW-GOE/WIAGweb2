@@ -71,7 +71,7 @@ class DioceseController extends AbstractController {
      * display details
      */
     #[Route(path: '/listelement/dioc', name: 'diocese_list_detail')]
-    public function dioceseListDetail(Request $request) {
+    public function dioceseListDetail(Request $request, EntityManagerInterface $entityManager) {
 
         $form = $this->createForm(DioceseFormType::class);
         $form->handlerequest($request);
@@ -79,8 +79,7 @@ class DioceseController extends AbstractController {
         $data = $form->getData();
         $name = $data['name'];
 
-        $repository = $this->getDoctrine()
-                           ->getRepository(Diocese::class);
+        $repository = $entityManager->getRepository(Diocese::class);
 
         $offset = $request->request->get('offset');
 

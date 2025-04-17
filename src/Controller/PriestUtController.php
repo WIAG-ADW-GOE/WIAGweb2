@@ -139,8 +139,7 @@ class PriestUtController extends AbstractController {
 
         $birthplace = $person->getBirthplace();
         if ($birthplace) {
-            $pieRepository = $this->getDoctrine()
-                                  ->getRepository(PlaceIdExternal::class);
+            $pieRepository = $entityManager->getRepository(PlaceIdExternal::class);
             foreach ($birthplace as $bp) {
                 $bp->setUrlWhg($pieRepository->findUrlWhg($bp->getPlaceId()));
             }
