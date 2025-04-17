@@ -6,7 +6,7 @@ doctrine:
             gso:
                 url: '%env(resolve:DATABASE_GSO_URL)%'
 
-            profiling_collect_backtrace: '%kernel.debug%' #reenable later?
+            #profiling_collect_backtrace: '%kernel.debug%' # unexpected error 'Invalid type for path "doctrine.dbal.connections.profiling_collect_backtrace". Expected "array", but got "bool' - documentation says it should be a bool
             use_savepoints: true
 
         default_connection: default
