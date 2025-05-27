@@ -8,7 +8,7 @@ doctrine:
                 host: '%env(DATABASE_HOST)%'
                 port: 3306
                 dbname: 'wiagvokabulare'
-                server_version: '%env(DATABASE_SERVER_VERSION)'
+                server_version: '%env(DATABASE_SERVER_VERSION)%'
             gso:
                 driver: 'mysqli'
                 user: 'gsdatenbank_adm'
