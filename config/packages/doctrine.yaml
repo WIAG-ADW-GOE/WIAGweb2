@@ -2,9 +2,21 @@ doctrine:
     dbal:
         connections:
             default:
-                url: '%env(resolve:DATABASE_URL)%'
+                driver: 'mysqli'
+                user: 'wiagvokabula_adm'
+                password: '%env(DATABASE_PASSWORD)%'
+                host: '%env(DATABASE_HOST)%'
+                port: 3306
+                dbname: 'wiagvokabulare'
+                server_version: '%env(DATABASE_SERVER_VERSION)'
             gso:
-                url: '%env(resolve:DATABASE_GSO_URL)%'
+                driver: 'mysqli'
+                user: 'gsdatenbank_adm'
+                password: '%env(DATABASE_GSO_PASSWORD)%'
+                host: '%env(DATABASE_GSO_HOST)%'
+                port: 3306
+                dbname: 'gsdatenbank'
+                server_version: '%env(DATABASE_GSO_SERVER_VERSION)'
 
             #profiling_collect_backtrace: '%kernel.debug%' # unexpected error 'Invalid type for path "doctrine.dbal.connections.profiling_collect_backtrace". Expected "array", but got "bool' - documentation says it should be a bool
             use_savepoints: true
