@@ -16,7 +16,7 @@ doctrine:
                 host: '%env(DATABASE_GSO_HOST)%'
                 port: 3306
                 dbname: 'gsdatenbank'
-                server_version: '%env(DATABASE_GSO_SERVER_VERSION)'
+                server_version: '%env(DATABASE_GSO_SERVER_VERSION)%'
 
             #profiling_collect_backtrace: '%kernel.debug%' # unexpected error 'Invalid type for path "doctrine.dbal.connections.profiling_collect_backtrace". Expected "array", but got "bool' - documentation says it should be a bool
             use_savepoints: true
