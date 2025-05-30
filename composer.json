@@ -9,7 +9,7 @@
         "ext-iconv": "*",
         "doctrine/doctrine-bundle": "^2.4",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.10",
+        "doctrine/orm": "^3.3",
         "phpdocumentor/reflection-docblock": "^5.3",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "6.4.*",
