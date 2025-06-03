@@ -19,14 +19,14 @@ class RefIdExternal
     #[ORM\Column(type: 'integer')]
     private $referenceId;
 
-    #[ORM\ManyToOne(targetEntity: \ReferenceVolume::class, inversedBy: 'idsExternal')]
+    #[ORM\ManyToOne(targetEntity: ReferenceVolume::class, inversedBy: 'idsExternal')]
     #[ORM\JoinColumn(name: 'reference_id', referencedColumnName: 'id')]
     private $reference;
 
     #[ORM\Column(type: 'integer')]
     private $authorityId;
 
-    #[ORM\ManyToOne(targetEntity: \Authority::class, inversedBy: 'refIdExternal')]
+    #[ORM\ManyToOne(targetEntity: Authority::class, inversedBy: 'refIdExternal')]
     #[ORM\JoinColumn(name: 'authority_id', referencedColumnName: 'id')]
     private $authority;
 

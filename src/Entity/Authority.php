@@ -39,7 +39,7 @@ class Authority {
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToMany(targetEntity: \RefIdExternal::class, mappedBy: 'authority')]
+    #[ORM\OneToMany(targetEntity: RefIdExternal::class, mappedBy: 'authority')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'authority_id')]
     private $refIdExternal;
 

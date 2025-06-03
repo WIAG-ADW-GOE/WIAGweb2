@@ -18,11 +18,11 @@ class ItemProperty {
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemProperty')]
+    #[ORM\ManyToOne(targetEntity: Item::class, inversedBy: 'itemProperty')]
     #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToOne(targetEntity: \ItemPropertyType::class, fetch: 'EAGER')]
+    #[ORM\OneToOne(targetEntity: ItemPropertyType::class, fetch: 'EAGER')]
     #[ORM\JoinColumn(name: 'property_type_id', referencedColumnName: 'id')]
     private $type;
 

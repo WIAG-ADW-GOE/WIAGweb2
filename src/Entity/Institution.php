@@ -13,11 +13,11 @@ use Doctrine\Common\Collections\Collection;
 class Institution
 {
     const CORPUS_ID = 'mon'; // domstifte have 'cap'
-    #[ORM\OneToOne(targetEntity: \Item::class)]
+    #[ORM\OneToOne(targetEntity: Item::class)]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToMany(targetEntity: \InstitutionPlace::class, mappedBy: 'institution')]
+    #[ORM\OneToMany(targetEntity: InstitutionPlace::class, mappedBy: 'institution')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'institution_id')]
     private $institutionPlace;
 

@@ -13,11 +13,11 @@ class UrlExternal
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'urlExternal')]
+    #[ORM\ManyToOne(targetEntity: Item::class, inversedBy: 'urlExternal')]
     #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToOne(targetEntity: \Authority::class)]
+    #[ORM\OneToOne(targetEntity: Authority::class)]
     #[ORM\JoinColumn(name: 'authority_id', referencedColumnName: 'id')]
     private $authority;
 

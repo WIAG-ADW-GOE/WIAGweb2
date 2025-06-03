@@ -16,11 +16,11 @@ class Items
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToMany(targetEntity: \Gsn::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: Gsn::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $gsn;
 
-    #[ORM\OneToMany(targetEntity: \Locations::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: Locations::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $reference;
 

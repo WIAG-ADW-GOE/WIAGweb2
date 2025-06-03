@@ -15,11 +15,11 @@ class Persons
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToOne(targetEntity: \Items::class)]
+    #[ORM\OneToOne(targetEntity: Items::class)]
     #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToMany(targetEntity: \Offices::class, mappedBy: 'person', fetch: 'EAGER')]
+    #[ORM\OneToMany(targetEntity: Offices::class, mappedBy: 'person', fetch: 'EAGER')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $role;
 

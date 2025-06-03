@@ -16,7 +16,7 @@ class Offices
     #[ORM\Column(type: 'integer')]
     private $personId;
 
-    #[ORM\ManyToOne(targetEntity: \Persons::class, inversedBy: 'role')]
+    #[ORM\ManyToOne(targetEntity: Persons::class, inversedBy: 'role')]
     private $person;
 
     #[ORM\Column(type: 'string', length: 100)]

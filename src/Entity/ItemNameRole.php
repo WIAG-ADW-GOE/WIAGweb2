@@ -13,11 +13,11 @@ class ItemNameRole
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemNameRole')]
+    #[ORM\ManyToOne(targetEntity: Item::class, inversedBy: 'itemNameRole')]
     #[ORM\JoinColumn(name: 'item_id_name', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToOne(targetEntity: \Person::class)]
+    #[ORM\OneToOne(targetEntity: Person::class)]
     #[ORM\JoinColumn(name: 'item_id_role', referencedColumnName: 'id')]
     private $personRolePerson;
 

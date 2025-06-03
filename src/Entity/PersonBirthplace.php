@@ -13,7 +13,7 @@ class PersonBirthplace
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'birthplace')]
+    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'birthplace')]
     #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id')]
     private $person;
 

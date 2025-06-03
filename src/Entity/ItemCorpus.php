@@ -15,7 +15,7 @@ class ItemCorpus
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Item::class, inversedBy: 'itemCorpus')]
+    #[ORM\ManyToOne(targetEntity: Item::class, inversedBy: 'itemCorpus')]
     #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 

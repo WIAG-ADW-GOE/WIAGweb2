@@ -101,27 +101,27 @@ class Item {
     #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    #[ORM\OneToOne(targetEntity: \Person::class)]
+    #[ORM\OneToOne(targetEntity: Person::class)]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $person;
 
-    #[ORM\OneToMany(targetEntity: \ItemCorpus::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: ItemCorpus::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $itemCorpus;
 
-    #[ORM\OneToMany(targetEntity: \ItemNameRole::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: ItemNameRole::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id_name')]
     private $itemNameRole;
 
-    #[ORM\OneToMany(targetEntity: \ItemProperty::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: ItemProperty::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $itemProperty;
 
-    #[ORM\OneToMany(targetEntity: \UrlExternal::class, mappedBy: 'item', cascade: ['persist'], fetch: 'LAZY')]
+    #[ORM\OneToMany(targetEntity: UrlExternal::class, mappedBy: 'item', cascade: ['persist'], fetch: 'LAZY')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $urlExternal;
 
-    #[ORM\OneToMany(targetEntity: \ItemReference::class, mappedBy: 'item')]
+    #[ORM\OneToMany(targetEntity: ItemReference::class, mappedBy: 'item')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'item_id')]
     private $reference;
 

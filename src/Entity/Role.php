@@ -26,11 +26,11 @@ class Role
         'comment'
     ];
 
-    #[ORM\OneToOne(targetEntity: \Item::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Item::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToOne(targetEntity: \RoleGroup::class)]
+    #[ORM\OneToOne(targetEntity: RoleGroup::class)]
     #[ORM\JoinColumn(name: 'role_group_id', referencedColumnName: 'id')]
     private $roleGroup;
 

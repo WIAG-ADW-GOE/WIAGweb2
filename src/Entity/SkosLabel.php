@@ -22,7 +22,7 @@ class SkosLabel
     #[ORM\Column(type: 'integer')]
     private $conceptId;
 
-    #[ORM\ManyToOne(targetEntity: \Diocese::class, inversedBy: 'altLabels')]
+    #[ORM\ManyToOne(targetEntity: Diocese::class, inversedBy: 'altLabels')]
     #[ORM\JoinColumn(name: 'concept_id', referencedColumnName: 'id')]
     private $diocese;
 

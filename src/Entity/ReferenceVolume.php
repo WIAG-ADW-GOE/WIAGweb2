@@ -33,7 +33,7 @@ class ReferenceVolume extends Model {
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToMany(targetEntity: \RefIdExternal::class, mappedBy: 'reference')]
+    #[ORM\OneToMany(targetEntity: RefIdExternal::class, mappedBy: 'reference')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'reference_id')]
     private $idsExternal;
 

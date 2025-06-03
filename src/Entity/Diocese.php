@@ -28,11 +28,11 @@ class Diocese
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToOne(targetEntity: \Item::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Item::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToMany(targetEntity: \SkosLabel::class, mappedBy: 'diocese', cascade: ['persist'])]
+    #[ORM\OneToMany(targetEntity: SkosLabel::class, mappedBy: 'diocese', cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'concept_id')]
     #[ORM\OrderBy(['displayOrder' => 'ASC'])]
     private $altLabels;
@@ -58,7 +58,7 @@ class Diocese
     #[ORM\Column(type: 'integer', nullable: true)]
     private $bishopricSeatId;
 
-    #[ORM\OneToOne(targetEntity: \Place::class)]
+    #[ORM\OneToOne(targetEntity: Place::class)]
     #[ORM\JoinColumn(name: 'bishopric_seat_id', referencedColumnName: 'id')]
     private $bishopricSeat;
 

@@ -32,24 +32,24 @@ class Person {
     #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    #[ORM\OneToOne(targetEntity: \Item::class)]
+    #[ORM\OneToOne(targetEntity: Item::class)]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToMany(targetEntity: \PersonRole::class, mappedBy: 'person', fetch: 'EAGER')]
+    #[ORM\OneToMany(targetEntity: PersonRole::class, mappedBy: 'person', fetch: 'EAGER')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     #[ORM\OrderBy(['dateSortKey' => 'ASC'])]
     private $role;
 
-    #[ORM\OneToMany(targetEntity: \GivennameVariant::class, mappedBy: 'person')]
+    #[ORM\OneToMany(targetEntity: GivennameVariant::class, mappedBy: 'person')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $givennameVariants;
 
-    #[ORM\OneToMany(targetEntity: \FamilynameVariant::class, mappedBy: 'person')]
+    #[ORM\OneToMany(targetEntity: FamilynameVariant::class, mappedBy: 'person')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     private $familynameVariants;
 
-    #[ORM\OneToMany(targetEntity: \PersonBirthplace::class, mappedBy: 'person')]
+    #[ORM\OneToMany(targetEntity: PersonBirthplace::class, mappedBy: 'person')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_id')]
     #[ORM\OrderBy(['weight' => 'DESC'])]
     private $birthplace;
@@ -78,7 +78,7 @@ class Person {
     #[ORM\Column(type: 'integer', nullable: true)]
     private $religiousOrderId;
 
-    #[ORM\OneToOne(targetEntity: \ReligiousOrder::class)]
+    #[ORM\OneToOne(targetEntity: ReligiousOrder::class)]
     private $religiousOrder;
 
     #[ORM\Column(type: 'string', length: 31, nullable: true)]

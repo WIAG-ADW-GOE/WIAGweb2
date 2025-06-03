@@ -16,7 +16,7 @@ class GivennameVariant
     #[ORM\Column(type: 'integer')]
     private $personId;
 
-    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'givennameVariants')]
+    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'givennameVariants')]
     #[ORM\JoinColumn(name: 'person_id', referencedColumnName: 'id')]
     private $person;
 

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PersonRolePropertyRepository::class)]
 class PersonRoleProperty
 {
-    #[ORM\ManyToOne(targetEntity: \PersonRole::class, inversedBy: 'roleProperty')]
+    #[ORM\ManyToOne(targetEntity: PersonRole::class, inversedBy: 'roleProperty')]
     private $personRole;
 
     #[ORM\Id]
@@ -16,7 +16,7 @@ class PersonRoleProperty
     #[ORM\Column(type: 'integer')]
     private $id = 0;
 
-    #[ORM\OneToOne(targetEntity: \ItemPropertyType::class, fetch: 'EAGER')]
+    #[ORM\OneToOne(targetEntity: ItemPropertyType::class, fetch: 'EAGER')]
     #[ORM\JoinColumn(name: 'property_type_id', referencedColumnName: 'id')]
     private $type;
 

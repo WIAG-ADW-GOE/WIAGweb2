@@ -31,7 +31,7 @@ class Gsn
     #[ORM\Column(type: 'integer')]
     private $itemId;
 
-    #[ORM\ManyToOne(targetEntity: \Items::class, inversedBy: 'gsn')]
+    #[ORM\ManyToOne(targetEntity: Items::class, inversedBy: 'gsn')]
     private $item;
 
     #[ORM\Column(type: 'integer', nullable: true)]

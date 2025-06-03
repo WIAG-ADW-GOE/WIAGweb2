@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: InstitutionPlaceRepository::class)]
 class InstitutionPlace
 {
-    #[ORM\ManyToOne(targetEntity: \Institution::class, inversedBy: 'institutionPlace')]
+    #[ORM\ManyToOne(targetEntity: Institution::class, inversedBy: 'institutionPlace')]
     #[ORM\JoinColumn(name: 'institution_id', referencedColumnName: 'id')]
     private $institution;
 

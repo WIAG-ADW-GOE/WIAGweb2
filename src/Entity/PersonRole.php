@@ -21,7 +21,7 @@ class PersonRole
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToMany(targetEntity: \PersonRoleProperty::class, mappedBy: 'personRole')]
+    #[ORM\OneToMany(targetEntity: PersonRoleProperty::class, mappedBy: 'personRole')]
     #[ORM\JoinColumn(name: 'id', referencedColumnName: 'person_role_id')]
     private $roleProperty;
 
@@ -31,16 +31,16 @@ class PersonRole
     #[ORM\Column(type: 'integer')]
     private $personId;
 
-    #[ORM\ManyToOne(targetEntity: \Person::class, inversedBy: 'role')]
+    #[ORM\ManyToOne(targetEntity: Person::class, inversedBy: 'role')]
     private $person;
 
-    #[ORM\OneToOne(targetEntity: \Institution::class)]
+    #[ORM\OneToOne(targetEntity: Institution::class)]
     private $institution;
 
     #[ORM\Column(type: 'integer')]
     private $roleId;
 
-    #[ORM\ManyToOne(targetEntity: \Role::class)]
+    #[ORM\ManyToOne(targetEntity: Role::class)]
     private $role;
 
     #[ORM\Column(type: 'string', length: 127, nullable: true)]
@@ -49,7 +49,7 @@ class PersonRole
     #[ORM\Column(type: 'integer', nullable: true)]
     private $dioceseId;
 
-    #[ORM\OneToOne(targetEntity: \Diocese::class)]
+    #[ORM\OneToOne(targetEntity: Diocese::class)]
     private $diocese;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

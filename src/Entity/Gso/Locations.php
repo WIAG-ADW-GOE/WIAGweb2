@@ -13,11 +13,11 @@ class Locations
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: \Items::class, inversedBy: 'reference')]
+    #[ORM\ManyToOne(targetEntity: Items::class, inversedBy: 'reference')]
     #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id')]
     private $item;
 
-    #[ORM\OneToOne(targetEntity: \Books::class)]
+    #[ORM\OneToOne(targetEntity: Books::class)]
     #[ORM\JoinColumn(name: 'book_id', referencedColumnName: 'id')]
     private $referenceVolume;
 
