@@ -215,65 +215,6 @@ class OnePageController extends AbstractController {
         return $node;
     }
 
-
-    /**
-     * 2023-11-10 obsolete
-     */
-    private function sortRole($person, $domstift_id) {
-        $role = $person->getRole();
-        if (is_array($role)) {
-            $role_list = $role;
-        } else {
-            $role_list = iterator_to_array($role);
-        }
-        $crit_list = ['placeName', 'dateSortKey', 'id'];
-        $role_list = UtilService::sortByFieldList($role_list, $crit_list );
-        if (!is_null($domstift_id)) {
-            $role_list = UtilService::sortByDomstift($role_list, $domstift_id);
-        }
-        $person->setRole($role_list);
-    }
-
-    /**
-     * 2023-11-10 obsolete
-     */
-    private function sortByRelevantOffice($person_node_list) {
-        uasort($person_node_list, function($a, $b) {
-            // first criterion: earliest office
-            $a_key = PersonRole::MAX_DATE_SORT_KEY;
-            if (count($a["personRole"]) > 0) {
-                $a_fpr = $a["personRole"][0];
-                $a_key = $a_fpr->getFirstRoleSortKey();
-            }
-
-            $b_key = PersonRole::MAX_DATE_SORT_KEY;
-            if (count($b["personRole"]) > 0) {
-                $b_fpr = $b["personRole"][0];
-                $b_key = $b_fpr->getFirstRoleSortKey();
-            }
-
-            $result = $a_key < $b_key ? -1 : ($a_key > $b_key ? 1 : 0);
-
-            // second criterion: name
-            if ($result == 0) {
-                $a_name = $a["personName"]->getDisplayname();
-                $b_name = $b["personName"]->getDisplayname();
-
-                $result =  $a_name < $b_name ? -1 : ($a_name > $b_name ? 1 : 0);
-            }
-
-            // third criterion: id
-            if ($result == 0) {
-                $a_id = $a["personName"]->getId();
-                $b_id = $b["personName"]->getId();
-
-                $result =  $a_id < $b_id ? -1 : ($a_id > $b_id ? 1 : 0);
-            }
-
-            return $result;
-        });
-    }
-
      /**
      * show references for selected canons
      */
