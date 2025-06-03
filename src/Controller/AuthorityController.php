@@ -29,7 +29,7 @@ class AuthorityController extends AbstractController {
         $name = $request->query->get('q');
         $fnName = 'suggest'.ucfirst($field); // e.g. suggestInstitution
 
-        $core_list = Authority::CORE_ID_LIST;
+        $core_list = Authority::ESSENTIAL_ID_LIST;
 
         // get suggestions without core authorities
         $suggestions = $repository->$fnName($name, self::HINT_SIZE, $core_list);
