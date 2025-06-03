@@ -471,7 +471,7 @@ class EditPersonService {
         $item->setMergeParent($collect_merge_parent);
 
         if (isset($data['item']['dateChanged'])) {
-            $dateChanged = new \DateTimeImmutable($data['item']['dateChanged']);
+            $dateChanged = new \DateTime($data['item']['dateChanged']);
             $item->setDateChanged($dateChanged);
         }
 

@@ -240,7 +240,7 @@ class Item {
     private $ancestor = null;
 
     public function __construct($user_wiag_id) {
-        $now = new \DateTimeImmutable('now');
+        $now = new \DateTime('now');
         $this->isDeleted = 0;
         $this->reference = new ArrayCollection();
         $this->urlExternal = new ArrayCollection();
@@ -1099,7 +1099,7 @@ class Item {
      * update meta data for $item
      */
     public function updateChangedMetaData($user) {
-        $now_date = new \DateTimeImmutable('now');
+        $now_date = new \DateTime('now');
         $this->changedBy = $user->getId();
         $this->changedByUser = $user;
         $this->dateChanged = $now_date;
