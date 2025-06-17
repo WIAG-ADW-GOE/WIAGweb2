@@ -274,7 +274,7 @@ class PersonController extends AbstractController {
         $corpus = $corpusRepository->findOneByCorpusId($corpusId);
 
         if ($request->isMethod('POST')) {
-            $model = PersonFormModel::newByArray($request->request->get('person_form'));
+            $model = PersonFormModel::newByArray($request->request->all('person_form'));
             $format = $request->request->get('format') ?? 'json';
         } else {
             $model = PersonFormModel::newByArray($request->query->all());
