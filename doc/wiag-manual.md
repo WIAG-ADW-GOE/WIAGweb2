@@ -820,44 +820,7 @@ WIAG übernimmt die von Symfony vorgegebene Verzeichnisstruktur.
 - `assets/controllers`: Stimulus Controller (JavaScript).
 
 #### WIAG installieren
-
-Die Web-Anwendung verwendet eine MySQL-Datenbank oder MariaDB.
-Die Datenbank ist entsprechend dem [Datenmodell](#datenmodell) aufzusetzen und zu befüllen.
-
-Der Quellcode für WIAG liegt in einem GitHub-Repository und kann von dort bezogen werden. Man wechselt in ein geeignetes Verzeichnis und kopiert die Quellen von dort mit:
-
-    git clone https://github.com/WIAG-ADW-GOE/WIAGweb2.git
-
-Es wird ein Verzeichnis `WIAGweb2` angelegt. Es enthält die Datei `.env`. In diese Datei sind die Angaben zum Datenbank-Zugang einzutragen.
-
-    DATABASE_URL="mysql://db_user@127.0.0.1:3306/db_name?serverVersion=5.7"
-	DATABASE_PASSWORD=db_password
-
-Für eine Produktiv-Umgebung wird das Password verschlüsselt. Siehe [Symfony Secrets](https://symfony.com/doc/current/configuration/secrets.html).
-
-Im Verzeichnis `WIAGweb2` lädt man die Symfony-Module mit dem *PHP dependency manager* [composer](https://getcomposer.org/):
-
-	cd WIAGweb2
-    composer install
-
-Die Node.js-Module lädt man mit dem *package manager* [yarn](https://yarnpkg.com/):
-
-    yarn install
-
-Es sind noch die WIAG-eigenen Style-sheets und JavaScript-Dateien zu erzeugen mit:
-
-	cd public
-	yarn build
-
-Hierzu finden sich Erläuterungen in der Dokumentation von [Webpack encore](https://symfony.com/doc/current/frontend.html).
-
-Ein lokaler Server wird im Projektverzeichnis von WIAG gestartet:
-
-    cd ..
-	symfony serve
-
-Die Web-Anwendung lässt sich für Testzwecke lokal mit dem Browser öffnen unter `https:localhost:8000`.
-
+Die aktualisierte Anleitung ist jetzt [hier](wiag-setup.md) zu finden.
 
 ### Sortierung von Amtsangaben
 
