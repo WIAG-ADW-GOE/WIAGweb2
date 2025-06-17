@@ -38,7 +38,9 @@ This can be used both for testing or production.
 - import data into mysql:
 	- either:
 		- if you're connected to a server via SSH:
+			- disconnect
 			- transfer sql dumps with scp (e.g. `scp C:\Users\myusername\Downloads\mydatabasename.sql myserverusername@myserversipaddress:/home/myserverusername/.`)
+			- reconnect, now the file can be found in your home directory
 		- download it some other way, e.g. via phpMyAdmin in a browser
 	- sudo mysql
 		- CREATE DATABASE mydatabasename;
