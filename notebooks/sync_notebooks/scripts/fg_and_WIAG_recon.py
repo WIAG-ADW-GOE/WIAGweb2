@@ -289,6 +289,6 @@ with open(os.path.join(output_path, f'insert-uext-can_{today_string}.sql'), 'w')
 # %% [markdown]
 # ### Upload file
 
-# Now that the file has been generated, you need to upload the file to the WIAG database. As always go to phpMyAdmin, then first select the database (wiagvokabulare) and then either go to the `Import` tab and choose the file to run or paste the contents of the SQL-file into the textfield (more details here [Run_SQL_Query_and_Export_CSV.md](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_SQL_Query_and_Export_CSV.md)).
+# Now that the file has been generated, you need to upload the file to the WIAG database. As always go to [phpMyAdmin (WIAG)](https://vwebfile.gwdg.de/phpmyadmin/), then first select the database (wiagvokabulare) and then either go to the `Import` tab and choose the file to run or paste the contents of the SQL-file into the textfield (more details here [Run_SQL_Query_and_Export_CSV.md](https://github.com/WIAG-ADW-GOE/WIAGweb2/blob/main/notebooks/sync_notebooks/docs/Run_SQL_Query_and_Export_CSV.md)).
 #
 # After that is completed, you can continue with the notebook for step 5 (Csv2FactGrid-create).
