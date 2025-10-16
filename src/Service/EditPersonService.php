@@ -1168,7 +1168,6 @@ class EditPersonService {
     public function setGsn($item, $gsn) {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
-        $count_url = 1;
         if (!is_null($gsn) and trim($gsn) != "") {
             $uext = new UrlExternal();
 
@@ -1178,11 +1177,7 @@ class EditPersonService {
             $uext->setValue($gsn);
             $item->getUrlExternal()->add($uext);
             $this->entityManager->persist($uext);
-
-            $count_url += 1;
         }
-
-        return $count_url;
     }
 
 
