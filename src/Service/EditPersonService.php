@@ -10,7 +10,6 @@ use App\Entity\ItemPropertyType;
 use App\Entity\Person;
 use App\Entity\PersonRole;
 use App\Entity\PersonRoleProperty;
-use App\Entity\RolePropertyType;
 use App\Entity\ItemReference;
 use App\Entity\ReferenceVolume;
 use App\Entity\Role;
@@ -28,10 +27,6 @@ use App\Service\UtilService;
 use Symfony\Component\HttpFoundation\Response;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EditPersonService {
@@ -1049,7 +1044,7 @@ class EditPersonService {
     }
 
     /**
-     * update $target with data in $person_gso
+     * update $person with data in $person_gso
      */
     public function updateFromGso($person, $person_gso, $current_user_id) {
         $userWiagRepository = $this->entityManager->getRepository(UserWiag::class);
@@ -1140,14 +1135,12 @@ class EditPersonService {
     }
 
     private function copyGndFromGso($item, $person_gso) {
-        $auth_gnd_id = Authority::ID['GND'];
-        $auth_gs_id = Authority::ID['GSN'];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         // - remove entries, but not GSN
         $target_uext = $item->getUrlExternal();
         foreach ($target_uext as $t) {
-            if ($t->getAuthorityId() != $auth_gs_id) {
+            if ($t->getAuthorityId() != Authority::ID['GSN']) {
                 $target_uext->removeElement($t);
                 $t->setItem(null);
                 $this->entityManager->remove($t);
@@ -1160,7 +1153,7 @@ class EditPersonService {
             $uext = new UrlExternal();
 
             $uext->setItem($item);
-            $authority_gnd = $authorityRepository->find($auth_gnd_id);
+            $authority_gnd = $authorityRepository->find(Authority::ID['GND']);
             $uext->setAuthority($authority_gnd); // sets authorityId
             $uext->setValue($gnd);
             $item->getUrlExternal()->add($uext);
@@ -1173,7 +1166,6 @@ class EditPersonService {
     }
 
     public function setGsn($item, $gsn) {
-        $auth_gs_id = Authority::ID['GSN'];
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         $count_url = 1;
@@ -1181,7 +1173,7 @@ class EditPersonService {
             $uext = new UrlExternal();
 
             $uext->setItem($item);
-            $authority_gs = $authorityRepository->find($auth_gs_id);
+            $authority_gs = $authorityRepository->find(Authority::ID['GSN']);
             $uext->setAuthority($authority_gs);
             $uext->setValue($gsn);
             $item->getUrlExternal()->add($uext);
