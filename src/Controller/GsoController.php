@@ -189,24 +189,36 @@ class GsoController extends AbstractController {
 
     /**
      * return array of elements in $a that need an update and array of missing elements in $b
+     * a has fields id, dateChanged and gsn
+     * b has fields id, dateChanged, person_id and gsn
+     * 
+     * return: update contains entries from a that need to be updated in addition with their gso_id and gso_person_id
+     * missing contains entries from a that are missing in b
      */
-    private function updateRequired($a, $b, $field) {
-        $delta = array();
-        $update = array();
+    private function updateRequired($a, $b) {
+        $missing = [];
+        $update = [];
+        
         if (count($a) == 0) {
-            return $delta;
+            return [$update, $missing];
         }
         if (count($b) == 0) {
-            return $a;
+            $missing = $a;
+            return [$update, $missing];
         }
 
-        $a_sorted = UtilService::sortByFieldList($a, [$field]);
-        $b_sorted = UtilService::sortByFieldList($b, [$field]);
-        $key = 0;
+        $a_sorted = UtilService::sortByFieldList($a, ['gsn']);
+        $b_sorted = UtilService::sortByFieldList($b, ['gsn']);
         $current_a = current($a_sorted);
         $current_b = current($b_sorted);
-        while(true) {
-            if ($current_a[$field] == $current_b[$field]) {
+
+        while($current_a !== false and $current_b !== false) {
+            if ($current_a['gsn'] > $current_b['gsn']) {
+                $current_b = next($b_sorted);
+            } elseif ($current_a['gsn'] < $current_b['gsn']) {
+                $missing[$current_a['id']] = $current_a;
+                $current_a = next($a_sorted);
+            } elseif ($current_a['gsn'] == $current_b['gsn']) {
                 if ($current_a['dateChanged'] < $current_b['dateChanged']) {
                     $current_a['gso_id'] = $current_b['id'];
                     $current_a['gso_person_id'] = $current_b['person_id'];
@@ -214,34 +226,15 @@ class GsoController extends AbstractController {
                 }
                 $current_a = next($a_sorted);
                 $current_b = next($b_sorted);
-                if ($current_a === false and is_null(key($a_sorted))) {
-                    break;
-                }
-                if ($current_b === false and is_null(key($b_sorted))) {
-                    while ($current_a and !is_null(key($a_sorted))) {
-                        $delta[$current_a['id']] = $current_a;
-                        $current_a = next($a_sorted);
-                    }
-                    break;
-                }
-            } elseif ($current_a[$field] < $current_b[$field]) {
-                $delta[] = $current_a;
-                $current_a = next($a_sorted);
-                if ($current_a === false and key($a_sorted) == null) {
-                    break;
-                }
-            } else {
-                $current_b = next($b_sorted);
-                if ($current_b === false and is_null(key($b_sorted))) {
-                    while ($current_a and !is_null(key($a_sorted))) {
-                        $delta[] = $current_a;
-                        $current_a = next($a_sorted);
-                    } break;
-                }
             }
         }
-        return [$update, $delta];
 
+        while ($current_a !== false) {
+            $missing[$current_a['id']] = $current_a;
+            $current_a = next($a_sorted);
+        }
+
+        return [$update, $missing];
     }
 
     /**
