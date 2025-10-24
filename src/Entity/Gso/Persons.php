@@ -79,6 +79,12 @@ class Persons
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $viaf;
+    
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
+    private $wikidata;
+
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
+    private $factgrid;
 
     public function getId(): ?int
     {
@@ -343,6 +349,30 @@ class Persons
     public function setViaf(?string $viaf): self
     {
         $this->viaf = $viaf;
+
+        return $this;
+    }
+
+    public function getWikidata(): ?string
+    {
+        return $this->wikidata;
+    }
+
+    public function setWikidata(?string $wikidata): self
+    {
+        $this->wikidata = $wikidata;
+
+        return $this;
+    }
+
+    public function getFactgrid(): ?string
+    {
+        return $this->factgrid;
+    }
+
+    public function setFactgrid(?string $factgrid): self
+    {
+        $this->factgrid = $factgrid;
 
         return $this;
     }

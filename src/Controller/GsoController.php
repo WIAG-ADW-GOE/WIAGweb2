@@ -11,7 +11,6 @@ use App\Entity\Institution;
 use App\Entity\ReferenceVolume;
 use App\Entity\UrlExternal;
 use App\Entity\NameLookup;
-use App\Entity\CanonLookup;
 use App\Entity\Gso\Persons;
 use App\Entity\Gso\Items;
 use App\Entity\Gso\Books;
@@ -24,9 +23,7 @@ use App\Service\EditService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 class GsoController extends AbstractController {
@@ -61,11 +58,10 @@ class GsoController extends AbstractController {
 
         // find duplicates
         $corpus_id_list = ['dreg', 'dreg-can'];
-        $auth_id_gs = Authority::ID['GSN'];
-        $duplicate_id_list = $urlExternalRepository->findDuplicates($auth_id_gs, $corpus_id_list);
+        $duplicate_id_list = $urlExternalRepository->findDuplicates(Authority::ID['GSN'], $corpus_id_list);
         $person_duplicate_list = $personRepository->findList($duplicate_id_list);
 
-        $auth_gs = $authorityRepository->find($auth_id_gs);
+        $auth_gs = $authorityRepository->find(Authority::ID['GSN']);
         return $this->render("gso/update_info.html.twig", [
             'menuItem' => 'edit-menu',
             'countReferenced' => $data_transfer['count_ref'],
@@ -189,49 +185,52 @@ class GsoController extends AbstractController {
 
     /**
      * return array of elements in $a that need an update and array of missing elements in $b
-     * a has fields id, dateChanged and gsn
-     * b has fields id, dateChanged, person_id and gsn
      * 
-     * return: update contains entries from a that need to be updated in addition with their gso_id and gso_person_id
-     * missing contains entries from a that are missing in b
+     * wiag_list has fields id, dateChanged and gsn
+     * 
+     * gso_list has fields id, dateChanged, person_id and gsn
+     * 
+     * return: update contains entries from wiag_list that need to be updated in addition with their gso_id and gso_person_id
+     * 
+     * return: missing contains entries from wiag_list that are missing in gso_list
      */
-    private function updateRequired($a, $b) {
+    private function updateRequired($wiag_list, $gso_list) {
         $missing = [];
         $update = [];
-        
-        if (count($a) == 0) {
+
+        if (count($wiag_list) == 0) {
             return [$update, $missing];
         }
-        if (count($b) == 0) {
-            $missing = $a;
+        if (count($gso_list) == 0) {
+            $missing = $wiag_list;
             return [$update, $missing];
         }
 
-        $a_sorted = UtilService::sortByFieldList($a, ['gsn']);
-        $b_sorted = UtilService::sortByFieldList($b, ['gsn']);
-        $current_a = current($a_sorted);
-        $current_b = current($b_sorted);
+        $wiag_list_sorted = UtilService::sortByFieldList($wiag_list, ['gsn']);
+        $gso_list_sorted = UtilService::sortByFieldList($gso_list, ['gsn']);
+        $current_wiag = current($wiag_list_sorted);
+        $current_gso = current($gso_list_sorted);
 
-        while($current_a !== false and $current_b !== false) {
-            if ($current_a['gsn'] > $current_b['gsn']) {
-                $current_b = next($b_sorted);
-            } elseif ($current_a['gsn'] < $current_b['gsn']) {
-                $missing[$current_a['id']] = $current_a;
-                $current_a = next($a_sorted);
-            } elseif ($current_a['gsn'] == $current_b['gsn']) {
-                if ($current_a['dateChanged'] < $current_b['dateChanged']) {
-                    $current_a['gso_id'] = $current_b['id'];
-                    $current_a['gso_person_id'] = $current_b['person_id'];
-                    $update[$current_a['id']] = $current_a;
+        while($current_wiag !== false and $current_gso !== false) {
+            if ($current_wiag['gsn'] > $current_gso['gsn']) {
+                $current_gso = next($gso_list_sorted);
+            } elseif ($current_wiag['gsn'] < $current_gso['gsn']) {
+                $missing[$current_wiag['id']] = $current_wiag;
+                $current_wiag = next($wiag_list_sorted);
+            } elseif ($current_wiag['gsn'] == $current_gso['gsn']) {
+                if ($current_wiag['dateChanged'] < $current_gso['dateChanged']) {
+                    $current_wiag['gso_id'] = $current_gso['id'];
+                    $current_wiag['gso_person_id'] = $current_gso['person_id'];
+                    $update[$current_wiag['id']] = $current_wiag;
                 }
-                $current_a = next($a_sorted);
-                $current_b = next($b_sorted);
+                $current_wiag = next($wiag_list_sorted);
+                $current_gso = next($gso_list_sorted);
             }
         }
 
-        while ($current_a !== false) {
-            $missing[$current_a['id']] = $current_a;
-            $current_a = next($a_sorted);
+        while ($current_wiag !== false) {
+            $missing[$current_wiag['id']] = $current_wiag;
+            $current_wiag = next($wiag_list_sorted);
         }
 
         return [$update, $missing];
@@ -315,10 +314,6 @@ class GsoController extends AbstractController {
         $entityManager = $doctrine->getManager('default');
 
         $personRepository = $doctrine->getRepository(Person::class, 'default');
-        $gsoPersonsRepository = $doctrine->getRepository(Persons::class, 'gso');
-        $urlExternalRepository = $doctrine->getRepository(UrlExternal::class, 'default');
-        $itemRepository = $doctrine->getRepository(Item::class, 'default');
-        $itemCorpusRepository = $doctrine->getRepository(ItemCorpus::class, 'default');
         $institutionRepository = $doctrine->getRepository(Institution::class, 'default');
         $corpusRepository = $doctrine->getRepository(Corpus::class, 'default');
 
@@ -417,7 +412,7 @@ class GsoController extends AbstractController {
         $dreg_gso_meta_list = $this->personGsoIdsByList($doctrine, $dreg_gsn_list);
 
         // check update date; missing list holds elements of $item_list not found in GSO
-        list($meta_update_list, $missing_list) = $this->updateRequired($dreg_item_list, $dreg_gso_meta_list, 'gsn');
+        list($meta_update_list, $missing_list) = $this->updateRequired($dreg_item_list, $dreg_gso_meta_list);
 
         // check if there are new GSN in Digitales Personenregister (see also below)
         // update GSN in url_external for elements of $meta_update_list
