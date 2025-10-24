@@ -112,7 +112,7 @@ Since there is no SSH access and consequently no possibility of building the pro
 
 - git clone
 - cd WIAGweb2
-- create .env.local file with the following, where ... is a random string of around 40 characters
+- create .env.local file with the following, where ... is a random string of around 40 characters (no " allowed)
 	```
 	APP_ENV=prod
 	APP_SECRET=...
@@ -121,7 +121,7 @@ Since there is no SSH access and consequently no possibility of building the pro
 	- adjust config/packages/doctrine.yaml:
 		- user: 'wiagstage_adm'
 		- dbname: 'wiagstage'
-- composer install -- this will print an error, but is needed for generating the keys (the error can be ignored for now)
+- composer install -- this will print an error ('Environment variable not found: "DATABASE_PASSWORD"'), but is needed for generating the keys (the error can be ignored for now)
 - generate keys and store database passwords (https://symfony.com/doc/6.4/configuration/secrets.html)
 	- php bin/console secrets:generate-keys
 	- php bin/console secrets:set DATABASE_PASSWORD
@@ -129,7 +129,7 @@ Since there is no SSH access and consequently no possibility of building the pro
 
 - optionally generate the same thing for the dev environment:
 	- change APP_ENV=prod to APP_ENV=dev in the .env.local file
-	- php bin/console secrets:generate-keys
+	- php bin/console secrets:generate-keys				-- this will also print an error ('Environment variable not found: "DATABASE_PASSWORD"'), but seems to also be necessary
 	- php bin/console secrets:set DATABASE_PASSWORD
 	- php bin/console secrets:set DATABASE_GSO_PASSWORD
 	- change APP_ENV=dev back to APP_ENV=prod in the .env.local file
@@ -142,14 +142,16 @@ Since there is no SSH access and consequently no possibility of building the pro
 
 - rename .old_htaccess to just .htaccess (this is the .htaccess file that is needed for these old GWDG servers, but nowhere else)
 
-- delete the directory on the server (wiagvokabulare/wiagstage) or rename it -- this makes sure that the cache etc. are cleared. it might suffice to delete the build, public and var folders, however this probably won't work, because the server owns some files in the cache that you won't be able to delete
-- create the directory again (now it's empty, which was the point)
+- create a new directory on the server (choose any name, but something like `new_wiagvokabulare` works well)
 - transfer ALMOST all the contents of the folder to the newly created folder on the server: except the .git, doc and notebooks folders, and the .gitignore and README.md files
-- transfer the folders build and images (inside the public folder) to the general directory (directory root). After this the build folder should be at wiagvokabulare/build and wiagvokabulare/public/build (same for images) -- There is no possibility of changing the DocumentRoot variable for this server (support said "no"). The simplest solution seems to be to copy the contents of the public folder also to the directory root. I did not find another solution online, since this does not seem to be a regular case.
+- transfer the folders build and images (inside the public folder) to the general directory (directory root). After this the build folder should be at new_wiagvokabulare/build and new_wiagvokabulare/public/build (same for images) -- There is no possibility of changing the DocumentRoot variable for this server (support said "no"). The simplest solution seems to be to copy the contents of the public folder also to the directory root. I did not find another solution online, since this does not seem to be a regular case.
 - IMPORTANT: set the permissions to 775 for the var folder -- if you don't do this, the apache server can't use the cache and consequently can't serve the site
 
+- rename the current `wiagvokabulare` folder to something like `wiagvokabulare-2025-10-24`
+- rename your folder (with name `new_wiagvokabulare` or similar) to `wiagvokabulare`
 - now the site should be reachable - should there be an error, change APP_ENV=prod to APP_ENV=dev in the .env.local file and transfer it to the server. Now you should get a stacktrace and explanation of what happened.
 
+If you don't want the backup of the last version (generally unnecessary, because there are of course backups of the code in git), you can delete the directory on the server (wiagvokabulare/wiagstage). This might not work though, because the server sometimes owns files in the cache that you then can't delete.
 
 ## local WIAG on Windows 11 for testing
 These instructions might be incomplete, but since they should still be quite helpful, it still makes sense to keep them.
