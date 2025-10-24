@@ -122,7 +122,7 @@ Since there is no SSH access and consequently no possibility of building the pro
 		- user: 'wiagstage_adm'
 		- dbname: 'wiagstage'
 - composer install -- this will print an error, but is needed for generating the keys (the error can be ignored for now)
-generate keys and store database passwords (https://symfony.com/doc/6.4/configuration/secrets.html)
+- generate keys and store database passwords (https://symfony.com/doc/6.4/configuration/secrets.html)
 	- php bin/console secrets:generate-keys
 	- php bin/console secrets:set DATABASE_PASSWORD
 	- php bin/console secrets:set DATABASE_GSO_PASSWORD
