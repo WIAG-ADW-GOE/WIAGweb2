@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Gso\Persons;
 use App\Entity\Item;
 use App\Entity\Corpus;
 use App\Entity\ItemCorpus;
@@ -24,7 +25,7 @@ use App\Entity\UserWiag;
 use App\Service\EditService;
 use App\Service\UtilService;
 
-use Symfony\Component\HttpFoundation\Response;
+use RuntimeException;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -1063,7 +1064,7 @@ class EditPersonService {
         $this->copyReferenceFromGso($person, $person_gso);
 
         // GND
-        $this->copyGndFromGso($item, $person_gso);
+        $this->copyUrlExtFromGso($item, $person_gso);
 
         // core
         $this->copyCoreFromGso($person, $person_gso);
@@ -1123,9 +1124,9 @@ class EditPersonService {
                     $ref->setItem($person->getItem());
                     $this->entityManager->persist($ref);
                 } else {
-                    // dump("Fehlende Band-Nummer: ", $gs_volume_nr);
-                    // 2023-10-31 TODO Vor dem Import auf fehlende Literatur prüfen,
-                    // und/oder den gesamten Datensatz nicht aktualisieren.
+                    // NOTE (2025-10-16): this case should not occur, since the update from the Digitales Personenregister is only done if no books are missing.
+                    // TODO: Remove this block after testing.
+                    throw new RuntimeException("A volume was missing and the update could not be completed.");
                 }
             }
         }
@@ -1134,7 +1135,10 @@ class EditPersonService {
 
     }
 
-    private function copyGndFromGso($item, $person_gso) {
+    /**
+     * copy GND, FactGrid-ID and Wikidata-ID from GSO
+     */
+    private function copyUrlExtFromGso($item, Persons $person_gso) {
         $authorityRepository = $this->entityManager->getRepository(Authority::class);
 
         // - remove entries, but not GSN
@@ -1147,22 +1151,44 @@ class EditPersonService {
             }
         }
 
-        $count_url = 0;
         $gnd = $person_gso->getGndnummer();
-        if (!is_null($gnd) and trim($gnd) != "") {
+        if ($gnd !== null and trim($gnd) != "") {
             $uext = new UrlExternal();
 
             $uext->setItem($item);
             $authority_gnd = $authorityRepository->find(Authority::ID['GND']);
-            $uext->setAuthority($authority_gnd); // sets authorityId
+            $uext->setAuthority($authority_gnd);
             $uext->setValue($gnd);
             $item->getUrlExternal()->add($uext);
             $this->entityManager->persist($uext);
-
-            $count_url += 1;
         }
 
-        return $count_url;
+        
+        $wikidata = $person_gso->getWikidata();
+        if ($wikidata !== null and trim($wikidata) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_wikidata = $authorityRepository->find(Authority::ID['Wikidata']);
+            $uext->setAuthority($authority_wikidata);
+            $uext->setValue($wikidata);
+            $item->getUrlExternal()->add($uext);
+            $this->entityManager->persist($uext);
+        }
+
+        $factgrid = $person_gso->getFactgrid();
+        if ($factgrid !== null and trim($factgrid) != "") {
+            $uext = new UrlExternal();
+
+            $uext->setItem($item);
+            $authority_factgrid = $authorityRepository->find(Authority::ID['FactGrid']);
+            $uext->setAuthority($authority_factgrid);
+            $uext->setValue($factgrid);
+            $item->getUrlExternal()->add($uext);
+            $this->entityManager->persist($uext);
+        }
+
+        return;
     }
 
     public function setGsn($item, $gsn) {
