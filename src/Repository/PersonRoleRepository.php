@@ -130,69 +130,71 @@ class PersonRoleRepository extends ServiceEntityRepository
     /**
      * set place names for $role
      */
-    public function setPlaceName(PersonRole $role) {
-        $qb = $this->createQueryBuilder('r')
-                   ->addSelect('ip.placeName')
-                   ->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                              'r.institutionId = ip.institutionId '.
-                              'AND ( '.
-                              'r.numDateBegin IS NULL AND r.numDateEnd IS NULL '.
-                              'OR (ip.numDateBegin < r.numDateBegin AND r.numDateBegin < ip.numDateEnd) '.
-                              'OR (ip.numDateBegin < r.numDateEnd AND r.numDateEnd < ip.numDateEnd) '.
-                              'OR (r.numDateBegin < ip.numDateBegin AND ip.numDateBegin < r.numDateEnd) '.
-                              'OR (r.numDateBegin < ip.numDateEnd AND ip.numDateEnd < r.numDateEnd))')
-                   ->addOrderBy('r.dateSortKey')
-                   ->andWhere('r.id = :id')
-                   ->setParameter('id', $role->getId());
+	public function setPlaceName(PersonRole $role) {
+		$qb = $this->createQueryBuilder('r')
+			->addSelect('ip.placeName')
+			->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',
+				'r.institutionId = ip.institutionId '.
+				'AND ( '.
+				'(r.numDateBegin IS NULL AND r.numDateEnd IS NULL) '. // role has no begin or end dates
+				'OR (ip.numDateBegin < r.numDateBegin AND r.numDateBegin < ip.numDateEnd) '. // role began while the institution existed
+				'OR (ip.numDateBegin < r.numDateEnd AND r.numDateEnd < ip.numDateEnd) '.  // role ended while inst existed
+				'OR (r.numDateBegin < ip.numDateBegin AND ip.numDateBegin < r.numDateEnd) '.  // role began before and ended while/after inst existed
+				'OR (r.numDateBegin < ip.numDateEnd AND ip.numDateEnd < r.numDateEnd)'.  // role began before/while and ended after the institution existed
+				'OR (ip.numDateEnd IS NULL AND (ip.numDateBegin < r.numDateBegin OR ip.numDateBegin < r.numDateEnd)))')  // inst has not stopped existing and role began/ended while inst existed
+			->addOrderBy('r.dateSortKey')
+			->andWhere('r.id = :id')
+			->setParameter('id', $role->getId());
 
-        $query = $qb->getQuery();
-        $result = $query->getResult();
+		$query = $qb->getQuery();
+		$result = $query->getResult();
 
-        return null;
-    }
+		return null;
+	}
 
     /**
      *
      */
-    public function setPlaceNameInRole($role_list) {
+	public function setPlaceNameInRole($role_list) {
 
-        $id_role_map = array();
-        foreach ($role_list as $role) {
-            $id_role_map[$role->getId()] = $role;
-        }
+		$id_role_map = array();
+		foreach ($role_list as $role) {
+			$id_role_map[$role->getId()] = $role;
+		}
 
-        if (count($id_role_map) == 0) {
-            return null;
-        }
+		if (count($id_role_map) == 0) {
+			return null;
+		}
 
-        // hopefully we get an entry in $result for each role, even if roles
-        // belong to the same place
-        $qb = $this->createQueryBuilder('r')
-                   ->select('r.id, ip.placeName')
-                   ->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',
-                              'r.institutionId = ip.institutionId '.
-                              'AND ( '.
-                              'r.numDateBegin IS NULL AND r.numDateEnd IS NULL '.
-                              'OR (ip.numDateBegin < r.numDateBegin AND r.numDateBegin < ip.numDateEnd) '.
-                              'OR (ip.numDateBegin < r.numDateEnd AND r.numDateEnd < ip.numDateEnd) '.
-                              'OR (r.numDateBegin < ip.numDateBegin AND ip.numDateBegin < r.numDateEnd) '.
-                              'OR (r.numDateBegin < ip.numDateEnd AND ip.numDateEnd < r.numDateEnd))')
-                   ->addOrderBy('r.dateSortKey')
-                   ->andWhere('r.id in (:id_list)')
-                   ->setParameter('id_list', array_keys($id_role_map));
+		// hopefully we get an entry in $result for each role, even if roles
+		// belong to the same place
+		$qb = $this->createQueryBuilder('r')
+			->select('r.id, ip.placeName')
+			->leftjoin('App\Entity\InstitutionPlace', 'ip', 'WITH',
+				'r.institutionId = ip.institutionId '.
+				'AND ( '.
+					'(r.numDateBegin IS NULL AND r.numDateEnd IS NULL) '. // role has no begin or end dates
+					'OR (ip.numDateBegin < r.numDateBegin AND r.numDateBegin < ip.numDateEnd) '. // role began while the institution existed
+					'OR (ip.numDateBegin < r.numDateEnd AND r.numDateEnd < ip.numDateEnd) '.  // role ended while inst existed
+					'OR (r.numDateBegin < ip.numDateBegin AND ip.numDateBegin < r.numDateEnd) '.  // role began before and ended while/after inst existed
+					'OR (r.numDateBegin < ip.numDateEnd AND ip.numDateEnd < r.numDateEnd)'.  // role began before/while and ended after the institution existed
+					'OR (ip.numDateEnd IS NULL AND (ip.numDateBegin < r.numDateBegin OR ip.numDateBegin < r.numDateEnd)))')  // inst has not stopped existing and role began/ended while inst existed
+			->addOrderBy('r.dateSortKey')
+			->andWhere('r.id in (:id_list)')
+			->setParameter('id_list', array_keys($id_role_map));
 
-        $query = $qb->getQuery();
-        $result = $query->getResult();
+		$query = $qb->getQuery();
+		$result = $query->getResult();
 
-        // if there are several places (which is possible, but rare), we get randomly one of the results
-        // better: concatenate multiple results
-        foreach ($result as $r_loop) {
-            $role = $id_role_map[$r_loop['id']];
-            $role->setPlaceName($r_loop['placeName']);
-        }
+		// if there are several places (which is possible, but rare), we get randomly one of the results
+		// better: concatenate multiple results
+		foreach ($result as $r_loop) {
+		    $role = $id_role_map[$r_loop['id']];
+		    $role->setPlaceName($r_loop['placeName']);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
     /**
      * Returns number of items that refer to the role with $role_id
