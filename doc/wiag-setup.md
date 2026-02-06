@@ -41,7 +41,7 @@ This can be used both for testing or production.
 			- disconnect
 			- transfer sql dumps with scp (e.g. `scp C:\Users\myusername\Downloads\mydatabasename.sql myserverusername@myserversipaddress:/home/myserverusername/.`)
 			- reconnect, now the file can be found in your home directory
-		- download it some other way, e.g. via phpMyAdmin in a browser
+		- (download it some other way, e.g. via phpMyAdmin in a browser -- for this you would need to set-up phpMyAdmin on the server first and even before that you should set-up HTTPS)
 	- sudo mysql
 		- CREATE DATABASE mydatabasename;
 		- quit
