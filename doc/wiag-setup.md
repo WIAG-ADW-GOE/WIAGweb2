@@ -39,13 +39,16 @@ This can be used both for testing or production.
 	- either:
 		- if you're connected to a server via SSH:
 			- disconnect
-			- transfer sql dumps with scp (e.g. `scp C:\Users\myusername\Downloads\mydatabasename.sql myserverusername@myserversipaddress:/home/myserverusername/.`)
+			- transfer sql dumps with scp (e.g. `scp C:\Users\myusername\Downloads\filename.sql myserverusername@myserversipaddress:/home/myserverusername/.`)
 			- reconnect, now the file can be found in your home directory
-		- (download it some other way, e.g. via phpMyAdmin in a browser -- for this you would need to set-up phpMyAdmin on the server first and even before that you should set-up HTTPS)
-	- sudo mysql
-		- CREATE DATABASE mydatabasename;
-		- quit
-	- sudo mysql mydatabasename < mydatabasename.sql
+		   	- `sudo mysql`
+				- `CREATE DATABASE mydatabasename;`
+				- `quit`
+			- `sudo mysql mydatabasename < transferred_file.sql`
+		- (import via phpMyAdmin in a browser)
+  			- this is not as simple as it might sound, because:
+    		- first you should set-up HTTPS, to secure the database-access from the browser
+    		- then you would still need to set-up phpMyAdmin on the server
 	
 - create user and give rights to him for the database [explanation here](https://gridscale.io/en/community/tutorials/create-a-mysql-user/):
 	- sudo mysql
