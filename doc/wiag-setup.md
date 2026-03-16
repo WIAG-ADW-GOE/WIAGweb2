@@ -53,7 +53,7 @@ This can be used both for testing or production.
 - create user and give rights to him for the database [explanation here](https://gridscale.io/en/community/tutorials/create-a-mysql-user/):
 	- sudo mysql
 		- CREATE USER 'mydatabaseusername'@'localhost' IDENTIFIED BY 'mypassword';
-		- GRANT ALL PRIVILEGES ON mydatabasename . * TO 'mydatabaseusername'@'localhost';
+  		- GRANT ALL PRIVILEGES ON *.* TO 'mydatabaseusername'@'localhost' WITH GRANT OPTION;
 		- FLUSH PRIVILEGES;
 		- quit
 		
@@ -110,6 +110,23 @@ This can be used both for testing or production.
 - now WIAG should be reachable via the IP of the server (HTTPS would need additional steps)
 - should there be an error, change APP_ENV=prod to APP_ENV=dev in the .env.local file and `sudo systemctl restart apache2`. Now you should get a stacktrace and explanation of what happened. It might (but probably not) be necessary to once call `composer install && yarn install && cd public && yarn build && cd ..`
 
+### phpMyAdmin access
+ - to get access to the database via phpMyAdmin, simply install it first
+	- `sudo apt install phpmyadmin`
+ - enable the mbstring php extension
+	- `sudo phpenmod mbstring`
+ - check whether the phpMyAdmin configuration is enabled
+ 	- `ls -l /etc/apache2/conf-enabled/ | grep phpmyadmin`
+	- if not, follow these steps:
+	```
+	# create a symbolic link to the "available configurations" directory
+	sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+	# enable the configuration
+	sudo a2enconf phpmyadmin.conf
+	# restart Apache to apply changes
+	sudo systemctl restart apache2
+	```
+ - now phpMyAdmin should be reachable via "http://.../phpmyadmin"
 ## "old" GWDG servers
 Since there is no SSH access and consequently no possibility of building the project on the server, you need to build the project locally and copy everything via SFTP. Also needed is the old .htaccess (named .old_htaccess). Should there be a generated .htaccess file under /public/, delete it.
 
