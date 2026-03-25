@@ -53,7 +53,7 @@ This can be used both for testing or production.
 - create user and give rights to him for the database [explanation here](https://gridscale.io/en/community/tutorials/create-a-mysql-user/):
 	- sudo mysql
 		- CREATE USER 'mydatabaseusername'@'localhost' IDENTIFIED BY 'mypassword';
-  		- GRANT ALL PRIVILEGES ON *.* TO 'mydatabaseusername'@'localhost' WITH GRANT OPTION;
+  		- GRANT ALL PRIVILEGES ON \*.\* TO 'mydatabaseusername'@'localhost' WITH GRANT OPTION;
 		- FLUSH PRIVILEGES;
 		- quit
 		
