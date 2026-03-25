@@ -130,48 +130,53 @@ This can be used both for testing or production.
 ## "old" GWDG servers
 Since there is no SSH access and consequently no possibility of building the project on the server, you need to build the project locally and copy everything via SFTP. Also needed is the old .htaccess (named .old_htaccess). Should there be a generated .htaccess file under /public/, delete it.
 
-- git clone
-- cd WIAGweb2
+- install XAMPP with the correct PHP version (can be found in the composer.json file, probably still: "php": ">=8.1")
+- activate php extensions: intl and sodium
+- install [composer](https://getcomposer.org/)
+- install yarn: (need to open Powershell as an admin for this)
+	```
+ 	npm install -g corepack
+ 	corepack enable
+ 	corepack prepare yarn@latest --activate
+ 	```
+- `git clone https://github.com/WIAG-ADW-GOE/WIAGweb2.git`
+- `cd WIAGweb2`
 - create .env.local file with the following, where ... is a random string of around 40 characters (no " allowed)
 	```
 	APP_ENV=prod
 	APP_SECRET=...
 	```
-- IMPORTANT for wiagstage: -- otherwise changes on the stage system would actually change the prod system, meaning anyone playing around with the data might destroy important prod data
+- IMPORTANT for wiagstage: -- otherwise changes on the stage system would actually change the prod system, meaning anyone playing around on the test server might destroy the actual important data on the real WIAG server
 	- adjust config/packages/doctrine.yaml:
 		- user: 'wiagstage_adm'
 		- dbname: 'wiagstage'
-- composer install -- this will print an error ('Environment variable not found: "DATABASE_PASSWORD"'), but is needed for generating the keys (the error can be ignored for now)
+- `composer install` -- after downloading and installing the packages, this will print an error ('Environment variable not found: "DATABASE_PASSWORD"'). This can be ignored for now.
 - generate keys and store database passwords (https://symfony.com/doc/6.4/configuration/secrets.html)
-	- php bin/console secrets:generate-keys
-	- php bin/console secrets:set DATABASE_PASSWORD
-	- php bin/console secrets:set DATABASE_GSO_PASSWORD
-
-- optionally generate the same thing for the dev environment:
+	- `php bin/console secrets:generate-keys`
+	- `php bin/console secrets:set DATABASE_PASSWORD`
+	- `php bin/console secrets:set DATABASE_GSO_PASSWORD`
+- to make sure you didn't mistype, you can use `php bin/console secrets:list --reveal` to show the values
+- (optionally) generate the same thing for the dev environment:
 	- change APP_ENV=prod to APP_ENV=dev in the .env.local file
-	- php bin/console secrets:generate-keys				-- this will also print an error ('Environment variable not found: "DATABASE_PASSWORD"'), but seems to also be necessary
-	- php bin/console secrets:set DATABASE_PASSWORD
-	- php bin/console secrets:set DATABASE_GSO_PASSWORD
+	- `php bin/console secrets:generate-keys`				-- this will also print an error ('Environment variable not found: "DATABASE_PASSWORD"'), but seems to also be necessary
+	- `php bin/console secrets:set DATABASE_PASSWORD`
+	- `php bin/console secrets:set DATABASE_GSO_PASSWORD`
 	- change APP_ENV=dev back to APP_ENV=prod in the .env.local file
-	
-- composer install
-- yarn install
-- cd public
-- yarn build
-- cd ..
-
+- `composer install`
+- `yarn install`
+- `cd public`
+- `yarn build`
+- `cd ..`
 - rename .old_htaccess to just .htaccess (this is the .htaccess file that is needed for these old GWDG servers, but nowhere else)
-
 - create a new directory on the server (choose any name, but something like `new_wiagvokabulare` works well)
 - transfer ALMOST all the contents of the folder to the newly created folder on the server: except the .git, doc and notebooks folders, and the .gitignore and README.md files
-- transfer the folders build and images (inside the public folder) to the general directory (directory root). After this the build folder should be at new_wiagvokabulare/build and new_wiagvokabulare/public/build (same for images) -- There is no possibility of changing the DocumentRoot variable for this server (support said "no"). The simplest solution seems to be to copy the contents of the public folder also to the directory root. I did not find another solution online, since this does not seem to be a regular case.
-- IMPORTANT: set the permissions to 775 for the var folder -- if you don't do this, the apache server can't use the cache and consequently can't serve the site
-
-- rename the current `wiagvokabulare` folder to something like `wiagvokabulare-2025-10-24`
+- transfer the folders build and images (inside the public folder) to the general directory (directory root). After this the build folder should be located at both new_wiagvokabulare/build and new_wiagvokabulare/public/build (same for images) -- There is no possibility of changing the DocumentRoot variable for this server (support said "no"). The simplest solution seems to be to copy the contents of the public folder also to the directory root. I did not find another solution online, since this does not seem to be a regular case.
+- IMPORTANT: set the permissions to 775 for the var folder (recursively) -- if you don't do this, the apache server can't use the cache and consequently can't serve the site
+- rename the current `wiagvokabulare` folder to something like `wiagvokabulare_2025-10-24`
 - rename your folder (with name `new_wiagvokabulare` or similar) to `wiagvokabulare`
 - now the site should be reachable - should there be an error, change APP_ENV=prod to APP_ENV=dev in the .env.local file and transfer it to the server. Now you should get a stacktrace and explanation of what happened.
 
-If you don't want the backup of the last version (generally unnecessary, because there are of course backups of the code in git), you can delete the directory on the server (wiagvokabulare/wiagstage). This might not work though, because the server sometimes owns files in the cache that you then can't delete.
+If you don't want to keep the backup of the last version (generally unnecessary, because there are of course backups of the code in git), you can delete the directory on the server (wiagvokabulare/wiagstage). This might not work though, because the server sometimes owns files in the cache that you then can't delete.
 
 ## local WIAG on Windows 11 for testing
 These instructions might be incomplete, but since they should still be quite helpful, it still makes sense to keep them.
