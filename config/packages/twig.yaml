@@ -2,7 +2,6 @@ twig:
     default_path: '%kernel.project_dir%/templates'
     form_themes: ['bootstrap_5_layout.html.twig']
     globals:
-        protocol: 'https'
         url_geonames: 'https://www.geonames.org/'
         url_gs_bios: 'http://personendatenbank.germania-sacra.de/books/findpage/'
         url_gs_monastery: 'https://klosterdatenbank.adw-goe.de/gsn/'

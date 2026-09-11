@@ -108,6 +108,7 @@ This can be used both for testing or production.
 - composer install && yarn install && cd public && yarn build && cd ..
 - sudo systemctl restart apache2
 - now WIAG should be reachable via the IP of the server (HTTPS would need additional steps)
+- if you do put the site behind HTTPS, tell Symfony about it, otherwise it keeps generating `http://` links and redirects: set `TRUSTED_PROXIES` in .env.local (e.g. `TRUSTED_PROXIES=REMOTE_ADDR` if the server is only reachable through the proxy, or the proxy's IP/subnet)
 - should there be an error, change APP_ENV=prod to APP_ENV=dev in the .env.local file and `sudo systemctl restart apache2`. Now you should get a stacktrace and explanation of what happened. It might (but probably not) be necessary to once call `composer install && yarn install && cd public && yarn build && cd ..`
 
 ### phpMyAdmin access
@@ -145,6 +146,7 @@ Since there is no SSH access and consequently no possibility of building the pro
 	```
 	APP_ENV=prod
 	APP_SECRET=...
+	TRUSTED_PROXIES=REMOTE_ADDR
 	```
 - IMPORTANT for wiagstage: -- otherwise changes on the stage system would actually change the prod system, meaning anyone playing around on the test server might destroy the actual important data on the real WIAG server
 	- adjust config/packages/doctrine.yaml:

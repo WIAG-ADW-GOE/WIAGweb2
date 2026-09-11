@@ -30,7 +30,7 @@
 		{% for node in canonNodeList %}
 		    {% set id_public=node.personName.item.idpublic %}
 		    {% set person=node.personName %}
-		    {% set permalink %}{{ protocol }}:{{ url('id', {id: id_public}, schemeRelative = true) }}{% endset %}
+		    {% set permalink %}{{ url('id', {id: id_public}) }}{% endset %}
 
 		    {# name, dates of birth and death #}
 		    {% set dobdod = null %}

@@ -6,8 +6,8 @@
 {% endblock %}
 
 {% block body %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }}{% endset %}
-    {% set citation %}"{{ person.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: person.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+    {% set permalink %}{{ url('id', {id: person.item.idPublic}) }}{% endset %}
+    {% set citation %}"{{ person.displayname }}" in: WIAG, {{ url('id', {id: person.item.idPublic}) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
     {# person is passed as an object #}
     {% if not person%}

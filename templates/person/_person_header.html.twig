@@ -1,5 +1,5 @@
 {# name and button to copy permalink to the clipboard #}
-{% set permalink %}{{ protocol }}:{{ url('id', {id: idpublic}, schemeRelative = true) }}{% endset %}
+{% set permalink %}{{ url('id', {id: idpublic}) }}{% endset %}
 <div class="row col-12 mx-2 mt-2 mb-0">
     <div class="d-flex justify-content-between">
 	<span class="fs-2">{{ person.displayname }} </span>

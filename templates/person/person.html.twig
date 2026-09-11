@@ -12,7 +12,7 @@
 	    <span class="em">Person nicht gefunden.</span>
 	</div>
     {% else %}
-	{% set permalink %}{{ protocol }}:{{ url('id', {id: personName.item.idPublic}, schemeRelative = true) }}{% endset %}
+	{% set permalink %}{{ url('id', {id: personName.item.idPublic}) }}{% endset %}
 	{% set citation %}"{{ personName.displayname }}" in: WIAG, {{ permalink }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 	{% set btnpanel %}
 	<div class="row mx-2 col-12 mt-4 mb-2">

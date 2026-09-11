@@ -6,8 +6,8 @@
 {% endblock %}
 
 {% block body %}
-    {% set permalink %}{{ protocol }}:{{ url('id', {id: diocese.item.idPublic}, schemeRelative = true) }}{% endset %}
-    {% set citation %}"{{ diocese.displayname }}" in: WIAG, {{ protocol }}:{{ url('id', {id: diocese.item.idPublic}, schemeRelative = true) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
+    {% set permalink %}{{ url('id', {id: diocese.item.idPublic}) }}{% endset %}
+    {% set citation %}"{{ diocese.displayname }}" in: WIAG, {{ url('id', {id: diocese.item.idPublic}) }} (Abgerufen: {{ "now"|date('d.m.Y') }}).{% endset %}
 
     <div class="container-fluid mt-3 mb-2">
 	{% if not diocese%}
